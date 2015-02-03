@@ -1,0 +1,11 @@
+title: std:text:paragraph
+link_as: keyword
+--
+
+This helper renders paragraph text. The string is split on newlines, and each paragraph is HTML escaped and enclosed in a @<p>@ tag.
+
+<pre>
+    {{std:text:paragraph text}}
+</pre>
+
+@text@ is the name of the property in the view which contains the string.

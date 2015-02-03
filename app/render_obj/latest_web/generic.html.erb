@@ -1,0 +1,33 @@
+<%
+  request_lookup = options    # lookup passed in as options for render_obj
+  summary = obj_display_highlighted_summary_text(obj, 1, nil)
+  summary_text = (summary == nil) ? '' : summary.first
+%>
+<div class="z__latest_web_container">
+  <div class="z__latest_web_request">
+    <%
+       # TODO: Stop latest updates request matching being so horrendously inefficient
+      obj.each do |value,d,q|
+        found = nil
+        if value.class == KObjRef
+          if request_lookup.has_key?(value)
+            found = value
+          else
+            # Check the full path!
+            KObjectStore.expand_objref_into_full_parent_path(value).each do |ref|
+              found = ref if request_lookup.has_key?(ref)
+            end
+          end
+          if found != nil
+            %><div><%= h(request_lookup[found].title) %></div><%
+          end
+        end
+      end
+    %>
+  </div>
+  <a href="<%= object_urlpath(obj) %>" class="z__latest_web_title"><% if type_desc != nil %><%= html_for_icon(type_desc.render_icon, :small) %><% end %>
+  <%= h(title_of_object(obj, :full)) %></a>
+  <div class="z__latest_web_summary">
+    <%= h(summary_text) %>
+  </div>
+</div>

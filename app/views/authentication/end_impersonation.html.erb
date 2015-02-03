@@ -1,0 +1,15 @@
+<%
+  @page_title = "Impersonation"
+%>
+
+<div class="z__plugin_ui_confirm">
+  <div class="z__plugin_ui_confirm_message">
+    <p>Finish impersonating <%= h(@request_user.name) %>?</p>
+  </div>
+  <div class="z__plugin_ui_confirm_action">
+    <form method="POST"><%= form_csrf_token %>
+      <input type="submit" value="End impersonation">
+    </form>
+  </div>
+  <div class="z__plugin_ui_confirm_end"></div>
+</div>

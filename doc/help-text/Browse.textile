@@ -1,0 +1,13 @@
+FOR: /search/browse
+
+h1. Browse
+
+Using the Browse tab you can browse items by subject or type.
+
+Click on the subject headings to see the items indexed under each heading. The further along the subject hierarchy you go, the less hits appear beneath.
+
+Browsing by Types is performed in a similar way.
+
+h4. Further help
+
+[[Search]]

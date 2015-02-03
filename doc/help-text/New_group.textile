@@ -1,0 +1,8 @@
+FOR: /do/admin/user/new?kind=1
+
+h1. New group
+
+* Name: of the group
+* Group membership: groups can belong to other groups, but avoid using this unless absolutely necessary
+* _Create new group_.
+

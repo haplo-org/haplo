@@ -1,0 +1,69 @@
+title: Desktop computers
+--
+
+While protecting desktop computers is one of the easier security tasks, they're still vulnerable to theft, unauthorised users and malware.
+
+
+h2. User accounts
+
+p(recommendation). You __must__ use individual accounts on your computer, and each account __must__ be accessed with a strong password.
+
+Every modern operating system has the ability to use individual accounts, so that everyone can work in isolation. You __must not__ share user accounts. You __must__ use individual accounts for everyone.
+
+
+h2. Practise good security hygiene
+
+p(recommendation). You __must__ follow sensible security practises on any computer which is used to access confidential information.
+
+In particular:
+
+ * Run up-to-date anti-virus and anti-malware software.
+ * Run the most secure web browser possible.
+ ** For example, "Google Chrome":http://www.google.com/chrome and "Safari":http://www.apple.com/safari version 5.1 and later include "sandboxing":http://www.apple.com/safari/features.html#security to minimise the effects of flaws.
+ ** *Do not* use Internet Explorer on Windows XP, as it lacks any modern protection whatsoever.
+ * Ideally use one web browser for surfing the web, and the other for sensitive information.
+ * Make sure all your software is kept up to date, wherever possible with automatic updates.
+ * *Do not* download and install any software, screen savers, or "fun" plugins from the internet. Only install trusted software you need to do your job.
+
+
+h2. Use encryption software
+
+p(recommendation). You __should__ use full disc encryption software on your desktop computers.
+
+If your information is in any way sensitive, you __should__ use full disc encryption. This means that a password is required to decrypt your information, and if your password is strong enough, it should be safe from even the most motivated adversary.
+
+If you do not use full disc encryption, any temporary copies on your computer can be accessed by someone with a small amount of technical knowledge, or the ability to use Google and download software. The password on your account is *no protection whatsoever* to someone who has physical access to your computer.
+
+See [node:security/resources] for some recommended encryption software.
+
+
+h2. Information stored on your computer
+
+Your information is stored on our servers, and we look after it, back it up, and ensure its availability and security.
+
+However, for you to actually use it, you need to make a temporary copy on your computer. These copies include:
+
+ * Web pages cached by your browser -- while ONEIS sets options to minimise the length of time its web pages are cached by your browser, it may remain accessible for a little while.
+ * Your working files -- when you're working on a file, a copy is available on your computer until you delete it.
+
+
+h2. Fingerprint readers
+
+p(recommendation). You __must never__ rely on a fingerprint reader to protect access to your information.
+
+Fingerprint readers are trivially bypassed, and the low quality fingerprint readers on laptops are especially vulnerable.
+
+If you must use a fingerprint reader, be aware of its limitations, and use a strong password as well.
+
+
+h2. Further recommendations
+
+ * Lock your computer when away from your desk.
+ * Discs, USB sticks, CDs and DVDs must be virus checked before use.
+ * If you suspect you have a computer virus, get technical support immediately, and must not use your computer until it has been resolved.
+ * You __should__ use the latest version of your operating system. Security features in mainstream operating systems have been dramatically improved in the latest releases.
+
+Additionally, in a high security environment:
+
+ * Ensure your desk and office furniture is arranged so visitors and other staff cannot easily look at your screen.
+ * After it is no longer required, IT equipment, particularly hard drives, should be wiped and disposed of by specialists.

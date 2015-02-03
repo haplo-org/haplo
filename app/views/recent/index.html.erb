@@ -1,0 +1,19 @@
+<%
+  @page_title = 'Recent'
+  @breadcrumbs = [:recent]
+  client_side_resources :recent
+  client_side_controller_js('recent')
+%>
+
+<div id="z__recent_main_container">
+  <%= render :partial => 'items', :data_for_template => {:days => @days} %>
+</div>
+<%
+  unless @days.empty?
+    last_entry = @days.last.entries.last
+    %>
+      <p>&nbsp;</p>
+      <p><a id="z__recent_load_more" href="#" data-time="<%= last_entry.id %>" data-date="<%= h(@days.last.date_text) %>">Load more</a><span style="display:none" id="z__recent_loading_more">Loading...</span></p>
+    <%
+  end
+%>

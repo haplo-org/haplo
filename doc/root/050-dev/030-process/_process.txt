@@ -1,0 +1,49 @@
+title: Development process
+--
+
+h2. Development servers
+
+We provide access to development servers, which run developer extensions which allow you to use the [node:dev/tool/plugin] to develop your plugin. We don't provide developer access to live systems to ensure stability.
+
+We'll set up a development application for you. This can either be a blank system, or a copy of another application.
+
+
+h2. Developing a plugin
+
+Once your development application has been set up, you use the [node:dev/tool/plugin] to [node:dev/tool/plugin/development:develop your plugin].
+
+Please get in touch if you need anything. We're happy to answer questions on specific APIs, or the best way of achieving something. Your questions help us improve this documentation and develop the Platform.
+
+
+h2. Naming a plugin
+
+To avoid the names of plugins clashing with each other, we'll give you a prefix for all your plugin names, based on your organisation name. For example, the "Acme Corporation":http://en.wikipedia.org/wiki/Acme_Corporation may be asked to prefix all their plugin names with "@acme_@", for example, @acme_processes@.
+
+
+h2. Review process
+
+We review all plugins before they're installed on the live servers. This gives us an opportunity to spot any problems before they occur, as well as being an integral part of our approach to security.
+
+We will minimise the client side files for deployment to make sure everything is as fast as it can be by reducing the amount of data which has to be downloaded. This affects your HTML, CSS and and client-side JavaScript. To check this doesn't cause any problems, run the Plugin Tool with the @--minimise@ option to [node:dev/tool/plugin/deployment-checks:test the minimised version] of the plugin.
+
+It's also a good idea to run the @check@ command to perform final checks before going live.
+
+
+h2. Source control
+
+You should be developing your plugin using a source control system, and provide us access so we can take a copy of each version you'd like to deploy. We provide free [node:dev/tool/fossil], but are happy to work with other source control systems if you host the repository.
+
+You can develop more than one plugin in a repository. Plugins should be in a directory, named after that plugin, at the root of the repository.
+
+When you request we deploy a plugin, we'll take the latest version of the plugin from the @trunk@ branch (or equivalent for your source control system), review it, then copy it to the live servers.
+
+
+h2. Installation on live applications
+
+If you're updating an existing plugin, all applications which use it on the live systems will automatically be updated with the latest version.
+
+For new plugins, you'll need to install it.
+
+CLICK_PATH TOOLS > System management > Plugins > Install plugin
+
+If you've used the [node:dev/plugin/plugin-json#installSecret] key in your [node:dev/plugin/plugin-json] file, you'll need to generate a license key. The Plugin Tool @license-key@ command will [node:dev/tool/plugin/license-key:generate a key], given the ID of the live application.

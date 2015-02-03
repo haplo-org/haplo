@@ -1,0 +1,7 @@
+FOR: /do/admin/user/edit_members
+
+h1. Edit members of a group
+
+Tick the users or groups which belong to this group to quickly specify the members of a group.
+
+Group membership can also be edited within each user's account in system management.

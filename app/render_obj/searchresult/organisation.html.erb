@@ -1,0 +1,14 @@
+<%=
+  renderer = SearchResultHelper::ResultRenderer.new(obj, self, options)
+  unless renderer.no_default_rendering
+    renderer.line2_from(:first, A_TELEPHONE_NUMBER)
+    if type_desc.parent_type
+      # If it's not a root generic type, it's nice to know what kind of organisation it is, and we might as well use that second line
+      renderer.line2_right = type_desc.printable_name.to_s
+    end
+    renderer.display_attributes(A_EMAIL_ADDRESS)
+    renderer.display_attributes(A_ADDRESS)
+    renderer.automatic_value_display if renderer.number_of_columns < 2
+  end
+  renderer.to_html
+%>

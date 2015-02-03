@@ -1,0 +1,41 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+package com.oneis.jsinterface.app;
+
+public interface AppText {
+    // Conversion to String done through Ruby support code in KText.java
+    public String toHtml();
+
+    public int kTypecode();
+
+    // For KIdentifierFile -- JRuby doesn't allow a KText subclass to implement another interface
+    public String digest();
+
+    public long size();
+
+    public String mime_type();
+
+    public String tracking_id();
+
+    public String log_message();
+
+    public String version_string();
+
+    // Mutability
+
+    public AppText dup(); // used for copy
+
+    public void setMime_type(String mimeType);
+
+    public void setPresentation_filename(String filename);
+
+    public void setTracking_id(String trackingId);
+
+    public void setLog_message(String log);
+
+    public void setVersion_string(String version);
+}

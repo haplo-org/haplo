@@ -1,0 +1,7 @@
+FOR: /do/setup/application/search_by_fields
+
+h1. Search by fields configuration
+
+Select the attributes (fields) which are most useful to your users. They are available by clicking the "Fields & options" tab below the search box.
+
+Fields are presented to the user with the user interface for non-aliased attributes. The label includes the names of all the aliases.

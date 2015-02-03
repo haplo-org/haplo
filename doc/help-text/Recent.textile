@@ -1,0 +1,7 @@
+FOR: /do/recent
+
+h1. Recent additions
+
+View the latest additions or modifications in your system by clicking on _Recent_ in the tool bar. 
+
+Click on the magnifying glass to preview items without opening them. 

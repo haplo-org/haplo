@@ -1,0 +1,11 @@
+FOR: /do/admin/billing
+
+h1. Billing and usage
+
+View the billing and usage page from the _Tools_ menu to see your current usage and limits:
+
+* users include all active users (but not blocked users) 
+* items are the records in the system, such as person, organisation, file or book
+* storage is the overall storage required for your system shown in GB.
+
+Your billing details are shown. Follow the instructions to modify your account.

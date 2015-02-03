@@ -1,0 +1,11 @@
+title: std:form
+link_as: keyword
+--
+
+This helper renders a [node:dev/plugin/interface/form-instance] object as a form for the user to fill in.
+
+<pre>
+    {{std:form formInstance}}
+</pre>
+
+See also the [node:dev/plugin/templates/std-helper/document] helper.

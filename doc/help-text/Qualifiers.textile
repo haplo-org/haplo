@@ -1,0 +1,18 @@
+FOR: /do/setup/attribute/list_qual
+
+h1. Qualifiers
+
+Qualifiers are used to add detail to an attribute, for example, specifying that a title of a book is an _alternative_ title.
+
+Each attribute specifies which qualifiers, if any, can be used with that attribute, and whether the use of that attribute affects the relevancy of the data. A qualifier can be used with any number of attributes.
+
+A qualifier should not change the meaning of the attribute. An alternative title is still a title, and it makes sense even if you remove the qualifier.
+
+Click on a qualifier to edit it, or choose _New qualifier_.
+
+h4. Further help
+
+[[Qualifier information]]
+[[Edit qualifier]]
+
+

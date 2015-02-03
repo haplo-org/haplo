@@ -1,0 +1,26 @@
+<%
+  title = obj.first_attr(KConstants::A_TITLE) || '????'
+  date = obj.first_attr(KConstants::A_DATE)
+  notes = obj.first_attr(KConstants::A_NOTES)
+  related = Array.new
+  exclude_links = (options[:crm_note_exclude_objs] || [])
+  obj.each do |v,d,q|
+    if d != KConstants::A_TYPE && v.k_typecode == KConstants::T_OBJREF && v != obj.objref && (!exclude_links.include?(v))
+      related << [v,d]
+    end
+  end
+%>
+<div class="z__crm_note">
+  <% if type_desc != nil && type_desc.render_icon != nil %>
+    <%= html_for_icon(type_desc.render_icon, :small) %>
+  <% else %>
+    <%= html_for_icon(Application_IconHelper::ICON_GENERIC, :small) %>
+  <% end %>
+  <p class="z__crm_note_title"><% if date != nil %><i><%= render_value(date, obj, options, KConstants::A_DATE) %>:</i> <% end %><b><%= link_to_object text_truncate(title.to_s,80), obj %></b></p>
+  <% if notes != nil %>
+    <%= options[:crm_note_truncate_text] ? notes.to_truncated_html(768) : notes.to_html %>
+  <% end %>
+  <% unless related.empty? %>
+    <p class="z__crm_note_related">(<%= related.map { |o,d| render_value(o, obj, options, d) } .join(', ') %>)</p>
+  <% end %>
+</div>

@@ -1,0 +1,24 @@
+title: Search subsets
+--
+
+Search subsets enable users to search within a pre-defined subset of information. The subsets appear when "Fields & options" is clicked on the main search page.
+
+A search subset consists of:
+
+ * Include labels: Objects in this subset must be labelled with one or more of the include labels, if any are set
+ * Exclude labels: Objects in this subset must *not* be labelled with any of the exclude labels
+ * Include types: Objects in this subset must be one of the include types, if any are set
+
+A search subset will only be offered to a user if every *include label* is allowed by their _Read_ permission label sets.
+
+CLICK_PATH TOOLS > System management > Search subsets
+
+Creating Search subsets is not necessary. To create a new Search subset click on New search subset.
+ 
+h2. Search subset ordering
+
+The ordering priority sets the order in which search subsets appear in the "Search within" drop down menu on the Search page.
+
+To change the order, change the numerical value in the Ordering priority column. The first subset in the list, the one with the lowest number in the Ordering priority column, is the default subset. This should normally be called "Everything" and have no labels or types.
+
+If there are no subsets, then the user searches all objects where they have read permission.

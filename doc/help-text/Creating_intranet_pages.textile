@@ -1,0 +1,124 @@
+FOR: /do/edit?new=1-2012
+
+h1. Creating intranet pages
+
+Go to: 
+
+* _Add_
+* Choose _Intranet page_
+
+Enter the title (compulsory) and subject (optional) of your page. 
+
+h2. Text formatting
+
+Type the text you want displayed on the Intranet page into the text field.  To format a line of text, place your cursor anywhere on the line, and click on the p to the left of the line.
+
+Choose the option you wish to use for this line of text:
+
+Paragraph: normal paragraph text
+Heading 1: largest title
+Heading 2: large title
+Heading 3: medium title
+Heading 4: small title
+
+Textual formatting applies to the line for which it has been created, not the text. So if you move text to a different line after you've formatted it the formatting will be lost and need to be re-entered.
+
+If you enter a web address (URL), it'll be automatically turned into a hyperlink which you can click to visit that page.
+
+h2. Embedded links to other items
+
+To add links to other items to your Intranet page:
+
+* place your cursor in the text field where you would like the link embedded
+* click on the + sign to the left of the text editing box
+* choose _Add content_ 
+*  _Open new window to select_
+* search for the items you wish to embed into your webpage
+* once found, add them to your tray
+* click on _Close_ in the top right of the pop-up window
+* once back on your new Intranet page, ensure your cursor is where you wish to embed links to the items you've gathered
+*  click on the + sign appearing to the left of the text editor
+* choose _Add content_
+* either choose to add _Everything in the tray_ or choose each item individually.
+
+To delete the embedded links click on the - symbol to the right of the embedded items.
+
+If, when choosing to _Open new window to select_ the new window does not pop-up, check your browser settings to ensure you allow pop-ups from this site.
+
+h2. Adding an image
+
+To display an image on an Intranet page, go to the relevant Intranet page and click the _edit_ button in the top right. 
+
+First, upload the image file to the Intranet page by clicking on _Upload file_ at the bottom of the form. Once the file has uploaded:
+
+* place your cursor in the text field where you would like the image displayed
+* click on the + to the left of the text field
+* choose _Insert file_ and choose the image file you wish to display
+* choose the size of the image and position
+* ticking the _Link to download_ box will enable users to click on the image and download the full sized image
+* add an optional caption to describe it.
+
+The image will be automatically resized to a file size appropriate for viewing over the Internet. 
+
+h2. Embedding a search
+
+To embed a permanently running search into your page:
+
+* place your cursor in the text field where you would like the search embedded
+* click on the + sign appearing at the left of the text editing box
+* choose _Add widget_
+* choose _Search_ 
+* enter your search terms in the box that appears (to embed a search for a particular type of material ie news, enter type:news)
+* choose how your search results will display:
+_In all permitted..._ choose your search subset
+_Sort by..._ choose the order of your search results
+_Full listing..._ choose whether the listing will be large or small, or as a calendar (for events only)
+_Show all..._ choose whether results will be displayed in one long list, or to show 10 results to a page
+_Search within link..._ choose whether to show a search box at the top of the search results, or a link to a search box, or none
+_Limit results to..._ choose to limit results for items such as news where you only wish to display the most recent
+
+To delete the embedded search click on the - symbol to the right of the embedded search.
+
+h2. Using HTML
+
+To use HTML in your page:
+
+* place your cursor where you would like to add the HTML
+* click on the + sign appearing to the left of the text editing box
+* choose _Add widget_
+* choose _HTML_
+* enter your HTML in the box which appears
+
+To delete the HTML click on the - symbol to the right of the HTML.
+
+Some commonly used HTML tags:
+
+h3. Link to a website
+
+On the webpage only the text "Find out more about ABC Widgets" will appear with the words, ABC Widgets, linked to the website www.abcwidgets.com:
+
+<pre>
+Find out more about <a href="http://www.abcwidgets.com/">ABC Widgets</a>
+</pre>
+
+h3. Link to a website which opens in a new window
+
+To open a new window when the link to ABC Widgets is clicked, add the target="_blank" instruction:
+
+<pre>
+Find out more about <a href="http://www.abcwidgets.com/" target="_blank">ABC Widgets</a>
+</pre>
+
+h3. Link to an email address
+
+Clicking on the word "email" will create a new email with the email address webmaster@abcwidgets.com automatically added to the To field:
+
+<pre>
+Please <a href="mailto:webmaster@abcwidgets.com">email </a>me for more information
+</pre>
+
+h4. Further help
+
+[[Using the editor]]
+[[Creating news items]]
+

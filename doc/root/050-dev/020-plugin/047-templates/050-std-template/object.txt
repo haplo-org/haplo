@@ -1,0 +1,26 @@
+title: std:object
+link_as: keyword
+--
+
+This template renders a [node:dev/plugin/interface/store-object], taking into account it's type and the style requested. The HTML generated will depend on the style requested and the 'render type' set in the schema for this type of object.
+
+There is also a [node:dev/plugin/templates/std-helper/object] helper, which may be easier to use.
+
+
+h2. View
+
+h3(key). object
+
+The [node:dev/plugin/interface/store-object] to render.
+
+
+h3(key). style
+
+Optional. The style in which to render this object.
+
+|*Name*|*Purpose*|
+|@generic@|Generic rendering|
+|@standardview@|Standard view for display in a web page|
+|@linkedheading@|Heading with icon and link to object|
+|@searchresult@|Entry in search results|
+|@searchresultmini@|Entry in mini search results|

@@ -1,0 +1,39 @@
+title: Authentication tokens
+--
+
+Authentication tokens are small devices which you can attach to your keyring.
+
+After you've entered your password into ONEIS, you press a button on the token to generate a short numeric code. This code changes every minute. By typing in this code into ONEIS, you show that you have possession of the token.
+
+
+h2. Two-factor authentication
+
+This significantly increases the security of the system because a log in now requires something you know: your password; and something you have: the physical token.
+
+Even if someone manages to obtain your password though guesswork or malicious software on your computer, they still can't log in because they don't have your token. And if you lose your token, anyone who finds it doesn't know your password.
+
+
+h2. Physical security
+
+You should never write anything on your token, or modify in it any way. In particular, you should never write anything on it which might give clues to your name, your password, or the address of your ONEIS.
+
+This ensures that anyone who finds it cannot determine where it's used for authentication, and especially not the password to your account.
+
+
+h2. Temporary codes
+
+If you don't have your token, you can't log into your account. This can be inconvenient.
+
+Someone at your organisation will be responsible for managing the authentication tokens. If you can prove who you are to them, they can generate a temporary code which will allow you to log in without your token.
+
+
+h2. Security of codes
+
+Users must be instructed to keep all codes confidential. They should never, under any circumstances, generate a code with a token and tell anyone else. In particular, they should never read out a code over the phone.
+
+
+h2. Token administration
+
+Administering the authentication tokens is a vital role in keeping your system secure. The administrator should read the [node:security/authentication-tokens/admin:token administration guidelines] and follow them carefully.
+
+&nbsp;

@@ -1,0 +1,3 @@
+Partial test: {{num}}
+P1: {{>partial1}}
+P2: {{>partial2}}

@@ -1,0 +1,579 @@
+# coding: utf-8
+
+# Haplo Platform                                     http://haplo.org
+# (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#    -- to ensure Strings generated here are UTF-8
+
+class KText
+  # Example use: search results
+  def to_summary
+    # Use a cleaned up version of to_indexable by default, with HTML characters removed to be careful
+    to_indexable.gsub(/<.+?>/,' ').gsub(/\s+/,' ').gsub(/\A +/,'').gsub(/ +\z/,'')
+  end
+
+  # Exporting data
+  def to_export_cells
+    to_s
+  end
+
+  def self.export_data_value_cell_headings(k_typecode, attr_desc)
+    info = KText.get_typecode_info(k_typecode)
+    if info.options.has_key?(:export_headings_fn)
+      # Can have variable width; call width function
+      info.options[:export_headings_fn].call(attr_desc)
+    else
+      # Otherwise just return array with empty string
+      ['']
+    end
+  end
+
+  # Truncated display -- this method is not obliged to actually do the truncation if it's not supported
+  def to_truncated_html(max_length)
+    # By default, don't truncate
+    to_html
+  end
+
+  # To use this default truncated text implementation add:
+  #   alias :to_truncated_html :to_truncated_html_default_impl
+  def to_truncated_html_default_impl(max_length)
+    # Make a new object of the same class with a truncated version of the underlying text string, and call its to_html method
+    self.class.new(KTextUtils.truncate(@text, max_length)).to_html
+  end
+
+  # XML export
+  def build_xml(builder)
+    builder.text(self.to_s, :lang => 'en', :default => 'true')
+  end
+
+  # XML import
+  def self.new_from_xml(typecode, xml_container)
+    info = @@typecode_info[typecode.to_i]
+    raise "No KText derived class for #{typecode}" if info == nil
+    info.type_class.read_from_xml(xml_container)
+  end
+
+  def self.read_from_xml(xml_container)
+    e = xml_container.elements["text"]
+    raise "No text node" if e == nil
+    new(e.text || '')
+  end
+end
+
+# ------------------------------------------------------------
+class KTextParagraph < KText
+  ktext_typecode KConstants::T_TEXT_PARAGRAPH, 'Text (paragraph)'
+
+  def initialize(text, language = nil)
+    super
+  end
+
+  def to_html
+    # remember to remove \r's which IE will pop in everywhere
+    # This renders a double line break as a new paragraph with single line breaks within as line breaks.
+    '<p>'+(@text.gsub(/\r/,'').split(/\n{2,}/).map do |a|
+      a.split(/\n/).map {|b| KTextUtils.auto_link_urls(html_escape(b))} .join('<br>')
+    end .join("</p><p>"))+'</p>'
+  end
+
+  alias :to_truncated_html :to_truncated_html_default_impl
+end
+
+# ------------------------------------------------------------
+class KTextDocument < KText
+  ktext_typecode KConstants::T_TEXT_DOCUMENT, 'Rich text document'
+
+  def initialize(text, language = nil)
+    text = KText.ensure_utf8(text)
+    # Check the text validates
+    ok = false
+    begin
+      doc = REXML::Document.new(text)
+      ok = true if (doc.root.name == 'doc')
+    rescue
+      # Ignore
+    end
+    raise "Bad XML passed to KTextDocument#initialize" unless ok
+    super
+  end
+
+  # When initialising from plain text, turn it into a simple XML document
+  def self.new_with_plain_text(text, attr_descriptor, language = nil)
+    text = KText.ensure_utf8(text)
+    builder = Builder::XmlMarkup.new
+    builder.doc do |doc|
+      text.split(/[\r\n]+/).each do |line|
+        if line =~ /\S/
+          doc.p line.chomp
+        end
+      end
+    end
+    new(builder.target!, language)
+  end
+
+  def to_indexable
+    # Pull the text out of the XML
+    listener = ToIndexableListener.new
+    begin
+      REXML::Document.parse_stream(@text, listener)
+    rescue
+      # Ignore errors
+    end
+    listener.output || ''
+  end
+
+  def to_plain_text
+    # Create a relatively neat plain text version from the XML, with double newlines at the end of every paragraph or heading
+    listener = ToPlainTextListener.new
+    begin
+      REXML::Document.parse_stream(@text, listener)
+    rescue
+      # Ignore errors
+    end
+    listener.output || ''
+  end
+
+  def to_html
+    # Pull the basic tags out of the document text
+    listener = ToHTMLListener.new
+    begin
+      REXML::Document.parse_stream(@text, listener)
+    rescue
+      # Ignore errors
+    end
+    listener.output
+  end
+
+  def to_truncated_html(max_length)
+    listener = ToHTMLTruncatedListener.new(max_length)
+    begin
+      REXML::Document.parse_stream(@text, listener)
+    rescue
+      # Ignore errors, which may include a "truncated" exception to stop parsing early
+    end
+    listener.output
+  end
+
+  def to_export_cells
+    to_plain_text
+  end
+
+  class ToIndexableListener
+    include REXML::StreamListener
+    attr_reader :output
+    def tag_start(name, attrs)
+      @in_widget = true if name == 'widget'
+    end
+    def tag_end(name)
+      @in_widget = nil if name == 'widget'
+    end
+    def text(text)
+      return if @in_widget  # Ignore values in widgets!
+      if @output == nil
+        @output = ''
+      else
+        @output << ' '
+      end
+      @output << text
+    end
+  end
+
+  class ToPlainTextListener
+    include REXML::StreamListener
+    attr_reader :output
+    def initialize
+      @output = ''
+      @tag_level = 0
+    end
+    def tag_start(name, attrs)
+      @tag_level += 1
+      @in_widget = true if name == 'widget'
+    end
+    def tag_end(name)
+      @tag_level -= 1
+      @in_widget = nil if name == 'widget'
+      @output << "\n\n" unless @output =~ /\n\z/
+    end
+    def text(text)
+      return if @in_widget || @tag_level <= 1  # Ignore values in widgets and plain text outside text tags
+      @output << text
+    end
+  end
+
+  class ToHTMLListener
+    include REXML::StreamListener
+    OUTPUT_TAG_REGEX = /\Ap|h\d+|li\z/
+    LIST_ITEM = 'li'
+    DOC = 'doc'
+    attr_reader :output
+    def initialize
+      @output = ''
+    end
+    def tag_start(name, attrs)
+      @in_widget = true if name == 'widget'
+      if name =~ OUTPUT_TAG_REGEX
+        if name == LIST_ITEM
+          @output << "<ul>" unless @in_ul
+          @in_ul = true
+        else
+          end_ul_maybe()
+        end
+        @output << "<#{name}>"
+        @intag = true
+      end
+    end
+    def tag_end(name)
+      @in_widget = nil if name == 'widget'
+      if name =~ OUTPUT_TAG_REGEX
+        @output << "</#{name}>"
+        @intag = false
+      elsif name == DOC
+        end_ul_maybe()
+      end
+    end
+    def end_ul_maybe
+      @output << "</ul>" if @in_ul
+      @in_ul = false
+    end
+    def text(text)
+      @output << ERB::Util::h(text) if @intag && !@in_widget
+    end
+  end
+
+  class ToHTMLTruncatedListener < ToHTMLListener
+    def initialize(max_length)
+      super()
+      @chars_left = max_length
+    end
+    def tag_start(name, attrs)
+      super(name, attrs)
+      @last_name = name if @intag
+    end
+    def text(text)
+      return unless @intag && !@in_widget
+      l = text.length
+      if l < @chars_left
+        @output << text
+        @chars_left -= l
+      else
+        @output << KTextUtils.truncate(text, @chars_left)
+        @output << "</#{@last_name}>"
+        # Abort now
+        raise "ToHTMLTruncatedListener - truncated"
+      end
+    end
+  end
+
+end
+
+# ------------------------------------------------------------
+class KTextMultiline < KText
+  ktext_typecode KConstants::T_TEXT_MULTILINE, 'Multiline text'
+
+  def initialize(text, language = nil)
+    super
+  end
+
+  def to_html
+    # Turn line endings into brs then auto-link the URLs
+    KTextUtils.auto_link_urls(html_escape(@text).gsub(/[\r\n]+/,'<br>'))
+  end
+
+  alias :to_truncated_html :to_truncated_html_default_impl
+end
+
+# ------------------------------------------------------------
+class KTextPersonName < KText
+  ktext_typecode KConstants::T_TEXT_PERSON_NAME, "Person's name",
+    { :export_headings_fn => proc { |desc| ['Full name', 'First name', 'Last name'] } }
+
+  def initialize(text, language = nil)
+    # Is text given as hash?
+    if text.class == Hash
+      super encode(text), language
+    else
+      super
+    end
+  end
+
+  NAME_SORTAS_ORDER_F_L = 'first_last'
+  NAME_SORTAS_ORDER_L_F = 'last_first'
+  SORTAS_ORDER_F_L = [:first, :middle, :last, :suffix, :title]
+  SORTAS_ORDER_L_F = [:last, :first, :middle, :suffix, :title]
+  SORTAS_ORDER_USER_OPTIONS = [
+      ['First Last', NAME_SORTAS_ORDER_F_L],
+      ['Last First', NAME_SORTAS_ORDER_L_F]
+    ]
+
+  PLAIN_TEXT_ORDERS = {
+    1 => [:last],
+    2 => [:first, :last],
+    :more => [:first, :middle, :last]
+  }
+  def self.new_with_plain_text(text, attr_descriptor, language = nil)
+    text = KText.ensure_utf8(text)
+    tokens = text.strip.split
+    data = Hash.new
+    n = 0
+    (PLAIN_TEXT_ORDERS[tokens.length] || PLAIN_TEXT_ORDERS[:more]).each do |key|
+      data[key] = tokens[n]
+      n += 1
+    end
+    # Default type?
+    # TODO: Handle getting the right culture for KTextPersonName created from plain text in a less messy manner
+    if attr_descriptor != nil
+      # Default style?
+      ui_options = attr_descriptor.ui_options
+      if ui_options != nil && ui_options =~ /\A(\w)/
+        culture = CULTURE_TO_SYMBOL[$1]
+        data[:culture] = culture if culture != nil
+      end
+    end
+    new(data, language)
+  end
+
+  # Format as name nicely
+  def to_s
+    h = self.to_fields
+    # Special hack for Eastern names
+    if h[:culture] == :eastern
+      if h.has_key?(:last)
+        h[:last] << ','
+      end
+    end
+    # Format with space separated in order
+    o = Array.new
+    OUTPUT_ORDERING[h[:culture]].each do |k|
+      o << h[k] if h.has_key?(k)
+    end
+    # Join with the right separator
+    o.join(h[:culture] == :western_list ? ', ' : ' ').encode(Encoding::UTF_8)
+  end
+
+  # Use this plain text for everything else too
+  alias :to_html :to_s
+  alias :to_indexable :to_s
+  alias :to_summary :to_s
+  alias :text :to_s
+
+  # Except for sort order, which has re-ordered elements to get a nice search order.
+  # TODO: Can KTextPersonName sort as options be done a bit more elegantly?
+  def to_sortas_form
+    h = self.to_fields
+    # Use the store options to determine sortas order
+    sortas_order = if h[:culture] == :western
+      # Normal western culture has optional sorting order
+      (KObjectStore.schema.store_options[:ktextpersonname_western_sortas] == NAME_SORTAS_ORDER_L_F) ? SORTAS_ORDER_L_F : SORTAS_ORDER_F_L
+    else
+      # All others have a fixed sorting order
+      SORTAS_ORDER_L_F
+    end
+    # Generate a string from this order
+    sortas_order.map { |n| h[n] } .compact.join(' ')
+  end
+
+  # Accessor for underlying text
+  def to_storage_text
+    @text
+  end
+
+  # Export
+  def to_export_cells
+    f = to_fields
+    [self.to_s, f[:first] || '', f[:last] || '']
+  end
+
+  # XML export
+  def build_xml(builder)
+    f = to_fields
+    builder.person_name(:culture => f[:culture].to_s) do |pn|
+      f.each do |k,v|
+        pn.tag!(k, v) unless k == :culture
+      end
+    end
+  end
+  # XML import
+  def self.read_from_xml(xml_container)
+    f = Hash.new
+    # Start with the culture
+    culture_attr = xml_container.elements["person_name"].attributes['culture']
+    raise "No culture" if culture_attr == nil
+    raise "Bad culture" unless XML_ATTR_TO_CULTURE.has_key?(culture_attr)
+    f[:culture] = culture_attr
+    # Bring in the fields
+    SYMBOL_TO_FIELD.each_key do |field|
+      e = xml_container.elements["person_name/#{field}"]
+      f[field] = e.text if e != nil
+    end
+    new(f || '')
+  end
+
+  # -- Culture information -- also used by some of the UI
+
+  CULTURES_IN_UI_ORDER = [:western,:western_list,:eastern]
+
+  CULTURE_TO_SYMBOL = {
+    'w' => :western,
+    'L' => :western_list,
+    'e' => :eastern
+  }
+
+  SYMBOL_TO_CULTURE = {
+    :western => 'w',
+    :western_list => 'L',
+    :eastern => 'e'
+  }
+
+  XML_ATTR_TO_CULTURE = {
+    'western' => 'w',
+    'western_list' => 'L',
+    'eastern' => 'e'
+  }
+
+  FIELD_TO_SYMBOL = {
+    't' => :title,
+    'f' => :first,
+    'm' => :middle,
+    'l' => :last,
+    's' => :suffix
+  }
+  SYMBOL_TO_FIELD = {
+    :title => 't',
+    :first => 'f',
+    :middle => 'm',
+    :last => 'l',
+    :suffix => 's'
+  }
+
+  OUTPUT_ORDERING = {
+    :western => [:title, :first, :middle, :last, :suffix],
+    :western_list => [:last, :first, :middle, :title, :suffix],
+    :eastern => [:title, :last, :middle, :first, :suffix]
+  }
+
+  FIELD_NAMES_BY_CULTURE = {
+    # Also in the JS editor
+    :western => {:title => 'Title', :first => 'First', :middle => 'Middle', :last => 'Last', :suffix => 'Suffix'},
+    :western_list => {:title => 'Title', :first => 'First', :middle => 'Middle', :last => 'Last', :suffix => 'Suffix'},
+    :eastern => {:title => 'Title', :first => 'Given', :middle => 'Middle', :last => 'Family', :suffix => 'Suffix'}
+  }
+
+  # -- Encoding and decoding
+
+  def to_fields
+    elements = @text.split("\x1f")
+    output = Hash.new
+    # Culture
+    output[:culture] = CULTURE_TO_SYMBOL[elements.shift] || :western
+    # Fields of name
+    elements.each do |e|
+      if e.length > 1
+        # Ignore anything which is too short or has an unknown
+        sym = FIELD_TO_SYMBOL[e[0,1]]
+        output[sym] = e[1,e.length-1] if sym != nil
+      end
+    end
+    output
+  end
+
+  def encode(hash)
+    output = (SYMBOL_TO_CULTURE[hash[:culture]] || 'w').dup # dup to avoid corrupting constant
+    ordering = OUTPUT_ORDERING[hash[:culture]] || OUTPUT_ORDERING[:western]
+    ordering.each do |k|
+      value = hash[k]
+      next if value == nil
+      value = KText.ensure_utf8(value).strip
+      next if value.length == 0
+      field = SYMBOL_TO_FIELD[k]
+      next if field == nil
+      output << "\x1f"
+      output << field
+      output << value
+    end
+    output
+  end
+
+end
+
+# ------------------------------------------------------------
+
+class KTextPluginDefined < KText
+  include KPlugin::HookSite
+  ktext_typecode KConstants::T_TEXT_PLUGIN_DEFINED, 'Text (plugin defined)', {:hide => true}
+
+  ALLOWED_TYPE_REGEX = /\A[a-z0-9_]+:[a-z0-9_]+\z/ # must never include a ~ character
+
+  def initialize(text, language = nil)
+    if text.class == Hash
+      unless text[:type] && text[:type] =~ ALLOWED_TYPE_REGEX
+        raise JavaScriptAPIError, "Bad type for plugin defined Text object"
+      end
+      @type = KText.ensure_utf8(text[:type]).dup.freeze
+      super(text[:value] || '{}', language)
+    else
+      raise "Plugin defined text values cannot be created from strings"
+    end
+    # Let the plugin validate the value. It should throw an exception if the value isn't acceptable.
+    transform(:validate)
+  end
+
+  def to_s
+    transform(:string) || (''.force_encoding(Encoding::UTF_8))
+  end
+
+  def to_sortas_form
+    transform(:sortas, :string) || (''.force_encoding(Encoding::UTF_8))
+  end
+
+  def to_indexable
+    transform(:indexable, :string) || (''.force_encoding(Encoding::UTF_8))
+  end
+
+  def to_html
+    transform(:html) || (''.force_encoding(Encoding::UTF_8))
+  end
+
+  def to_identifier_index_str
+    idstr = transform(:identifier)
+    return nil unless idstr
+    if idstr.length == 0 || idstr =~ /\s/
+      raise JavaScriptAPIError, "identifier transform must return a string with no whitespace"
+    end
+    # Include the type to distinguish between different plugin defined types, separated by a character which is not allowed in the type name
+    "#{@type}~#{idstr}"
+  end
+
+  def plugin_type_name
+    @type
+  end
+
+  def json_encoded_value
+    @text
+  end
+
+  def transform(*transforms)
+    transforms.each do |transform|
+      call_hook(:hObjectTextValueTransform) do |hooks|
+        output = hooks.run(@type, @text, transform).output
+        return output if output != nil
+      end
+    end
+    nil
+  end
+
+  # XML export
+  def build_xml(builder)
+    builder.plugin(@text, :type => @type)
+  end
+  # XML import
+  def self.read_from_xml(xml_container)
+    element = xml_container.elements["plugin"]
+    type = element.attributes['type']
+    raise "Bad type" unless type && type =~ ALLOWED_TYPE_REGEX
+    new({:type => type, :value => element.text})
+  end
+
+end

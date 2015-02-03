@@ -1,0 +1,66 @@
+title: Authentication tokens
+--
+
+If you're storing particularly sensitive information, you should use [node:security/authentication-tokens:authentication tokens] to implement two-factor authentication for users.
+
+By default, ONEIS systems do not use authentication tokens. Enabling them is a multi-stage process.
+
+
+h2. Order tokens
+
+First, you need to order your tokens from ONEIS. You don't need to issue everyone in your organisation with a token. If only some people have access to particularly sensitive information in your system, you may decide that only they need to use authentication tokens.
+
+We recommend ordering a couple of spare tokens, in addition to one token for each user who should be using a token.
+
+When you receive the tokens, they'll be ready to use, but not associated with any user accounts.
+
+
+h2. Set permissions for trust controllers
+
+Choose who will be responsible for administering the tokens. These "trust controllers" must be trusted individuals, but they need not be the same people who are setting up the system or administering users.
+
+If you have multiple offices, you should have a trust controller in each office. Someone in an administrative role who regularly interacts with all your colleagues is a perfect choice.
+
+You need to grant the "Control trust" policy to these users. In a small organisation, you could just grant this policy to the Administrators group, as they're probably best placed to administer the tokens. But when they're different people, you should
+
+ * Create a new "Trust controllers" group
+ * Set the "Control trust" policy to 'Allow' on this new group
+ * Add users to this group.
+
+Ask the trust controllers to read the [node:security/authentication-tokens:security guidelines] for issuing tokens.
+
+
+h2. Set contact information for trust controllers
+
+When someone is having difficulties logging in with a token, the system can display information on who to contact for help. You can use this to direct queries to your trust controllers.
+
+Enter a relevant message with details of who to contact in the Token Admin Contact System Management panel. 
+
+CLICK_PATH TOOLS > System management > Configuration > Token admin contact
+
+The message is only shown to people who have successfully entered their password, so you can safely include contact information for your trust controllers.
+
+
+h2. Issue tokens to users
+
+Your trust controllers should issue tokens to your users.
+
+CLICK_PATH TOOLS > Manage tokens
+
+They should only issue tokens to users in person, following the [node:security/authentication-tokens/admin:token administration guidelines].
+
+You must not issue a token and then post it to someone! In this situation, you should send an unissued token to a trust controller in their locality, who can issue it and hand it to the user in person.
+
+
+h2. Enforce token usage
+
+While you are issuing tokens to your users, there's a transition stage when only some users will have a token. Until this process is complete, the system should be set to only require authentication by token if a user has been issued with one. This is the default configuration.
+
+When everyone who needs a token has been issued with a token, you should set the system policy to require that tokens are used when logging in. This ensures that you can't have a user who should have been issued with a token, but is able to log in without one because no one remembered to issue them with a token.
+
+Set the "Require token to log in" policy to 'Allow' on the relevant groups.
+
+If everyone should use a token, set this policy on the 'Everyone' group. Otherwise, make sure it's set on all the groups which allow access to confidential information.
+
+If you are setting up a new system, you can set this policy during your initial configuration as you won't be locking out existing users.
+

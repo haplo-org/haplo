@@ -1,0 +1,50 @@
+title: Permissions
+--
+
+Each user's permissions are defined by *permission label sets*. For each operation, a user has a "allow" set of labels, and a "deny" set of labels.
+
+A set of labels applied to an object is said to *match* the permission label sets if at least one of the labels is in the *allow* set, and there are no labels in the *deny* set.
+
+You can see the calculated permission labels sets in System Management.
+
+CLICK_PATH TOOLS > System management > Users/Groups
+
+After choosing a user or group, click 'Show calculated permission label sets...'.
+
+
+h2. Operations
+
+h3. Read
+
+A user may read an object if the object's labels match the user's _Read_ permission label sets.
+
+
+h3. Create
+
+A user may create an object if the labels which will be applied match the user's _Create_ permission label sets.
+
+
+h3. Edit
+
+A user may edit an object if the object's labels match the user's _Edit_ permission label sets.
+
+This permission does not permit changing the labels on an object, even though the user interface for relabelling an object is part of the object editor.
+
+
+h3. Relabel
+
+A user may change the labels applied to an object if the object's labels match the user's _Relabel_ permission label sets, *and* the new set of labels matches the user's _Create_ permission label sets.
+
+The additional rule that the new set of labels must be allowed by _Create_ means that it is not possible for a user to create an object, then change the labels to something they wouldn't be allowed to create directly.
+
+
+h3. Delete
+
+A user may delete an object if the object's labels match the user's _Delete_ permission label sets.
+
+Deletion applies the DELETED system label, which is then used by the Platform to hide the object from searches.
+
+
+h3. Approve
+
+A user may approve something relating to an object if the object's labels match the user's _Approve_ permission label sets.

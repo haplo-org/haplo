@@ -1,0 +1,30 @@
+title: O.ref()
+link_as: keyword
+--
+
+Constructs a object implementing the [node:dev/plugin/interface/ref] interface.
+
+There are two options for calling it:
+
+
+h3(function). O.ref(string)
+
+Decode the presentation string representation of a object reference.
+
+Returns @null@ if the string is not a valid object reference.
+
+
+h3(function). O.ref(objId)
+
+Create a reference object using object ID.
+
+This isn't likely to be terribly useful, as most Ref objects are constructed for you by the API.
+
+
+h2. Other argument types
+
+If a [node:dev/plugin/interface/ref] object is passed as the first argument, that object will be returned from the function.
+
+If @undefined@ or @null@ is passed as the first argument, @null@ will be returned from the function.
+
+An exception will be thrown if any other type of object passed to @O.ref()@.

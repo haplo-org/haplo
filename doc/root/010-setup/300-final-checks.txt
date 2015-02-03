@@ -1,0 +1,19 @@
+title: Final checks
+--
+
+h2. Check anonymous access
+
+ONEIS allows anonymous access to the system without a login, for when it is used for public access.
+
+CLICK_PATH TOOLS > System management > Users > ANONYMOUS
+
+Most organisations will not want to allow anonymous access to their system, so you should check that anonymous usage is not allowed. View the anonymous user's permissions, and check that the Deny box is checked for everything. They should all be checked by default.
+
+h2. Administration emails
+
+Make sure that emails sent from the system have suitable From addresses. You may want to edit these to avoid problems with spam filters.
+
+CLICK_PATH TOOLS > System management > Email templates
+
+For each email template, click Edit and amend the From (email address) and From (name) as appropriate.
+

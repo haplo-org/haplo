@@ -1,0 +1,53 @@
+<%
+  @page_title = (params[:id] == 'new') ? 'New aliased attribute' : 'Edit '+h(@title)
+  # Ask for the basics, which aren't provided automatically for the management UI
+  client_side_resources :basics
+  client_side_controller_js('edit_alias')
+-%>
+
+<%= sys_mng_header %>
+
+<form method="post"><%= form_csrf_token %>
+
+<% if params.has_key?(:for) -%>
+  <input type="hidden" name="for" value="<%= h(params[:for]) %>">
+<% end -%>
+
+<p><input type="submit" value="Save changes"></p>
+
+<p>Alias of <b><%= h(@schema.attribute_descriptor(@alias_of).printable_name) -%></b></p>
+
+<p>Aliased attribute name<br>
+<input type="text" name="title" value="<%= h(@title) %>">
+</p>
+
+<%= code_value_edit_ui(@code) %>
+
+<p>Search name<br>
+<input type="text" name="short_name" value="<%= h(@short_name) %>">
+</p>
+
+
+<% unless @is_minimally_editable_alias -%>
+  
+<p><label><input type="checkbox" name="s_qualifier" id="s_qualifier"<% if @quals.length > 0 %> checked<% end %>> Alias on qualifier</label></p>
+<div style="margin:0 0 32px 32px; display:none" id="s_qualifier_u">
+  <input type="checkbox" name="qual[<%= KConstants::Q_NULL %>]"<%= if @quals.has_key?(KConstants::Q_NULL) then ' checked' else '' end %>><i>no qualifier</i><br>
+  <% @schema.each_qual_descriptor do |q| -%>
+  <input type="checkbox" name="qual[<%= q.desc %>]"<%= if @quals.has_key?(q.desc) then ' checked' else '' end %>><%= h(q.printable_name) %><br>
+  <% end -%>
+</div>
+
+<p><label><input type="checkbox" name="s_type" id="s_type"<% if @data_type != nil %> checked<% end %>> Alias on type</label></p>
+<div style="margin:0 0 32px 32px; display:none" id="s_type_u">
+  <%= render :partial => 'data_type_with_type_options' %>
+</div>
+
+<p><label><input type="checkbox" name="s_linked_type" id="s_linked_type"<% unless @linked_types.empty? %> checked<% end %>> Alias on linked type</label></p>
+<div style="margin:0 0 32px 32px; display:none" id="s_linked_type_u">
+  <%= af_types_display('linktypes', @linked_types) %>
+</div>
+
+<% end -%>
+
+</form>

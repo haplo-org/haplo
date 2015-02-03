@@ -1,0 +1,11 @@
+{
+  "pluginName": "tested_plugin",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Tested Plugin",
+  "displayDescription": "Has embedded tests",
+  "installSecret": "ABC123",
+  "apiVersion": 3,
+  "respond": ["/do/tested_plugin"],
+  "load": ["js/tested_plugin.js"]
+}

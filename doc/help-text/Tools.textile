@@ -1,0 +1,9 @@
+FOR: /do/tools
+
+h1. Main menu
+
+You'll find the main menu in the top right of every screen, just click your name.
+
+* [[Edit taxonomies]]: for adding and editing the subject taxonomies.
+
+* System management: to access the system management functionality and setup and manage user accounts.

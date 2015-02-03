@@ -1,0 +1,25 @@
+title: Objects
+--
+
+Objects are ordered lists of (descriptor, qualifier, value) triples. The descriptor and qualifier say what the value means, eg "Title, Alternative", to implement qualified Dublin Core meta data schemes. The value is a bit of data, of various types including text, datetime, numbers and identifiers (phone number, ISBN, URL, etc) and most importantly, object reference, acting as a link to other objects.
+
+Objects are stored in sections, used to divide up the objects into groups in a user defined manner. Object references are formed of the section number plus an id within that section. Section 1 is special, used to contain the default schema.
+
+Everything is defined in terms of objects, eg descriptors themselves are object references to a schema object describing the descriptor.
+
+The object store places no restrictions on the data, but uses the following if they are present:
+
+ * The first field with TITLE descriptor is used as the title for the object in sorting and for "exact title" searching
+ * The first field with TYPE descriptor is used as the type for the object for doing searching (type is a link to a type descriptor object)
+ * The first field with PARENT descriptor is used to define hierarchies of objects
+
+Any of these fields can be changed at any time without restriction, and this is used by the application.
+
+
+h3. Aliased attributes
+
+Aliased attributes are included in the [node:dev/xml-http/schema] "for information only". They are used by the ONEIS user interface to rename other attributes when their meaning in a particular context is inappropriate, or where another data type is more useful.
+
+A good example of the use of aliased attributes is in the default Person type. ONEIS uses taxonomies in the Subject attribute to classify all objects consistently. However, people are not about a subject, rather they have an expertise in a subject. So the Subject attribute is aliased to Expertise, when used on a Person type. In addition, the Title field is aliased to Name and set to the Person's name data type. While every object must have a title for display in search results and links, Title means something different when referring to people, and the person's name data type is much better for writing names than a simple text field.
+
+Aliased attributes are applied in the user interface only. Stored objects use the underlying attributes, and when writing objects using this API, aliased attributes cannot be used.

@@ -1,0 +1,38 @@
+title: Ref
+long_title: Ref interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @Ref@ interface is a reference to an object in the Object Store.
+
+
+h2. Construction
+
+Use [node:dev/plugin/o/constructor/ref].
+
+
+h2. Interface
+
+
+h3(property). objId
+
+The object ID of the object.
+
+
+h3(function). toString()
+
+Return the reference in 'presentation' format, used in URLs and XML.
+
+
+h3(function). load()
+
+Load the referred object, returning an object implementing the JavaScript interface [node:dev/plugin/interface/store-object].
+
+Note that deleted objects can still be loaded. Use the @deleted@ property if checking that object hasn't been deleted is important. However, in many cases, you should just use it anyway.
+
+
+h3(function). deleteObject()
+
+Deletes the object referred to by this reference, without loading it first. Has the same effect as the @deleteObject@ function on a [node:dev/plugin/interface/store-object], but more efficient if the object has not already been loaded.
+
+

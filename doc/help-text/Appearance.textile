@@ -1,0 +1,41 @@
+FOR: /do/setup/application/appearance
+
+h1. Appearance
+
+h2. Header
+
+The header area at the top of your ONEIS is customised using the Header HTML and Extra CSS fields. 
+
+h3. Display your logo
+
+To display your logo, first upload it to the _Static files_ area in System Management. 
+
+* Enter the following into the "Header HTML" box:
+
+<pre>
+<div id="h"><a href="/">Your tagline</a></div>
+</pre>
+
+* Enter the following into the Extra CSS box:
+
+<pre>
+#h {
+    background-image: url(/~/1.png);
+    height: 64px;
+}
+</pre>
+
+Ensure the image source pathname, ie /~/1.png, matches the path name shown on the _Static files_ page for the logo you wish to embed.
+
+Adjust the height to match the height of your logo image.
+
+h2. Colours
+
+* Enter your required colour hex codes in the table
+* _Apply new colours_
+
+h3. Reset colours
+
+To reset your colours to the default ONES colour scheme, choose:
+
+* _Reset colours_.

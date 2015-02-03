@@ -1,0 +1,9 @@
+<%
+  @page_title = "Returning to editor..."
+  data = ['o', @obj.objref.to_presentation]
+  @obj.each(KConstants::A_TITLE) do |value,d,q|
+    data << value.to_s
+  end
+  client_side_controller_js("finish_pop")
+%>
+<div id="z__finish_pop_data" data-pop="<%= h(data.to_json) %>"></div>

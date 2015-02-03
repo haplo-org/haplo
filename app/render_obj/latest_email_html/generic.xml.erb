@@ -1,0 +1,11 @@
+<%
+  # Truncate really long text to 512 characters
+  summary = obj_display_highlighted_summary_text(obj, 2, nil, 512) || []
+%><p class="link0"><a href="<%= KApp.url_base(:visible) %><%= object_urlpath(obj) %>"><%= h(title_of_object(obj, :full)) %></a></p>
+<%
+  if summary != nil
+    summary.each do |t|
+      %><p class="description"><%= h(t) %></p><%
+    end
+  end
+%>

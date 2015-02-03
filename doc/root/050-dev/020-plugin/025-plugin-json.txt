@@ -1,0 +1,114 @@
+title: plugin.json
+link_as: keyword
+--
+
+The @plugin.json@ file describes the plugin. It's a JSON file using the UTF-8 encoding.
+
+<pre>language=json
+{
+    "pluginName": "example_plugin",
+    "pluginAuthor": "Joe Bloggs And Company",
+    "pluginVersion": 109,
+    "displayName": "Example plugin",
+    "displayDescription": "An example plugin to demonstrate the JavaScript plugin API.",
+    "installSecret": "abcdefghij0123456789",
+    "apiVersion": 3,
+    "privilegesRequired": ["pDatabase"],
+    "load": ["js/example_plugin.js", "js/handle_requests.js"],
+    "respond": ["/do/example", "/api/example"],
+    "allowAnonymousRequests": false
+}
+</pre>
+
+
+h2. JSON keys
+
+h3(key). pluginName
+
+The name of the plugin. This must match the plugin definition exactly, or the plugin will not be loaded.
+
+It can only use @a-zA-Z0-9_@.
+
+
+h3(key). pluginAuthor
+
+The author of the plugin. This will be displayed to the user on installation or if there is an error in the plugin.
+
+
+h3(key). pluginVersion
+
+Version number of the plugin, as an integer. When displayed to the user, it will be divided by 100. For example, @120@ will be displayed as @1.20@.
+
+
+h3(key). displayName
+
+The name of the plugin as displayed to the user.
+
+
+h3(key). displayDescription
+
+A longer description of the plugin, for display to the user.
+
+
+h3(key). installSecret
+
+An optional secret used for generating the license key required when installing this application. Use the [node:dev/tool/plugin] to generate license keys.
+
+If this key is omitted, the plugin will be able to be installed without supplying a license key.
+
+
+h3(key). apiVersion
+
+The minimum version of the ONEIS API required by this plugin.
+
+
+h3(key). load
+
+An array of JavaScript files to load, in order. Include the @js/@ directory name.
+
+
+h3(key). respond
+
+An array of the base URLs that this plugin will respond to.
+
+URLs must begin with @/do/@ or @/api/@, and declare only one level below that, for example, @/do/example@.
+
+
+h3(key). allowAnonymousRequests
+
+By default, plugins will not be asked to respond to any request unless the user has logged in, or the request is made by software using an API key to authenticate (see [node:dev/xml-http/authentication]). Set this to @true@ to allow anonymous requests as well.
+
+In either case, the plugin should do it's own authorisation checks, but the default of not allowing anonymous requests minimises the effects of a mistake.
+
+
+h3(key). privilegesRequired
+
+An array of the privileges this plugin requires. The use of certain APIs is restricted to plugins which explicitly request the required privileges. These plugins will have a more careful code review, and appropriate warnings displayed on installation of the plugin.
+
+Privileges available in the current API version are:
+
+|*Name*|*Required for*|
+|@pDatabase@|Use of the relational database API.|
+|@pSendEmail@|Any API which sends an email.|
+
+This key should be omitted if the plugin does not use any privileged APIs.
+
+
+h3(key). loadPriority
+
+An integer priority value to control the load order of installed plugins. If it is not included, the priority will be a large number to load the plugin after plugins which do specify a @loadPriority@. Numbers in the range 1000 to 10000 are recommended.
+
+Only specify this value if you absolutely need to control the load order. In general, the provided [node:dev/plugin/misc/inter-plugin-comms] should make the use of @loadPriority@ unnecessary.
+
+
+h3(key). use
+
+An array of [node:dev/plugin/o/feature:feature] names used by this plugin. This is the recommended alternative to calling [node:dev/plugin/interface/plugin/platform-interface#use] in your JavaScript.
+
+
+h3(key). locals
+
+A dictionary of local variable names to properties of your plugin. These are added to the [node:dev/plugin/directory-structure#js:wrapper function] generated when loading each file.
+
+
+

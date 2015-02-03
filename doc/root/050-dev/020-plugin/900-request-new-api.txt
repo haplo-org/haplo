@@ -1,0 +1,27 @@
+title: More APIs
+long_title: Requesting another API
+--
+
+If you need an API to do something which might be useful to others who're writing plugins, please get in touch and request it. We'll get back to you within 24 hours to say whether or not we'll implement it, and how long it will take to make it available.
+
+We're working on exposing more of the abilities of the Platform in our JavaScript API. Features not currently available to JavaScript plugins include:
+
+ * File management and storage, including multiple versions
+ * File transformation
+ ** PDF rendering
+ ** image resizing
+ ** conversion of documents to HTML
+ ** text extraction
+ ** and more...
+ * Usage accounting (storage etc)
+ * Background task queuing and management
+ * Mobile support
+ * Detailed access to application schema
+ ** Types, attributes, etc
+ ** Detailed permission information
+ * HTTP and HTTPS requests to external services
+ * XML generation and manipulation
+ * Custom rendering of objects implemented with plugins
+ * Temporary data store
+
+If you'd like to use any of these, or want to get at other data in your ONEIS application, please send us an email. We can usually add these APIs pretty quickly.

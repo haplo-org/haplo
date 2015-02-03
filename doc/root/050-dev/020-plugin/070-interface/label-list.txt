@@ -1,0 +1,37 @@
+title: LabelList
+long_title: LabelList interface
+link_as: keyword
+--
+
+Represents a read-only list of labels applied to an object.
+
+
+h2. Construction
+
+Use [node:dev/plugin/o/constructor/label-list].
+
+
+h2. Interface
+
+h3(property). length
+
+The number of labels in the list.
+
+
+h3(function). includes(ref)
+
+@true@ if the list includes the label, otherwise @false@.
+
+
+h3(function). filterToLabelsOfType(types)
+
+Returns a new @LabelList@ which contains all the labels from this list which are of one of the types specified by @types@, an array of one or more @Ref@ objects.
+
+The types specified are matched *exactly*, ignoring the hierarchy of sub-types. If you need to filter including sub-types, you will have to pass all the sub-types in yourself.
+
+For example, to filter a list so it only contains labels configured in system management, use:
+
+<pre>language=javascript
+    var filtered = labels.filterToLabelsOfType([TYPE["std:type:label"]]);
+</pre>
+

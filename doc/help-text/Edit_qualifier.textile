@@ -1,0 +1,10 @@
+FOR: /do/setup/attribute/edit_qual
+
+h1. Edit qualifier
+
+* _Name_: give a brief descriptive name of one or two words for this qualifier. This will be displayed to the user when an object is displayed and in the editor.
+* _Search name_: enter the search name for the qualifier to be used in the search constraints. This should contain only lower case letters, numbers and hyphens. By convention it is the same as the qualifier name in lower case and with spaces replaced by hyphens.
+
+h4. Further help
+
+[[Qualifiers]]

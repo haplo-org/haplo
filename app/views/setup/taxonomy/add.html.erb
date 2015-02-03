@@ -1,0 +1,21 @@
+<%
+  @page_title = 'New taxonomy'
+  client_side_controller_js('add')
+-%>
+<%= sys_mng_header %>
+
+<p>Taxonomy type<br>
+  <%
+    @type_options.each do |title, ref|
+      %><label><input type="radio" name="type" value="<%= ref %>"><%= h(title) %></label><br><%
+    end
+  %>&nbsp; &nbsp; &nbsp;<a href="add_type">Create new taxonomy type...</a>
+</p>
+
+<p><input type="submit" value="Add Taxonomy" id="add_button"></p>
+
+<p>&nbsp;</p>
+<p><span class="z__management_look_at_help">Refer to important notes in the help.</span></p>
+
+<p>&nbsp;</p>
+<p>Please get in touch with your support contact if you would like to import an existing taxonomy.</p>

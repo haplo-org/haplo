@@ -1,0 +1,30 @@
+title: FormDescription
+long_title: FormDescription interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @FormDescription@ interface describes a form, which can be used to create a [node:dev/plugin/interface/form-instance] object to implement a form.
+
+
+h2. Construction
+
+Use the [node:dev/plugin/interface/plugin/response-generation#form] method on your plugin object.
+
+
+h2. Interface
+
+h3(function). instance(document)
+
+Returns a [node:dev/plugin/interface/form-instance] object for using the form with the given @document@.
+
+@document@ is a JSON compatible data structure which contains the data manipulated by the form. Use @{}@ if you want to create a blank form.
+
+
+h3(function). handle(document, request)
+
+This is a 'shortcut' method which creates a [node:dev/plugin/interface/form-instance] object with the given document, calls the [node:dev/plugin/interface/form-instance#update] function with the given request, and return the form instance object.
+
+Check the @complete@ property on the instance to see if the form was submitted and valid before taking action.
+
+Within a request handler, use @E.request@ as the @request@ argument.
+

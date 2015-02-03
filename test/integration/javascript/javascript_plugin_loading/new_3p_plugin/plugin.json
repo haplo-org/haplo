@@ -1,0 +1,11 @@
+{
+  "pluginName": "new_3p_plugin",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test New Third Party Plugin",
+  "displayDescription": "For testing loading a new 3rd party plugin loading works",
+  "apiVersion": 3,
+  "load": ["js/new_3p_plugin.js"],
+  "respond": ["/do/new_thirdparty_plugin"],
+  "allowAnonymousRequests": true
+}

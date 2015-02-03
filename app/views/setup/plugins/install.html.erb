@@ -1,0 +1,29 @@
+<%
+  @page_title = 'Install plugin'
+-%>
+
+<h1>Install plugin</h1>
+
+<% if @need_license_key %>
+  <p><b>A license key is required to install this plugin.</b><br>Contact the plugin developer for a key, quoting application ID <b><%= KApp.current_application %></b></p>
+<% end %>
+
+<% if @bad_license_key %>
+  <p><b>Incorrect license key</b></p>
+<% end %>
+
+<form method="POST"><%= form_csrf_token %>
+
+<p>Plugin name<br>
+  <input type="text" name="plugin" size="60" value=<%= h(params[:plugin]) %>>
+</p>
+
+<% if @need_license_key || @bad_license_key %>
+  <p>License key<br>
+    <input type="text" name="license" size="60">
+  </p>
+<% end %>
+
+<p><input type="submit" value="Install"></p>
+
+</form>

@@ -1,0 +1,23 @@
+<%
+  @page_title = 'Installed plugins'
+-%>
+
+<h1>Installed plugins</h1>
+
+<ul>
+  <% @plugins.plugin_factories.each do |factory| -%>
+    <li><a href="/do/setup/plugins/show/<%= factory.name %>" target="workspace"><%= h(factory.plugin_name) %></a></li>
+  <% end -%>
+</ul>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/plugins/install" target="workspace">Install plugin</a></li>
+</ul>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/plugins/elements" target="workspace">Elements</a></li>
+</ul>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/plugins/diagnostics" target="workspace">Diagnostics</a></li>
+</ul>

@@ -1,0 +1,51 @@
+title: Type queries
+--
+
+Plugins can query the schema to find out more information about the types defined in the current application.
+
+
+h2. Schema query
+
+h3(function). SCHEMA.getTypeInfo(type)
+
+Returns a JavaScript object with properties describing the type, described below.
+
+@type@ is a [node:dev/plugin/interface/ref] object which refers to the type. Use the [node:dev/plugin/schema/type] properties.
+
+
+h2. Info properties
+
+Each type information object contains the following keys:
+
+
+h3(key). name
+
+The name of the type, suitable for displaying to the user.
+
+
+h3(key). code
+
+The API code for the type, eg @"std:type:person"@. May be @undefined@ if the type does not have an API code.
+
+
+h3(key). shortName
+
+The short name, or "search name", of the type. Used in search constraints.
+
+
+h3(key). parentType
+
+The @Ref@ of the parent type, or @undefined@ if this is a root type.
+
+
+h3(key). rootType
+
+The @Ref@ of the root type, which may be equal to the requested type if it is a root type.
+
+
+h3(key). attributes
+
+An array of attribute descriptors, in the order that the attributes should be displayed in the user interface. Each matches an [node:dev/plugin/schema/attr] constant.
+
+Where the application uses an aliased attribute, the descriptor of the underlying attribute is included in this array.
+

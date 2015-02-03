@@ -1,0 +1,23 @@
+<%
+  @page_title = 'Qualifiers'
+-%>
+
+<h1>Qualifiers</h1>
+
+<ul>
+<%
+  # Create sorted list of qualifiers
+  quals = @schema.all_qual_descs.map do |qual|
+    qd = @schema.qualifier_descriptor(qual)
+    [qual, qd.printable_name.to_s]
+  end .sort { |a, b| a.last <=> b.last }
+  # Output list
+  quals.each do |qual, name|
+    %><li><a href="/do/setup/attribute/show_qual/<%= qual %>" target="workspace"><%= h(name) %></a></li><%
+  end
+%>
+</ul>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/attribute/edit_qual/new" target="workspace">New qualifier</a></li>
+</ul>

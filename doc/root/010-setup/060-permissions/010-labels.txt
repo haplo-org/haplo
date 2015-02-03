@@ -1,0 +1,87 @@
+title: Labels and labelling
+--
+
+Labels describe the nature of the information being managed. Any object can be used to label any other object, although the built-in labelling system provides special "label objects" which make it easier to set up your rules.
+
+You should think about labels separately from the permissions you want to apply. Apply labels to describe the role and nature of the information stored in an object, then apply permission rules on top of them.
+
+If you find yourself using labels which directly describe the permissions, you should probably take a step back and try to use labels which describe the nature of the object.
+
+
+h3. Plugins
+
+This document describes the built-in labelling system. Plugins have a lot more flexibility in how they apply and use labels, so if you can't implement your rules, talk to your developer.
+
+
+h2. Application labels
+
+CLICK_PATH TOOLS > System management > Labels
+
+You can define whatever labels you need to describe your information. The Platform doesn't apply any special meaning to any labels.
+
+For administrative convenience, labels are grouped in label categories. These are only used within System Management to make it clear which label is used for what function.
+
+You can optionally include some notes about the label's purpose. These are displayed to the user when the "Force explicit choice of label when creating new object" type behaviour is used.
+
+
+h2. SYSTEM labels
+
+The Platform uses the labels in the SYSTEM category to implement some core features. You can also use them when applying rules.
+
+ * DELETED - objects are never actually deleted, just labelled as deleted. Deleted objects are, by default, hidden from searches, but unless permissions deny access, they can still be viewed.
+
+ * UNLABELLED - if an object has no other labels, it will be labelled with this special label. Your labelling scheme should always ensure objects are labelled, so you should never see this in production application.
+
+ * STRUCTURE - used to label objects which describe your application, for example, type and attribute definitions. Administrators need to be able to write objects with this label so they can set up the application's schema.
+
+ * CONCEPT - objects which are used purely for describing other objects, eg taxonomy terms, are labelled as concepts. They are not included in searches by default.
+
+You cannot edit any labels in the SYSTEM category.
+
+
+
+h2. Types definitions and labels
+
+Your labelling scheme is described in the definitions for types. These are set on root types only.
+
+CLICK_PATH TOOLS > System management > Types
+
+
+h3. Base labels
+
+A type has zero or more Base labels. These are labels which are always applied to this object.
+
+Base labels are used to apply the CONCEPT label to objects, like taxonomy terms, which are only used to describe other objects.
+
+Other uses of base labels are apply permissions to one or more types of objects, by ensuring all objects of that type have the same label, then adding permission rules which use that label.
+
+
+h3. Applicable labels
+
+A type has zero or more Applicable labels. If there are some, then an object must be labelled with exactly one of those labels.
+
+This is useful for implementing basic access control. For example, the default schema uses applicable labels to define the sensitivity of information, allowing users to mark some kinds of objects as confidential.
+
+The Applicable labels are ordered, and you can change the order by dragging. They will be offered to the user in this order in the object editor.
+
+One of the Applicable labels is marked as the default. When creating a new object, the default labelling attribute is chosen as the initially selected choice. However, if the user does not have permission to apply this label, the first permitted label will be the selected choice.
+
+
+h3. Labelling attributes
+
+Any attribute which links to other objects can be used a labelling attribute, which will apply the linked objects as labels.
+
+For example, if you wanted to label Files by their Project, set "Project" as one of the labelling attributes.
+
+
+h3. Self-labelling
+
+In the *behaviours* section, you can set this type to "Automatically label objects of this type with itself".
+
+This may not sound very useful, but, for example, if you are using a "Project" labelling attribute to labels objects with their project, you'll probably want to set Project objects to be self-labelled. Then, when you apply rules about a specific project, you'll also include the project object itself.
+
+
+h2. Labels don't change automatically
+
+When you change the labelling rules on type definitions, they only affect new objects. Any existing objects will *not* be relabelled.
+

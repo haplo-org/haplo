@@ -1,0 +1,26 @@
+FOR: /do/setup/application/identity
+
+h1. Identity
+
+Choose _Edit_ to edit an identity option.
+
+h2. System name
+
+The name of the system, generally the name of the organisation using this ONEIS.
+
+h2. Administrator email address
+
+The email address of the person responsible for the system at the client organisation. Unless overridden by an Email Template, this will be used as the 'from' address on emails sent by the system.
+
+h2. Web addresses and SSL policy
+
+Options for the web address used to access this ONEIS.
+
+h2. Object web addresses
+
+Options for the URLs for the objects stored in this system.
+
+h2. Copyright notice
+
+The copyright notice editor will open in a new window. The copyright notice is linked to the bottom right of every page in ONEIS. 
+

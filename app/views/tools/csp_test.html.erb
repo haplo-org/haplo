@@ -1,0 +1,42 @@
+<%
+  @page_title = 'Content Security Policy test'
+  client_side_controller_js("csp_test")
+%>
+
+<table>
+  <tr>
+    <th>Source</th>
+    <th>JavaScript runs?</th>
+    <th>Image</th>
+  </tr>
+  <tr>
+    <td>This server</td><td id="this-server-js">no</td><td><img src="/images/csp_test_this.gif"></td>
+  </tr>
+  <tr>
+    <td>Inline</td><td id="inline-js">no</td><td><img src="data:image/gif;base64,R0lGODlhHQAPAPMAMf////j4+PD46ODw2NDwwMDoqKjokKDggJDgcIDYWHDYSGjQ
+OFjQIAAAAAAAAAAAACwAAAAAHQAPAAAEiJDJSau9OOvNdyLEBCaMQgiDMS3HIBQk
+tQCAUtI3MNAhIwAgWkwEUB0ABQahKPklEjQbAlZB6JQA0g90Yv4AL5slCpbwuARE
+yfDNWgpAJlbFSCAWCYPaBLRAoxJWRXAAeDR6S3QVPwMURzQCMY88CxdLBxYKYisK
+CZWZBjSfHRmCmKQaeKOoFREAOw=="></td>
+  </tr>
+  <tr>
+    <td>Other server (http)</td><td id="remote-http-js">no</td><td><img src="http://www.oneis.co.uk/csp_test/remote_http.gif"></td>
+  </tr>
+  <tr>
+    <td>Other server (https)</td><td id="remote-https-js">no</td><td><img src="https://secure.oneis.co.uk/csp_test/remote_https.gif"></td>
+  </tr>
+</table>
+
+<p>&nbsp;</p>
+<p><b>Inline style test:</b> <span style="color:red">This text should be coloured red.</span></p>
+
+<script src="http://www.oneis.co.uk/csp_test/remote_http.js"></script>
+<script src="https://secure.oneis.co.uk/csp_test/remote_https.js"></script>
+
+<script>
+(function($) {
+    $(document).ready(function() {
+        $('#inline-js').text('yes');
+    });
+})(jQuery);
+</script>

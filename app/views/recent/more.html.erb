@@ -1,0 +1,8 @@
+<%
+  response.headers['X-JSON'] = {
+    :more => !(@days.empty?),
+    :t => @days.empty? ? 0 : @days.last.entries.last.id,
+    :d => @days.empty? ? 'x' : @days.last.date_text
+  }.to_json
+%>
+<%= render :partial => 'items', :data_for_template => {:days => @days, :unnecessary_date_text => @unnecessary_date_text} %>

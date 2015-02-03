@@ -1,0 +1,17 @@
+<%
+  @page_title = h(@obj.first_attr(KConstants::A_TITLE).to_s)
+%>
+<%= sys_mng_header %>
+
+<table class="z__mangement_kv_table">
+  <tr><th>Name</th><td><%= h(@name) %></td></tr>
+  <tr><th>Labels</th><td><% 
+    @obj.labels.each do |label|
+      %><%= label_html(label) %><br><%
+    end
+  %></td></tr>
+  <tr><th>Terms</th><td><%= @num_terms %><br><a href="/do/taxonomy/edit/<%= @objref.to_presentation %>" target="_blank">Edit terms...</a></td></tr>
+</table>
+
+<p>&nbsp;</p>
+<p>Users who are not system administrators can edit this taxonomy by clicking their name in the top right and choosing 'Edit taxonomies', if they have the appropriate permissions.</p>

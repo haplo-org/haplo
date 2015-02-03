@@ -1,0 +1,11 @@
+title: hStandardChrome
+class: HookNode
+--
+
+This hook is called to allow a plugin to modify parts of the standard chrome.
+
+If @headerHTML@ is set in the response, it will take precedence over any configured in the application appearance editor.
+
+@layoutOptions@ is currently not available to JavaScript plugins, and should not be modified.
+
+

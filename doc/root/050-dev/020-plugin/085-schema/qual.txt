@@ -1,0 +1,14 @@
+title: QUAL
+long_title: SCHEMA.QUAL
+link_as: keyword
+--
+
+For each qualifier defined in the application's schema, an entry will be defined in the @SCHEMA.QUAL@ dictionary for the qualifier's API code.
+
+Unlike the [node:dev/xml-http], qualifiers are not defined with object references in the JavaScript API. You should not rely on the values of these constants, and they may vary between applications even if the qualifier is defined in exactly the same way. Always use the symbolic names.
+
+For example, @QUAL["dc:qualifier:alternative"]@ is the built in Alternative qualifier.
+
+h3. Null qualifier
+
+@QUAL["std:qualifier:null"]@ is a special qualifier value, which means no qualifier applies to this value.

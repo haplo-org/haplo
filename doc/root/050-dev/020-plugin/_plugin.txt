@@ -1,0 +1,47 @@
+title: JavaScript Plugins
+--
+
+The ONEIS Platform provides a server side JavaScript plugin API, allowing you to write plugins which implement custom functionality in your ONEIS application.
+
+You can read and write data in the [node:dev/store:object store], use [node:dev/plugin/database:relational database storage], respond to [node:dev/plugin/request-handling:HTTP requests], add to the [node:dev/plugin/elements:home page and object pages], extend the ONEIS [node:dev/plugin/hook:user interface], implement [node:dev/plugin/work-flow:work flow], and more.
+
+During development, you use the [node:dev/tool/plugin] to upload your plugin and [node:dev/plugin/tests:automated tests] to a test server.
+
+Have a look at [node:dev/example/contacts-button] for an example of a simple plugin. 
+
+
+h2. Isolation and sandboxing
+
+Each ONEIS application is completely isolated from each other, and the JavaScript API carefully restricts access.
+
+Every call to a platform API is checked to make sure it's valid, and the capabilities of the API are carefully designed to provide safe operation within a shared environment.
+
+
+h2. Runtimes
+
+All the plugins installed in a ONEIS application are loaded into and run in a single shared JavaScript runtime. As it can take over 50ms to load a plugin, runtimes are kept in memory but idle between request processing.
+
+There may be more than one JavaScript runtime for each application, if this is required to support concurrent requests for a busy application. However, ONEIS tries to minimise the number of JavaScript runtimes for an application by slightly delaying request handling when other requests are being processed.
+
+Because concurrency is managed by the Platform, you don't have to worry about complex multi-threaded programming.
+
+
+h2. Speed and efficiency
+
+The ONEIS Platform is designed to be very fast, and be as responsive as a desktop application. The plugin API is designed to make it easy for you to use the same principles as used for the main Platform, and maintain the responsiveness of the platform for our clients.
+
+Limits are placed on the amount of processing and data that can be accessed to ensure fast responses to all requests.
+
+
+h2. Coding style
+
+The JavaScript coding style used for the plugin API is a little different to the simple use of JavaScript in web pages. If you'd like a quick update on modern JavaScript, here's a couple of recommendations for short books:
+
+"JavaScript: The Good Parts":http://www.amazon.co.uk/JavaScript-Good-Parts-Douglas-Crockford/dp/0596517742 -- __Douglas Crockford__
+
+"JavaScript Patterns":http://www.amazon.co.uk/JavaScript-Patterns-Stoyan-Stefanov/dp/0596806752 -- __Stoyan Stefanov__
+
+
+h2. More APIs?
+
+Do get in touch if you'd like to suggest [node:dev/plugin/request-new-api:a new API] or functionality.

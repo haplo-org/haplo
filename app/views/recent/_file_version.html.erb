@@ -1,0 +1,13 @@
+<%
+  object = data_for_template[:object]
+  file_identifier = data_for_template[:file_identifier]
+
+  # Sign URL if this isn't the latest version of the object referring to it
+  preview_url = file_url_path(file_identifier, :preview, @is_current_version_of_object ? nil : {:sign_with => session})
+
+%>
+  <%= img_tag_for_mime_type(file_identifier.mime_type) %> <a href="<%= object_urlpath(object) %>"><%= h(file_identifier.presentation_filename) %></a>
+  <% if preview_url != nil %>
+    <a href="<%= preview_url %>" class="z__file_preview_link">Preview</a>
+  <% end %><br>
+<i><%= h(file_identifier.log_message) %></i>

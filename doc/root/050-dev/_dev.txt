@@ -1,0 +1,23 @@
+title: Developer
+--
+
+There are three main activities in developing a ONEIS application.
+
+
+h2. 1) Configure the system
+
+You can quickly build a system for storing and finding information just by [node:setup:configuring the base system]. ONEIS can be configured to model just about any organisation or data set.
+
+
+h2. 2) Write plugins
+
+To add extra functionality, you can write a [node:dev/plugin:plugin]. These are written in JavaScript, and run on the server in an isolated sandbox. They allow you to change core parts of the ONEIS user interface, use the object store, and implement any functionality which can be developed as a web application.
+
+A comprehensive and easy to use JavaScript API enables you to build great applications extremely quickly.
+
+
+h2. 3) Connect to external systems
+
+If you'd like other systems running on other servers or client applications to use the objects in the ONEIS object store, you can use the [node:dev/xml-http]. This provides generic access to the object store.
+
+Of course, you can also write your own custom APIs with a JavaScript plugin, either to perform queries which are inefficient with the XML API, or which use the data stored by your plugin.

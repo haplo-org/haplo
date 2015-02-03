@@ -1,0 +1,207 @@
+title: StoreObject
+long_title: StoreObject interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @StoreObject@ interface is an object in the Object Store.
+
+A @StoreObject@ is not mutable. To modify and existing object, use @mutableCopy@ to create a copy, modify it, then save the copy. This does not change any @StoreObject@ in memory.
+
+The interface has a core set of properties and functions, and then schema specific functions are added. These will be different for each application.
+
+
+h2. Construction
+
+Use the @load()@ function on [node:dev/plugin/interface/ref] objects.
+
+[node:dev/plugin/interface/store-query-results] objects act as an array of store objects.
+
+For creating new store objects, use [node:dev/plugin/interface/store-object-mutable], constructed by [node:dev/plugin/o/constructor/object].
+
+
+h2. Interface
+
+
+h3(property). ref
+
+Use the @ref@ property to find the object reference for an object. It has a [node:dev/plugin/interface/ref] value, or @null@ if the object has not been saved.
+
+
+h3(property). labels
+
+A [node:dev/plugin/interface/label-list] object representing the labels applied to this object.
+
+This property is read only. Use the @relabel()@ function to change the labels on an object.
+
+
+h3(property). deleted
+
+@true@ is the object has been deleted (that is, labelled with the DELETED label), @false@ otherwise.
+
+
+h3(property). version
+
+Version number of the object.
+
+
+h3(property). title
+
+The first title attribute of this object, converted to a string. @object.title@ is equivalent to @object.firstTitle().toString()@.
+
+
+h3(property). descriptiveTitle
+
+Returns the title of the object, suitable for displaying in a link to an object.
+
+Descriptive titles may include the values of some of the attributes, if configured, to disambiguate objects. Use descriptive attributes in links where the object is out of context.
+
+Use @title@ to get the title of the object without any extra information, for use where space is constrained.
+
+
+h3(function). url(asFullURL)
+
+Returns the url of this object. If @asFullURL@ is @true@, this will include the protocol and hostname, otherwise just the path on the server suitable for an intra-site link. Examples:
+
+|*asFullURL*|*String returned*|
+|@false@, or omitted|@/main/292q-98z/example-object@|
+|@true@|@http://clientname.example.com/main/292q-98z/example-object@|
+
+Only works if the object has been saved.
+
+
+h3(function). isMutable()
+
+Returns @true@ if the object is mutable.
+
+
+h3(function). mutableCopy()
+
+Returns a mutable copy of this object, which is independent of this object. As well as implementing this interface, it also implements [node:dev/plugin/interface/store-object-mutable].
+
+
+h3(function). relabel(labelChanges)
+
+Relabel the object, using the changes specified by the [node:dev/plugin/interface/label-changes] object passed in. If the current user is not allowed to relabel this object, an exception will be thrown.
+
+If the @labelChanges@ wouldn't actually change the labels on the object, this API _may_ skip the relabel operation. In this case, there would be no audit trail entry for the operation.
+
+
+h3(function). deleteObject()
+
+Deletes this object from the store.
+
+Note that this just labels the object as deleted, and it can still be loaded (subject to permission enforcement). Searches do not return deleted objects by default.
+
+
+h3(function). render(style)
+
+Returns an HTML representation of the object in the specified style. Omit the argument to use the @generic@ style.
+
+It's usually better to use the [node:dev/plugin/templates/std-template/object] standard template when including the object in a generated web page.
+
+
+h3(function). isKindOf(typeRef)
+
+Returns @true@ if this object is the type specified as @typeRef@, or one of it's sub-types.
+
+@typeRef@ is a [node:dev/plugin/interface/ref]. Use the schema [node:dev/plugin/schema/type] constants.
+
+If @typeRef@ is @null@ or @undefined@, then @false@ will be returned.
+
+
+h3(function). first(desc, qual)
+
+Returns the first value in the object described by @desc@ and @qual@. Use the schema [node:dev/plugin/schema/attr] constants.
+
+@qual@ may be omitted. Use the schema [node:dev/plugin/schema/qual] constants.
+
+Remember that a core strength of the ONEIS data model is its universal support for multi-values. While it may be appropriate to use the @first()@ function (and schema specific @firstX()@ functions), you should really be using the @every()@ function and using all values. If you find yourself using @first()@, make sure you shouldn't really be using @every()@.
+
+
+h3(function). firstType(qual)
+
+Shortcut for @first(ATTR["dc:attribute:type"], qual)@
+
+
+h3(function). firstTitle(qual)
+
+Shortcut for @first(ATTR["dc:attribute:title"], qual)@
+
+
+h3(function). every(desc, qual, iterator)
+
+All arguments are optional. @desc@ and @qual@ as for the @first()@ function.
+
+If the last argument is not a function, an array of all the values will be returned.
+
+If the last argument is a function, it will be called for each matching value with the arguments @(value, desc, qual)@.
+
+
+h3(function). each(desc, qual, iterator)
+
+Alias for @every()@.
+
+
+h3(function). everyType(qual, iterator)
+
+Shortcut for @every(ATTR["dc:attribute:type"], qual, iterator)@
+
+
+h3(function). everyTitle(qual)
+
+Shortcut for @every(ATTR["dc:attribute:title"], qual, iterator)@
+
+
+h3(function). everyParent(qual, iterator)
+
+Shortcut for @every(ATTR["std:attribute:parent"], qual, iterator)@
+
+
+h3(function). has(value, desc, qual)
+
+Returns @true@ if this object has an attribute with a given value, and @false@ otherwise.
+
+@desc@ and @qual@ are optional, although typically you would use @desc@ to specify which attribute should be checked. If @qual@ is specified, only attributes with that qualifier will be checked, otherwise the qualifier is ignored in the comparison.
+
+This is more useful than code like @(value === object.first(desc, qual))@ as it takes account of multiple values in the attribute, and knows how to convert and compare values properly.
+
+
+h3(function). valuesEqual(object, desc, qual)
+
+Compare the values in this object with those in another object. Returns @true@ if the list of values, including their descriptors and qualifiers, are exactly equal in the two objects.
+
+The values are sorted by descriptor, but the order of values in any given descriptor is preserved. This matches the behaviour you'd expect if you were comparing objects in the user interface.
+
+@desc@ and @qual@ are optional. If @desc@ is specified, then only values with that descriptor are compared. If @qual@ is specified, then only values with the descriptor and qualifier are compared.
+
+
+h3(property). creationUid
+
+The user ID of the user who created this object. May be zero if it was created during initialisation of the application.
+
+Use [node:dev/plugin/o/lookup/user] to retrieve user information.
+
+
+h3(property). lastModificationUid
+
+The user ID of the user who last modified this object. May be zero if it was created during initialisation of the application.
+
+Use [node:dev/plugin/o/lookup/user] to retrieve user information.
+
+
+h3(property). creationDate
+
+The date and time at which the object was created, as a JavaScript @Date@ object.
+
+
+h3(property). lastModificationDate
+
+The date and time at which the object was last modified, as a JavaScript @Date@ object.
+
+
+h3(property). history
+
+An object implementing the JavaScript @Array@ interface which contains all the previous versions of the object, ordered by version number ascending.
+
+Note that if the labels on the object have changed over time, some versions may be omitted. Only versions with labels the user is permitted to read are included.
+

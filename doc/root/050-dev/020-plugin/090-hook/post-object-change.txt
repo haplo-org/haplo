@@ -1,0 +1,6 @@
+title: hPostObjectChange
+class: HookNode
+--
+
+Informs plugins of object store operations. This should be treated as for information only.
+Plugins cannot affect the operation.

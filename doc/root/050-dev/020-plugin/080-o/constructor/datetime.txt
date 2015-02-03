@@ -1,0 +1,16 @@
+title: O.datetime()
+link_as: keyword
+--
+
+Constructs a object implementing the [node:dev/plugin/interface/date-time] interface.
+
+
+h3(function). O.datetime(start, end, precision, timezone)
+
+@start@ and @end@ represent the start and end of the time range. @end@ is optional, in which case the range is a single @precision@ time unit from the @start@ time.
+
+@precision@ is one of the [node:dev/plugin/o/constants/date-time-precision:DateTime precision constants], and defaults to @O.PRECISION_DAY@ if not specified.
+
+If @precision@ is other than hour or minute precision, then the @end@ time is extended by a single time unit. This matches user expectations when specifying time ranges.
+
+@timezone@ is optional, and if specified, is one of the standard time zone names, such as @'GMT'@ and @'Europe/London'@.

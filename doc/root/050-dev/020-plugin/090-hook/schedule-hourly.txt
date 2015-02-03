@@ -1,0 +1,11 @@
+title: hScheduleHourly
+class: HookNode
+--
+
+Called every hour to allow plugins to perform timed actions.
+
+You should not rely on this hook being called only once each hour, or that it'll be called at any specific minutes past the hour.
+
+If possible, use one of the @hSecheduleDaily*@ hooks, to avoid unnecessary calls to your plugin. 
+
+To perform a task at a specific time, on a specific date, or only on some days of the week, test the @year@, @month@, @dayOfMonth@, @hour@, and @dayOfWeek@ arguments before performing the task.

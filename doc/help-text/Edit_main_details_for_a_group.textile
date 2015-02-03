@@ -1,0 +1,6 @@
+FOR: /do/admin/user/edit_group
+
+h1. Edit main details for a group
+
+* Name: enter or edit the name of this group
+* _Save changes_.

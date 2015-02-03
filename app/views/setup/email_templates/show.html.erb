@@ -1,0 +1,35 @@
+<%
+  @page_title = @email_template.name
+-%>
+
+<%= sys_mng_header %>
+
+<table class="z__mangement_kv_table">
+  <tr><th>Name</th><td><%= h(@email_template.name) %></td></tr>
+  <tr><th>Description</th><td><%= h(@email_template.description) %></td></tr>
+  <tr><th>Purpose</th><td><%= h(@email_template.purpose) %></td></tr>
+  <tr><th>From address</th><td><%= h(@email_template.from_email_address) %></td></tr>
+  <tr><th>From name</th><td><%= h(@email_template.from_name) %></td></tr>
+  <tr><th>In menu?</th><td><% if @email_template.in_menu %>yes<% else %>no<% end %></td></tr>
+</table>
+
+<div class="z__management_extra_buttons_holder">
+  <% if @email_template.in_menu -%>
+    <form method="post" action="/do/setup/email_templates/remove_menu/<%= @email_template.id %>"><%= form_csrf_token %>
+      <input type="submit" value="Remove from menu">
+    </form>
+  <% else -%>
+    <form method="post" action="/do/setup/email_templates/restore_menu/<%= @email_template.id %>"><%= form_csrf_token %>
+      <input type="submit" value="Restore to menu">
+    </form>
+  <% end -%>
+</div>
+<%= sys_mng_edit_button("/do/setup/email_templates/edit/#{@email_template.id}") %>
+
+<h1>Preview</h1>
+
+<iframe src="/do/setup/email_templates/show_preview/<%= @email_template.id %>" style="width:98%;margin-left:1%;height:500px"></iframe>
+
+
+<%= sys_mng_update_submenu(@email_template.name, "/do/setup/email_templates/show/#{@email_template.id}") %>
+

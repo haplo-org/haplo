@@ -1,0 +1,108 @@
+title: Using Fossil
+--
+
+These instructions are the minimum needed to get going with the Fossil hosting service provided for ONEIS developers. You can do much more with Fossil, see "the Fossil website":http://fossil-scm.org for more details.
+
+
+h2. Installation
+
+First, "download":http://www.fossil-scm.org/download.html Fossil for your platform. Alternatively, download the source code and build it with @./configure; make@ , or use your platform's packaging system.
+
+In all cases, you'll end up with a single @fossil@ or @fossil.exe@ executable. This is completely self-contained, and can be placed anywhere convenient on your @PATH@ or otherwise.
+
+
+h2. Cloning the repository
+
+First, you need to make a local 'clone' of the repository. This is a copy of all the code, the history, wiki and tickets. You commit changes to your local repository, and sync them to the repository on the server. However, we'll be using the default 'autosync' mode, which automatically syncs changes to the main server.
+
+You'll be provided with a repository URL like @https://fossil.example.com/project@, a username and a password. The username is likely to be the same as the path of the repository, in this case, @project@.
+
+Create a directory to keep your Fossil repositories. Unlike other source control systems, this is separate from the working directory. @cd@ into that directory, then type
+
+<pre>
+    fossil clone https://project@fossil.example.com/project project.fossil
+</pre>
+
+Note that you need to add the username to the URL, just before the hostname.
+
+
+h2. Checking out the repository
+
+Next, you need to make an empty directory, @cd@ into it, then 'open' the repository. For example:
+
+<pre>
+    cd
+    mkdir project
+    cd project
+    fossil open ~/path/to/project.fossil
+</pre>
+
+*IMPORTANT*: Always @cd@ into your empty directory. Fossil will write the files into the current directory, even if it's full of other files. This can be annoying if you forget.
+
+
+h2. Write your plugin
+
+Make changes to your code. Remember your plugin should be created in a sub-directory of the repository root.
+
+To see what changes you've made, type
+
+<pre>
+    fossil changes
+    fossil extras
+</pre>
+
+The @changes@ command shows you all the files you have changed, and the @extras@ command shows any new files which aren't currently under source control.
+
+If you've created any new files or deleted any redundant files, you need to tell fossil with
+
+<pre>
+    fossil addremove
+</pre>
+
+This adds any new files, and removes any files which are no longer present. You can use the @fossil add@ and @fossil delete@ commands to do this on each file individually.
+
+To review all the changes you've made, type
+
+<pre>
+    fossil diff -N
+</pre>
+
+This shows the changes to existing files, and the @-N@ flag shows new files.
+
+When you're ready to commit your changes, type
+
+<pre>
+    fossil commit -m "A short description of the changes"
+</pre>
+
+This will commit the changes to your local repository, and since autosync is on by default, send these changes to the server.
+
+
+h2. Web interface
+
+You can use your web browser to view the repository timeline, edit the wiki, and manage tickets. You can either use the interface on the server, at the main repository URL, or use the local repository on your computer.
+
+*IMPORTANT*: If you're typing the URL manually, make sure you remember it starts with @https@. The server does not respond to @http@ addresses.
+
+Typing
+
+<pre>
+    fossil ui
+</pre>
+
+in your working directory will start an embedded web server and launch your web browser, automatically logging you in.
+
+To send changes you've made locally to the server, type
+
+<pre>
+    fossil sync
+</pre>
+
+This will also pull changes made on the server to your local repository.
+
+
+h2. Creating additional users
+
+We provide you with a generic administration user. To create additional users, use the web interface on the server. Click 'Admin' in the toolbar, then 'Users', then the 'Add' button hidden in the top right.
+
+You only need to check the 'Developer' capability for the new user. 

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= h(node.long_title) %> : ONEIS</title>
+  <link href="/presentation/docs.css" media="all" rel="Stylesheet" type="text/css">	
+  <link href="/presentation/print.css" media="print" rel="Stylesheet" type="text/css">
+</head>
+<body>
+  <div id="container">
+    <div id="header">
+      <span>ONEIS</span>
+      Technical Documentation
+    </div>
+    <div id="content">
+      <div id="document">
+        <div id="breadcrumb"><%= html_breadcrumb(node) %></div>
+        <h1><%= h(node.long_title) %></h1>
+        <%= node.body_html %>      
+      </div>
+      <div id="navigation">
+        <ul id="homelink"><% if node.url_path == '/' %><li><b>Home</b><hr></li><% else %><li><a href="/">Home</a><hr></li><% end %></ul><hr>
+        <%= html_node_navigation(node) %>
+      </div>
+    </div>
+  </div>
+  <div id="footer">
+    <div id="links"><a href="http://www.oneis.co.uk/">ONEIS</a> &bull;
+      <a href="http://library.oneis.co.uk/">Support Library</a> &bull;
+      <a href="http://www.oneis.co.uk/contact">Contact</a>
+    </div>
+    <div id="copy">&copy; ONEIS Ltd <%= Time.now.year %></div>
+    <div id="updated">Revision: <%= SOURCE_CONTROL_REVISION %> | Last Updated: <%= SOURCE_CONTROL_DATE %></div>
+  </div>
+</body>
+</html>

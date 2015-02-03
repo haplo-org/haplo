@@ -1,0 +1,38 @@
+FOR: /do/edit?new=1-2198
+
+h1. Creating news items
+
+News are short pieces of information of current interest. To add a news item:
+
+* go to _Add_
+* choose _News_
+* enter the title
+* enter the web address of the original news item, if there is one
+* choose a subject if required
+* write your news item in the Notes field
+* _Preview_ 
+* _Save_.
+
+OR
+
+From the homepage:
+
+* scroll to the bottom of the noticeboard
+* click on _Add item_
+* add your news item as described above.
+
+
+h2. Viewing news
+
+Your news item will appear:
+
+* on your homepage noticeboard
+* in search results
+* in the latest updates bulletin of users subscribed to receive news or items on the subject of your news item
+* in any embedded searches for news.
+
+h4. Further help
+
+[[Using the editor]]
+[[Latest updates]]
+

@@ -1,0 +1,30 @@
+title: Labels and Permissions
+class: DocNodeTextileWithTOC
+--
+
+ONEIS supports fine-grained access permissions enabling it to accurately reflect the permissions required by an organisation. 
+
+
+h2. Permissive labelling
+
+ONEIS uses "permissive labelling" to control access to information. This design fits in well with the overall philosophy of ONEIS: an object is described on creation, and this description controls how the object can be used.
+
+Each object has one or more *labels* which are applied at creation, but may change over the object's lifetime. An object may be *relabelled* at any time, as long as the user has permission to do so.
+
+Every user has a set of *permissions label sets* for each of the operations (Read, Create, etc), which are defined in terms of a sets of 'allow' and a sets of 'deny' labels.
+
+The system is described as "permissive" because, unlike traditional labelling systems, a user does not need have to have permission for every single one of the labels. Instead, a user must have permission for at least one of the labels, and no deny rules for any of the labels.
+
+This allows complex permission schemes to be described, without getting unwieldy. For example, you can use one set of labels to describe access for staff (levels of confidentiality), and then another set to control access for clients (labelling by client).
+
+
+h2. Plugins and permissions
+
+The Platform provides a fairly comprehensive, but minimal, system for applying labels and describing permissions for users. This will be more than sufficient for many applications.
+
+It is not, however, intended to cover the needs of larger applications. In this case, the build-in system should be augmented or completely replaced by a permissions scheme implemented by plugins.
+
+This approach allows you complete flexibility in how you implement permissions in your application. Rather than being restricted by limited built-in tools, you can express whatever you need in a few lines of code.
+
+
+h2. ONEIS labelling

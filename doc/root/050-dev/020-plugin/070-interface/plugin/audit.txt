@@ -1,0 +1,22 @@
+title: Auditing
+long_title: Plugin auditing control
+--
+
+Plugins can write their own audit trail entries, and control which optional events are audited. See [node:dev/plugin/o/audit-trail] and the [node:dev/plugin/hook/audit-entry-optional-write] hook.
+
+
+h2. Interface
+
+h3(function). declareAuditEntryOptionalWritePolicy(policy)
+
+If you implement the [node:dev/plugin/hook/audit-entry-optional-write] hook, you should call this function to declare the policy you are implementing. It will be shown on the audit configuration page in System Management.
+
+The policy can be a @String@, or a @function@. If the latter, the function will be called every time the policy is displayed, with @this@ set to your @Plugin@ object.
+
+<pre>language=javascript
+P.declareAuditEntryOptionalWritePolicy(
+    "Auditing policy description."
+);
+</pre>
+
+

@@ -1,0 +1,5 @@
+title: hTrayPage
+class: HookNode
+--
+
+This hook allows plugins to add extra user interface to the tray page.

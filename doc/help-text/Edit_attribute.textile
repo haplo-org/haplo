@@ -1,0 +1,21 @@
+FOR: /do/setup/attribute/edit
+
+h1. Edit attribute
+
+* _Attribute name_: give a brief descriptive name of one or two words for this attribute. This is used in the object editor.
+* _Search name_: used in the search constraints, for example, title:Hamlet (here 'title' is the search constraint, specified by the search name of the _Title_ attribute.) This should contain only lower case letters, numbers and hyphens. By convention it is the same as the attribute name in lower case and with spaces replaced by hyphens.
+* _Example_: shows how data should be entered into this attribute's field, shown in the editor when _Show examples_ is ticked.
+* _Relevancy weight_: how important this attribute should be considered when sorting search results for relevancy. 1.0 is normal weighting, 0.5 is half as relevant so would come lower down the search results, 2.0 is twice as relevant. The relevancy weighting range spans from 0.01 to infinity (though within ONEIS the range used tends to be between 0.25 and 100.) Setting a relevancy weight of 0 excludes this attribute from indexing.
+* _Data type_: choose the type of data for this field from the drop down menu. This specifies the type of data to be entered in the field. As well as the text options, the most important data types are
+** *Link to other object*. Most attributes should use the auto-completing 'Lookup' option, but where you are choosing from a very limited number of classification objects, you can use a drop down menu, radio buttons or checkboxes.
+** *File* (the option to upload one or more files which are 'attached' to the object)
+* _Qualifiers allowed_: to set the qualifiers which will be offered for this attribute 
+** _Qualifiers not used on this attribute_: choose this if there are no relevant qualifiers
+** _Allow any qualifier_: use if any qualifier can be chosen for this attribute (unlikely to be used)
+** _Allow the qualifiers specified below_: choose the qualifiers allowed from the list, add a relevancy weighting for each qualifier (which takes precedence over the general weighting assigned to the attribute)
+
+h4. Further help
+
+[[Attributes]]
+[[Attribute information]]
+[[Aliased attribute information]]

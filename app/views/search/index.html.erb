@@ -1,0 +1,142 @@
+<%
+  @page_title = 'Search'
+  client_side_resources(:search)
+  @breadcrumbs = [:search]
+-%>
+
+<div id="z__search_form_container">
+<form method="GET" action="/search" id="z__search_form_id">
+<%
+  search_within = params[:w]
+  search_within_html = nil
+  if search_within != nil && search_within =~ /\S/
+    search_within_html = h(search_within)
+    
+    # Make it more human readable if it contains object references
+    if search_within_html =~ /\A#L([0-9qvwxyz-]+)# not #L([0-9qvwxyz-]+)#/
+      # Is it a "search within" from the browse feature?
+      item_ref = KObjRef.from_presentation($1)
+      possible_type = KObjRef.from_presentation($2)
+      if item_ref != nil && possible_type != nil
+        type_desc = KObjectStore.schema.type_descriptor(possible_type)
+        if type_desc != nil && type_desc.is_hierarchical?
+          subject_text = search_within_linked_objref_to_html(item_ref, nil, "/search/browse/#{item_ref.to_presentation}")
+          search_within_html = %Q!items classified under #{subject_text}! if subject_text != nil
+        end
+      end
+    end
+    search_within_html.gsub!(/#L([0-9qvwxyz-]+)(\/d\d+)?#/) do |m|
+      rep = nil
+      # Is it a type?
+      item_ref = KObjRef.from_presentation($1)
+      if item_ref != nil
+        # Is it a type?
+        type_desc = KObjectStore.schema.type_descriptor(item_ref)
+        if type_desc != nil
+          rep = %Q!items of type <a href="/search/browse/#{item_ref.to_presentation}">#{h(type_desc.printable_name.to_s)}</a>!
+        else
+          # Otherwise, replace objref with link if user is allowed to read it
+          rep = search_within_linked_objref_to_html(item_ref, 'items linked to ')
+        end
+      end
+      (rep != nil) ? "#{rep}" : m
+    end
+    search_within_html.gsub!(/#U(\d+)#/) do |m|
+      created_by_user = nil
+      begin; created_by_user = User.cache[$1.to_i]; rescue; end # ignore lookup failures
+      (created_by_user != nil) ? "items created by <b>#{h(created_by_user.name)}</b>" : m
+    end
+    
+    %><div class="z__search_query_search_within_container">
+      <input type="hidden" name="w" value="<%=h(search_within)%>">
+      Search within <b><%= search_within_html %></b>
+    </div><%
+  end
+-%>
+<%= render :partial => 'search/input_ui', :data_for_template => @search_spec %>
+</form>
+</div>
+<% if @search_results != nil
+  errors = @search_results[:errors]
+  results = @search_results[:results]
+  %>
+
+  <div class="z__search_results_info_container">
+    <% if errors != nil && errors.length > 0 %>
+      <% errors.each do |err| %>
+        <p class="z__search_error"><%= h(err) %></p>
+      <% end %>
+    <% end %>
+    
+    <div class="z__search_results_found_statement"><%
+      # Show filtered count?
+      if @search_results.has_key?(:type)
+        %><b><%= results.length %></b> of <%
+      end
+      # Simple count of number of results
+      count = if @search_results.has_key?(:type)
+        results.unfiltered_count
+      elsif results == nil
+        0
+      else
+        results.length
+      end
+      %><b><%= count %></b> result<% if count != 1 %>s<% end %><%
+      # Subset?
+      if @search_results.has_key?(:subset_object)
+        %> in <b><%= h(@search_results[:subset_object].first_attr(KConstants::A_TITLE)) %></b><%
+      end
+    %></div>
+    
+    <% if @type_counts != nil -%>
+      <div class="z__search_results_type_counts">
+      <div class="z__search_results_type_counts_prop"></div>
+      <%
+        if @type_counts.length == 1
+          # Worth optimising this case, so we don't get unnecessary clicks
+          @type_counts.each do |count,type_desc|  # no easier way of getting the first one
+            %><div class="z__search_results_type_counts_box"><%= html_for_icon(type_desc.render_icon, :micro) %><%= h(type_desc.printable_name) %> <span class="z__count_marker"><%= count %></span></div><%
+          end
+        else
+          type_counts_params = search_url_params(@search_results, :type)
+          selected_type = params[:type]
+          @type_counts.each do |count,type_desc|
+            ref = type_desc.objref.to_presentation
+            if selected_type == ref
+              %><div class="z__search_results_type_counts_box z__search_results_type_selected"><%= html_for_icon(type_desc.render_icon, :micro) %><a href="/search?<%= type_counts_params %>"><%
+            else
+              %><div class="z__search_results_type_counts_box"><%= html_for_icon(type_desc.render_icon, :micro) %><a href="/search?type=<%= ref %>&<%= type_counts_params %>"><%
+            end
+            %><%= h(type_desc.printable_name) %></a> <span class="z__count_marker"><%= count %></span></div><%
+          end
+        end
+      -%>
+      <div class="z__search_results_type_counts_prop"></div></div>
+    <% end -%>
+    
+  </div>
+  
+  <% if @search_results[:results].length == 0 %>
+    <p>&nbsp;</p><p><i>No results found</i></p>
+  <% end %>
+
+  <%
+    if @spelling_suggested_query != nil
+      %><div class="z__search_did_you_mean"><span>Did you mean:</span> <a href="/search?<%= search_url_params(@spelling_suggested_search_spec) %>"><%= h(@spelling_suggested_query) %></a> (<%= @spelling_suggested_search_count %> result<% if @spelling_suggested_search_count != 1 %>s<% end %>)</div><%
+    end
+  %>
+  
+  <% if @search_results[:results].length > 0 %>
+    <div class="z__search_results_sort_by">
+      <% if @search_results[:relevance_possible] -%>
+        ordered by<%= search_sort_choices(@search_results, [:relevance, :title, :date]) %>
+      <% else %>
+        ordered by <span class="z__search_results_sort_by_not_selectable">relevance</span><%= search_sort_choices(@search_results, [:title, :date]) %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= render(:partial => 'shared/search_results', :data_for_template => @search_results)%>
+
+<% end %>
+

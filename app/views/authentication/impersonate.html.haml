@@ -1,0 +1,21 @@
+- @page_title = "Impersonate user"
+- @breadcrumbs = [:menu]
+- client_side_controller_js("impersonate")
+
+.z__general_alert Use impersonation responsibly.
+%p &nbsp;
+
+%form{:method => "post"}
+  != form_csrf_token
+  %input{ :type => 'hidden', :name => 'uid' }
+  %input#z__impersonate_filter.z__focus_candidate{ :name => "search", :placeholder => "Type to filter...", :style => "width:200px", :autocomplete => "off" }
+  %p &nbsp;
+  %div#z__impersonate
+    - @users.each do |user|
+      - if user.id != User::USER_ANONYMOUS
+        %a{ 'href' => '#', 'data-uid' => user.id }
+          = user.name
+  %p &nbsp;
+
+%p &nbsp;
+%p When you have completed your task, click the 'Finish' button to return to your user account.

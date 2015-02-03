@@ -1,0 +1,125 @@
+title: Database
+long_title: Database interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @Database@ interface provides access to a relational style database.
+
+See [node:dev/plugin/database] for documentation on how to use the relational database.
+
+
+h2. Construction
+
+@Database@ objects cannot be directly created. See the [node:dev/plugin/database:database overview] for how to use databases.
+
+Use the [node:dev/plugin/interface/plugin/data#db] property of your [node:dev/plugin/interface/plugin].
+
+
+h2. Naming restrictions
+
+Database table and field names must match this regular expression: @\A[a-z][a-zA-Z0-9]*\z@
+
+Names must start with a lowercase letter, and be formed of letters and numbers only. Underscores are not allowed.
+
+
+h2. Interface
+
+
+h3(function). table(name, fields, methods)
+
+Declares a table with the given @name@ and the defined @fields@. See below for field definitions. There is an implicit numeric @id@ field in every table which is used as the primary key.
+
+Note that by default, fields *do not* allow @null@ values, and you must specify @nullable:true@ to allow them. This is the other way round to SQL, where you need to specify @NOT NULL@ to disallow @NULL@ values.
+
+A property is added to this object to access the new [node:dev/plugin/interface/database-table] object.
+
+If the optional @methods@ argument is given, this should be a JavaScript @Object@ containing functions which will be added to the prototype of the database rows. This allows you to implement functions on your database row (model) objects.
+
+*This function can only be called when the plugin is loaded.* See the [node:dev/plugin/database:database overview] for details and an example.
+
+
+h3(property). T [access to tables]
+
+A call of the @table()@ function to create a table with name @T@, creates a property of this object with the name @T@. The property exposes a [node:dev/plugin/interface/database-table] object.
+
+
+h2. Field definitions
+
+The @fields@ argument to @table()@ is a JavaScript @Object@ used as a dictionary of field name to field definition, another JavaScript @Object@. The field definition object has the following keys:
+
+
+h3(key). type
+
+|*Name*|*Data type*|*JavaScript type*|
+|@text@|Unicode text [1]|String|
+|@datetime@|Date and time, GMT timezone|Date|
+|@date@|Date only|Date|
+|@time@|Time only|[node:dev/plugin/misc/db-time]|
+|@boolean@|Boolean|@true@ or @false@|
+|@smallint@|16-bit signed integer|Number|
+|@int@|32-bit signed integer|Number|
+|@bigint@|64-bit signed integer [2]|Number|
+|@float@|double precision floating point number|Number|
+|@ref@|Reference to store object|[node:dev/plugin/interface/ref]|
+|@link@|Reference to row in other table|Database row object [3]|
+|@user@|Reference to user|[node:dev/plugin/interface/security-principal] [3]|
+|@file@|File stored in the file store|[node:dev/plugin/interface/file]|
+
+h3(key). linkedTable
+
+For @link@ types only. A string specifying the name of the table this refers to, if the name of the table does not match exactly the name of the field.
+
+
+h3(key). nullable
+
+If @true@, @null@ values will be allowed for this field. Otherwise it's an error to attempt to set the property to @null@ or save a new row object without specifying a value for this field.
+
+
+h3(key). caseInsensitive
+
+If @true@ for a @text@ field, any comparisons in queries will be case insensitive. The case of the string will be preserved in the database.
+
+If an index is specified on a case insensitive field, the index will be case insensitive too, providing efficient indexed queries on the the field.
+
+
+h3(key). indexed
+
+If @true@, an index will be created for this field.
+
+
+h3(key). indexedWith
+
+If set to an array of name of other fields, a multi-field index will be created with this field as the first field, then the others in order. Useful for speeding up queries on multiple fields, but use with caution.
+
+
+h3(key). uniqueIndex
+
+If @true@ and @indexed@ is set to @true@ or @indexedWith@ is specified, the resulting index will be a unique index. Attempting to store a row with duplicate value(s) will throw an exception.
+
+
+h2. Example table definition
+
+<pre>language=javascript
+P.db.table("employee", {
+    firstName: { type:"text" },
+    lastName: { type:"text" },
+    user: { type:"user", nullable:true },
+    startDate: { type:"date" },
+    salary: { type:"int", nullable:true, indexed:true },
+    primaryExpertise: { type:"ref", indexed:true, uniqueIndex:true },
+    department: { type:"link", nullable:true, indexedWith:["startDate","salary"] }
+}, {
+    name: function() {
+        return this.firstName()+" "+this.lastName();
+    }
+});
+</pre>
+
+
+h2. Notes
+
+[1] No maximum size is specified for text fields, because the underlying implementation is just as efficient for unrestricted text fields as it is for size limited text fields.
+
+[2] When using @bigint@ values, remember that JavaScript numbers can only represent 53-bit integers with full precision because it represents all numbers as a double precision floats.
+
+[3] @link@ and @user@ values can be set with numeric IDs, but properties in row objects always return the specified object.

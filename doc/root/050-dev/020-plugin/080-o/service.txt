@@ -1,0 +1,18 @@
+title: Services
+--
+
+Services are used to implement [node:dev/plugin/misc/inter-plugin-comms:inter-plugin communication], and are registered with [node:dev/plugin/interface/plugin/platform-interface#implementService].
+
+
+h3(function). O.service(name, arg1, arg2, ...)
+
+Call the registered service called @name@. Further arguments are optional, and if given, will be passed to the service function.
+
+If more than one service function is registered, they will all be called in the order of registration until one of the functions returns a value which is not @undefined@.
+
+@O.service()@ returns the value returned from the service function, so results can easily by returned from a service.
+
+
+h3(function). O.serviceImplemented(name)
+
+Returns @true@ if there is at least one function registered to implement a service called @name@.

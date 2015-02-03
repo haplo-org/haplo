@@ -1,0 +1,11 @@
+<div class="z__plugin_ui_action_panel{{_internal__panel_block_styles}}">
+  {{#each elements}}
+    {{#if href}}<a href="{{href}}"{{else}}<div{{/if}} class="z__plugin_ui_action_panel_entry{{_internal__panel_entry_styles}}">
+      {{#if title}}<span class="z__plugin_ui_action_panel_title">{{title}}</span>{{/if}}
+      {{#if heading}}<div class="z__plugin_ui_action_panel_heading">{{heading}}</div>{{/if}}
+      {{#if indicator}}<span class="z__ui_indicator{{_internal__indicator_styles indicator}}"></span>{{/if}}{{label}}
+      {{#if innerLink}}<a href="{{innerLink.href}}">{{innerLink.label}}</a>{{/if}}
+      {{#if innerText}}<span class="z__plugin_ui_action_panel_inner_text">{{innerText}}</span>{{/if}}
+    {{#if href}}</a>{{else}}</div>{{/if}}
+  {{/each}}
+</div>

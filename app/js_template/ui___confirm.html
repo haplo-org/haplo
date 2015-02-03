@@ -1,0 +1,19 @@
+<div class="z__plugin_ui_confirm">
+  <div class="z__plugin_ui_confirm_message">
+    {{std:text:paragraph text}}
+  </div>
+  {{#each options}}
+    <div class="z__plugin_ui_confirm_action">
+      <form method="POST" action="{{action}}">{{std:form_csrf_token}}
+        {{std:parameter_inputs parameters}}
+        <input type="submit" value="{{label}}">
+      </form>
+    </div>
+  {{/each}}
+  {{#if backLink}}
+    <div class="z__plugin_ui_confirm_action">
+      <a href="{{backLink}}">{{#if backLinkText}}{{backLinkText}}{{else}}Cancel{{/if}}</a>
+    </div>
+  {{/if}}
+  <div class="z__plugin_ui_confirm_end"></div>
+</div>

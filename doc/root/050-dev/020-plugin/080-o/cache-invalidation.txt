@@ -1,0 +1,6 @@
+title: Cache invalidation
+--
+
+h3(function). O.reloadNavigation()
+
+Invalidates the cached left hand navigation for all users.

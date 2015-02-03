@@ -1,0 +1,57 @@
+title: RefKeyDictionary
+long_title: RefKeyDictionary interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @RefKeyDictionary@ interface represents a dictionary with [node:dev/plugin/interface/ref] keys and any JavaScript object as a value.
+
+A JavaScript @Object@ can be used as a lookup dictionary with the @[]@ operator, as long as the keys are strings or numbers. This is very useful, but the limitation on the keys can be annoying when you're writing a plugin and want to look up things based on a [node:dev/plugin/interface/ref].
+
+@RefKeyDictionary@ objects are provided as a work around for this limitation. They don't have quite the same interface as a JavaScript @Object@ (so that the fundamental rules of the language still apply). As a bonus, they can be constructed with an optional value constructor function which is called to create the value for unknown keys.
+
+
+h2. Construction
+
+Use [node:dev/plugin/o/constructor/refdict]. Pass in an optional value constructor function and size hint.
+
+
+h2. Interface
+
+In the interface below, @key@ is a [node:dev/plugin/interface/ref] object or a @String@ which can be converted to a @Ref@. Any other value will cause an exception to be thrown.
+
+
+h3(property). length
+
+The number of key value pairs in this dictionary.
+
+
+h3(function). get(key)
+
+Gets the value for a given key.
+
+If @set()@ has not been used to set a value for this key, and a value constructor function was passed in to [node:dev/plugin/o/constructor/refdict], that function will be called with the key (converted to a @Ref@ if it's a @String@) as the only argument. The returned value from this function will be set for this key as if @set()@ had been called, then returned.
+
+Returns the value for this key, or @undefined@ if no value has been set.
+
+
+h3(function). set(key, value)
+
+Set the value for a given key. @value@ must not be @null@ or @undefined@.
+
+Returns @value@.
+
+
+h3(function). remove(key)
+
+Removes the value for the given key.
+
+Returns the @value@, if one had been set, or @undefined@.
+
+(This function cannot be called @delete()@ because it would be a syntax error.)
+
+
+h3(function). each(iterator)
+
+The @iterator@ function is called once for each key value pair, with arguments @(key, value)@.
+
+Return @true@ from the @iterator@ function to stop the iteration immediately.

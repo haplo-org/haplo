@@ -1,0 +1,15 @@
+<%
+  @page_title = "Temporary code for #{h(@user.name)}"
+  @breadcrumbs = [:menu, ['/do/admin/otp', 'Tokens']]
+%>
+
+<p>The temporary code for <%= h(@user.name) %> is:</p>
+
+<p style="font-size:2em"><%= h(@temporary_code) %></p>
+
+<p>Inform <%= h(@user.name) %> of this temporary code.</p>
+
+<p>This code is valid for 5 minutes, and will only work once.</p>
+
+<p>&nbsp;</p>
+<p><a href="/do/admin/otp">Finish</a></p>

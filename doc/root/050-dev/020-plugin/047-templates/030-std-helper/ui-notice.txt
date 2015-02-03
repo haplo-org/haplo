@@ -1,0 +1,22 @@
+title: std:ui:notice
+link_as: keyword
+--
+
+This helper is a shortcut for rendering [node:dev/plugin/templates/std-template/ui-notice] templates. It can be useful when the @message@ is constant text.
+
+<pre>
+    {{std:ui:notice message dismissLink dismissText}}
+</pre>
+
+@dismissLink@ and @dismissText@ are optional.
+
+See [node:dev/plugin/templates/std-template/ui-notice] for the meaning of the arguments.
+
+
+h2. Example
+
+To render a simple notice, use this helper with a constant string.
+
+<pre>
+    {{std:ui:notice "Something happened."}}
+</pre>

@@ -1,0 +1,8 @@
+title: oforms:join
+link_as: keyword
+--
+
+The @"oforms:join"@ and @"oforms:join:display"@ templates simply output each form element in order, without enclosing them in any HTML.
+
+This is useful to compose two form elements together, for example, a choice of currency symbol next to a number for the amount.
+

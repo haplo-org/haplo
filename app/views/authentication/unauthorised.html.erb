@@ -1,0 +1,15 @@
+<%
+  # Wipe all the instance variables, so things like title bar buttons, edit buttons, and other UI
+  # isn't shown in the standard chrome
+  vars = self.instance_variables
+  # Keep the important vars
+  vars.delete(:@request_user)
+  vars.delete(:@exchange)
+  vars.each do |n|
+    remove_instance_variable(n)
+  end
+  # Set for display
+  init_standard_controller_class_variables()
+  @page_title = 'Unauthorised'
+%>
+<p>You do not have the necessary permission.</p>

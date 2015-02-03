@@ -1,0 +1,65 @@
+#!/bin/sh
+
+# Haplo Platform                                     http://haplo.org
+# (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+set -e
+
+# Usage: script/test [options] [test-file/dir ...]
+#    -n, --noinit                     Do not perform initialization functions
+#    -t, --test TEST_NAME             Run only tests that match the method name
+#    -A, --check-asserts              Use different assert implementation designed to catch sloppy assert usage
+#    -c, --concurrency NUM            Run tests in NUM concurrent threads
+#    -v, --verbose                    Increase test runner verbosity
+#
+# Run all test without concurrency (faster):
+#   script/test --concurrency=1
+# (automatic if no filename is specified)
+
+. config/paths-`uname`.sh
+
+KFRAMEWORK_ENV=test
+export KFRAMEWORK_ENV
+
+SKIP_INIT=no
+for A in $*
+do
+    if [ X$A = "X--help" -o X$A = "X--noinit" -o X$A = "X-h" -o X$A = "X-n" ]; then
+        SKIP_INIT=yes
+    fi
+done
+
+if [ $SKIP_INIT = yes ]; then
+    echo "Skipping init"
+else
+    # Clean up old files and make new directory structure
+    rm -rf $HOME/haplo-dev-support/khq-test
+    mkdir -p $HOME/haplo-dev-support/khq-test/tmp
+    mkdir -p $HOME/haplo-dev-support/khq-test/files
+    mkdir -p $HOME/haplo-dev-support/khq-test/textidx
+    mkdir -p $HOME/haplo-dev-support/khq-test/textweighting
+    mkdir -p $HOME/haplo-dev-support/khq-test/plugins
+    mkdir -p $HOME/haplo-dev-support/khq-test/messages/app_create
+    mkdir -p $HOME/haplo-dev-support/khq-test/messages/app_modify
+    mkdir -p $HOME/haplo-dev-support/khq-test/messages/spool
+    # Copy in test plugin (see test/integration/javascript_plugin_loading_test.rb)
+    # Needs to be done before the app server starts, to test the fact it's registered by the
+    # application startup code.
+    mkdir $HOME/haplo-dev-support/khq-test/plugins/test
+    cp -R test/integration/javascript/javascript_plugin_loading/thirdparty_plugin $HOME/haplo-dev-support/khq-test/plugins/test/
+    # Init new database
+    sh db/do_init_db.sh >> log/db_init.log
+    psql khq_test < db/test_functions.sql >> log/db_init.log
+fi
+
+if [ X$KFRAMEWORK_BITS = X ]
+then
+    KFRAMEWORK_BITS=64
+fi
+
+framework/oneis utility $KFRAMEWORK_BITS config/java.config $JAVA_EXECUTABLE `pwd` test $@
+

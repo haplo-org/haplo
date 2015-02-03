@@ -1,0 +1,16 @@
+<%
+  @page_title = 'Forgotten password'
+  @breadcrumbs = [:login]
+-%>
+
+<p><b>Step 3</b></p>
+
+<p>The link you clicked was not a valid link to set a new password. Possible causes are:</p>
+
+<ul>
+  <li>If the link was split into multiple lines in the email, you may have only clicked on part of the link. Try copying and pasting the whole link into your browser.
+  <li>You submitted more than one change password request. Only the link in the latest email will work.
+  <li>The link you used has expired.
+</ul>
+
+<p><a href="/do/authentication/recovery">Request a new email.</a></p>

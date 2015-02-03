@@ -1,0 +1,23 @@
+title: File
+--
+
+A file upload field.
+
+The value is a JavaScript object with properties @digest@, @fileSize@ and @filename@.
+
+Your form *must not* have an @enctype="multipart/form-data"@ attribute as these elements do *not* use @<input type="file">@.
+
+Files are uploaded immediately the user selects them, and the form is submitted only after they have finished uploading. The submitted form data only includes the digest of the file. This allows file fields to be part of the normal form handling, including validation.
+
+When re-rendering a form, a secret is included, to prevent users accessing a given file where they know a digest.
+
+When rendering a document, the download links have authentication signatures.
+
+A single file upload field just presents an 'Upload file...' link. See also [node:dev/plugin/form/specification/file-repeating-section] for uploading multiple files and enabling full drag and drop file uploads.
+
+
+h2. Properties
+
+|@type@|@"file"@|
+
+All the [node:dev/plugin/form/specification#Common_properties:common properties] are supported.

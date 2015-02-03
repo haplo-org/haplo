@@ -1,0 +1,22 @@
+FOR: /do/admin/latest/edit
+
+h1. Latest updates topics
+
+The latest updates service alerts users to new items that may be of interest to them by email bulletins. 
+
+Topics should be set on a per group basis wherever possible, although it is possible set it on an individual basis. 
+
+Latest updates can be on types, subjects or any object. 
+
+* choose the type, subject or object to be included in the latest updates
+* the topic will now appear in the menu at the top of the page
+* choose the setting for this topic:
+** offer: the user can choose to subscribe
+** default: the user can choose to unsubscribe 
+** force: the user cannot unsubscribe.
+
+h2. Recommendation
+
+Latest update topics should be set on groups, rather than on the individual users. If you name the groups by purpose or function, this makes management of settings much easier.
+
+

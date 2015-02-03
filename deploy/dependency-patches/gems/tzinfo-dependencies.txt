@@ -1,0 +1,52 @@
+--- lib/ruby/gems/shared/specifications/activerecord-3.0.20.gemspec	2013-09-19 15:22:23.048193831 +0000
++++ lib/ruby/gems/shared/specifications/activerecord-3.0.20.gemspec	2013-09-19 15:22:46.356613220 +0000
+@@ -26,17 +26,17 @@
+       s.add_runtime_dependency(%q<activesupport>, ["= 3.0.20"])
+       s.add_runtime_dependency(%q<activemodel>, ["= 3.0.20"])
+       s.add_runtime_dependency(%q<arel>, ["~> 2.0.10"])
+-      s.add_runtime_dependency(%q<tzinfo>, ["~> 0.3.23"])
++      s.add_runtime_dependency(%q<tzinfo>, ["> 0.3.23"])
+     else
+       s.add_dependency(%q<activesupport>, ["= 3.0.20"])
+       s.add_dependency(%q<activemodel>, ["= 3.0.20"])
+       s.add_dependency(%q<arel>, ["~> 2.0.10"])
+-      s.add_dependency(%q<tzinfo>, ["~> 0.3.23"])
++      s.add_dependency(%q<tzinfo>, ["> 0.3.23"])
+     end
+   else
+     s.add_dependency(%q<activesupport>, ["= 3.0.20"])
+     s.add_dependency(%q<activemodel>, ["= 3.0.20"])
+     s.add_dependency(%q<arel>, ["~> 2.0.10"])
+-    s.add_dependency(%q<tzinfo>, ["~> 0.3.23"])
++    s.add_dependency(%q<tzinfo>, ["> 0.3.23"])
+   end
+ end
+--- lib/ruby/gems/shared/specifications/actionpack-3.0.20.gemspec	2013-09-19 15:21:17.920198259 +0000
++++ lib/ruby/gems/shared/specifications/actionpack-3.0.20.gemspec	2013-09-19 15:21:41.380835148 +0000
+@@ -28,7 +28,7 @@
+       s.add_runtime_dependency(%q<rack>, ["~> 1.2.5"])
+       s.add_runtime_dependency(%q<rack-test>, ["~> 0.5.7"])
+       s.add_runtime_dependency(%q<rack-mount>, ["~> 0.6.14"])
+-      s.add_runtime_dependency(%q<tzinfo>, ["~> 0.3.23"])
++      s.add_runtime_dependency(%q<tzinfo>, ["> 0.3.23"])
+       s.add_runtime_dependency(%q<erubis>, ["~> 2.6.6"])
+     else
+       s.add_dependency(%q<activesupport>, ["= 3.0.20"])
+@@ -38,7 +38,7 @@
+       s.add_dependency(%q<rack>, ["~> 1.2.5"])
+       s.add_dependency(%q<rack-test>, ["~> 0.5.7"])
+       s.add_dependency(%q<rack-mount>, ["~> 0.6.14"])
+-      s.add_dependency(%q<tzinfo>, ["~> 0.3.23"])
++      s.add_dependency(%q<tzinfo>, ["> 0.3.23"])
+       s.add_dependency(%q<erubis>, ["~> 2.6.6"])
+     end
+   else
+@@ -49,7 +49,7 @@
+     s.add_dependency(%q<rack>, ["~> 1.2.5"])
+     s.add_dependency(%q<rack-test>, ["~> 0.5.7"])
+     s.add_dependency(%q<rack-mount>, ["~> 0.6.14"])
+-    s.add_dependency(%q<tzinfo>, ["~> 0.3.23"])
++    s.add_dependency(%q<tzinfo>, ["> 0.3.23"])
+     s.add_dependency(%q<erubis>, ["~> 2.6.6"])
+   end
+ end

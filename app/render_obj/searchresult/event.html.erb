@@ -1,0 +1,12 @@
+<%=
+  renderer = SearchResultHelper::ResultRenderer.new(obj, self, options)
+  unless renderer.no_default_rendering
+    if (date = obj.first_attr(A_DATE))
+      # Have to do explicit setting of line2, as HTML rendition of date could go on two lines
+      renderer.line2 = date.to_s
+    end
+    renderer.display_attributes(A_ORGANISED_BY, :caption_from_schema)
+    renderer.automatic_value_display
+  end
+  renderer.to_html
+%>

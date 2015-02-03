@@ -1,0 +1,19 @@
+<%
+  @page_title = 'Search Subsets'
+-%>
+
+<h1>Search subsets</h1>
+
+<ul>
+  <% @subsets.each do |subset| -%>
+    <li><a href="/do/setup/subset/show/<%= subset.objref.to_presentation %>" target="workspace"><%= h(subset.first_attr(KConstants::A_TITLE)) %></a></li>
+  <% end -%>
+</ul>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/subset/ordering" target="workspace">Set subset order</a></li>
+</ul>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/subset/edit/new" target="workspace">New search subset</a></li>
+</ul>

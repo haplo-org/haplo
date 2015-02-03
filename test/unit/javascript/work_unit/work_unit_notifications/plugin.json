@@ -1,0 +1,10 @@
+{
+  "pluginName": "work_unit_notifications",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Work Unit Notifications Test Plugin",
+  "displayDescription": "For testing",
+  "installSecret": "ABC123",
+  "apiVersion": 3,
+  "load": ["js/test_work_unit_notifications.js"]
+}

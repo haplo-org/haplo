@@ -1,0 +1,75 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+.z__icon_designer {
+    border: 1px solid #ccc;
+    padding: 2px 2px;
+    height: 58px;
+    background: #fff;
+}
+
+.z__icon_designer .z__icon {
+    cursor: default;
+}
+
+.z__icon_designer_full_icon {
+    float: left;
+    border: 1px solid transparent;
+    border-right: 1px dotted #666;
+    padding-right: 4px;
+    margin-right: 8px;
+}
+
+.z__icon_designer_add {
+    float: left;
+}
+.z__icon_designer_add a {
+    display: block;
+    height: 32px;
+    padding: 7px 4px 0 4px;
+}
+
+.z__icon_designer_components {
+    float: left;
+}
+
+.z__icon_designer_icon_component {
+    float: left;
+    border: 1px solid transparent;
+    margin-right: 4px;
+    background: #ddd;
+}
+
+.z__icon_designer_icon_component.z__selected {
+    border: 1px solid red;
+}
+
+.z__icon_designer_add_panel {
+    border: 1px solid #ccc;
+    background: #fff;
+    padding: 4px;
+    width: 400px;
+    line-height: 36px;
+}
+
+.z__icon_designer_classes {
+    clear: both;
+    border-top: 1px dotted #ddd;
+    padding: 1px 0 0 48px;
+}
+.z__icon_designer_classes_inactive {
+    opacity: 0.15;
+}
+.z__icon_designer_classes .z__icon_designer_class_group {
+    margin-right: 8px;
+}
+.z__icon_designer_classes .z__icon {
+    border: 1px solid #fff;
+}
+.z__icon_designer_classes .z__icon:hover {
+    border: 1px dotted #000;
+}

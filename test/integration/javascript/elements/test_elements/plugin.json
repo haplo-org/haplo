@@ -1,0 +1,9 @@
+{
+  "pluginName": "test_elements",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 10,
+  "displayName": "Test Elements",
+  "displayDescription": "Test Elements",
+  "apiVersion": 3,
+  "load": ["js/test_elements.js"]
+}

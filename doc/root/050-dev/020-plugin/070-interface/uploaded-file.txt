@@ -1,0 +1,34 @@
+title: UploadedFile
+long_title: UploadedFile interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @UploadedFile@ interface represents a file which has just been uploaded in an HTTP request. Unless it is stored, using [node:dev/plugin/o/constructor/file], it will be deleted at the end of the request.
+
+
+h2. Construction
+
+Declare an @as:"file"@ argument on a [node:dev/plugin/interface/plugin/request-handling:request handler].
+
+
+h2. Interface
+
+h3(property). digest
+
+The digest of the file, as a hex encoded @String@.
+
+
+h3(property). fileSize
+
+The size of the file, in bytes, as a number.
+
+
+h3(property). mimeType
+
+The MIME type of the file. Note that some MIME types are standardised as browsers tend to be a bit inconsistent.
+
+
+h3(property). filename
+
+The filename of the file, as set by the browser.
+

@@ -1,0 +1,7 @@
+<% if @results == nil || @results.length == 0 -%>
+  Nothing found.
+<% else -%>
+  <% @results.each do |obj| -%>
+    <p><a id="r<%= obj.objref.to_presentation %>"><%= h(obj.first_attr(KConstants::A_TITLE).to_s) %></a></p>
+  <% end -%>
+<% end -%>

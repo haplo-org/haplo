@@ -1,0 +1,65 @@
+FOR: /do/taxonomy
+
+h1. Taxonomies
+
+Taxonomies are used to describe items using hierarchical terms.
+
+They're also used to browse your information, see [[Browse]].
+
+h1. Editing a taxonomy
+
+The taxonomy is displayed in columns from left to right, with narrower terms to the right. Clicking on an entry shows its narrower terms in the next column to the right.
+
+h3. Adding a new term
+
+Navigate to the parent term (the broader term underneath which you wish to enter the new term), then click _Add term_ at the bottom of the column to the right of the parent term. The taxonomy term editor will be displayed.
+
+To create a new parent (broadest, top-level) term, click _Add term_ at the bottom of the furthest left column.
+
+h3. Edit taxonomy terms
+
+Navigate to the term you wish to edit. Click on _Edit this term_ to the bottom left of the taxonomy display, and the term editor will be displayed.
+
+h3. The term editor
+
+Taxonomy terms use the same editor as all other items in the system. 
+
+h4. Synonyms
+
+To add synonyms:
+
+* click on the + symbol to the left of the Title field
+* add the synonym in the new field which appears 
+* choose Alternative from the qualifier box which appears to the left of the text box
+* _Save_.
+
+Delete unwanted synonyms by clicking on the - symbol to the right of the unwanted field. 
+
+h4. Related terms
+
+To add a related term:
+
+* go to the related term field
+* _click to set_ 
+* choose the related term from the copy of the taxonomy which appears
+* you can add multiple related terms by clicking on the + symbol to the left of the related term field. 
+
+Related terms are not automatically reciprocal. 
+
+h3. Move taxonomy terms
+
+* Navigate to the term to move
+* click on _Move_ at  the bottom right of the taxonomy display
+* a smaller taxonomy display appears below
+* in the taxonomy display which has appeared, find and highlight the term underneath which you wish to move your term
+* click on the wording in between the two taxonomy displays to confirm ie move x as narrower term of y.
+
+h3. Delete taxonomy terms
+
+* Navigate to the term you wish to delete
+* click on _Delete_ to the bottom right of the taxonomy display
+* confirm you wish to delete this term by clicking on _delete term_.
+
+You cannot delete terms which are currently used to index any items, if any of the narrower terms are used to index items, or if any other terms use this as a related term. You must remove the index term from all items first.
+
+When a term is deleted, all the narrower terms are also deleted.

@@ -1,0 +1,21 @@
+<%
+  @page_title = 'Edit navigation'
+  client_side_resources(:jquery_ui, :ctrl_obj_insert_menu)
+  client_side_controller_js('navigation_editor')
+%>
+<%= sys_mng_header %>
+
+<% if params.has_key?(:saved) %>
+  <p style="margin:24px 16px"><b>Navigation saved.</b></p>
+<% end %>
+
+<div id="z__navigation_editor_data" data-nav="<%= h(@nav_entries.to_json) %>" data-groups="<%= h(@groups.to_json) %>"></div>
+
+<div id="z__navigation_editor"></div>
+
+<p><a href="#" id="z__navigation_editor_add_separator">Add separator</a> &nbsp; &nbsp; <a href="#" id="z__navigation_editor_add_link">Add link</a> &nbsp; &nbsp; <a href="#" id="z__navigation_editor_add_plugin">Add plugin position</a> &nbsp; &nbsp; <span id="z__navigation_editor_add_object"></span></p>
+
+<form method="POST"><%= form_csrf_token %>
+  <input type="hidden" name="nav" value="" id="z__nav_form_data">
+  <p><input type="submit" value="Save changes"></p>
+</form>

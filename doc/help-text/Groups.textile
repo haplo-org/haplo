@@ -1,0 +1,32 @@
+FOR: /do/admin/user/list?kind=1
+
+h1. User groups
+
+Creating user groups enables permissions to be assigned to each group. An individual user can belong to more than one group. 
+
+h2. Groups
+
+The group list is split into two categories.
+
+* ACTIVE: Groups which have an effect on permissions, and are shown as options for user membership.
+* DISABLED: Groups which do not have an effect on permissions etc.
+
+h2. Group information
+
+* Click on a group name for more information.
+
+h2. New group
+
+* Choose _New group_ to create a new group. 
+
+h2. Everyone group
+
+_Everyone_ is a special group which automatically contains every user. You can use this group to simplify permissions.
+
+
+h4. Further help
+
+[[New group]]
+[[Group information]]
+[[Disable a group]]
+

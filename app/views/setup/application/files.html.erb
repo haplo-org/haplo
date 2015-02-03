@@ -1,0 +1,40 @@
+<%
+  @page_title = 'Static files'
+  client_side_controller_js("files_delete")
+-%>
+
+<%= sys_mng_header %>
+
+<table class="z__management_horz_table">
+  <tr>
+    <th>Filename</th><th>MIME type</th><th>Pathname</th><th></th><th></th>
+  </tr>
+  <% @static_files.each do |file|
+      filename = file.filename
+      ext = ''
+      ext = '.'+$1 if filename =~ /\.([a-zA-Z0-9]+)\z/
+      pathname = "/~/#{file.id}#{ext}"  # don't need any serial number, as they never change
+    -%>
+    <tr>
+      <td><%= h(file.filename) %></td>
+      <td><%= h(file.mime_type) %></td>
+      <td><%= pathname %></td>
+      <td><a href="<%= pathname %>" target="_new">View</a></td>
+      <td>
+        <a class="z__setup_static_files_delete" href="/do/setup/application/delete_file/<%= file.id %>">Delete</a>
+    </tr>
+  <% end -%>
+</table>
+
+<h1 class="z__management_space_h1">Upload new file</h1>
+
+<% if @notice != nil -%>
+  <p class="z__management_notice"><%= @notice %></p>
+<% end -%>
+
+<form method="POST" action="/do/setup/application/files" enctype="multipart/form-data"><%= form_csrf_token %>
+  <p><input id="file_uploaded_file" name="file" size="30" type="file"></p>
+  <p><input type="submit" value="Upload file"></p>
+</form>
+
+<p><span class="z__management_look_at_help">Refer to important notes in the help.</span></p>

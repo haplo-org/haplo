@@ -1,0 +1,16 @@
+<%
+  @page_title = 'Labels'
+  selected = params[:select]
+%>
+<%= sys_mng_header %>
+
+<ul>
+  <% @labels.each do |lref, catref, title| %>
+    <li><a href="/do/setup/labels/info/<%= lref.to_presentation %>" target="workspace"><%= h(@categories[catref]) %> / <%= h(title) %></a></li>
+  <% end %>
+</ul>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/labels/category" target="workspace">New label category</a></li>
+  <li class="z__management_action"><a href="/do/setup/labels/edit" target="workspace">New label</a></li>
+</ul>

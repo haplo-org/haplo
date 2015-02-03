@@ -1,0 +1,6 @@
+<% @page_title = 'Time zones' -%>
+<h1>Time zones</h1>
+
+<p>When entering times with time zones, users can pick from these timezones:</p>
+<p><% @time_zone_list.each { |name| %><%= h(name) %><br><% } %><p>
+<%= sys_mng_edit_button("/do/setup/application/timezones_edit") %>

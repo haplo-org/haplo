@@ -1,0 +1,15 @@
+<%
+  is_create = !(@cat_ref)
+  @page_title = is_create ? 'Create new Label category' : 'Rename Label category'
+%>
+<%= sys_mng_header %>
+
+<form method="POST"><%= form_csrf_token %>
+
+  <p>Name<br>
+  <input type="text" name="title" value="<%= h(@title) %>">
+  </p>
+
+  <p><input type="submit" value="<% if is_create %>Create<% else %>Save changes<% end %>"></p>
+
+</form>

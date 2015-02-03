@@ -1,0 +1,9 @@
+<%
+  @page_title = 'Copyright Notice'
+  client_side_controller_js("copyright_edit")
+%>
+
+<form method="post" action="/do/setup/application/copyright" id="z__setup_application_copyright_form"><%= form_csrf_token %>
+  <%= control_document_text_edit('z__setup_application_copyright_statement', KApp.global(:copyright_statement)) %><br>
+  <input type="submit" value="Update notice">
+</form>

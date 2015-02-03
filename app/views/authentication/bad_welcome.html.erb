@@ -1,0 +1,13 @@
+<%
+  @page_title = 'Expired link'
+  @breadcrumbs = [:login]
+-%>
+
+<p>You've clicked on a link to set your initial <%= KApp.global(:product_name) %> password. However, this link as expired.</p>
+
+<p>For security reasons, these welcome links expire after a few days, and can only be used once.</p>
+
+<p>To set a password for your account, use the <a href="/do/authentication/recovery">forgotten password system</a>.</p>
+
+<p>&nbsp;</p>
+<form method="GET" action="/do/authentication/recovery"><input type="submit" value="Next &raquo;"></form>

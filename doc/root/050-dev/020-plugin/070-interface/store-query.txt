@@ -1,0 +1,201 @@
+title: StoreQuery
+long_title: StoreQuery interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @StoreQuery@ interface represents a query of objects within the object store, and can execute the query returning results as a [node:dev/plugin/interface/store-query-results] object.
+
+
+h2. Construction
+
+Use [node:dev/plugin/o/constructor/query].
+
+
+h2. Interface
+
+h3(function). execute()
+
+Executes the query, returning an object implementing the [node:dev/plugin/interface/store-query-results].
+
+After this function is called, no other functions should be called.
+
+
+h3(function). setSparseResults(sparse)
+
+If you're not going to use all the results, for example, if they're paged, call @setSparseResults(true)@ to only load references and the full objects on demand. You should then use @ensureRangeLoaded()@ on the results object to load ranges of results efficiently.
+
+If this function is not called, the default is @false@.
+
+Returns itself, making the function suitable for chaining.
+
+
+h3(function). sortBy(order)
+
+Set the order of the objects in the results. Allowed values for @order@ are @date@, @date_asc@, @relevance@, @any@, @title@ and @title_desc@.
+
+The default sort order is @any@, which returns the objects in whatever order is quickest for the object store.
+
+Returns itself, making the function suitable for chaining.
+
+There are also shortcut functions defined, @sortByDate()@, @sortByDateAscending()@, @sortByRelevance()@, @sortByTitle()@ and @sortByTitleDescending()@, which set the order accordingly and return the object for chaining.
+
+
+h3(function). queryDeletedObjects()
+
+Set the query to return deleted objects which match the query. Only objects which have been deleted will be returned.
+
+Returns itself, making the function suitable for chaining.
+
+
+h3(function). freeText(text, desc, qual)
+
+Find objects which match the given free text. @text@ must be a non-empty String. The search will use the usual rules, including case insensitivity and stemming of the terms.
+
+The optional @desc@ and @qual@ arguments restrict the attributes which are searched.
+
+This function is intended for performing searches based on queries entered by the user. If your intention is to find a specific object, use the object's reference, or to find groups of specific objects, use the @link()@ function.
+
+Returns itself, making the function suitable for chaining.
+
+
+h3(function). link(ref, desc, qual)
+
+Query for objects linked to a given object. Optional @desc@ and @qual@ arguments restrict the values which are searched.
+
+Returns itself, making the function suitable for chaining.
+
+Examples:
+
+<pre>language=javascript
+var q = O.query();
+q.link(TYPE["std:type:book"], ATTR.Type);           // search for objects of a given type
+q.link(clientObject, ATTR["std:attribute:client"]); // search for objects linked to a client
+</pre>
+
+
+h3(function). linkDirectly(ref, desc, qual)
+
+Similar to the @link()@ function, but only returns objects which link directly to the given @ref@, rather than the given @ref@ or any of its child objects.
+
+Normally you should use @link()@ as, in general, returning objects linked to the given object and any child objects will return results which match the user's expectations. @linkDirectly()@ is useful when you are building user interfaces for hierarchical data and need to explicitly query the hierarchy.
+
+Returns itself, making the function suitable for chaining.
+
+
+h3(function). linkToAny(desc, qual)
+
+Query for objects which are linked to any other object, used for checking for the presence of a link. @desc@ must be specified, but @qual@ is optional.
+
+Returns itself, making the function suitable for chaining.
+
+
+h3(function). identifier(identifier, desc, qual)
+
+Query for objects which are identified using the given identifier [node:dev/plugin/interface/text:text object], for example, an email address. Optional @desc@ and @qual@ arguments restrict the values which are searched.
+
+This differs from text searches as the identifier is matched exactly, without natural language processing, using identifier specific equality rules.
+
+It only works for text types which act as identifiers. These correspond to the types with names beginning @T_IDENTIFIER@ in [node:dev/plugin/o/constants/text-types].
+
+Returns itself, making the function suitable for chaining.
+
+This example builds a query to find People objects with a given email address:
+
+<pre>language=javascript
+var email = O.text(O.T_IDENTIFIER_EMAIL_ADDRESS, "joe@example.com");
+var q = O.query();
+q.link(TYPE["std:type:person"], ATTR.Type);
+q.identifier(email, ATTR["std:attribute:email"]);
+</pre>
+
+
+h3(function). or(fn)
+
+Make an OR sub-clause, which matches objects matching any of its sub-clauses.
+
+If the @fn@ argument is a function, that function will be called with the sub-clause as an argument, and the object will return itself for chaining. Otherwise, the sub-clause is returned from this function.
+
+This example shows both ways the sub-clause function can be used.
+
+<pre>language=javascript
+// Preferred style
+var q = O.query().or(function(subquery) {
+    subquery.link(TYPE["std:type:book"], ATTR.Type).
+             link(clientObject, ATTR["std:attribute:client"]);
+});
+// Alternative style
+var q = O.query();
+var orClause = q.or();
+orClause.link(TYPE["std:type:book"], ATTR.Type).
+         link(clientObject, ATTR["std:attribute:client"]);
+// And in either case, execute the top level query
+var results = q.execute();
+</pre>
+
+
+h3(function). and(fn)
+
+Make an AND sub-clause, which matches objects matching all its sub-clauses.
+
+If the @fn@ argument is a function, that function will be called with the sub-clause as an argument, and the object will return itself for chaining. Otherwise, the sub-clause is returned from this function.
+
+Use in a similar manner to the @or()@ sub-clause. Given that the top level clause returned by @O.query()@ is an AND clause, this is mainly useful nested within other clauses.
+
+
+h3(function). not(fn)
+
+Make a NOT sub-clause, which matches objects matching the *first* clause, but not any of the *other* clauses.
+
+If you do not include at least two sub-clauses, an exception will be thrown when you execute the query.
+
+If the @fn@ argument is a function, that function will be called with the sub-clause as an argument, and the object will return itself for chaining. Otherwise, the sub-clause is returned from this function.
+
+This example finds all books which do not have an author:
+
+<pre>language=javascript
+var anonymousBooks = O.query().not(function(subquery) {
+    subquery.link(TYPE["std:type:book"], ATTR.Type).
+             linkToAny(ATTR["dc:attribute:author"]);
+}).execute();
+</pre>
+
+h3(function). linkToQuery(desc, qual, hierarchicalLink, fn)
+
+Make a sub-clause which performs a sub-query, then finds all objects which link to any of the results. If @desc@ and @qual@ are given, only consider links in those values.. If @hierarchicalLink@ is @true@ (the default), then hierarchical links are used, otherwise the objects must link exactly.
+
+@desc@, @qual@ and @hierarchicalLink@ are optional and may be omitted.
+
+If the *last* argument is a function, that function will be called with the sub-clause as an argument, and the object will return itself for chaining. Otherwise, the sub-clause is returned from this function.
+
+
+h3(function). linkFromQuery(desc, qual, fn)
+
+Make a sub-clause which performs a sub-query, then finds all objects which any of the results contains a link to. If @desc@ and @qual@ are given, only consider links in those values.
+
+@desc@ and @qual@ are optional and may be omitted.
+
+If the *last* argument is a function, that function will be called with the sub-clause as an argument, and the object will return itself for chaining. Otherwise, the sub-clause is returned from this function.
+
+h3(function). createdByUser(userOrUid)
+
+Query for objects which were created by a given user. Pass in a numeric user ID, or a [node:dev/plugin/interface/security-principal] object.
+
+Returns itself, making the function suitable for chaining.
+
+
+h3(function). dateRange(startDate, endDate, desc, qual)
+
+Query for objects which have a date value in the given range. Values must satisfy @startDate <= value < endDate@.
+
+@startDate@ and @endDate@ must be JavaScript @Date@ objects. Either @startDate@ or @endDate@ can be @null@ in which case the query is unbounded in that direction.
+
+The optional @desc@ and @qual@ arguments restrict the values which are searched.
+
+Returns itself, making the function suitable for chaining.
+
+
+h3(function). limit(maximumResults)
+
+Limit the number of results which will be returned by this query. For paging results, see @setSparseResults()@.
+
+Returns itself, making the function suitable for chaining.

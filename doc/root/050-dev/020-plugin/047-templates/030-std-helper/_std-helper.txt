@@ -1,0 +1,10 @@
+title: Handlebars helpers
+class: DocNodeTextileWithTOC
+--
+
+"Handlebars helpers":http://handlebarsjs.com/block_helpers.html augment the features available for rendering a template.
+
+You can also specify your own helpers for your plugin using [node:dev/plugin/interface/plugin/response-generation#registerHandlebarsHelper] or supply them in the options to a Template's [node:dev/plugin/interface/template#render] function.
+
+
+h2. Standard helpers

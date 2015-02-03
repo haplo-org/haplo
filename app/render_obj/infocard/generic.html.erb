@@ -1,0 +1,23 @@
+<%
+  h_type_name = h(type_desc.printable_name.to_s)
+%>
+<div class="z__object_infocard">
+<a href="<%= object_urlpath(obj) %>" class="z__object_infocard_title_link"><%= html_for_icon(type_desc.render_icon, :small, h_type_name) %> <%= h_type_name %></a>
+<%
+  # TODO: Improve infocard display -- just display non-objref values isn't quite right.
+  attrs = KAttrAlias.attr_aliasing_transform(obj)
+  attrs.each do |a|
+    unless a.attributes.empty?
+      done_header = false
+      a.attributes.each do |value,desc,q|
+        next if value.k_typecode == T_TEXT_DOCUMENT     # don't display document text
+        unless done_header
+          %><div class="z__object_infocard_attr_name"><%= h(a.descriptor.printable_name.to_s) %></div><%
+          done_header = true
+        end
+        %><div class="z__object_infocard_attr_value"><%= render_value(value, obj, options, desc) %></div><%
+      end
+    end
+  end
+%>
+</div>

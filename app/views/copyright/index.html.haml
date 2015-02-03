@@ -1,0 +1,17 @@
+- @page_title = 'Copyright Notice'
+
+-# User copyright statement
+!= render_doc_as_html(KApp.global(:copyright_statement), KObjectStore.store)
+
+%p &nbsp;
+%p &nbsp;
+
+.z__document
+  %h2 Software Copyright
+  - if KApp.global(:product_name) != 'Haplo'
+    %p
+      = KApp.global(:product_name)
+      is a product built on the Haplo Platform.
+
+  %p<
+    %small The <a href="http://haplo.org" rel="nofollow">Haplo Platform</a> is provided by <a href="http://www.oneis.co.uk" rel="nofollow">ONEIS Ltd</a>, and is copyright &copy; ONEIS Ltd 2006 &mdash; #{Time.new.year.to_s}. All rights in the Haplo Platform are expressly reserved. The Haplo Platform is licensed to you under the terms of the Mozilla Public License Version 2.0. ONEIS Ltd asserts its ownership of the design of Haplo.

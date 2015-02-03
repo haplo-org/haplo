@@ -1,0 +1,10 @@
+{
+  "pluginName": "test_plugin3",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test Plugin 3",
+  "displayDescription": "For testing",
+  "apiVersion": 3,
+  "privilegesRequired": ["pDatabase"],
+  "load": ["js/test_plugin3.js"]
+}

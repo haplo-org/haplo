@@ -1,0 +1,13 @@
+<%
+  @page_title = h(@attr_desc.printable_name)
+-%>
+
+<%= sys_mng_header %>
+
+<%= render :partial => 'attr_info' %>
+
+<% if @attr_desc.control_by_types.length > 1 %>
+  <p class="z__management_notice">This list is composed of multiple classification types.</p>
+<% else %>
+  <p class="z__management_notice">The classification type used by this list has a different name to the attribute.</p>
+<% end %>

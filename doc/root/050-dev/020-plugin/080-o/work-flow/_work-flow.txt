@@ -1,0 +1,5 @@
+title: Workflow support
+class: DocNodeTextileWithTOC
+--
+
+The interface to the [node:dev/plugin/work-flow] system is through the @O.work@ property.

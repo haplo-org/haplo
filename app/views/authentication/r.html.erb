@@ -1,0 +1,23 @@
+<%
+  @page_title = 'Forgotten password'
+  @breadcrumbs = [:login]
+-%>
+
+<p><b>Step 3</b></p>
+
+<p>Please choose a new password, which <%= User::SECURITY_REQUIREMENTS_TEXT %>.</p>
+
+<%= render :partial => 'bad_password', :data_for_template => { :message => 'Password not changed.' } %>
+
+<form method="POST"><%= form_csrf_token %>
+
+<p>New password<br>
+<input type="password" name="pw1" value="" class="z__focus_candidate"></p>
+
+<p>Re-enter new password to confirm<br>
+<input type="password" name="pw2" value=""></p>
+
+<p><input type="submit" value="Change password"></p>
+
+</form>
+

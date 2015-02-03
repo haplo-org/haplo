@@ -1,0 +1,14 @@
+FOR: /do/setup/type/show
+
+h1. Type information
+
+This shows information about the selected type.
+
+Click _New sub-type_ to create a type based on this type.
+
+* _General information_ shows the names, behaviours, and attributes used.
+* _Search and retrieval_ adjusts how the search handles objects of this type.
+* _Display_ controls how objects of this type are displayed
+* _Object creation_ gives options for creation and editing of objects.
+
+

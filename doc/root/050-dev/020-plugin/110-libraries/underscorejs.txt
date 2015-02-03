@@ -1,0 +1,6 @@
+title: underscore.js
+--
+
+The "underscore.js":http://documentcloud.github.com/underscore/ library adds some useful functional programming support, such as iterating over arrays.
+
+The [node:dev/plugin/libraries/underscore-string] is also provided to add some useful string manipulation functions to the core underscore.js library.

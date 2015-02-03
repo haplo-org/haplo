@@ -1,0 +1,23 @@
+<%
+  @page_title = 'Your devices'
+  @breadcrumbs = [:account]
+%>
+
+<% if @devices.empty? %>
+
+  <p>There are no devices activated for use with your account.</p>
+
+<% else %>
+
+  <table class="z__with_alternate_row_stripes">
+    <tr><th>Name</th><th>Kind</th><th></th></tr>
+  <% @devices.each do |device| %>
+    <tr>
+      <td><%= h(device.name) %></td>
+      <td><form method="POST" action="/do/account/delete_device/<%= device.id %>"><%= form_csrf_token %><% if @display_for_admin %><input type="hidden" name="admin" value="1"><% end %><input type="submit" value="Deactivate"></form></td>
+    </tr>
+  <% end %>
+  </table>
+
+<% end %>
+

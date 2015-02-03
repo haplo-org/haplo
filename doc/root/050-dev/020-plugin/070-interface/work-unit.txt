@@ -1,0 +1,124 @@
+title: WorkUnit
+long_title: WorkUnit interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @WorkUnit@ interface represents a unit of work within the workflow system.
+
+
+h2. Construction
+
+Create a new @WorkUnit@ with [node:dev/plugin/o/work-flow/create].
+
+Load an existing @WorkUnit@ given its ID with [node:dev/plugin/o/work-flow/load].
+
+Find existing @WorkUnit@ objects with [node:dev/plugin/o/work-flow/query].
+
+Render a @WorkUnit@ to HTML when requested by the [node:dev/plugin/hook/work-unit-render] hook.
+
+
+h2. Usage
+
+Set properties, then call @save()@ commit the changes.
+
+
+h2. Interface
+
+h3(property). id
+
+The numeric @ID@ of this work unit.
+
+
+h3(property). workType
+
+The type of work, as a @String@. This should in the form @plugin_name:type@ to avoid clashing with other plugins.
+
+
+h3(property). ref
+
+The [node:dev/plugin/interface/ref] of a store object to which this @WorkUnit@ refers. This causes the work unit to be displayed on that object's page.
+
+
+h3(property). closed
+
+Boolean. @true@ if this work unit is closed.
+
+
+h3(property). createdAt
+
+Date. When this work unit was created.
+
+
+h3(property). openedAt
+
+Date. When this work unit was opened. May be in the future.
+
+
+h3(property). deadline
+
+Date. When this work unit must be closed by.
+
+
+h3(property). closedAt
+
+Date. When this work unit was closed.
+
+
+h3(property). createdBy
+
+Who created this work unit, read as a [node:dev/plugin/interface/security-principal].
+
+This property can be set with a numeric ID or a [node:dev/plugin/interface/security-principal] object.
+
+
+h3(property). actionableBy
+
+Which user or group can action and close this work unit, read as a [node:dev/plugin/interface/security-principal].
+
+This property can be set with a numeric ID or a [node:dev/plugin/interface/security-principal] object. Use the schema [node:dev/plugin/schema/group] constants for specifying groups.
+
+
+h3(property). closedBy
+
+Which user or group can action and closed this work unit, read as a [node:dev/plugin/interface/security-principal], or @null@ if it's open.
+
+This property can be set with a numeric ID or a [node:dev/plugin/interface/security-principal] object.
+
+
+h3(property). data
+
+JavaScript @Object@, which can only contain items which can be serialised to JSON. Use to store arbitrary data about the state of your workflow.
+
+Note this is *not* a @DataStore@ object, and the changes made are only saved when the @save()@ function is called.
+
+
+h3(function). isActionableBy(user)
+
+Returns @true@ if this work unit is actionable by @user@, either by being directly assigned to the work unit, or through group membership.
+
+
+h3(function). close(closedBy)
+
+Close the work unit. @closedBy@ is either the ID of the closing user, or a [node:dev/plugin/interface/security-principal] object.
+
+You must call @save()@ to commit this change.
+
+
+h3(function). reopen()
+
+Reopen the work unit.
+
+You must call @save()@ to commit this change.
+
+
+h3(function). save()
+
+Commit the changes to the work unit.
+
+
+h3(function). deleteObject()
+
+Delete this work unit.
+
+If it's useful to keep the work unit in the system as a record of a past action, consider closing the work unit and saving it instead of deleting it.
+

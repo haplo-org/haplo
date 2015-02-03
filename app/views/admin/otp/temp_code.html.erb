@@ -1,0 +1,21 @@
+<%
+  @page_title = "Temporary code"
+  @breadcrumbs = [:menu, ['/do/admin/otp', 'Tokens']]
+%>
+
+<p>Creating a temporary code allows a user who has forgotten their token to log into the system.</p>
+
+<p><b>You must be very careful.</b> If you issue a temporary code without verifying that you've given it to the right person, you can compromise the security of the system.</p>
+
+<p>Which user needs a temporary code?</p>
+
+<ul>
+<%
+  @users.each do |user|
+    %><li><a href="/do/admin/otp/temp_code2/<%= user.id %>"><%= h(user.name) %></a></li><%
+  end
+%>
+</ul>
+
+<p>&nbsp;</p>
+<p><a href="/do/admin/otp">Cancel</a></p>

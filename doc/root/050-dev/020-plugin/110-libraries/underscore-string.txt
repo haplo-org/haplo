@@ -1,0 +1,4 @@
+title: underscore.string
+--
+
+The "underscore.string":https://github.com/edtsech/underscore.string library adds some useful string manipulation functions to the [node:dev/plugin/libraries/underscorejs] library, including a @_.sprintf(format, args ...)@ function.

@@ -1,0 +1,17 @@
+FOR: /do/setup/subset/ordering
+
+h1. Search subset ordering
+
+The ordering priority sets the order in which search subsets appear in the "Search within" drop down menu on the Search page. 
+
+To change the order, change the numerical value in the Ordering priority column. The first subset in the list, the one with the lowest number in the Ordering priority column, is the default subset. This should normally be called "everything" and include all sections which users would most often want to search. 
+
+A subset is only offered to a user if they have read and search permissions on at least one section specified in the search.
+
+If there are no subsets, then the user searches all sections where they have read and search permissions.
+
+h4. Further help
+
+[[Search subsets]]
+
+

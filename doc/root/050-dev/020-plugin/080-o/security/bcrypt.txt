@@ -1,0 +1,15 @@
+title: bcrypt
+long_title: bcrypt password storage
+--
+
+"Bcrypt":http://en.wikipedia.org/wiki/Bcrypt is an algorithm for securely storing passwords. If you are storing passwords, you *must* use this, rather than any other encoding scheme.
+
+
+h3(function). O.security.bcrypt.create(password)
+
+Encode @password@ using Bcrypt. Returns a string which can be used to store the password in a database.
+
+
+h3(function). O.security.bcrypt.verify(password, encoded)
+
+Returns @true@ if @password@ matches the @encoded@ password.

@@ -1,0 +1,15 @@
+title: O.work.query()
+link_as: keyword
+--
+
+Constructs a new object implementing the [node:dev/plugin/interface/work-unit-query] interface.
+
+
+
+h3(function). O.work.query(workType)
+
+Create a query object to find the given type of work unit.
+
+If the @workType@ does not contain a @:@ character, an exception will be thrown.
+
+

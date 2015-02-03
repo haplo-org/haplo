@@ -1,0 +1,13 @@
+FOR: /do/setup/navigation/preview
+
+h1. Preview navigation
+
+To assist with visualising your navigation, you can display the navigation as it would be seen by a member of a group.
+
+Note that this "single group" view may be too simplistic to accurately preview what your users will see. The results can be affected by:
+
+ * Multiple groups -- users are likely to belong to more than one group, and this preview only looks at one group.
+ * Permissions -- if a user does not have permission to view an object, it will not be shown to them.
+
+This tool does take into account group membership, so if a group is a member of another group, the preview will reflect this.
+

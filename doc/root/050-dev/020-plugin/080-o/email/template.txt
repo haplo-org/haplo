@@ -1,0 +1,19 @@
+title: O.email.template()
+link_as: keyword
+--
+
+Constructs a new object implementing the [node:dev/plugin/interface/email-template] interface.
+
+
+h3(function). O.email.template(name)
+
+Creates a new [node:dev/plugin/interface/email-template] object representing the template with the specified name. Matching is case sensitive.
+
+If no name is specified, the default 'Generic' email template will be returned.
+
+If the template does not exist, @undefined@ will be returned.
+
+Email templates are created in System Management.
+
+CLICK_PATH TOOLS > System management > Email templates
+

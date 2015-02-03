@@ -1,0 +1,29 @@
+<%
+  # Takes parameters in :data_for_template
+  form_action = data_for_template[:action]
+  button_label = data_for_template[:button]
+  extra_html = data_for_template[:extra_html] || ''
+  
+  client_side_resources :export_objects
+%>
+
+<form method="POST" action="<%= form_action %>" id="z__download_form"><%= form_csrf_token %>
+<%= extra_html %>
+
+<p><select name="output_form"><option value="">Export all data</option>
+  <%
+    ExportObjectsHelper::EXPORT_OUTPUTS.each do |key,info|
+      %><option value="<%= key %>"><%= info.first %></option><%
+    end
+  %>
+</select> as <select name="output_format">
+  <option value="xls">Microsoft Excel</option>
+  <option value="csv">CSV</option>
+  <option value="tsv">TSV</option>
+</select></p>
+
+<p><label><input type="checkbox" name="urls" value="1">Include item URLs</label></p>
+
+<p><input type="submit" value="<%= button_label %>"> <span id="z__download_message" style="display:none">Your download has started.</span></p>
+
+</form>

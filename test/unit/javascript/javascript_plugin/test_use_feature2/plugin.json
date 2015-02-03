@@ -1,0 +1,11 @@
+{
+  "pluginName": "test_use_feature2",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test Use Feature 2",
+  "displayDescription": "For testing",
+  "apiVersion": 3,
+  "loadPriority": 1000,
+  "use": ["test:feature"],
+  "load": []
+}

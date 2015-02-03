@@ -1,0 +1,7 @@
+<table class="z__mangement_kv_table">
+  <tr><th>Attribute name</th><td><%= h(@attr_desc.printable_name) %></td></tr>
+  <tr><th>Links to type</th><td><%= @attr_linked_objs.map { |t| h(t) } .join('<br>') %></td></tr>
+  <% if @warnings != nil %>
+    <tr><th>Warnings</th><td><%= @warnings.join('<br>') %></td></tr>
+  <% end %>
+</table>

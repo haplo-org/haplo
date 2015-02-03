@@ -1,0 +1,80 @@
+title: File
+long_title: File interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @File@ interface represents a file stored and managed by the platform's file store.
+
+h2. Construction
+
+Use [node:dev/plugin/o/constructor/file].
+
+
+h2. Interface
+
+h3(property). digest
+
+The digest of the file, as a hex encoded @String@.
+
+
+h3(property). fileSize
+
+The size of the file, in bytes, as a number.
+
+
+h3(property). mimeType
+
+The MIME type of the file, as set by the browser when the file was originally uploaded. Note that some MIME types are standardised as browsers tend to be a bit inconsistent.
+
+
+h3(property). filename
+
+The filename of the file, as set by the browser when the file was originally uploaded.
+
+Note that if a file is uploaded again, it's still only stored once, and the original filename isn't changed. Users can use a different filename by using a [node:dev/plugin/interface/file-identifier].
+
+
+h3(property). basename
+
+The filename of the file, without the file extension.
+
+
+h3(property). createdAt
+
+The @Date@ when the file was originally uploaded for the first time.
+
+
+h3(function). identifier()
+
+Create a new [node:dev/plugin/interface/file-identifier] which refers to this file, with a random @trackingId@.
+
+
+h3(function). secret
+
+The file's secret, as a @String@. You must *always* check the secret with the @checkSecret()@ function.
+
+
+h3(function). checkSecret(secret)
+
+Compare the given secret with the file's secret using a timing-attack resistant comparison algorithm. If the secret does not match, an exception is thrown.
+
+
+h3(function). url(options)
+
+Return a URL which can be used to download this file. See below for the optional @options@ argument.
+
+
+h3(function). toHTML(options)
+
+Return some HTML which can be included in a web page. See below for the optional @options@ argument.
+
+
+h2. Options
+
+|_Property_|_Description_|_Default_|
+|@transform@|Transform to be applied to the file|@null@|
+|@asFullURL@|Whether to include the hostname in the URL|@false@|
+|@authenticationSignature@|Sign the URL to bypass the usual file download authentication. Note that this signature is only valid for the current user session.|@false@|
+|@linkToDownload@|When generating HTML, include a link to download the file.|@false@|
+|@forceDownload@|Set the Content-Disposition to attachment to force the browser to download the file, rather than displaying it.|@false@|
+

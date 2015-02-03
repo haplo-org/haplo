@@ -1,0 +1,6 @@
+title: HTTP
+link_as: keyword
+--
+
+To help with writing request handlers, the standard HTTP status codes are available in the @HTTP@ global object.
+

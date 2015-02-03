@@ -1,0 +1,23 @@
+FOR: /do/admin/otp
+
+h1. Manage tokens
+
+Authentication tokens provide an extra level of security. This page lists all the users, and any tokens issued to them.
+
+It is important that you manage tokens carefully to avoid compromising the security of the system.
+
+h2. Issue token
+
+To issue a token, click 'Issue' next to the user. Type in the token serial number and the current code from the token.
+
+h2. Replace token
+
+If you're asked to replace a token, be very careful that you're issuing the replacement to the correct person.
+
+h2. Withdraw token
+
+Withdrawing a token will, depending on the configuration of the system, either prevent a user from logging in, or allow the user to log in without a token.
+
+h2. Create temporary code
+
+If a user has forgotten a token, you can create a temporary code to allow them to log in. Make sure you verify the identity of the user carefully.

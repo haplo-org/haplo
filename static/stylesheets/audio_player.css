@@ -1,0 +1,50 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+.z__file_audio_thumbnail {
+    width: 47px;
+    height: 47px;
+    background: #eee url(/images/audio_player.png) 0 0 no-repeat;
+}
+.z__file_audio_thumbnail:hover {
+    background-position: 0 -47px;
+}
+/* for the mime type of the file.
+   -- this CSS definition is in object.css to make sure it's never accidently displayed
+.z__file_audio_thumbnail span {
+    display: none;
+}
+*/
+
+.z__audio_player {
+    position: absolute;
+    background: #fff;
+    z-index: 90000;
+}
+
+.z__audio_player .z__audio_player_close {
+    display: block;
+    float: left;
+    color: #ccc;
+    position: relative;
+    top: 6px;
+}
+
+.z__audio_player_player_holder {
+    width: 98%;
+}
+
+.z__audio_player_player_holder audio {
+    width: 99%;
+}
+
+.z__audio_player_download {
+    width: 60%;
+    position: relative;
+    left: 40%;
+    margin-top: 6px;
+    text-align: right;
+}

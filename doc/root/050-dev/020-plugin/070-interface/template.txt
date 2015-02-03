@@ -1,0 +1,75 @@
+title: Template
+long_title: Template interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @Template@ interface represents a template for generating textual data, such as HTML for displaying to the user.
+
+See [node:dev/plugin/templates] for how to use @Template@ objects.
+
+
+h2. Construction
+
+Obtain a @Template@ object using the [node:dev/plugin/interface/plugin/response-generation#template] function in [node:dev/plugin/interface/plugin].
+
+
+h2. Interface
+
+h3(property). kind
+
+The kind of output this will produce, for example, @"html"@. The value may be @null@.
+
+This property can be used to set the @kind@ property of a HTTP [node:dev/plugin/interface/response] object. This is done automatically when using the @render()@ function on an [node:dev/plugin/interface/exchange] object.
+
+
+h3(function). render(view, options)
+
+Render the template, returning a @String@.
+
+@view@ is a JavaScript @Object@ used as a dictionary to provide parameters for the template rendering.
+
+The optional @options@ is an @Object@ which may contain the following keys:
+
+|@helpers@|An @Object@ containing "Handlebars helpers":http://handlebarsjs.com/block_helpers.html for use when rendering this template, in addition to the standard helpers and those registered with the plugin using [node:dev/plugin/interface/plugin/response-generation#registerHandlebarsHelper]|
+
+
+h2. Example using custom helpers
+
+With the view and helpers set up for the @render()@ call:
+
+<pre>language=javascript
+    var template = plugin.template("example");
+    var view = {
+        one: "Example",
+        two: "Rendering"
+    };
+    var options = {
+        helpers: {
+            div: function(text) {
+                var html = '<div>'+_.escape(text)+'</div>';
+                return new HandleBars.SafeString(html);
+            }
+        }
+    }
+    var renderedHTML = template.render(view, options);
+</pre>
+
+and the template:
+
+<pre>
+    <div id="container">
+        {{div one}}
+        {{div two}}
+    </div>
+</pre>
+
+the following HTML would be rendered:
+
+<pre>
+    <div id="container">
+        <div>Example</div>
+        <div>Rendering</div>
+    </div>
+</pre>
+
+When writing helpers, be very careful to escape all the text output to avoid creating security holes. If if doubt, omit the @HandleBars.SafeString@ creation and just return a plain string, which will be escaped for you.

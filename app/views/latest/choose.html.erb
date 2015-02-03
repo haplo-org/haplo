@@ -1,0 +1,49 @@
+<%
+  @page_title = 'Choose '+KApp.global(:name_latest_requests)
+  @breadcrumbs = [:account, ['/do/latest', KApp.global(:name_latest).capitalize]]
+  client_side_resources :latest_user
+-%>
+<% in_right_column render(:partial => 'menu') %>
+
+<form method="post" action="/do/latest/update"><%= form_csrf_token %>
+<% @types_sorted_by_name.each do |tobjref| -%>
+  <%
+    is_user_requests = (:user_requests == tobjref)
+    if is_user_requests
+      %><div class="z__latest_edit_type_heading">Your extra choices</div>
+      <div class="z__latest_edit_checkbox_container" id="z__latest_edit_user_choices"><%
+    else
+      %><div class="z__latest_edit_type_heading"><%= h(@type_names[tobjref]) %></div>
+      <div class="z__latest_edit_checkbox_container"><%
+    end
+    reqs = @advertised_requests[tobjref]
+    num_reqs = reqs.length
+    reqs_in_col = is_user_requests ? (num_reqs + 1) : ((num_reqs / 2) + ((num_reqs % 2 == 0)?0:1))
+    i = 0
+    reqs.each do |req|
+      inc = req.inclusion
+      checked = inc > LatestRequest::REQ_EXCLUDE
+      disabled = inc == LatestRequest::REQ_FORCE_INCLUDE
+      %><p><input type="checkbox" name="r[<%= req.objref.to_presentation %>]"<% if checked %> checked<% end %><% if disabled %> disabled<% end %>> <%= h(req.title) %></p><%
+      i+=1
+      if (i % reqs_in_col) == 0 && i != num_reqs
+        # start new column
+        %></div><div class="z__latest_edit_checkbox_container"><%
+      end
+    end
+    if is_user_requests
+      # NOTE: Must be no space between </a><div> so that IE doesn't mess up the spacing
+      %><a href="#" id="z__latest_choose_add_link">Add...</a><div id="z__latest_choose_add_search_ui" style="display:none">
+      <%= render :partial => 'latest/add_object_ui' %>
+      <%= control_object_insert_menu('z__latest_add_request', 'Add (advanced)') %>
+      </div>
+      <%
+    end
+  -%>
+  </div>
+<% end -%>
+
+<div class="z__latest_edit_button">
+  <input type="submit" value="Save choices">
+</div>
+</form>

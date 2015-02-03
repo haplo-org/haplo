@@ -1,0 +1,44 @@
+
+<%
+  # Don't display this UI for intranet pages, as it adds unnecessary icons at the top which just make things look rubbish
+  # And don't display this for the 'hideall' render type, used for implementing completely custom rendering with Elements
+  render_type = @type_desc ? @type_desc.render_type : :generic
+  render_icon = @type_desc ? @type_desc.render_icon : :generic
+  if (render_type != :intranetpage) && (render_type != :blank)
+    # @show_linked_objects is true if rendering a list of linked objects
+    %><div id="z__object_linked_types_banner">
+    <div id="z__object_linked_types_banner_main_object">
+      <%= @show_linked_objects ? %Q!<a href="#{@obj_urlpath}">! : '<div>' %>
+        <%= html_for_icon(render_icon, :medium) %><br><%= h(@type_desc ? @type_desc.printable_name : "Object") %>
+      <%= @show_linked_objects ? '</a>' : '</div>' %>
+    </div><%
+    if @linked_search != nil
+      unless @total_linked_objects == 0
+        # Main type icon
+        if @show_linked_objects && @show_linked_objects_type == nil
+          %><div><div class="z__linked_icon_selected">
+            <%= html_for_icon(Application_IconHelper::ICON_SPECIAL_LINKED_ITEMS_SELECTED, :medium, "Linked items (#{@total_linked_objects})") %>
+          </div></div><%
+        else
+          %><div><a href="<%= @obj_urlpath %>/linked" class="z__linked_icon_not_selected z__linked_icon_all_linked_adjustment">
+            <%= html_for_icon(Application_IconHelper::ICON_SPECIAL_LINKED_ITEMS, :medium, "Linked items (#{@total_linked_objects})") %>            
+          </a></div><%
+        end
+        # Output icons for each root type
+        @linked_search_sorted_roots.each do |root_count,root_type_desc,children|
+          # TODO: Add a typename slug to the linked objects URL?
+          if @show_linked_objects_type == root_type_desc.objref
+            %><div><div class="z__linked_icon_selected">
+              <%= html_for_icon(root_type_desc.render_icon, :medium, "#{h(root_type_desc.printable_name)} (#{root_count})") %>
+            </div></div><%
+          else
+            %><div><a href="<%= @obj_urlpath %>/linked/<%= root_type_desc.objref.to_presentation %>" class="z__linked_icon_not_selected">
+              <%= html_for_icon(root_type_desc.render_icon, :small, "#{h(root_type_desc.printable_name)} (#{root_count})") %>
+            </a></div><%
+          end
+        end
+      end
+    end
+    %></div><%
+  end
+%>

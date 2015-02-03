@@ -1,0 +1,22 @@
+FOR: /do/setup/section/new
+FOR: /do/setup/section/edit
+
+h1. Edit section
+
+* _Name_: enter a descriptive name for the section. This is the name displayed in the user interface. Make it short and easy to understand, and plural where appropriate.
+* _URL_: this is the part of the URL for objects in this section. It cannot include spaces. By convention it should be all lower case and singular. You can use hyphens and underscores. You cannot use any of the following names:
+** do
+** search
+** feed
+** api
+** file
+** blog
+* _Notes_ (optional): Enter any required description of the purpose of this section. It will be displayed if the user is asked to make an explicit choice of section when creating a new item.
+* _Features_:
+** _Automatically publish new versions of documents immediately on upload_: enabling this means any new versions of documents in this section will be automatically published when checked in. If this feature is not used, users can choose which version is published. 
+
+h2. Creating new sections
+
+When you create a new section, choose another section from the drop down model to act as the template for permissions and search subset membership. Permissions will be copied from the section, and it will be added to the search subsets.
+
+You can edit these later in the Group and Search subsets menus.

@@ -1,0 +1,54 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+/* NOTE: Also some CSS in app.css to use dynamic images */
+
+#z__home_page_banners {
+    position: relative;
+    width: 520px;
+    height: 170px;
+}
+
+.z__home_page_banner_container {
+    position: absolute;
+    width: 520px;
+    height: 150px;
+    top: 0;
+    background-color: #fff;
+    background-position: 0 0;
+    background-repeat: no-repeat;
+}
+
+.z__home_page_banner_container div {
+    position: absolute;
+    bottom: 30px;
+    font-size: 30px;
+    line-height: 34px;
+    color: #fff;
+    font-family: Georgia, serif;
+    padding: 0 24px;
+}
+
+.z__home_page_banner_chooser {
+    position: absolute;
+    text-align: center;
+    top: 160px;
+    width: 520px;
+    height: 10px;
+}
+
+.z__home_page_banner_chooser a, .z__home_page_banner_chooser a:hover {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    margin: 0 5px;
+    background: #fff url(PLUGIN_STATIC_PATH/banner-ui.png) 0 0 no-repeat;
+}
+
+.z__home_page_banner_chooser a.z__selected, .z__home_page_banner_chooser a.z__selected:hover {
+    background-image: url(PLUGIN_STATIC_PATH/banner-ui-on.png);
+}

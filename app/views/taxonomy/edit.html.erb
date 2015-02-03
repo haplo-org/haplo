@@ -1,0 +1,33 @@
+<%
+  @page_title = h(title_of_object(@taxonomy))
+  @breadcrumbs = [:menu, ['/do/taxonomy', 'Taxonomies']]
+  client_side_resources(:object_editor)
+  client_side_controller_js('taxonomyedit')
+  
+  te_args = [
+      csrf_get_token,
+      @taxonomy.first_attr(KConstants::A_TYPE).to_presentation,
+      @taxonomy.objref.to_presentation,
+      (@selected == nil) ? nil : @selected.to_presentation
+    ]
+-%>
+
+
+<%= control_tree('z__taxonomy_terms') %>
+
+<div id="z__taxonomy_edit_cancel" style="margin-top:26px;float:right;position:relative;z-index:1000;display:none"><a class="z__taxonomyedit_cancel" href="#"><b>Cancel</b></a></div>
+<div id="display" style="margin-top:24px"></div>
+
+<div id="z__taxonomy_move_ui" style="display:none">
+<p>Move <b id="z__term_to_move"></b></p>
+<p>&nbsp; &nbsp; <span id="z__taxonomy_move_to_root"><a class="z__taxonomyedit_move_root" href="#">to the taxonomy root</a></span></p>
+<p>&nbsp; &nbsp; <span id="z__taxonomy_move_to_child_instruction">(or choose location below)</span><span id="z__taxonomy_move_to_child"><a class="z__taxonomyedit_move_term" href="#">as narrower term of <b id="z__term_target"></b></a></span></p>
+<p>&nbsp;</p>
+
+<%= control_tree('z__taxonomy_move_target', :small) %>
+<p id="z__taxonomy_move_warning" class="z__general_alert" style="display:none">You cannot move the term to itself or a child of itself.</p>
+
+</div>
+
+<%= @treesource %>
+<div id="z__taxonomy_edit_data" data-te="<%= h(te_args.to_json) %>"></div>

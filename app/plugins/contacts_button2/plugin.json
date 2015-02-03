@@ -1,0 +1,10 @@
+{
+  "pluginName": "contacts_button2",
+  "pluginAuthor": "ONEIS",
+  "pluginVersion": 100,
+  "displayName": "Contacts Button",
+  "displayDescription": "Add a Contacts button to People and Organisation objects for helping manage contacts.",
+  "apiVersion": 3,
+  "load": ["js/contacts_button2.js"],
+  "respond": ["/do/contacts"]
+}

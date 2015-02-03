@@ -1,0 +1,6 @@
+title: hGetReportsList
+class: HookNode
+--
+
+This hook allows a plugin to add to the list of reports the user is allowed to view.
+Only add a report to the list if the user is authorised.

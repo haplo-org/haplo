@@ -1,0 +1,43 @@
+title: LabelChanges
+long_title: LabelChanges interface
+link_as: keyword
+--
+
+Represents changes to the labels applied to an object.
+
+The changes are represented as a list of labels to _add_, and a list of labels to _remove_.
+
+
+h2. Construction
+
+Use [node:dev/plugin/o/constructor/label-changes].
+
+
+h2. Interface
+
+
+h3(function). add(labels, options)
+
+Add one or more labels to the list of labels to _add_.
+
+@labels@ may be an integer, @Ref@, integer array, @Ref@ array, or a @LabelList@.
+
+@options@ is optional and may be omitted. If it is the string @"with-parents"@, as well as the labels specified, the parents of the objects referenced by each label will also be included.
+
+The given labels will be deleted from the _remove_ list, if any of those labels are already in that list.
+
+
+h3(function). remove(labels, options)
+
+Add one or more labels to the list of labels to _remove_.
+
+@labels@ may be an integer, @Ref@, integer array, @Ref@ array, or a @LabelList@.
+
+@options@ is optional and may be omitted. If it is the string @"with-parents"@, as well as the labels specified, the parents of the objects referenced by each label will also be included.
+
+The given labels will be deleted from the _add_ list, if any of those labels are already in that list.
+
+
+h3(function). change(labelList)
+
+Return a new [node:dev/plugin/interface/label-list] object formed of the labels in the @labelList@ passed in, with labels added and removed according to the add and remove lists.

@@ -1,0 +1,34 @@
+<%
+  @page_title = "Search subset ordering"
+-%>
+
+<%= sys_mng_header %>
+
+<% if request.post? %>
+
+  <p>Updated.</p>
+  <%= sys_mng_reload_submenu(false) %>
+
+<% else %>
+
+  <form method="post"><%= form_csrf_token %>
+  <table>
+  <tr><th>Subset</th><th>Ordering priority</th><th>
+  <% @subsets.each do |subset|
+    name = subset.first_attr(KConstants::A_TITLE)
+    name ||= '????'
+    ordering = (subset.first_attr(KConstants::A_ORDERING) || 0).to_i
+    -%>
+      <tr>
+      <td><%= h(name.to_s) %></td>
+      <td><input type="text" name="pri[<%= subset.objref.to_presentation %>]" size="4" value="<%= ordering %>"></td>
+      </tr>
+  <% end %>
+  <tr>
+    <td></td>
+    <td><input type="submit" value="Update ordering"></td>
+  </tr>
+  </table>
+  </form>
+
+<% end %>

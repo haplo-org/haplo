@@ -1,0 +1,50 @@
+title: O.stop()
+link_as: keyword
+--
+
+h3(function). O.stop(message, pageTitle)
+
+h3(function). O.stop(view, templateName)
+
+When called from within a [node:dev/plugin/interface/plugin/request-handling#respond] request handler, immediately stop processing the request and display a message to the user. If called from outside a request scope, raise an exception.
+
+This function does not return.
+
+If the first argument is a @string@, then:
+ * @message@ should be the message to display to the user.  
+ * @pageTitle@ is optional (default value is 'Error'). See [node:dev/plugin/interface/exchange#pageTitle] for more information.
+
+If the first argument is an @object@ then:
+ * @view@ should contain values to pass to the template, as per [node:dev/plugin/interface/exchange#render].
+ * @templateName@ is optional, and identifies the template to render the view with.  This allows a plugin to have custom, shared error pages.  By default a template is used that simply displays the @message@ view variable, with HTML characters escaped.
+
+h2. Example
+
+Simple usage
+
+<pre>language=javascript
+P.respond('GET', '/do/example/object', [
+    {pathElement:0, as:'object'}
+], function(E, displayedObject) {
+    var otherItem = displayedObject.getOtherItem();
+    if(!otherItem) {
+    	O.stop('Cannot find other item for object.');
+    }
+    ...
+});
+</pre>
+
+Using a @view@
+
+<pre>language=javascript
+P.respond('GET', '/do/example/object', [
+    {pathElement:0, as:'object'}
+], function(E, displayedObject) {
+    var otherItem = displayedObject.getOtherItem();
+    if(!otherItem) {
+    	O.stop({message: 'Foo', 
+    	        layout: 'std:minimal'}, 'my_error_page');
+    }
+    ...
+});
+</pre>

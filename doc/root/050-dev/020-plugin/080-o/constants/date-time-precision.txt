@@ -1,0 +1,16 @@
+title: DateTime precision
+long_title: Constants for DateTime precision
+--
+
+These constants are used as the @precision@ argument in [node:dev/plugin/o/constructor/datetime] and the @precision@ property of [node:dev/plugin/interface/date-time] objects.
+
+|*Constant name*|*Period*|
+|@O.PRECISION_CENTURY@|Century|
+|@O.PRECISION_DECADE@|Decade|
+|@O.PRECISION_YEAR@|Year|
+|@O.PRECISION_MONTH@|Month|
+|@O.PRECISION_DAY@|Day|
+|@O.PRECISION_HOUR@|Hour|
+|@O.PRECISION_MINUTE@|Minute|
+
+The most common precisions are @O.PRECISION_DAY@, used for plain dates, and @O.PRECISION_MINUTE@, used for date and time.

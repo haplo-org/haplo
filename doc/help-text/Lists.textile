@@ -1,0 +1,24 @@
+FOR: /do/setup/classification/lists
+
+h1. Lists
+
+Use _Lists_ to offer drop down menus of choices in the object editor.
+
+Lists are constructed from:
+
+* A classification _type_ for the 'choice objects'.
+* Objects of this type, which are usually created in the special _classification_ section. Apart from this, the choice objects are completely normal objects in the system.
+* An _attribute_ which has a data type of "link to object", and is set to link to objects of the classification type.
+
+This list editor is a convenient way of setting up the type and attribute, and then creating the objects in the classification section.
+
+After creating a list and adding some choice objects, add the attribute to the Types which will use this attribute. As a normal attribute is used as part of the list, any new list created automatically appears in the attributes list. 
+
+To create a new list, choose _New list_.
+
+h4. Further help
+
+[[New list]]
+[[Edit list]]
+
+

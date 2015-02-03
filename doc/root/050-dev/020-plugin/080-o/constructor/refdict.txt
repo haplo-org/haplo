@@ -1,0 +1,14 @@
+title: O.refdict()
+link_as: keyword
+--
+
+Constructs a object implementing the [node:dev/plugin/interface/ref-key-dictionary] interface.
+
+
+h3(function). O.refdict(valueConstructorFn, sizeHint)
+
+Both arguments are optional.
+
+If @valueConstructorFn@ is a function, it will be called to construct a value for any unknown key. Set to @undefined@ if you don't want to use a value constructor function, and are passing in a @sizeHint@.
+
+If @sizeHint@ is passed, it will be used as a hint for the expected number of values in this dictionary. This is an optimisation only, and avoids reallocation. Only set it if you're pretty much sure of how many objects you'll be storing.

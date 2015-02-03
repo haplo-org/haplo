@@ -1,0 +1,13 @@
+id, kind, name, code,			name_first, name_last, email, 	password
+0,	3,		SYSTEM,,		SYSTEM,			
+2,	0,		ANONYMOUS
+3,	3,		SUPPORT,,	SUPPORT,		
+4,	1,		Everyone, std:group:everyone
+16,	1,		Administrators, std:group:administrators
+21, 1,		Group1, test:group:group1
+22, 1,		Group2, test:group:group2
+23, 1,		Group3
+41, 0,		User 1,,		User, 1, user1@example.com,	$2a$10$PtSNGlLXC5mgTrTcTioJuezprtYzfsrX3OYsc.4/8wNWPIJVxS28u
+42, 0,		User 2,,		User, 2, user2@example.com,	$2a$10$PtSNGlLXC5mgTrTcTioJuezprtYzfsrX3OYsc.4/8wNWPIJVxS28u
+43, 0,		User 3,,		User, 3, user3@example.com,	$2a$10$PtSNGlLXC5mgTrTcTioJuezprtYzfsrX3OYsc.4/8wNWPIJVxS28u
+44, 0,		User 4,,		User, 4, user4@example.com,	$2a$10$PtSNGlLXC5mgTrTcTioJuezprtYzfsrX3OYsc.4/8wNWPIJVxS28u

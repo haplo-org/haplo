@@ -1,0 +1,73 @@
+<%
+  @page_title = h(@titles.first)
+-%>
+
+<%= sys_mng_header %>
+
+<table class="z__mangement_kv_table">
+  <%= af_field_show_in_table('Attribute name', @titles) %>
+  <%= code_show_in_table(@code) %>
+  <%= af_field_show_in_table('Search name', @short_names) %>
+  <% unless @is_type_attr -%>
+  <%= af_field_show_in_table('Relevancy weight', [@weight]) %>
+  <tr><th>Data type</th><td><%= render :partial => 'data_type_display' %></td></tr>
+  <tr><th>Qualifiers</th><td>
+    <%
+      case @qual_usage
+      when :none
+        %>Qualifiers not used on this attribute<%
+      when :any
+        %>Allow any qualifier<%
+      when :specified
+        qual_names = @quals_used.keys.map do |qual|
+          nm = if qual == KConstants::Q_NULL
+            '<i>(no qualifier)</i>'
+          else
+            %Q!<i>#{h(@schema.qualifier_descriptor(qual).printable_name)}</i>!
+          end
+          if @qual_weights[qual] != nil
+            nm = %Q!#{nm} (weight: #{@qual_weights[qual]})!
+          end
+          nm
+        end
+        # qual_names contains escaped HTML
+        %>Allow:<br><%= qual_names.sort.join('<br>') %><%
+      end
+    %>
+  </td></tr>
+  <% end -%>
+  <tr><th>Types using this attribute</th><td><%= used_in_types_display_list() %></td></tr>
+</table>
+
+<% if @data_type == KConstants::T_OBJREF && @control_by_types.empty? && !(@is_type_attr || @is_parent_attr) %>
+<p class="z__management_notice">
+  When the data type of an attribute is set to "link to other object", you should set at least one object type.
+</p>
+<% end %>
+
+<% if @is_type_attr -%>
+<p class="z__management_notice">
+  Type is a special attribute for specifying the type of an object. The attribute cannot be edited, and aliases can only change the name.
+  <br>In general, the Type attribute is not displayed if it would duplicate information shown elsewhere on the page. Use an alias if the type should always be displayed. 
+</p>
+<% end -%>
+<% if @is_parent_attr -%>
+<p class="z__management_notice">
+  Parent is a special attribute for specifying the parent of an object within a hierarchy. The attribute cannot be edited, and aliases can only change the name.
+</p>
+<% end -%>
+<%= render :partial => 'type_behaviours_warning' %>
+
+<div class="z__management_extra_buttons_holder">
+  <form method="get" action="/do/setup/attribute/edit_alias/new">
+    <input type="hidden" name="for" value="<%= @attr_desc %>">
+    <input type="submit" value="New alias">
+  </form>
+</div>
+<% if @is_type_attr || @is_parent_attr -%>
+  <%= sys_mng_edit_button_disabled %>
+<% else -%>
+  <%= sys_mng_edit_button("/do/setup/attribute/edit/#{params[:id].to_i}") %>
+<% end -%>
+
+<%= sys_mng_update_submenu(@titles.first, "/do/setup/attribute/show/#{params[:id].to_i}") %>

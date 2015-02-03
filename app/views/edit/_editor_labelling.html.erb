@@ -1,0 +1,25 @@
+<%
+  if @labeller.should_display_labelling_ui?
+
+    %><div id="z__editor_labelling"><h3>Permissions</h3><%
+
+    if @labeller.allowed_applicable_labels.length > 1
+      selected = @labeller.selected_applicable_label
+      %><div class="z__editor_labelling_set"><%
+      @labeller.allowed_applicable_labels.each do |label|
+        %><label><input type="radio" name="label" value="<%= label.to_presentation %>"<% if selected == label %> checked<% end %>><%= h(label_name(label)) %></label><%
+      end
+      %></div><%
+    end
+
+    unless @labeller.plugin_simple_label_ui.empty?
+      %><div class="z__editor_labelling_additional"><%
+      @labeller.plugin_simple_label_ui.each do |state, ref|
+        %><label><input type="checkbox" name="add_label" value="<%= ref.to_presentation %>"<% if state == :on %> checked<% end %>><%= h(label_name(ref)) %></label><%
+      end
+      %></div><%
+    end
+
+    %></div><%
+  end
+%>

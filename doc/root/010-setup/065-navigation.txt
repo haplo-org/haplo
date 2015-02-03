@@ -1,0 +1,11 @@
+title: Navigation
+--
+
+The navigation in the left hand column of each page provides easy access to key information, as grouped links to pages in the application.
+
+CLICK_PATH TOOLS > System management > Navigation
+
+Different links can be displayed to different users, based on their Group membership.
+
+In general, you should keep the number of links in the navigation relatively small.
+

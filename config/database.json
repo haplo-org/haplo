@@ -1,0 +1,14 @@
+{
+  "development": {
+    "adapter": "postgresql",
+    "database": "khq_development"
+  },
+  "test": {
+    "adapter": "postgresql",
+    "database": "khq_test"
+  },
+  "production": {
+    "adapter": "postgresql",
+    "database": "oneis"
+  }
+}

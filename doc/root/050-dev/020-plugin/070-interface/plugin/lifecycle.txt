@@ -1,0 +1,27 @@
+title: Lifecycle
+long_title: Plugin lifecycle
+--
+
+The Platform calls functions on your plugin object at various times in its lifecycle. Use this for performing setup and other actions.
+
+
+h2. Interface (for overriding)
+
+Define your own implementations of these functions by adding them to the @P@ object implementing your plugin.
+
+
+h3(function). onInstall()
+
+Called at least once when the plugin is installed or upgraded.
+
+Since it may be called more than once, the plugin should check it needs to perform an action before taking that action.
+
+This function is called with full permissions.
+
+
+h3(function). onLoad()
+
+Called just after all the plugin's JavaScript files have been loaded into the JavaScript runtime, when you can guarantee that all other plugins are loaded.
+
+This function is called with full permissions.
+

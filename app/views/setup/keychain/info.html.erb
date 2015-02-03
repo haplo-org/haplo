@@ -1,0 +1,21 @@
+<% @page_title = 'Keychain Credential: '+h(@credential.name) %>
+<%= sys_mng_header %>
+
+<table class="z__mangement_kv_table">
+  <tr><th>Name</th><td><%= h(@credential.name) %></td></tr>
+  <tr><th>Kind</th><td><%= h(@credential.kind) %></td></tr>
+  <tr><th>Instance kind</th><td><%= h(@credential.instance_kind) %></td></tr>
+  <tr><th>Created</th><td><%= @credential.created_at %></td></tr>
+  <tr><th>Updated</th><td><%= @credential.updated_at %></td></tr>
+  <%
+    # Identifying information is displays
+    account = @credential.account
+    account.keys.sort.each do |key|
+      %><th><%= h(key) %></th><td><%= h(account[key]) %></td></tr><%
+    end
+    # Secret information is shown that it exists, but the value isn't
+    @credential.secret.keys.sort.each do |key|
+      %><th><%= h(key) %></th><td>********</td></tr><%
+    end
+  %>
+</table>

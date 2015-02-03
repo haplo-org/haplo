@@ -1,0 +1,50 @@
+<% client_side_resources :latest_settings_form %>
+
+<form method="POST"><%= form_csrf_token %>
+
+<p><label>Send emails:</label><br>
+  <select name="when" id="z__when_select"><%= options_for_select(
+    [
+      ['Never', UserData::Latest::SCHEDULE_NEVER.to_s],
+      ['Daily', UserData::Latest::SCHEDULE_DAILY.to_s],
+      ['Weekly', UserData::Latest::SCHEDULE_WEEKLY.to_s],
+      ['Monthly', UserData::Latest::SCHEDULE_MONTHLY.to_s]
+    ],
+    @latest_settings_when.to_s
+  ) %></select>
+  <span id="when0"<%= latest_hide_when_opts(0) %>>(no emails will be sent)</span>
+  <span id="when1"<%= latest_hide_when_opts(1) %>>
+    on <input type="checkbox" name="workdays_only"<% if @latest_settings_workdays_only != 0 %> checked<% end %>> working days only
+  </span>
+  <span id="when2"<%= latest_hide_when_opts(2) %>>
+    on <select name="day_of_week"><%= options_for_select(
+        [
+          ['Sunday','0'],
+          ['Monday','1'],
+          ['Tuesday','2'],
+          ['Wednesday','3'],
+          ['Thursday','4'],
+          ['Friday','5'],
+          ['Saturday','6']
+        ],
+        @latest_settings_day_of_week.to_s
+    ) %></select>
+  </span>
+  <span id="when3"<%= latest_hide_when_opts(3) %>>
+    on the <select name="day_of_month"><%= options_for_select(
+        (1..31).to_a.map {|v|v.to_s},
+        @latest_settings_day_of_month.to_s
+    ) %></select> of each month
+  </span>
+</p>
+
+<p><label>Email format:</label><br>
+  <select name="format" id="z__email_format"<% if @latest_settings_when == UserData::Latest::SCHEDULE_NEVER %> disabled<% end %>><%= options_for_select([
+    ['Plain', UserData::Latest::FORMAT_PLAIN],
+    ['Formatted', UserData::Latest::FORMAT_HTML]
+  ], @latest_settings_format) %></select>
+</p>
+
+<p><input type="submit" value="Save settings"></p>
+
+</form>

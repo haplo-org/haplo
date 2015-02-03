@@ -1,0 +1,54 @@
+<%
+  @page_title = h(@title)
+-%>
+
+<%= sys_mng_header %>
+
+<table class="z__mangement_kv_table">
+  <tr><th><i>Alias of</i></th><td><i><%= h(@schema.attribute_descriptor(@alias_of).printable_name) %></i></td></tr>
+  <%= af_field_show_in_table('Aliased attribute name', [@title]) %>
+  <%= code_show_in_table(@code) %>
+  <%= af_field_show_in_table('Search name', [@short_name]) %>
+  <% unless @is_minimally_editable_alias -%>
+  <tr><th>Alias on qualifier?</th><td>
+    <%
+      qs = @quals.keys.sort
+      if qs.empty?
+        %><i>no</i><%
+      else
+        qs.each do |qual|
+          if qual == KConstants::Q_NULL
+            %>No qualifier<br><%
+          else
+            qd = @schema.qualifier_descriptor(qual)
+            if qd != nil
+              %><%= h(qd.printable_name) %><br><%
+            end
+          end
+        end
+      end
+    %>
+  </td></tr>
+  <tr><th>Alias on type?</th><td><% if @data_type == nil %><i>no</i><% else %><%= render :partial => 'data_type_display' %><% end %></td></tr>
+  <tr><th>Alias on linked type?</th><td>
+    <%
+      if @linked_types.empty?
+        %><i>no</i><%
+      else
+        @schema.type_descs_sorted_by_printable_name.each do |type_desc|
+          if @linked_types.include?(type_desc.objref)
+            %><%= h(type_desc.printable_name) %><br><%
+          end
+        end
+      end
+    %>
+  </tr><td>
+  <% end -%>
+  <tr><th>Types using this aliased attribute</th><td><%= used_in_types_display_list() %></td></tr>
+</table>
+
+<%= render :partial => 'type_behaviours_warning' %>
+
+<%= sys_mng_edit_button("/do/setup/attribute/edit_alias/#{params[:id].to_i}") %>
+
+<%= sys_mng_update_submenu_under(@title, "/do/setup/attribute/show_alias/#{params[:id].to_i}", "/do/setup/attribute/show/#{@alias_of}") %>

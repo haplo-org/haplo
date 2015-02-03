@@ -1,0 +1,22 @@
+<%
+  @page_title = h(@title)
+-%>
+
+<%= sys_mng_header %>
+
+<table class="z__mangement_kv_table">
+  <%= af_field_show_in_table('Name', [@title]) %>
+  <%= code_show_in_table(@code) %>
+  <%= af_field_show_in_table('Search name', [@short_name]) %>
+  <tr><th>Attributes using this qualifier</th><td>
+    <% if @used_in_attrs.empty? %>
+      <i>Not used by any attribute</i>
+    <% else %>
+      <%= @used_in_attrs.map { |n| h(n) } .join('<br>') %>
+    <% end %>
+  </td></tr>
+</table>
+
+<%= sys_mng_edit_button("/do/setup/attribute/edit_qual/#{params[:id].to_i}") %>
+
+<%= sys_mng_update_submenu(@title, "/do/setup/attribute/show_qual/#{params[:id].to_i}") %>

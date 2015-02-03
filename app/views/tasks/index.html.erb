@@ -1,0 +1,19 @@
+<%
+  @page_title = @showing_future_tasks ? 'Future tasks' : 'Tasks'
+  if @showing_future_tasks
+    @breadcrumbs = [:work_units, ['/do/tasks', 'Current']]
+    @title_bar_buttons['*TASKS'] = [['/do/tasks', 'Show current tasks']]
+  else
+    @breadcrumbs = [:work_units]
+    @title_bar_buttons['*TASKS'] = [['/do/tasks/future', 'Show future tasks']]
+  end
+-%>
+
+<div id="z__work_unit_tasks_page">
+<%
+  @work_units.each do |work_unit|
+    %><%= render_work_unit(work_unit, :list) %><%
+  end
+%>
+</div>
+

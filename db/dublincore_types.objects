@@ -1,0 +1,51 @@
+# Haplo Platform                                     http://haplo.org
+# (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+# Minimal type definitions for Dublin Core only schema
+
+obj [O_LABEL_STRUCTURE] O_TYPE_INTRANET_PAGE
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Intranet page'
+    A_CODE              KIdentifierConfigurationName.new('std:type:intranet-page')
+    A_ATTR_SHORT_NAME   'intranet page'
+    A_ATTR_SHORT_NAME   'intranet pages'
+    A_ATTR_SHORT_NAME   'page'
+    A_ATTR_SHORT_NAME   'pages'
+    A_RELEVANT_ATTR     A_TITLE
+    A_RELEVANT_ATTR     A_DOCUMENT
+    A_RELEVANT_ATTR     A_SUBJECT
+    A_RELEVANT_ATTR     A_FILE
+    A_RENDER_TYPE_NAME  'intranetpage'
+    A_RENDER_ICON       'E201,1,f'
+    A_RENDER_CATEGORY   4
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_COMMON
+
+obj [O_LABEL_STRUCTURE] O_TYPE_ORGANISATION
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Organisation'
+    A_CODE              KIdentifierConfigurationName.new('std:type:organisation')
+    A_ATTR_SHORT_NAME   'organisation'
+    A_RELEVANT_ATTR     A_TITLE
+    A_RELEVANT_ATTR     A_SUBJECT
+    A_RENDER_TYPE_NAME  'generic'
+    A_RENDER_ICON       'E20C,1,f'
+    A_RENDER_CATEGORY   7
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_COMMON
+
+obj [O_LABEL_STRUCTURE] O_TYPE_PERSON
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Person'
+    A_CODE              KIdentifierConfigurationName.new('std:type:person')
+    A_ATTR_SHORT_NAME   'person'
+    A_ATTR_SHORT_NAME   'people'
+    A_RELEVANT_ATTR     AA_NAME
+    A_RELEVANT_ATTR     AA_EXPERTISE
+    A_RENDER_TYPE_NAME  'generic'
+    A_RENDER_ICON       'E20A,1,f'
+    A_RENDER_CATEGORY   1
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_COMMON
+

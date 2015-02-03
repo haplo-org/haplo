@@ -1,0 +1,61 @@
+title: std:ui:choose
+link_as: keyword
+--
+
+This template renders a simple list of option for the user to choose from. Each option is rendered as a large type link with optional smaller explanatory text below. Each choice has a large click target.
+
+Use this when you want a user to choose from two or more options, and clicking through does not perform any actions. For choices where an action is taken, the [node:dev/plugin/templates/std-template/ui-confirm] template may be more appropriate as the actions use @POST@ requests.
+
+
+h2. View
+
+h3(key). options
+
+An array of options, each of which is rendered as a form button. It has keys:
+
+|@action@|The URL for the @href@ attribute of the link.|
+|@label@|The main text for this choice.|
+|@notes@|(Optional) A longer line of explanatory text for this option.|
+|@highlight@|(Optional) If @true@, the choice is highlighted.|
+|@indicator@|(Optional) What kind of indicator to display next to the item (see below).|
+
+
+h2. Indicators
+
+The @"indicator"@ key may have one of these values:
+
+|@"standard"@|Simple indicator with no particular meaning.|
+|@"primary"@|Primary or expected action|
+|@"secondary"@|Secondary action|
+|@"terminal"@|Action which terminates a process|
+|@"forward"@|Forward arrow|
+|@"back"@|Back arrow|
+|@"primary-forward"@|Primary with forward arrow|
+|@"secondary-forward"@|Secondary with forward arrow|
+|@"primary-back"@|Primary with back arrow|
+|@"secondary-back"@|Secondary with back arrow|
+
+
+h2. Example
+
+<pre>language=javascript
+    P.respond("GET", "/do/example/choose", [
+    ], function(E) {
+        E.render({
+            pageTitle: "What kind of fruit do you prefer?",
+            options: [
+                {
+                    action: "/do/example/choose?fruit=apples",
+                    label: "Apples",
+                    indicator: "primary"
+                    notes: "All our apples are locally grown."
+                },
+                {
+                    action: "/do/example/choose?fruit=oranges",
+                    label: "Oranges",
+                    indicator: "secondary"
+                }
+            ]
+        }, "std:ui:choose");
+    });
+</pre>

@@ -1,0 +1,37 @@
+<select name="data_type" id="z__data_type_selector">
+  <%= options_for_select(af_type_selector_options(),
+        (@data_type == KConstants::T_TEXT_PLUGIN_DEFINED) ? "#{KConstants::T_TEXT_PLUGIN_DEFINED} #{@data_type_options}" : @data_type.to_s)
+  %>
+</select>
+<span class="z__data_type_option" id="z__data_type_option_<%= KConstants::T_OBJREF %>"<% unless @data_type == KConstants::T_OBJREF%> style="display:none"<% end %>>
+  as <select name="data_type_objref_ui"><%= options_for_select([
+    ['Lookup',                ''          ],
+    ['Drop down of choices',  'dropdown'  ],
+    ['Checkboxes',            'checkbox'  ],
+    ['Radio buttons',         'radio'     ]
+  ], @data_type_ui_options) %></select>
+</span>
+<div class="z__data_type_option" id="z__data_type_option_<%= KConstants::T_DATETIME %>"<% unless @data_type == KConstants::T_DATETIME %> style="display:none"<% end %>>
+  <div style="margin-left:2em">
+    <p>Precision: <select name="datetime_precision"><%= options_for_select(KDateTime::PRECISION_OPTIONS, @datetime_precision) %></select></p>
+    <p><label><input type="checkbox" name="datetime_user_precision"<% if @datetime_user_precision %> checked<% end %>>Allow user to choose precision</label></p>
+    <p><label><input type="checkbox" name="datetime_range"<% if @datetime_range %> checked<% end %>>Range of date and time, with start and end fields</label></p>
+    <p><label><input type="checkbox" name="datetime_use_tz"<% if @datetime_use_tz %> checked<% end %>>Use time zone</label></p>
+    <p><label><input type="checkbox" name="datetime_display_local_tz"<% if @datetime_display_local_tz %> checked<% end %>>Display in user's configured local time zone</label></p>
+  </div>
+</div>
+<div class="z__data_type_option" id="z__data_type_option_<%= KConstants::T_TEXT_PERSON_NAME %>"<% unless @data_type == KConstants::T_TEXT_PERSON_NAME %> style="display:none"<% end %>>
+  <div style="margin-left:2em">
+    <p>Name styles:</p>
+    <%
+      KTextPersonName::CULTURES_IN_UI_ORDER.each do |culture|
+        %><div style="border:1px solid #aaa;margin-bottom:2px"><input type="checkbox" name="pn_culture[<%= culture %>]"<% if @pn_cultures[culture] %> checked<% end %>> <b><%= culture.to_s.tr('_',' ').capitalize %></b> (<input type="radio" name="pn_def_culture" value="<%= culture %>"<% if @pn_def_culture == culture %> checked<% end %>>default)<br>&nbsp;&nbsp; Fields: <%
+        KTextPersonName::OUTPUT_ORDERING[culture].each do |field|
+          %> <input type="checkbox" name="pn_field[<%= culture %>][<%= field %>]"<% if @pn_fields[culture][field] %> checked<% end %>><%= KTextPersonName::FIELD_NAMES_BY_CULTURE[culture][field] %><%
+        end
+        %></div><%
+      end
+    %>
+  </div>
+</div>
+<% client_side_controller_js('data_type') %>

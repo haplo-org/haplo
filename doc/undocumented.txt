@@ -1,0 +1,104 @@
+
+JavaScript API undocumented features
+------------------------------------
+
+Data handling
+-------------
+O.text constructor takes dictionaries for T_TEXT_PERSON_NAME and T_IDENTIFIER_POSTAL_ADDRESS.
+O.text constructor takes dictionary for T_IDENTIFIER_TELEPHONE_NUMBER which does phone number guessing.
+Text objects toString() and s() take optional format strings. Telephone number has formatting options.
+File identifier toString()/s() returns the filename for no format or "filename", a string ID for "id", and the MIME type for format "type"
+Text objects toFields(), with different options based on type. Includes typecode key.
+SCHEMA.AA_* constants
+object toView() function (needs more tests, returned structure described in lib/javascript/lib/storeobject.js, but not publicly documented).
+
+File handling
+-------------
+
+File transforms for url() and toHTML()
+readAsString(charsetName) on StoredFile objects
+
+Templates
+---------
+
+std:resource:tree
+std:treesource
+std:render_doc_as_html
+std:resource:plugin_adaptor
+std:ui:panel
+std:search_results
+std:element + handlebars helper
+std:icon:* + handlebars helpers
+
+Taking over object rendering
+----------------------------
+Use render type of 'hide' or 'blank', use Element below to render whatever you want.
+For search results, plugin.renderSearchResult() and renderer object
+
+Action panels (using std:ui:panel)
+----------------------------------
+std_action_panel plugin, used eg
+  4 right std:action_panel {"panel":"X"}
+with optional options "title", "style", "highlight" and "buttonLink".
+    style is "links" for a simple unobtrusive list of links, "menu" for more of a menu listing, "tiles" for big tiles with links intended for use on the home page
+    buttonLink specifies a URL, if present, a button labelled with the title and linking to this URL will be displayed if any plugin puts something in the panel.
+uses "std:action_panel_priorities" service to get defined priorities
+uses "std:action_panel:X" service to get elements for panel X
+
+Handlebars helpers
+------------------
+
+std:parameter_inputs  -- not sure if this should be a documented helper or not
+std:ui:navigation:arrow
+
+File uploads
+------------
+
+as:"file" in respond() argument declaractions
+BinaryData & UploadedFile interfaces
+readAsString(charsetName) on BinaryData interface
+O.file(uploadedFile) to create stored file from upload
+
+Users & permissions
+-------------------
+SecurityPrincipal getPermissions(), hasPermissions()
+SecurityPrincipal setAsLoggedInUser() + pSetLoggedInUser (NOTE: doesn't take effect until *next* request)
+
+Cache invalidation
+------------------
+O.reloadJavaScriptRuntimes() - delayed invalidation of runtimes in all threads
+
+System setup
+------------
+O.setup.createUser({nameFirst:'', nameLast:'', email:'', ref:O.ref(x), groups:[]}) and pCreateUser privilege
+O.setup.createGroup() and pSetupSystem privilege (extend later with pSetupSystemOnInstall for setup with onInstall only)
+SecurityPrincipal setIsActive() and pUserActivation privilege
+SecurityPrincipal setDetails() and pUserSetDetails privilege
+SecurityPrincipal writable ref property and pUserSetRef privilege
+SecurityPrincipal generatePasswordRecoveryURL(), generateWelcomeURL(), and pUserPasswordRecovery privilege
+O.PERM_* constants
+SecurityPrincipal changeGroupMemberships(), setGroupMemberships()
+
+Jobs
+----
+O.background.run()
+pBackgroundProcessing privilege
+plugin.backgroundCallback()
+
+Misc
+----
+O.session
+O.tray
+O.refdictHierarchical()
+
+Client side object editor plugins
+---------------------------------
+hObjectEditor hook
+Client side plugin adaptor implementing interface for object editor plugins.
+Server side support as O.editor.* functions (interface needs a little bit of tidying though)
+
+Access remote services
+----------------------
+O.remote.collaboration.* functions.
+O.remote.authentication.* functions.
+O.remote.authentication.urlToStartOAuth(data, name) and pStartOAuth

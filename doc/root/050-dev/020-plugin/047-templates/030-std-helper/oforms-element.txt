@@ -1,0 +1,11 @@
+title: oforms:element
+link_as: keyword
+--
+
+This helper makes it easier to write custom templates for the [node:dev/plugin/form:forms system]. See [node:dev/plugin/form/form-template] for details on how to use it.
+
+<pre>
+    {{oforms:element "name"}}
+</pre>
+
+@name@ is the name of the element in your form specification.

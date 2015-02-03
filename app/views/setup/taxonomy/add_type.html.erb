@@ -1,0 +1,19 @@
+<%
+  @page_title = 'Create taxonomy type and attribute'
+%>
+<%= sys_mng_header %>
+
+<%= form_error_messages_for(@data) %>
+
+<% f = form_for(@data, :s) %><form method="post"><%= form_csrf_token %>
+
+  <p>Name for <i>Type</i> and <i>Attribute</i><br><%= f.text_field(:name) %></p>
+
+  <p>The new type will be have the base label <span class="z__label">CONCEPT</span>. If you need additional base labels or applicable labels, use the type editor before creating a taxonomy.</p>
+
+  <p><input type="submit" value="Add taxonomy type and attribute"></p>
+
+</form>
+
+<p>&nbsp;</p>
+<p><a href="add">Cancel</a></p>

@@ -1,0 +1,10 @@
+title: Getting started
+--
+
+h3. Platform availability
+
+Access to a development server to work with [node:dev/plugin:JavaScript plugins] is available on request. Please contact us if you'd like access. Have a quick read of the [node:dev/process:development process] to see how it all works.
+
+The [node:dev/xml-http:XML-over-HTTP API] is available in all systems. If you're writing something which makes changes to the data in your application, you may prefer to use a development application rather than your live system. Please contact us to request access to a development server.
+
+For either API, begin by reading about the [node:dev/store:Object Store concepts].

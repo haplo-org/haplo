@@ -1,0 +1,10 @@
+FOR: /do/setup/attribute/show_qual
+
+h1. Qualifier information
+
+The _Name_ is shown when displaying and editing objects, and the _Search name_ is used in search constraints.
+
+h4. Further help
+
+[[Qualifiers]]
+[[Edit qualifier]]

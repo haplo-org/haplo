@@ -1,0 +1,80 @@
+h1. System Management help
+
+_System Management_ controls how your ONEIS behaves, and who can use it. As you click on entries in the menus above, this help system will display relevant guidance.
+
+h2. Contents
+
+h3. Access
+
+[[Users]]
+[[New user]]
+[[User information]]
+[[Block or delete a user]]
+[[Edit main details for user]]
+[[Edit group membership]]
+
+[[Groups]]
+[[New group]]
+[[Group information]]
+[[Disable a group]]
+[[Edit main details for a group]]
+[[Edit members of a group]]
+[[Permissions]]
+[[Latest updates settings]]
+[[Latest updates topics]]
+[[Home country]]
+[[New API key]]
+
+h3. Schema
+
+[[Types]]
+[[Type information]]
+[[Edit types]]
+[[Attributes]]
+[[Attribute information]]
+[[Aliased attribute information]]
+[[Edit attribute]]
+[[Edit aliased attribute]]
+[[Qualifiers]]
+[[Qualifier information]]
+[[Edit qualifier]]
+[[Lists]]
+[[New list]]
+[[Edit list]]
+[[Taxonomies]]
+[[New Taxonomy]]
+[[Search configuration]]
+[[Sort order]]
+[[Search by fields]]
+[[Hierarchy]]
+
+h3. Structure
+
+[[Navigation]]
+[[Navigation preview]]
+[[Sections]]
+[[Edit section]]
+[[Search subsets]]
+[[Edit search subset]]
+[[Set subset order]]
+
+h3. System
+
+[[Identity]]
+[[Web addresses and SSL policy]]
+[[Object web addresses]]
+
+[[Login options]]
+[[Token admin contact]]
+[[Static files]]
+[[Appearance]]
+[[Features]]
+[[External providers]]
+
+[[Email templates]]
+[[Edit email template]]
+
+[[Audit trail]]
+[[Audit configuration]]
+[[Add audit admin note]]
+[[View audit trail]]

@@ -1,0 +1,42 @@
+<%
+  @page_title = 'Manage OTP tokens'
+  @breadcrumbs = [:menu]
+%>
+
+<p><a href="http://docs.oneis.co.uk/security/authentication-tokens/admin" target="_blank">Token administration guidelines</a> &nbsp; &nbsp; &nbsp; <a href="/do/admin/otp/temp_code">Create temporary code...</a></p>
+<p>&nbsp;</p>
+
+<table>
+  <tr>
+    <th>User name</th>
+    <th>Email</th>
+    <th>Token serial</th>
+    <th></th>
+  </tr>
+<%
+  @users.each do |user|
+    if user.id != User::USER_ANONYMOUS
+      %>
+        <tr>
+          <td><%= h(user.name) %></td>
+          <td><%= h(user.email) %></td>
+          <% if nil == user.otp_identifier %>
+            <td><i>no token</i></td>
+            <td><a href="/do/admin/otp/set/<%= user.id %>">Issue</a></td>
+          <% else %>
+            <td><%= h(user.otp_identifier) %></td>
+            <td><a href="/do/admin/otp/set/<%= user.id %>">Replace</a> &nbsp; <a href="/do/admin/otp/withdraw/<%= user.id %>">Withdraw</a></td>
+          <% end %>
+        </tr>
+      <%
+      if @user_with_temporary_code == user.id
+        %>
+          <tr><td></td>
+            <td colspan="3"><i>This user has a temporary code.</i> <a href="/do/admin/otp/remove_temp_code">Remove temporary code</a></td>
+          </tr>
+        <%
+      end
+    end
+  end
+%>
+</table>

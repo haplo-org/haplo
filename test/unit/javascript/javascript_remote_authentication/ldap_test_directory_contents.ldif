@@ -1,0 +1,29 @@
+
+dn: dc=example,dc=com
+objectClass: domain
+objectClass: top
+dc: example
+
+dn: ou=Department X,dc=example,dc=com
+objectClass: organizationalUnit
+objectClass: top
+description: Special Tests Department
+ou: Department X
+
+dn: ou=Department Y,dc=example,dc=com
+objectClass: organizationalUnit
+objectClass: top
+description: Another Department
+ou: Department Y
+
+dn: uid=testuser,ou=Department X,dc=example,dc=com
+objectClass: person
+objectClass: organizationalPerson
+objectClass: uidObject
+objectClass: top
+sn: User
+cn: Test User
+ou: Department X
+uid: testuser
+userPassword: testpassword1111
+description: "Test user for testing"

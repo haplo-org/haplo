@@ -1,0 +1,57 @@
+title: oforms:grid
+link_as: keyword
+--
+
+The @"oforms:grid"@ and @"oforms:grid:display"@ templates display elements in a grid. They differ from the [node:dev/plugin/form/form-template/oforms-table] templates in that each row of the grid contains individually specified Elements, rather than repeating the same elements over and over again.
+
+h3. Example layout
+
+The @"oforms:grid"@ template lays out the Elements like this:
+
+||*Column One*|*Column Two*|
+|_Row 1_|(element A)|(element B)|
+|_Row 2_|(element C)|(element D)|
+
+The *Column* cells are the grid headings, the _Row_ cells come from the row labels, and the other cells contain individually specified elements.
+
+h3. Using the templates
+
+The grid is formed of a [node:dev/plugin/form/specification/section], which contains one or more Sections using the [node:dev/plugin/form/form-template/oforms-grid-row] template.
+
+The headings on the top row are passed in via the @templateOptions@ property of the Section specification, and contain a single @"headings"@ property, which is an array of strings specifying the headings for the columns.
+
+For example, a two by two grid might be specified like this:
+
+<pre>language=json
+{
+    "type": "section",
+    "heading": "Two by two grid",
+    "template": "oforms:grid",
+    "templateOptions": {
+        "headings": ["Column One", "Column Two"]
+    },
+    "elements": [
+        {
+            "type": "section",
+            "label": "Row 1",
+            "template": "oforms:grid:row",
+            "elements": [
+                {"type":"text", "path":"grid.zero.first",  "name":"cellA0" },
+                {"type":"text", "path":"grid.zero.second", "name":"cellB0" }
+            ]
+        },
+        {
+            "type": "section",
+            "label": "Row 2",
+            "template": "oforms:grid:row",
+            "elements": [
+                {"type":"text", "path":"grid.one.first",  "name":"cellA1" },
+                {"type":"text", "path":"grid.one.second", "name":"cellB1" }
+            ]
+        }
+    ]
+}
+</pre>
+
+Note that labels haven't been specified for the @"text"@ elements, as they would have been ignored.
+

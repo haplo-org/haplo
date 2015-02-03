@@ -1,0 +1,52 @@
+<%
+  # Needs data_for_template parameters as array of
+  #  ui_positions     =>  range of UI positions that will be considered
+  #  type_link        =>  link for types, will have objref suffix added, or :default
+  #  more_link        =>  nil or [url,label]
+  
+  ui_positions, type_link, more_link = data_for_template
+
+  type_link = '/do/edit?new=' if type_link == :default
+
+  # Select the root object types we're going to use from the schema
+  # Must be:
+  #   * in the right position
+  #   * not be a classification type
+  #   * policy should allow the user to create an object of this type.
+  schema = KObjectStore.schema
+  types = Array.new
+  user_policy = @request_user.policy
+  schema.root_types.each do |objref|
+    t = schema.type_descriptor(objref)
+    if ui_positions.include?(t.creation_ui_position) && !(t.is_classification?) && user_policy.can_create_object_of_type?(objref)
+      types << t
+    end
+  end
+  types.sort! { |a,b| a.printable_name <=> b.printable_name }
+  
+  # Work out where to break into two columns
+  break_after = (types.length - 1) / 2
+%>
+
+<div class="z__new_object_types_list">
+<div class="z__new_object_types_list_left">
+<%
+  tcount = 0
+  types.each do |type|
+    %><p><a href="<%= type_link %><%= type.create_default_subtype.to_presentation %>"><%= html_for_icon(type.render_icon || :generic, :medium) %></a><a href="<%= type_link %><%= type.create_default_subtype.to_presentation %>"><%= h(type.printable_name.to_s) %></a></p><%
+    if tcount == break_after
+      %></div><div class="z__new_object_types_list_right"><%
+    end
+    tcount += 1
+  end
+%>
+</div>
+</div>
+
+<%
+   if more_link != nil
+    murl,mtitle = more_link
+    %><div class="z__menu_section_type_link_spacer"></div>
+    <p><a href="<%= murl %>"><%= mtitle %></a></p><%
+  end
+%>

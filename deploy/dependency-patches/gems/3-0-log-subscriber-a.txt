@@ -1,0 +1,49 @@
+From c3c5c900464494253f2ce0235da4d72b328e4f70 Mon Sep 17 00:00:00 2001
+From: Michael Koziarski <michael@koziarski.com>
+Date: Mon, 23 Sep 2013 10:17:58 +1200
+Subject: [PATCH] Remove the use of String#% when formatting durations in log
+ messages
+
+This avoids potential format string vulnerabilities where user-provided
+data is interpolated into the log message before String#% is called.
+
+Conflicts:
+	actionpack/lib/action_controller/log_subscriber.rb
+
+Conflicts:
+	actionpack/lib/action_controller/log_subscriber.rb
+---
+ actionmailer/lib/action_mailer/log_subscriber.rb   |  6 +++---
+ actionpack/lib/action_controller/log_subscriber.rb | 13 ++++++-------
+ activesupport/lib/active_support/log_subscriber.rb |  4 ++++
+ 3 files changed, 13 insertions(+), 10 deletions(-)
+
+diff --git a/actionmailer/lib/action_mailer/log_subscriber.rb b/actionmailer/lib/action_mailer/log_subscriber.rb
+index 7ba57b1..4f4e21e 100644
+--- a/actionmailer/lib/action_mailer/log_subscriber.rb
++++ b/actionmailer/lib/action_mailer/log_subscriber.rb
+@@ -4,12 +4,12 @@ module ActionMailer
+   class LogSubscriber < ActiveSupport::LogSubscriber
+     def deliver(event)
+       recipients = Array.wrap(event.payload[:to]).join(', ')
+-      info("\nSent mail to #{recipients} (%1.fms)" % event.duration)
++      info("\nSent mail to #{recipients} (#{format_duration(event.duration)})")
+       debug(event.payload[:mail])
+     end
+ 
+     def receive(event)
+-      info("\nReceived mail (%.1fms)" % event.duration)
++      info("\nReceived mail (#{format_duration(event.duration)})")
+       debug(event.payload[:mail])
+     end
+ 
+@@ -19,4 +19,4 @@ module ActionMailer
+   end
+ end
+ 
+-ActionMailer::LogSubscriber.attach_to :action_mailer
+\ No newline at end of file
++ActionMailer::LogSubscriber.attach_to :action_mailer
+-- 
+1.8.3.2
+

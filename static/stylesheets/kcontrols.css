@@ -1,0 +1,234 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+/* --- KCtrlTextWithInnerLabel ----------------------------------------------------- */
+
+/* also used by KTree */
+.z__ctrltext_label_state {
+    color: #bbb;
+}
+
+/* --- Calendar popup ------------------------------------------------------------- */
+
+#z__ctrl_date_popup {
+    width: 196px;
+    height: 176px;
+    background: #eee;
+    border: 2px solid #aaa;
+    border-radius: 4px;
+    box-shadow: -3px 3px 4px rgba(0,0,0,0.15);
+}
+#z__ctrl_date_popup:after, #z__ctrl_date_popup:before {
+    top: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+#z__ctrl_date_popup:after {
+    border-color: rgba(238, 238, 238, 0);
+    border-top-color: #eee;
+    border-width: 10px;
+    left: 20%;
+    margin-left: -10px;
+}
+#z__ctrl_date_popup:before {
+    border-color: rgba(170, 170, 170, 0);
+    border-top-color: #aaa;
+    border-width: 13px;
+    left: 20%;
+    margin-left: -13px;
+}
+
+#z__ctrl_date_popup a, #z__ctrl_date_popup span {
+    display: block;
+    width: 28px;
+    height: 22px;
+    float: left;
+    text-align: center;
+    font-size: 12px;
+}
+
+#z__ctrl_date_popup span.z__ctrl_date_popup_monthyear {
+    width: 140px;
+    font-weight: bold;
+}
+
+#z__ctrl_date_popup span.z__ctrl_date_popup_selected {
+    background: #555;
+    color: #fff;
+}
+
+#z__ctrl_date_popup :nth-child(7n+4), #z__ctrl_date_popup :nth-child(7n+10) {
+    background: #fff; /* saturdays and sundays */
+}
+
+#z__ctrl_date_popup a, #z__ctrl_date_popup a:visited, #z__ctrl_date_popup a:hover {
+    color: #333;
+    text-decoration: none;
+}
+
+#z__ctrl_date_popup a:hover {
+    background: #e00;
+    color: #eee;
+}
+
+/* --- KCtrlDate ------------------------------------------------------------------ */
+
+.z__ctrldate_container input {
+    width: 112px;
+    /* specify background-image, -position and -repeat so that the background colour isn't changed from the browser default */
+    background-image: url("/images/calendar_icon.gif");
+    background-position: 4px center;
+    background-repeat: no-repeat;
+    padding-left: 22px;
+}
+
+.z__ctrldate_container.z__ctrldate_container_error_state input {
+    background-image: url("/images/calendar_icon_err.gif");
+}
+
+/* --- KCtrlTime ------------------------------------------------------------------ */
+
+.z__ctrltime_container input {
+    width: 90px;
+    /* specify background-image, -position and -repeat so that the background colour isn't changed from the browser default */
+    background-image: url("/images/time_icon.gif");
+    background-position: 3px center;
+    background-repeat: no-repeat;
+    padding-left: 22px;
+}
+
+.z__ctrltime_container.z__ctrltime_container_error_state input {
+    background-image: url("/images/time_icon_err.gif");
+}
+
+/* --- KCtrlDateTimeEditor --------------------------------------------------------- */
+
+.z__ctrldatetimeeditor_container {
+    position: relative; /* for positioning of precision control */
+}
+
+#z__ws_content .z__ctrldatetimeeditor_range_table {
+    margin: 0;  /* remove the default margin on tables */
+}
+
+#z__ws_content .z__ctrldatetimeeditor_range_table tr td, #z__ws_content .z__ctrldatetimeeditor_range_table tr th {
+    border: 0;
+    padding: 0;
+}
+#z__ws_content .z__ctrldatetimeeditor_range_table tr th {
+    padding-right: 8px;
+    background: none;
+    width: 40px;
+    text-align: right;
+    font-style: italic;
+    font-weight: normal;
+}
+
+.z__ctrldatetimeeditor_precision_container {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    font-style: italic;
+}
+
+/* --- KCtrlDropdownMenu ----------------------------------------------------------- */
+
+/* a sort of button thing which drops down another menu when you click on it */
+.z__dropdown_menu_trigger {
+    color: #000;
+    background: #eee url(/images/dropind.gif) no-repeat center right;
+    border: 1px solid #888;
+    border-radius: 2px;
+    padding: 1px 24px 1px 10px; /* done for IE to look OK, not quite so good in Firefox */
+    margin: 1px;
+    line-height: 16px;
+}
+
+/* drop-down menus */
+.z__dropdown_menu {
+    position: absolute;
+    /* left: and top: are set in the js to the bottom left of the trigger */
+    z-index: 7000;
+    border: 1px solid #888;
+    border-radius: 2px;
+    background: #eee;
+    padding: 0;
+    margin: 0;
+    text-align: left; /* some uses will need this! */
+    line-height: 16px;
+    cursor: default;
+}
+
+.z__dropdown_menu a {
+    color: #000;
+    display: block;
+    padding: 2px 32px 2px 20px;
+    margin: 0;
+    cursor: default;
+}
+.z__dropdown_menu a:hover {
+    color: #000;
+    background: COLOUR[:highlight];
+    text-decoration: none;
+}
+
+.z__dropdown_menu_entry_title {
+    padding: 2px 32px 2px 20px;
+    font-weight: bold;
+    color: #666;
+}
+
+.z__dropdown_menu_entry_divider {
+    border-style: solid;
+    border-width: 1px 0 1px 0;
+    border-color: #aaa #fff #fff #fff;
+    margin: 1px 0 1px 0;
+    width: auto;
+    font-size: 0px;
+    line-height: 0px;
+    clear: both;
+}
+
+
+/* --- KCtrlObjectInsertMenu ------------------------------------------------------ */
+
+/* tray contents, individual items */
+.z__objinsertmenu_tray_item span /* used to contain object ID, not shown! */ {
+    display: none;
+}
+
+/* tray contents title */
+.z__objinsertmenu_tray_title {
+    background-image: url(/images/traymenuicon.gif);
+    background-repeat: no-repeat;
+    background-position: 3px 3px;
+}
+
+/* insert all from tray */
+.z__objinsertmenu_all_tray, a.z__objinsertmenu_all_tray:hover {
+    background-image: url(/images/allintray.gif);
+    background-repeat: no-repeat;
+    background-position: 3px 3px;
+}
+
+/* menu entry for spawning tasks */
+.z__objinsertmenu_spawn_to_select, a.z__objinsertmenu_spawn_to_select:hover {
+    background-image: url(/images/newwindow.gif);
+    background-repeat: no-repeat;
+    background-position: 3px 3px;
+}
+
+
+/* --- KFocusProxy ---------------------------------------------------------------- */
+
+.z__focusproxy_highlight {
+    border: 3px solid #79A0CC;
+}

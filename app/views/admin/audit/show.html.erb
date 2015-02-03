@@ -1,0 +1,94 @@
+<%
+  @page_title = 'Audit trail'
+%>
+<%= sys_mng_header %>
+
+<form method="GET"><input type="hidden" name="filter" value="1">
+
+<table class="z__management_horz_table">
+  <tr>
+    <th>ID</th>
+    <th>Date &amp; time</th>
+    <th>Type</th>
+    <th>User</th>
+    <th>Item</th>
+    <th>Entity</th>
+  </tr>
+  <tr class="z__management_audit_trail_search_form">
+    <td><input type="submit" value="="></td>
+    <td><input type="text" name="date" size="12" placeholder="YYYY-MM-DD" value="<%= h(@filter_date) %>"></td>
+    <td><input type="text" name="kind" size="12" placeholder="eg: SEARCH" value="<%= h(@filter_kind) %>"></td>
+    <td><input type="text" name="user" size="12" placeholder="eg: adam s" value="<%= h(@filter_user) %>"></td>
+    <td><input type="text" name="ref" size="12" placeholder="eg: 123x-4y5" value="<%= h(@filter_ref) %>"></td>
+    <td><% if @filter_kind && @filter_kind.length > 0 %>
+        <input type="text" name="entity" size="4" placeholder="eg: 12" value="<%= h(@filter_entity_id) %>">
+      <% else %>
+        <input type="text" disabled size="4" title="Kind required for entity ID filter">
+      <% end %>
+    </td>
+  </tr>
+<%
+  @entries.each do |entry|
+    %><tr>
+      <td><%= entry.id %></td>
+      <td class="z__management_audit_trail_date"><%= entry.created_at.strftime('%F %R') %></td>
+      <td><%= h(entry.kind) %></td>
+      <td><%
+        unless entry.user_id
+          %>SYSTEM<%
+        else
+          %><%= h(User.cache[entry.user_id].name) %><%
+          if entry.user_id != entry.auth_user_id
+            %><br>(Auth: <%= h(User.cache[entry.auth_user_id].name) %>)<%
+          end
+          if entry.api_key_id != nil
+            %> <span class="z__management_audit_trail_api_key">API:<%= entry.api_key_id %></span><%
+          end
+        end %></td>
+      <td><%
+        if entry.objref != nil
+          obj = KObjectStore.read(entry.objref)
+          unless obj
+            %><%= entry.objref.to_presentation %> <i>(erased)</i><%
+          else
+            unless obj.labels.include?(KConstants::O_LABEL_STRUCTURE)
+              %><a href="<%= object_urlpath(obj) %>" target="_blank"><%= h(obj.first_attr(KConstants::A_TITLE).to_s) %></a><%
+            else
+              schema_kind = case obj.first_attr(KConstants::A_TYPE)
+              when KConstants::O_TYPE_ATTR_DESC;        'Attribute'
+              when KConstants::O_TYPE_ATTR_ALIAS_DESC;  'Aliased attribute'
+              when KConstants::O_TYPE_QUALIFIER_DESC;   'Qualifier'
+              when KConstants::O_TYPE_APP_VISIBLE;      'Type'
+              when KConstants::O_TYPE_SUBSET_DESC;      'Search subset'
+              else;                                     'SCHEMA'
+              end
+              %><span class="z__management_audit_trail_schema_type"><%= schema_kind %></span> <%= h(obj.first_attr(KConstants::A_TITLE).to_s) %><%
+            end
+          end
+        end
+      %></td>
+      <td><%= entry.entity_id %><% if entry.version %> v<%= entry.version %><% end %></td>
+    </tr>
+    <tr class="z__management_audit_trail_entry_end">
+      <td></td>
+      <td class="z__management_audit_trail_addr">
+        <%= h(entry.labels._to_internal.join(' ')) %><br>
+        <%= h(entry.remote_addr) %>
+      </td>
+      <td colspan="4" class="z__management_audit_trail_json"><div><%= h(entry.read_attribute('data')) %></div></td>
+    </tr><%
+  end
+%>
+</table>
+
+<%
+  last_entry = @entries.last
+  if last_entry
+    next_id = last_entry.id - 1
+    if next_id > 0
+      %><p>&nbsp;</p><p><a href="?next=<%= next_id %><%= @filter_str %>">Earlier entries</a></p><%
+    end
+  end
+%>
+
+</form>

@@ -1,0 +1,39 @@
+<%
+  # Get the resources required
+  resources = client_side_combined_resources()
+-%>
+  <link href="<%= dynamic_stylesheet_path 'app' %>" rel="stylesheet" type="text/css">
+  <link href="<%= dynamic_stylesheet_path 'search' %>" rel="stylesheet" type="text/css">
+  <link href="<%= dynamic_stylesheet_path 'object' %>" rel="stylesheet" type="text/css">
+<% stylesheet = resources[:stylesheet]; if stylesheet != nil then stylesheet.each do |s| -%>
+  <link href="<%= dynamic_stylesheet_path s %>" rel="stylesheet" type="text/css">
+<% end; end -%>
+<% if !(@suppress_normal_js) || (resources[:javascript] != nil && !(resources[:javascript].empty?)) || (@client_side_resources_plugin != nil) -%>
+  <script src="<%= client_side_javascript_urlpath 'jquery__min' %>"></script>
+  <script src="<%= client_side_javascript_urlpath 'underscore' %>"></script>
+  <script src="<%= client_side_javascript_urlpath 'kconstants' %>"></script>
+  <script src="<%= client_side_javascript_urlpath 'kapplication' %>"></script>
+  <script src="<%= client_side_javascript_urlpath 'navigation' %>"></script>
+  <script src="<%= client_side_javascript_urlpath 'file_preview' %>"></script>
+<% end -%>
+<%
+  # Core Javascript file includes
+  client_side_javascript_includes_list(resources).each do |script_urlpath|
+    %><script src="<%= script_urlpath %>"></script><%
+  end
+
+  # Plugin resources
+  %><%= client_side_resources_plugin_html() %><%
+  
+  # Other misc information to send to browser
+  unless @request_user.policy.is_anonymous?
+    # Send tray information by including the URL, if there's something in the tray
+    tray_js = nil
+    if resources[:send_tray]
+      url = tray_client_side_url()
+      if url
+        %><script src="<%= url %>"></script><%
+      end
+    end
+  end
+%>

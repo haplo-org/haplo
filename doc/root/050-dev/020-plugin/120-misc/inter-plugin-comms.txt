@@ -1,0 +1,76 @@
+title: Inter-plugin communication
+--
+
+Sometimes it's useful for a plugin to call a function provided by another plugin. You may want to split your code into multiple plugins for modularity, or you'd like the behaviour of your plugin to be customised by another plugin.
+
+You shouldn't call a function directly on the other plugin, as this will fail the JSHint syntax checking, and the Platform tracking may attribute problems to the wrong plugin.
+
+Instead, you should use *services*, which expose a function in your plugin via the [node:dev/plugin/o/service#O_service] platform API. This is really just a fancy function call, but goes via the platform for correct accounting.
+
+Services are registered with [node:dev/plugin/interface/plugin/platform-interface#implementService], and called using the [node:dev/plugin/o/service:service API].
+
+You probably register services as the scripts which implement your plugin are evaluated, but to discourage you from relying on plugin loading order, they're only actually available to call after all the plugins have been loaded. You can rely on them being available in the plugin [node:dev/plugin/interface/plugin/lifecycle#onLoad] callback or at any time afterwards.
+
+If services don't fit what you're trying to achieve, then [node:dev/plugin/interface/plugin/platform-interface#provideFeature:features] may be a useful alternative. Features are more suitable for library code, and enable code to be available when a plugin is being loaded.
+
+
+h2. Calling a function on a specific plugin
+
+The simplest use of services is to call a function on another plugin. Register a service using [node:dev/plugin/interface/plugin/platform-interface#implementService], using the name of your plugin as the prefix on the service name, for example, @"example_plugin:do_something"@.
+
+Then, from any plugin, call the service using @O.service("example_plugin:do_something", arg1, arg2, ...)@, where argX are zero or more arguments.
+
+Your service function will be called with those arguments, and the return value of the function returned from @O.service()@.
+
+For example,
+
+<pre>language=javascript
+    // In your plugin:
+    P.implementService("example_plugin:add_numbers",
+        function(a, b) {
+            return a + b;
+        }
+    );
+    
+    // Elsewhere:
+    var result = O.service("example_plugin:add_numbers", 2, 3);
+    console.log("Result: ", result);
+    // will log "Result: 5"
+</pre>
+
+
+h2. Allowing other plugins to extend your plugin
+
+You might be developing a plugin which is used in more than one context, and you'd like to have different behaviour in each of those contexts. You could add configuration to your plugin, or you could use services to allow those behaviours to be implemented in another plugin.
+
+In this case, your plugin is a consumer of services. You check if a service is available using [node:dev/plugin/o/service#O_serviceImplemented], and if it is, call it with [node:dev/plugin/o/service#O_service].
+
+Other plugins then implement the service. If more than one plugin implements a service, then each of the registered functions will be called in turn until one of those functions returns something other than @undefined@.
+
+<pre>language=javascript
+    // Some code in your plugin:
+    var numberOfEntries;
+    if(O.serviceImplemented("example_plugin:entries")) {
+        numberOfEntries = O.service("example_plugin:entries", whereDisplayed);
+    }
+    if(!numberOfEntries) {
+        // Set a default value if no plugin has registered a service
+        // or all returned undefined.
+        numberOfEntries = 10;
+    }
+
+    // Another plugin can implement this service to set the
+    // number of entries.
+    another_plugin.implementService("example_plugin:entries",
+        function() {
+            return 20;
+        }
+    );
+</pre>
+
+
+h2. Service naming
+
+Service should be uniquely named, and the convention is to prefix the name with your plugin's name. However, sometimes this is doesn't result in a logical name, as maybe which plugin happens to implement the service is an implementation detail.
+
+As long as the prefix starts with your allocated company name, you can create whatever service names make sense for your application.

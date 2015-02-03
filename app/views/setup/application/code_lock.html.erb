@@ -1,0 +1,24 @@
+<%
+  @page_title = 'API code lock'
+-%>
+<%= sys_mng_header %>
+
+<p>&nbsp;</p>
+<form method="POST"><%= form_csrf_token %>
+
+<% if KApp.global_bool(:schema_api_codes_locked) %>
+
+  <p>API codes are <b>locked</b>.</p>  
+  <p>This prevents accidental editing of API codes, which can cause plugins to fail.</p>
+  <p>API codes can be unlocked if you need to make a correction, but they should be left locked at all other times.</p>
+  <p><input type="submit" name="unlock" value="Unlock API codes"></p>
+
+<% else %>
+
+  <p>API codes are <b>unlocked</b> and can be modified.</p>
+  <p>You should lock the API codes to prevent accidental editing, which can cause plugins to fail.</p>
+  <p><input type="submit" name="lock" value="Lock API codes"> (recommended)</p>
+
+<% end %>
+
+</form>

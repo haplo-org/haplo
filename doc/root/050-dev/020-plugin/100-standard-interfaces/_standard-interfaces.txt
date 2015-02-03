@@ -1,0 +1,8 @@
+title: Standard interfaces
+class: DocNodeTextileWithTOC
+--
+
+The JavaScript runtime supports standard interfaces, where appropriate and useful for plugins.
+
+
+h2. Interfaces

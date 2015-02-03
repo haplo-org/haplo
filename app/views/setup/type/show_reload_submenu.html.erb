@@ -1,0 +1,8 @@
+<%
+  @page_title = 'Updating...'
+  client_side_resources :basics
+-%>
+
+<%= sys_mng_header %>
+
+<div id="z__reload_submenu_url" data-url="/do/setup/type/list?select=<%= @obj.objref.to_presentation %><% if @type_is_classification %>&classify=1<% end %>"></div>

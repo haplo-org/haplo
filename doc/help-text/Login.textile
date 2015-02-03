@@ -1,0 +1,12 @@
+FOR: /do/authentication/login
+
+h1. Login
+
+To use ONEIS with your personal account, click on the "Log in" link and enter your email address and password.
+
+If your username and password are not recognised make sure you are typing them in correctly and check your Caps lock isn't on. For a password reminder use the "Forgotten your password?" link on the login page.
+
+When your ONEIS account was created, you will have been sent a link to set your password. Your password must contain at least eight characters,  including at least one letter and one number. 
+
+To avoid having to type in your username and password each time you login, check the "In future, automatically log in on this computer" box. For security, *do not check this box* on public terminals or if others use your computer, as anyone else using this computer will be able to use your ONEIS account without having to enter the password.
+

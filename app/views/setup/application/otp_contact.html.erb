@@ -1,0 +1,10 @@
+<% @page_title = 'Token admin contact' -%>
+<%= sys_mng_header %>
+
+<p>This message will be displayed to users when they encounter problems with their authentication tokens:</p>
+  
+<blockquote><%= h(otp_admin_contact_text) %></blockquote>
+
+<p>The message will only be displayed after a user has entered their password correctly. You can safely include contact details for your token administrators.</p>
+
+<%= sys_mng_edit_button("/do/setup/application/edit_otp_contact") %>

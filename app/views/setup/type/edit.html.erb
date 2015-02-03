@@ -1,0 +1,254 @@
+<%
+  is_root = (@parent_type_desc == nil)
+  if @is_new
+    @page_title = (is_root ? 'New type' : 'New sub-type of '+type_name_with_parents(@parent_type_desc))
+  else
+    @page_title = "Edit " + type_name_with_parents(@schema.type_descriptor(@obj.objref))
+  end
+  
+  client_side_resources(:jquery_ui, :mng_labels)
+  client_side_controller_js('typeeditor')
+%>
+
+<%= sys_mng_header %>
+
+<%
+  if params.has_key?(:parent)
+    client_side_controller_js("parent_temp_action")
+    %><div id="z__parent_temp_action" data-ref="<%= params[:parent] %>"></div><%
+  end
+%>
+
+<form method="POST" id="z__type_editor_form"><%= form_csrf_token %>
+
+<!--  -------------------------------- BASICS -------------------------------- -->
+
+<p>Name<br>
+<%= type_edit_field(@obj, KConstants::A_TITLE, :title) %></p>
+
+<%= code_value_edit_ui(@obj.first_attr(KConstants::A_CODE)) %>
+
+<p>Search names
+  <% unless is_root %> (inherits: <i><%= h(type_all_short_names(@parent_type_desc.objref).join(', ')) %></i>)<% end -%>
+<br>
+<%= type_edit_field(@obj, KConstants::A_ATTR_SHORT_NAME, :short_type_names) %></p>
+
+<p>Behaviours
+  <%
+    obj_behaviours = Array.new
+    @obj.each(KConstants::A_TYPE_BEHAVIOUR) { |value,d,q| obj_behaviours << value }
+    @schema.type_behaviour_lookup.values.sort {|a,b| a.name <=> b.name} .each do |behaviour|
+      on = obj_behaviours.include?(behaviour.objref)
+      disabled = false
+      if behaviour.root_only && !is_root
+        # If it's a behaviour which can only be applied to the root, show the root's value, but disabled the control
+        on = @root_type_desc.behaviours.include?(behaviour.objref)
+        disabled = true
+      elsif !is_root
+        # If this isn't a root type, and the parent type has this behaviour, mark it as ON and disable
+        if @parent_type_desc.behaviours.include?(behaviour.objref)
+          on = true
+          disabled = true
+        end
+      end
+      lof = behaviour.objref.to_presentation
+      %><br><label><input type="checkbox" name="behaviour[<%= lof %>]" value="t"<% if on %> checked<% end %><% if disabled %> disabled="true"<% end %>><%= h(behaviour.name) %></label><%
+    end
+  -%>
+</p>
+
+<!--  -------------------------------- ATTRIBUTES -------------------------------- -->
+
+<h2>Attributes</h2>
+<%
+  if is_root
+    # Choose from any of the attributes and aliased attributes, and order them
+    %><input type="hidden" name="root_attr" id="z__root_attr" value=""><div id="z__type_edit_attributes_root"><%
+    used_desc = Hash.new
+    @obj.each(KConstants::A_RELEVANT_ATTR) do |value,d,q|
+      desc = value.to_desc
+      used_desc[desc] = true
+      %><div><span class="z__drag_handle">drag</span> <%= type_edit_attribute(desc, true) %></div><%
+    end
+    # Collect all the normal and aliased attributes which aren't currently used
+    all_unused_descs = (@schema.all_attr_descs + @schema.all_aliased_attr_descs).reject() { |desc| used_desc[desc] }
+    # Collect together the names so they can be sorted
+    all_unused_descs_with_names = all_unused_descs.map do |desc|
+      ad = @schema.attribute_descriptor(desc) || @schema.aliased_attribute_descriptor(desc)
+      [desc,ad.printable_name.to_s.downcase]
+    end
+    # Output all the unused attributes, normal and aliased in one sorted list
+    all_unused_descs_with_names.sort { |a,b| a.last <=> b.last } .each do |desc,name_lower|
+      %><div><span class="z__drag_handle">drag</span> <%= type_edit_attribute(desc, false) %></div><%
+    end
+    %></div><%
+    # Descriptive attribute
+    %><p>Descriptive attribute<br><select name="descriptive_attribute"><option value=""> -- no descriptive attribute --</option><%
+    descriptive_attributes = Array.new
+    @obj.each(KConstants::A_ATTR_DESCRIPTIVE) do |value,d,q|
+      descriptive_attributes << value.to_desc
+    end
+    @schema.all_attr_descs.each do |desc|
+      ad = @schema.attribute_descriptor(desc)
+      if ad != nil && !(Setup_TypeController::ATTRIBUTES_NOT_USED_FOR_DESCRIPTIVE_ATTRS.include?(desc))
+        %><option value="<%= desc %>"<% if descriptive_attributes.include?(desc) %> selected<% end %>><%= h(ad.printable_name) %></option><%
+      end
+    end
+    %></select></p>
+    <p><span class="z__management_look_at_help">See notes in help before setting a descriptive attribute</span></p>
+    <%
+  else
+    # Choose attributes to remove from the list set by the parent
+    remove_attr = Hash.new
+    @obj.each(KConstants::A_RELEVANT_ATTR_REMOVE) do |value,d,q|
+      remove_attr[value.to_desc] = true
+    end
+    %><div id="z__type_edit_attributes_child"><%
+    @parent_type_desc.attributes.each do |desc|
+      %><div><%= type_edit_attribute(desc, ! remove_attr.include?(desc)) %></div><%
+    end
+    %></div><%
+  end
+%>
+
+<!--  -------------------------------- SEARCH AND RETRIEVAL -------------------------------- -->
+
+<h2>Search and retrieval</h2>
+
+<p>Relevancy weight<br>
+<%=
+  type_edit_inheritable_field(@obj, KConstants::A_RELEVANCY_WEIGHT, :relevancy_weight, :custom) do |what,value|
+    if what == :parent_value
+      if @parent_type_desc.relevancy_weight == nil
+        nil
+      else
+        @parent_type_desc.relevancy_weight.to_f / KConstants::RELEVANCY_WEIGHT_MULTIPLER
+      end
+    else
+      %Q!<input type="text" name="relevancy_weight" size="8" value="#{(value == nil) ? '' : (value.to_f / KConstants::RELEVANCY_WEIGHT_MULTIPLER)}">!
+    end
+  end
+%></p>
+
+<p>Term inclusion spec<br>
+<%=
+  type_edit_inheritable_field(@obj, KConstants::A_TERM_INCLUSION_SPEC, :term_inclusion_spec, :textarea) do
+    s = @parent_type_desc.term_inclusion_spec
+    (s == nil) ? s : %Q!#{h(s).gsub(/[\r\n]+/,'; ')}!
+  end
+%></p>
+
+<!--  -------------------------------- DISPLAY -------------------------------- -->
+
+<h2>Display</h2>
+
+<p>Render type<br>
+<%=
+  type_edit_inheritable_field(@obj, KConstants::A_RENDER_TYPE_NAME, :render_type) do
+    @parent_type_desc.render_type
+  end
+%></p>
+
+<p>Render icon<br>
+<%=
+  type_edit_inheritable_field(@obj, KConstants::A_RENDER_ICON, :render_icon, :custom) do |what,value|
+    if what == :parent_value
+      html_for_icon(@parent_type_desc.render_icon, :micro)
+    else
+      icon_defn = value || (@parent_type_desc ? @parent_type_desc.render_icon : nil) || Application_IconHelper::ICON_GENERIC
+      %Q!#{control_icon_designer('type_icon_designer', icon_defn.to_s)}<input type="hidden" id="render_icon" name="render_icon" value="#{h(value.to_s)}">!
+    end
+  end
+%></p>
+
+<p>Category<br>
+<%=
+  type_edit_inheritable_field(@obj, KConstants::A_RENDER_CATEGORY, :render_category, :custom) do |what,value|
+    if what == :parent_value
+      type_category_blob(@parent_type_desc.render_category)
+    else
+      html = ''
+      v = value.to_i
+      0.upto(7) do |i|
+        html << %Q!<input type="radio" name="render_category" value="#{i}"#{(i == v) ? ' checked' : ''}>!
+        html << type_category_blob(i)
+        html << '&nbsp; '
+      end
+      html
+    end
+  end
+%></p>
+
+<p>Display Elements<br>
+<%=
+  type_edit_inheritable_field(@obj, KConstants::A_DISPLAY_ELEMENTS, :display_elements, :custom) do |what,value|
+    if what == :parent_value
+      %Q!<pre>#{h(@parent_type_desc.display_elements)}</pre>!
+    else
+      %Q!<textarea name="display_elements" rows="4" cols="50" style="width:80%">#{h(value.to_s)}</textarea>!
+    end
+  end
+%></p>
+
+<!--  -------------------------------- OBJECT CREATION -------------------------------- -->
+
+<h2>Object creation</h2>
+
+<p><label><input type="checkbox" name="create_show_type" value="t"<%=
+    value = @obj.first_attr(KConstants::A_TYPE_CREATE_SHOW_SUBTYPE)
+    (value == nil || value.to_i != 0) ? ' checked' : ''
+  %>>Show this type in subtypes menu</label></p>
+
+<% if @parent_type_desc == nil -%>
+  <p>First position to offer creating objects of this type<br>
+  <%=
+    value = @obj.first_attr(KConstants::A_TYPE_CREATION_UI_POSITION)
+    html = '<select name="creation_ui_position" id="creation_ui_position">'
+    v = value.to_i
+    Setup_TypeController::UIPOSITION_TO_NAME.keys.sort.each do |pos|
+      n = Setup_TypeController::UIPOSITION_TO_NAME[pos]
+      html << %Q!<option value="#{pos}"#{(pos == v) ? ' selected' : ''}>#{n}</option>!
+    end
+    html << '</select>'
+  %></p>
+<% end -%>
+
+<% if @parent_type_desc == nil -%>
+  <p>Default sub-type<br>
+  <select name="create_default_subtype"><%= type_edit_options_for_subtype_menu(@obj.objref, @obj.first_attr(KConstants::A_TYPE_CREATE_DEFAULT_SUBTYPE)) %></select>
+<% end -%>
+
+<% if @parent_type_desc == nil -%>
+  <h2>Labelling</h2>  
+
+  <p>Base labels<br>
+  <%= label_edit_list('z__base_labels', @obj.all_attrs(KConstants::A_TYPE_BASE_LABEL)) %>
+
+  <p>Applicable labels<br>
+  <%
+    applicable_labels = []
+    applicable_labels_default = nil
+    @obj.each(KConstants::A_TYPE_APPLICABLE_LABEL) do |value,d,qual|
+      applicable_labels << value
+      applicable_labels_default = value.to_presentation if qual == KConstants::Q_TYPE_LABEL_DEFAULT
+    end
+    applicable_labels_default = applicable_labels.first unless applicable_labels_default || applicable_labels.empty?
+  %>
+  <div id="z__applicable_labels_default" data-default="<%= h(applicable_labels_default) %>"></div>
+  <%= label_edit_list('z__applicable_labels', applicable_labels) %>
+  </p>
+
+  <p>Labelling attributes<br>
+  <%
+    labelling_attributes = @obj.all_attrs(KConstants::A_TYPE_LABELLING_ATTR).map { |v| v.to_desc }
+    @schema.each_attr_descriptor do |attr_desc|
+      if attr_desc.data_type == KConstants::T_OBJREF
+        %><label><input type="checkbox" name="labelling_attr[<%= attr_desc.desc %>]" value="1"<% if labelling_attributes.include?(attr_desc.desc) %> checked<% end %>><%= h(attr_desc.printable_name.to_s) %></label><br><%
+      end
+    end
+  %>
+  </p>
+<% end %>
+
+<p><input type="submit" value="<% if @is_new %>Create type<% else %>Save changes<% end %>">
+</form>

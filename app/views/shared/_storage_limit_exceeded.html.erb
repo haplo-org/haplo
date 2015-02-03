@@ -1,0 +1,7 @@
+<%
+  @page_title ||= 'Storage limit reached'
+%>
+
+<p>In your current price plan, you can store up to <%= KApp.global(:limit_storage).to_f / 1024.0 %> GB of files.</p>
+
+<p>You've reached this limit, and will need to upgrade to be able to add more files to your system.</p>

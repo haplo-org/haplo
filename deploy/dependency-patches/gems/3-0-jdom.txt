@@ -1,0 +1,25 @@
+From 6d930adfeaae6cbed22d1e97ccd401bbc61407ab Mon Sep 17 00:00:00 2001
+From: Ben Murphy <benmmurphy@gmail.com>
+Date: Fri, 8 Feb 2013 02:48:22 +0000
+Subject: [PATCH] JDOM XXE Protection
+
+diff --git a/activesupport/lib/active_support/xml_mini/jdom.rb b/activesupport/lib/active_support/xml_mini/jdom.rb
+index 102b9be..0e3522f 100644
+--- a/activesupport/lib/active_support/xml_mini/jdom.rb
++++ b/activesupport/lib/active_support/xml_mini/jdom.rb
+@@ -38,6 +38,12 @@ module ActiveSupport
+         {}
+       else
+         @dbf = DocumentBuilderFactory.new_instance
++        # secure processing of java xml
++        # http://www.ibm.com/developerworks/xml/library/x-tipcfsx/index.html
++        @dbf.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false)
++        @dbf.setFeature("http://xml.org/sax/features/external-general-entities", false)
++        @dbf.setFeature("http://xml.org/sax/features/external-parameter-entities", false)
++        @dbf.setFeature(javax.xml.XMLConstants::FEATURE_SECURE_PROCESSING, true)
+         xml_string_reader = StringReader.new(data)
+         xml_input_source = InputSource.new(xml_string_reader)
+         doc = @dbf.new_document_builder.parse(xml_input_source)
+-- 
+1.8.1.1
+

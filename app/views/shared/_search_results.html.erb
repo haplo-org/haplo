@@ -1,0 +1,185 @@
+<%
+search_results = data_for_template
+count = search_results[:results].length
+if search_results[:show_result_count]
+  %><div class="z__search_results_found_statement_standalone"><%
+    case count
+    when 0
+      %><b>No items found</b><%
+    when 1
+      %><b>1</b> item found<%
+    else
+      %><b><%= count %></b> items found<%
+    end
+  %></div><%
+end
+if search_results[:search_within_ui] != nil && count > 0
+  search_results_w = search_results.dup
+  search_results_w[:w] = search_results_w[:q]
+  search_results_w[:q] = ''
+  case search_results_w[:search_within_ui]
+  when :link
+    %><div class="z__search_results_search_within_link">
+    <a href="/search?<%= search_url_params(search_results_w, :render_style) %>">Search within...</a>
+    </div><%
+  when :field
+    %><div class="z__search_results_search_within_field">
+    <form method="GET" action="/search"><%= search_params_as_hidden(search_results_w, :q, :render_style) -%>
+    <input type="text" name="q" class="z__search_results_search_within_query z__focus_candidate"> <input type="submit" value="Search within">
+    </form>
+    </div><%
+  end
+end
+
+# When there are more than one set of search results on a page,
+# use an index to distinguish page parameters and div ids.
+res_idx = 0
+if @_search_results_index == nil
+  @_search_results_index = 0;
+else
+  @_search_results_index += 1
+  res_idx = @_search_results_index
+end
+
+-%>
+<div class="z__search_results_container" id="z__search_container_<%= res_idx %>"><%
+
+  if search_results != nil
+    # How to display them?
+    render_style = ApplicationController::SEARCH_RENDER_STYLE_TO_RENDER[search_results[:render_style]]
+    render_style_is_mini = (render_style == :searchresultmini)
+    display_all = false
+    results = search_results[:results]
+    count = results.length
+    num_pages = 1
+    display_page_nav = false
+    page = 0
+    url_page_var = 'page'  # name of the var in the url which gives the page number
+    url_page_var += res_idx.to_s if res_idx != 0    # automatic distinction for multiple searches
+    limit_for_display_all = (KDisplayConfig::SEARCH_RESULTS_PER_PAGE + KDisplayConfig::SEARCH_RESULTS_PER_PAGE / 2)
+
+    # Javascript and ajax?
+    ajax_works = client_proven_to_support_ajax() && !search_results[:force_no_ajax]
+    if ajax_works
+      wwidth, wheight = client_window_dimensions()
+      if wheight != nil && wheight > 256
+        assumed_height = render_style_is_mini ?
+          KDisplayConfig::ASSUMED_SEARCH_RESULT_ENTRY_HEIGHT_MINI :
+          KDisplayConfig::ASSUMED_SEARCH_RESULT_ENTRY_HEIGHT
+        max_initial = render_style_is_mini ?
+          KDisplayConfig::MAX_INITIAL_NUMBER_OF_RESULTS_MINI :
+          KDisplayConfig::MAX_INITIAL_NUMBER_OF_RESULTS
+        l = wheight / assumed_height
+        l = max_initial if l > max_initial
+        limit_for_display_all = l if l > limit_for_display_all
+      end
+    end
+    
+    # Keywords for search results?
+    keywords = search_results[:keywords_for_display]
+    render_options = (keywords == nil) ? nil : {:keywords => keywords}
+
+    # Render
+    if count <= limit_for_display_all
+      # If the second page would not have all that much on it, just use one page
+      display_all = true
+    elsif ajax_works
+      # We know AJAX works, so display a number of pages which will probably fill the screen
+      # Also know there are limit_for_display_all or more entries
+      
+      # Load up the objects which are going to be output from the store, so they're not fetched individually
+      results.ensure_range_loaded(0,limit_for_display_all)
+      
+      # Render the results
+      0.upto(limit_for_display_all - 1) do |i|
+        %><%= render_obj(results[i], render_style, render_options) %><%
+      end
+    else
+      # display paged ... how many pages?
+      num_pages = (count + KDisplayConfig::SEARCH_RESULTS_PER_PAGE - 1) / KDisplayConfig::SEARCH_RESULTS_PER_PAGE
+      display_page_nav = true
+      if params[url_page_var] != nil
+        page = params[url_page_var].to_i - 1      # pages show in URLs and display as 1-based
+        page = num_pages - 1 if page >= num_pages || page < 0
+      end
+      # Which indices to use?
+      first = page * KDisplayConfig::SEARCH_RESULTS_PER_PAGE
+      last = first + KDisplayConfig::SEARCH_RESULTS_PER_PAGE - 1
+      last = count - 1 if last >= count
+      # Load up the objects from the store
+      results.ensure_range_loaded(first,last)      
+      # Display the relevant results
+      first.upto(last) do |i|
+        %><%= render_obj(results[i], render_style, render_options) %><%
+      end
+    end
+    
+    if display_all
+      # Load all objects from the store
+      results.ensure_range_loaded(0, count - 1)
+      # Render each one
+      results.each do |obj|
+        %><%= render_obj(obj, render_style, render_options) %><%
+      end
+    end
+  end
+%></div><%
+  # Don't bother sending the navigation if we know that ajax works with this client
+  if display_page_nav && ! ajax_works
+    url = request.request_uri
+    rx = Regexp.new "([?&])#{url_page_var}=\\d+(&|$)"
+    unless rx.match(url)
+      rx = nil
+      url = (url.index('?') == nil) ? "#{url}?#{url_page_var}=" : "#{url}&#{url_page_var}="
+    end
+    current = page + 1
+    
+    # how many pages to display links for
+    num_page_links = num_pages
+    if num_pages > KDisplayConfig::SEARCH_PAGES_MAX_DISPLAYED
+      # only display the initial few
+      num_page_links = (((current + 3) / KDisplayConfig::SEARCH_PAGES_MAX_DISPLAYED) + 1) * KDisplayConfig::SEARCH_PAGES_MAX_DISPLAYED
+      num_page_links = num_pages if num_page_links > num_pages
+    end
+    
+    %><div class="z__search_results_paging" id="z__search_results_pager_<%= res_idx %>"><%= count %> results in <%= num_pages %> pages:<%
+    prev_url = nil
+    prev_i = current - 1
+    next_url = nil
+    next_i = current + 1
+    1.upto(num_page_links) do |p|
+      if p == current
+        %> <b><%= p %></b><%
+      else
+        # Make a new url
+        u = (rx != nil) ? url.gsub(rx, "\\1#{url_page_var}=#{p}\\2") : url + p.to_s
+        prev_url = u if p == prev_i
+        next_url = u if p == next_i
+        # output
+        %> <a href="<%= u %>"><%= p %></a><%
+      end
+    end
+    if num_page_links != num_pages
+      %> ...<%
+    end
+    %><div><%
+    if prev_url == nil then %><span>previous</span> <% else  %><a href="<%= prev_url %>">previous</a> <% end
+    if next_url == nil then %><span>next</span> <% else %><a href="<%= next_url %>">next</a> <% end
+    %></div></div><%
+  end
+  
+  # Add in demand loading?
+  unless display_all || search_results[:force_no_ajax]
+    client_side_resources(:search_results_demand)
+    dl_args = %Q!["z__search_container_#{res_idx}",#{ajax_works ? 'null' : "'z__search_results_pager_#{res_idx}'"},#{count},"/api/search/demand_load?#{search_url_params(search_results)}"]!
+    if data_for_template[:rendering_for_insertable]
+      response.headers['X-ONEIS-SDL'] = dl_args
+    else
+      %><div class="z__search_demand_load_params" data-sdl="<%= h(dl_args) %>"></div><%
+    end
+  end
+
+  # Tray and search results scripts always required when search results are presented
+  client_side_resources(:search_results)
+
+%>

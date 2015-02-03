@@ -1,0 +1,23 @@
+<%
+  @page_title = "Choose permissions..."
+
+  link_start = "/do/edit?new=#{@object_to_edit.first_attr(KConstants::A_TYPE).to_presentation}"
+  # Support pop up windows for new linked objects from fields in editors
+  link_start << '&pop=1' if params.has_key?(:pop)
+  if params.has_key?(:data)
+    t = params[:data][KConstants::A_TITLE.to_s]
+    link_start << "&data[#{KConstants::A_TITLE}]=#{url_encode(t)}" if t != nil
+  end
+
+  %><div class="z__ui_choose_container"><%
+  @labeller.allowed_applicable_labels.each do |label|
+    label_object = KObjectStore.with_superuser_permissions { KObjectStore.read(label) }
+    %><a class="z__ui_choose_option_entry" href="<%= link_start %>&label=<%= label.to_presentation %>"><span class="z__ui_choose_option_entry_name"><%= h(label_object.first_attr(KConstants::A_TITLE).to_s) %></span><%
+    notes = label_object.first_attr(KConstants::A_NOTES)
+    if notes
+      %><span><%= h(notes.to_s) %></span><%
+    end
+    %></a><%
+  end
+  %></div><%
+%>

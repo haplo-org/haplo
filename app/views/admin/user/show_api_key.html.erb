@@ -1,0 +1,40 @@
+<%
+  user = @api_key.user
+  @page_title = h(@api_key.name) + ' for ' + h(user.name)
+%>
+
+<%= sys_mng_header %>
+
+<table class="z__mangement_kv_table">
+  <tr><th>Name</th><td><%= h(@api_key.name) %></td></tr>
+  <tr><th>Authenticates as user</th><td><%= h(user.name) %></td></tr>
+  <tr><th>Allowed request path</th><td><%= h(@api_key.path) %></td></tr>
+  <% if @api_key_secret %>
+    <tr><th>API key</th><td>
+      <span style="background:#fff;border:1px solid #aaa;padding:1px 4px"><%= h(@api_key_secret) %></span><br>
+      <b>This is the only time the API key can be displayed.</b>
+    </td></tr>
+  <% else %>
+    <tr><th>API key</th><td><% if params.has_key?(:reveal) %>
+        <%= h(@api_key.a) %>...
+      <% else %>
+        <i><a href="?reveal=1">Reveal partial API key</a></i>
+      <% end %>
+    </td></tr>
+  <% end %>
+</table>
+
+<p><b>WARNING:</b> Knowledge of the API key is equivalent to knowing the email address and password of the authenticated user. The API key still grants access even if the password is changed.</p>
+
+<p>Only reveal the key if no one is overlooking your computer.</p>
+
+<p>Click the Delete button to delete this API key.</p>
+
+<div class="z__management_extra_buttons_holder">
+  <form method="post" action="/do/admin/user/show_api_key/<%= @api_key.id %>"><%= form_csrf_token %>
+    <input type="hidden" name="delete" value="1">
+    <input type="submit" value="Delete API key">
+  </form>
+</div>
+
+<p><a href="/do/admin/user/show/<%= user.id %>">Back to user</a></p>

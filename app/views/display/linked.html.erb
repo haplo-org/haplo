@@ -1,0 +1,59 @@
+<%
+  @page_title = h(@obj.first_attr(KConstants::A_TITLE).to_s) + ' &nbsp; (linked items)'
+%>
+
+<%= render :partial => 'linked_types_ui' %>
+
+<form method="GET" id="z__search_form_id">
+  <%= render :partial => 'search/input_ui', :data_for_template => @display_search_spec %>
+</form>
+
+<% if @display_search[:results].length > 0 %>
+<div class="z__search_results_type_counts" style="margin-bottom:16px">
+  <div class="z__search_results_type_counts_prop"></div>
+  <%
+    base_params = search_url_params(@display_search, :w, :type)
+    # Make list of all the types we want to display
+    types = nil
+    if @show_linked_objects_type != nil
+      type_root = 
+      types = @display_search_type_roots[@show_linked_objects_type].last
+    else
+      types = []
+      @display_search_type_roots.each_value { |v| types = types + v.last }
+    end
+    types = types.sort { |a,b| a.last.printable_name.to_s <=> b.last.printable_name.to_s }  # sort by name
+    # Display the types
+    if types.length == 1
+      types.each do |count,type_desc|
+        %><div class="z__search_results_type_counts_box"><%= html_for_icon(type_desc.render_icon, :micro) %><%= h(type_desc.printable_name) %> <span class="z__count_marker"><%= count %></span></div><%
+      end
+    else
+      types.each do |count,type_desc|
+        if type_desc.objref == @show_linked_objects_type_filter
+          %><div class="z__search_results_type_counts_box z__search_results_type_selected"><%= html_for_icon(type_desc.render_icon, :micro) %><a href="?<%= base_params %>"><%= h(type_desc.printable_name) %></a> <span class="z__count_marker"><%= count %></span></div><%
+        else
+          %><div class="z__search_results_type_counts_box"><%= html_for_icon(type_desc.render_icon, :micro) %><a href="?type=<%= type_desc.objref.to_presentation %>&<%= base_params %>"><%= h(type_desc.printable_name) %></a> <span class="z__count_marker"><%= count %></span></div><%
+        end
+      end
+    end
+  %>
+  <div class="z__search_results_type_counts_prop"></div>
+</div>
+<div class="z__search_results_sort_by">
+  <%
+    if @display_search[:relevance_possible]
+      %>ordered by<%= display_linked_search_sort_choices(@display_search, [:relevance, :title, :date]) %><%
+    else
+      %>ordered by <span class="z__search_results_sort_by_not_selectable">relevance</span><%= display_linked_search_sort_choices(@display_search, [:title, :date]) %><%
+    end
+  %>
+</div>
+
+<%= render(:partial => 'shared/search_results', :data_for_template => @display_search) %>
+
+<% else %>
+
+<p>&nbsp;</p><p><i>No results found</i></p>
+
+<% end %>

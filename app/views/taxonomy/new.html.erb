@@ -1,0 +1,11 @@
+<%
+  @page_title = "Add new #{h(@type_desc.printable_name.to_s)} taxonomy"
+%>
+
+<%= render( :partial => 'shared/editor_for_new_object',
+            :data_for_template => {
+                :object => @template_root,
+                :success_redirect => '/do/taxonomy/new-created',
+                :editor_options => {:read_only_attributes => @read_only_attributes}
+            }
+          ) %>

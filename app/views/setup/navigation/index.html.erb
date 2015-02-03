@@ -1,0 +1,14 @@
+<% @page_title = 'Navigation' -%>
+<div id="k__workspace_url" data-url="/do/setup/navigation/edit"></div>
+<%= sys_mng_header %>
+
+<ul style="margin-top:16px">
+  <li class="z__management_action"><a href="/do/setup/navigation/edit" target="workspace" class="z__selected">Edit navigation</a></li>
+</ul>
+
+<ul>
+  <li><i>Preview as...</i></li>
+  <% @groups.each do |group| %>
+    <li><a href="/do/setup/navigation/preview/<%= group.id %>" target="workspace"><%= h(group.name) %></a></li>
+  <% end %>
+</ul>

@@ -1,0 +1,28 @@
+FOR: /do/setup/email_templates
+
+h1. Email templates
+
+Email templates allow you to customise the emails sent by ONEIS. You need knowledge of HTML and CSS to edit these templates, and it's recommended you seek the assistance of a designer to get the best results.
+
+h2. Edit an email template
+
+* Choose the email template from the list and click on _Edit_ in the right hand panel.
+
+h2. Remove email template from menu
+
+* Choose the email template from the list and click on _Remove from menu_ in the right hand panel. 
+
+Removing a template from the menu stops it being selected in the future. The template will still be used if currently selected for any feature, removing it from the menu marks it as not intended for use.
+
+h2. Restore to menu
+
+* Choose the email template from the list and click on _Restore to menu_ in the right hand panel. 
+
+h2. New email template
+
+* Choose _New email template_ to create a new email template. 
+
+h4. Further help
+
+[[Edit email template]]
+

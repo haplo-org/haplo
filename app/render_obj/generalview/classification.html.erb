@@ -1,0 +1,22 @@
+<%= render_obj_explicit_no_layout(obj, :generalview, :generic, options) %>
+<%
+if obj.objref != nil # in case it's rendered in the editor preview
+  if type_desc.is_hierarchical?
+    %><div class="z__jump_link"><a href="/search/browse/<%= obj.objref.to_presentation %>">Browse around this <%= h(type_desc.printable_name.to_s) %></a></div><%
+  end
+  
+  # There's been a search for all the objects linked to this item, so display it.
+  # Slightly hacky to just borrow the results and hack around with them a bit, but it saves a search.
+  if @linked_search != nil
+    search = @linked_search.dup
+    search[:search_within_ui] = :link
+    # Another hack alert to make the search within link work
+    search[:q] = search[:w]
+    search.delete(:w)
+    %>
+      <p>&nbsp;</p>
+      <%= render(:partial => 'shared/search_results', :data_for_template => search) %>
+    <%
+  end
+end
+%>

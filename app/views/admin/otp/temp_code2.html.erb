@@ -1,0 +1,26 @@
+<%
+  @page_title = "Temporary code for #{h(@user.name)}"
+  @breadcrumbs = [:menu, ['/do/admin/otp', 'Tokens']]
+%>
+
+<p>You are about to create a temporary code which will allow someone with <%= h(possessive_case_of(@user.name)) %> password to log into this system.</p>
+
+<p>If you are not sure that you're giving it to <b><%= h(@user.name) %></b>, you <b>must not</b> create this temporary code.</p>
+
+<p>&nbsp;</p>
+
+<p>How have you verified the identity of <%= h(@user.name) %>?</p>
+
+<p>&raquo; <a href="/do/admin/otp/temp_code3/<%= @user.id %>"><%= h(@user.name) %> is known to me, and is in the same room as me.</a></p>
+
+<p>&raquo; <a href="/do/admin/otp/temp_code3/<%= @user.id %>">One of my colleagues has confirmed the identify of <%= h(@user.name) %>, who is in the same room as me.</a></p>
+
+<p>&raquo; <a href="/do/admin/otp/temp_code3/<%= @user.id %>">I have called <%= h(@user.name) %> on a phone number listed in our organisation directory, and I have recognised the voice at the end of the line.</a></p>
+
+<p>&raquo; <a href="/do/admin/otp/temp_code3/<%= @user.id %>">I have called a trusted colleague on a phone number listed in our organisation directory, have recognised the voice at the end of the line, and this colleague has vouched for the identify of <%= h(@user.name) %> and stated that <%= h(@user.name) %> is in the same room as them.</a></p>
+
+<p>&raquo; <a href="/do/admin/otp/temp_code_bad">Other...</a></p>
+
+<p>&nbsp;</p>
+
+<p><b>IMPORTANT:</b> You must never give out a temporary code by email or text, or to someone who has called you.</p>

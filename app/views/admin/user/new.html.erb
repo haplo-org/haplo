@@ -1,0 +1,9 @@
+<%
+  user_type = ((@user.kind.to_i == User::KIND_USER) ? 'user' : 'group')
+  @page_title = "New #{user_type}"
+-%>
+
+<%= sys_mng_header %>
+
+<%= render :partial => 'form', :data_for_template => {:form_url => "/do/admin/user/create", :submit_button_label => "Create new #{user_type}" } %>
+

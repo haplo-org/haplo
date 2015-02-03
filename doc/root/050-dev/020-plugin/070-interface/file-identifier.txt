@@ -1,0 +1,63 @@
+title: FileIdentifier
+long_title: FileIdentifier interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @FileIdentifier@ interface is a reference to a [node:dev/plugin/interface/file] used as a value within a [node:dev/plugin/interface/store-object]. It includes extra information to implement the user interface for 'file version tracks' provided by the Platform.
+
+The digest and fileSize are used to unambiguously identify the @File@ to which it refers.
+
+
+h2. Construction
+
+Use [node:dev/plugin/interface/file#identifier] on a @File@ object, or @mutableCopy()@ on a @FileIdentifier@ object(),
+
+
+h2. Interface
+
+h3(function). mutableCopy()
+
+Returns a mutable copy of this @FileIdentifier@.
+
+
+h2. Interface (read only properties)
+
+h3(property). digest
+
+The digest of the file, as a hex encoded @String@.
+
+
+h3(property). fileSize
+
+The size of the file, in bytes, as a number.
+
+
+h2. Interface (mutable properties)
+
+If a @FileIdentifier@ is created using the [node:dev/plugin/interface/file#identifier] function of a @File@ object, or a mutable copy made with @mutableCopy()@, the following properties are read/write.
+
+
+h3(property). mimeType
+
+The MIME type of the file. This does not have to match the @mimeType@ property of the underlying @File@.
+
+
+h3(property). filename
+
+The filename of the file. This does not have to match the @filename@ property of the underlying @File@.
+
+
+h3(property). trackingId
+
+A randomly generated @String@ for tracking versions within a 'file version track'. Used for generating the version listings in the web user interface.
+
+
+h3(property). version
+
+The version of this version within a 'file version track', as a @String@.
+
+
+h3(property). logMessage
+
+A @String@ containing the user's description of the changes made in this version within a 'file version track'.
+

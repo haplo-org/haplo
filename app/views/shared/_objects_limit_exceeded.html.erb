@@ -1,0 +1,7 @@
+<%
+  @page_title ||= 'Item limit reached'
+%>
+
+<p>Your system currently has a limit of <%= KApp.global(:limit_objects) %> items.</p>
+
+<p>You've reached this limit, and will need to upgrade to be able to add more information to your system. Please <a href="/do/help/contact">contact support to request an upgrade</a>.</p>

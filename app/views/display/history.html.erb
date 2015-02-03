@@ -1,0 +1,25 @@
+<%
+  @page_title = 'History of '+h(@history.object.first_attr(KConstants::A_TITLE))
+  @breadcrumbs = [[object_urlpath(@history.object), "Back"]]
+
+  in_right_column render :partial => 'history_timeline'
+
+  render_options = {}
+
+  display_version = @history.versions.find { |v| v.version == @version }
+  display_obj = display_version ? display_version.object : @history.object
+
+  # Sign URLs if it's not the latest version
+  if display_obj.version != @history.object.version
+    render_options[:sign_file_urls] = true
+  end
+%>
+
+<%= render_obj(display_obj, :generalview, render_options) %>
+
+<p>&nbsp;</p>
+<p><%
+  display_obj.labels.each do |label_ref|
+    %><%= label_html(label_ref) %> <%
+  end
+%></p>

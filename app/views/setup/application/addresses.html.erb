@@ -1,0 +1,36 @@
+<% @page_title = 'System addresses' -%>
+
+<%= sys_mng_header %>
+
+<form method="post"><%= form_csrf_token %>
+  
+  <p>Application hostname (clear)<br>
+  http://<select name="url_hostname">
+    <% @hostnames.each do |h| -%>
+      <option value="<%= h %>"<% if @url_hostname == h %> selected<% end %>><%= h %></option>
+    <% end -%>
+  </select>/</p>
+
+  <p>Application hostname (with SSL encryption)<br>
+  https://<select name="ssl_hostname">
+    <% @hostnames.each do |h| -%>
+      <option value="<%= h %>"<% if @ssl_hostname == h %> selected<% end %>><%= h %></option>
+    <% end -%>
+  </select>/</p>
+
+  <p><span class="z__management_look_at_help">Refer to important notes in the help.</span></p>
+
+  <p>Use SSL (encryption) for:<%
+      n = 0
+      @ssl_policy.each do |type|
+        checked = (type == 'e') ? ' checked' : ''
+        %><br>&nbsp;&nbsp;<input type="checkbox" name="ssl_policy<%= n %>"<%= checked %>><%= Setup_ApplicationController::ENCRYPTION_POLICY_NAMES[n] %><%
+        n += 1
+      end
+    %>
+  </p>
+
+  <input type="submit" value="Save">
+
+</form>
+

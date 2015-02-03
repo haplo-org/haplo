@@ -1,0 +1,4 @@
+id, user_id,  perms_allow,  perms_deny
+1,  2,        0,            127
+2,  4,        153,          0
+3,  16,       127,          0

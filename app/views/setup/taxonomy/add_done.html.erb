@@ -1,0 +1,10 @@
+<%
+  @page_title = 'New taxonomy'
+  client_side_resources :basics
+-%>
+
+<%= sys_mng_header %>
+
+<% if @objref %>
+  <div id="z__reload_submenu_url" data-url="/do/setup/taxonomy/list?select=<%= @objref.to_presentation %>"></div>
+<% end %>

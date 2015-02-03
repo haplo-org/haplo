@@ -1,0 +1,16 @@
+<%
+  @page_title = h(@user.name)+' created'
+%>
+<%= sys_mng_header %>
+
+<p class="z__management_notice">An account for <b><%= h(@user.name) %></b> has been created.</p>
+
+<p>Please send them this welcome link, which will allow them to choose their password and log in.</p>
+
+<p style="margin-left:2em"><%= h(@welcome_url) %></p>
+
+<p>If you lose this link, the forgotten password system can be used to set a password.</p>
+
+<p><a href="/do/admin/user/show/<%= @user.id %>">Continue</a></p>
+
+<%= sys_mng_update_submenu(@user.name, "/do/admin/user/show/#{@user.id}", false) %>

@@ -1,0 +1,5 @@
+<% if @search_results == nil %>
+NO SEARCH
+<% else -%>
+<%= render(:partial => 'shared/search_results', :data_for_template => @search_results.merge({:rendering_for_insertable => true}))%>
+<% end -%>

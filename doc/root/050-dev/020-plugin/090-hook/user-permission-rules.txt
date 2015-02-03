@@ -1,0 +1,7 @@
+title: hUserPermissionRules
+class: HookNode
+--
+
+Add additional rules to an User's permissions. Use this for applying rules calculated dynamically.
+
+Called with the SYSTEM user active, so the plugin will have a consistent view of the store and full permissions. Do not call @O.impersontate()@ when responding to this hook.

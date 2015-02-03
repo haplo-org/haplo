@@ -1,0 +1,15 @@
+<%
+  # data_for_template contains :template, :name, :id (optional)
+  template_id = data_for_template[:template]
+  template_id = template_id.id if template_id.class == EmailTemplate
+  %><select name="<%= data_for_template[:name] %>"<% if data_for_template.has_key?(:id) %> id="<%= data_for_template[:id] %>"<% end %>><%
+  if data_for_template.has_key?(:blank)
+    %><option value=""><%= h(data_for_template[:blank]) %></option><%
+  end
+  # Go through templates with the ones NOT in the menu first, so an out-of-menu selection comes first
+  EmailTemplate.find(:all, :select => 'id,in_menu,name', :order => 'in_menu,name').each do |template|
+    if template.in_menu || template.id == template_id
+      %><option value="<%= template.id %>"<% if template.id == template_id %> selected<% end %>><%= h(template.name) %></option><%
+    end
+  end
+%></select>

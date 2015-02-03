@@ -1,0 +1,22 @@
+FOR: /do/setup/application/login
+
+h1. Auto-login
+
+Auto-login allows users to automatically log into the system without needing to enter their username and password, after their first successful login. 
+
+Enabling auto-login enabled the _"In future, automatically log in on this computer"_ option on the login page.
+
+*Auto-login should only be enabled if users can be trusted to only enable auto-login on computers to which only they have access.* Users should not enable auto-login on public or otherwise insecure computers. 
+
+To enable auto-login:
+
+* Click _Edit_
+* Tick _Enable auto-login_
+* _Set auto-login_.
+
+h2. Auto-login invalidation
+
+If you suspect that a user has accidently used the auto-login option on a public or otherwise insecure computer, you can invalidate all auto-login credentials to prevent unauthorised access:
+
+* Click _Invalidate all auto-login credentials_.
+

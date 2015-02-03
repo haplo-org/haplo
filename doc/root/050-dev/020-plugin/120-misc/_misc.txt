@@ -1,0 +1,6 @@
+title: Misc
+long_title: Miscellaneous 
+class: DocNodeTextileWithTOC
+--
+
+Miscellaneous facilities provided by the Platform.

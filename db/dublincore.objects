@@ -1,0 +1,395 @@
+# Haplo Platform                                     http://haplo.org
+# (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# Automatically generated file, do not edit
+
+obj [O_LABEL_STRUCTURE] Q_ALTERNATIVE
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Alternative'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:alternative')
+	A_ATTR_SHORT_NAME	'alternative'
+
+obj [O_LABEL_STRUCTURE] Q_TABLE_OF_CONTENTS
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Table Of Contents'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:table-of-contents')
+	A_ATTR_SHORT_NAME	'table-of-contents'
+
+obj [O_LABEL_STRUCTURE] Q_ABSTRACT
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Abstract'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:abstract')
+	A_ATTR_SHORT_NAME	'abstract'
+
+obj [O_LABEL_STRUCTURE] Q_CREATED
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Created'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:created')
+	A_ATTR_SHORT_NAME	'created'
+
+obj [O_LABEL_STRUCTURE] Q_VALID
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Valid'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:valid')
+	A_ATTR_SHORT_NAME	'valid'
+
+obj [O_LABEL_STRUCTURE] Q_AVAILABLE
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Available'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:available')
+	A_ATTR_SHORT_NAME	'available'
+
+obj [O_LABEL_STRUCTURE] Q_ISSUED
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Issued'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:issued')
+	A_ATTR_SHORT_NAME	'issued'
+
+obj [O_LABEL_STRUCTURE] Q_MODIFIED
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Modified'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:modified')
+	A_ATTR_SHORT_NAME	'modified'
+
+obj [O_LABEL_STRUCTURE] Q_DATE_ACCEPTED
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Date Accepted'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:date-accepted')
+	A_ATTR_SHORT_NAME	'date-accepted'
+
+obj [O_LABEL_STRUCTURE] Q_DATE_COPYRIGHTED
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Date Copyrighted'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:date-copyrighted')
+	A_ATTR_SHORT_NAME	'date-copyrighted'
+
+obj [O_LABEL_STRUCTURE] Q_DATE_SUBMITTED
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Date Submitted'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:date-submitted')
+	A_ATTR_SHORT_NAME	'date-submitted'
+
+obj [O_LABEL_STRUCTURE] Q_EXTENT
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Extent'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:extent')
+	A_ATTR_SHORT_NAME	'extent'
+
+obj [O_LABEL_STRUCTURE] Q_MEDIUM
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Medium'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:medium')
+	A_ATTR_SHORT_NAME	'medium'
+
+obj [O_LABEL_STRUCTURE] Q_IS_VERSION_OF
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Is Version Of'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:is-version-of')
+	A_ATTR_SHORT_NAME	'is-version-of'
+
+obj [O_LABEL_STRUCTURE] Q_HAS_VERSION
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Has Version'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:has-version')
+	A_ATTR_SHORT_NAME	'has-version'
+
+obj [O_LABEL_STRUCTURE] Q_IS_REPLACED_BY
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Is Replaced By'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:is-replaced-by')
+	A_ATTR_SHORT_NAME	'is-replaced-by'
+
+obj [O_LABEL_STRUCTURE] Q_REPLACES
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Replaces'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:replaces')
+	A_ATTR_SHORT_NAME	'replaces'
+
+obj [O_LABEL_STRUCTURE] Q_IS_REQUIRED_BY
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Is Required By'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:is-required-by')
+	A_ATTR_SHORT_NAME	'is-required-by'
+
+obj [O_LABEL_STRUCTURE] Q_REQUIRES
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Requires'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:requires')
+	A_ATTR_SHORT_NAME	'requires'
+
+obj [O_LABEL_STRUCTURE] Q_IS_PART_OF
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Is Part Of'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:is-part-of')
+	A_ATTR_SHORT_NAME	'is-part-of'
+
+obj [O_LABEL_STRUCTURE] Q_HAS_PART
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Has Part'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:has-part')
+	A_ATTR_SHORT_NAME	'has-part'
+
+obj [O_LABEL_STRUCTURE] Q_IS_REFERENCED_BY
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Is Referenced By'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:is-referenced-by')
+	A_ATTR_SHORT_NAME	'is-referenced-by'
+
+obj [O_LABEL_STRUCTURE] Q_REFERENCES
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'References'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:references')
+	A_ATTR_SHORT_NAME	'references'
+
+obj [O_LABEL_STRUCTURE] Q_IS_FORMAT_OF
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Is Format Of'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:is-format-of')
+	A_ATTR_SHORT_NAME	'is-format-of'
+
+obj [O_LABEL_STRUCTURE] Q_HAS_FORMAT
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Has Format'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:has-format')
+	A_ATTR_SHORT_NAME	'has-format'
+
+obj [O_LABEL_STRUCTURE] Q_CONFORMS_TO
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Conforms To'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:conforms-to')
+	A_ATTR_SHORT_NAME	'conforms-to'
+
+obj [O_LABEL_STRUCTURE] Q_SPATIAL
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Spatial'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:spatial')
+	A_ATTR_SHORT_NAME	'spatial'
+
+obj [O_LABEL_STRUCTURE] Q_TEMPORAL
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Temporal'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:temporal')
+	A_ATTR_SHORT_NAME	'temporal'
+
+obj [O_LABEL_STRUCTURE] Q_AUDIENCE
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Audience'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:audience')
+	A_ATTR_SHORT_NAME	'audience'
+
+obj [O_LABEL_STRUCTURE] Q_ACCRUAL_METHOD
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Accrual Method'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:accrual-method')
+	A_ATTR_SHORT_NAME	'accrual-method'
+
+obj [O_LABEL_STRUCTURE] Q_ACCRUAL_PERIODICITY
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Accrual Periodicity'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:accrual-periodicity')
+	A_ATTR_SHORT_NAME	'accrual-periodicity'
+
+obj [O_LABEL_STRUCTURE] Q_ACCRUAL_POLICY
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Accrual Policy'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:accrual-policy')
+	A_ATTR_SHORT_NAME	'accrual-policy'
+
+obj [O_LABEL_STRUCTURE] Q_INSTRUCTIONAL_METHOD
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Instructional Method'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:instructional-method')
+	A_ATTR_SHORT_NAME	'instructional-method'
+
+obj [O_LABEL_STRUCTURE] Q_PROVENANCE
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Provenance'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:provenance')
+	A_ATTR_SHORT_NAME	'provenance'
+
+obj [O_LABEL_STRUCTURE] Q_RIGHTS_HOLDER
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Rights Holder'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:rights-holder')
+	A_ATTR_SHORT_NAME	'rights-holder'
+
+obj [O_LABEL_STRUCTURE] Q_ACCESS_RIGHTS
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Access Rights'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:access-rights')
+	A_ATTR_SHORT_NAME	'access-rights'
+
+obj [O_LABEL_STRUCTURE] Q_LICENSE
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'License'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:license')
+	A_ATTR_SHORT_NAME	'license'
+
+obj [O_LABEL_STRUCTURE] Q_BIBLIOGRAPHIC_CITATION
+	A_TYPE				O_TYPE_QUALIFIER_DESC
+	A_TITLE				'Bibliographic Citation'
+	A_CODE				KIdentifierConfigurationName.new('dc:qualifier:bibliographic-citation')
+	A_ATTR_SHORT_NAME	'bibliographic-citation'
+
+obj [O_LABEL_STRUCTURE] A_TITLE
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Title'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:title')
+	A_ATTR_SHORT_NAME	'title'
+	A_ATTR_DATA_TYPE	T_TEXT
+	A_RELEVANCY_WEIGHT	100000
+	A_RELEVANCY_WEIGHT/Q_ALTERNATIVE	50000
+	A_ATTR_QUALIFIER    Q_NULL
+	A_ATTR_QUALIFIER    Q_ALTERNATIVE
+
+obj [O_LABEL_STRUCTURE] A_CREATOR
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Author'
+	A_TITLE				'Creator'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:author')
+	A_ATTR_SHORT_NAME	'author'
+	A_ATTR_SHORT_NAME	'creator'
+	A_ATTR_DATA_TYPE	T_OBJREF
+	A_ATTR_QUALIFIER    Q_NULL
+	A_ATTR_CONTROL_BY_TYPE	O_TYPE_PERSON
+	A_ATTR_CONTROL_BY_TYPE	O_TYPE_ORGANISATION
+
+obj [O_LABEL_STRUCTURE] A_SUBJECT
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Subject'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:subject')
+	A_ATTR_SHORT_NAME	'subject'
+	A_ATTR_DATA_TYPE	T_OBJREF
+	A_ATTR_QUALIFIER    Q_NULL
+	A_ATTR_CONTROL_BY_TYPE	O_TYPE_TAXONOMY_TERM
+
+obj [O_LABEL_STRUCTURE] A_DESCRIPTION
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Description'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:description')
+	A_ATTR_SHORT_NAME	'description'
+	A_ATTR_DATA_TYPE	T_TEXT
+	A_ATTR_QUALIFIER    Q_NULL
+	A_ATTR_QUALIFIER    Q_TABLE_OF_CONTENTS
+	A_ATTR_QUALIFIER    Q_ABSTRACT
+
+obj [O_LABEL_STRUCTURE] A_PUBLISHER
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Publisher'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:publisher')
+	A_ATTR_SHORT_NAME	'publisher'
+	A_ATTR_DATA_TYPE	T_OBJREF
+	A_ATTR_QUALIFIER    Q_NULL
+	A_ATTR_CONTROL_BY_TYPE	O_TYPE_ORGANISATION
+
+obj [O_LABEL_STRUCTURE] A_CONTRIBUTOR
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Contributor'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:contributor')
+	A_ATTR_SHORT_NAME	'contributor'
+	A_ATTR_DATA_TYPE	T_TEXT
+	A_ATTR_QUALIFIER    Q_NULL
+
+obj [O_LABEL_STRUCTURE] A_DATE
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Date'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:date')
+	A_ATTR_SHORT_NAME	'date'
+	A_ATTR_DATA_TYPE	T_DATETIME
+	A_ATTR_QUALIFIER    Q_NULL
+	A_ATTR_QUALIFIER    Q_CREATED
+	A_ATTR_QUALIFIER    Q_VALID
+	A_ATTR_QUALIFIER    Q_AVAILABLE
+	A_ATTR_QUALIFIER    Q_ISSUED
+	A_ATTR_QUALIFIER    Q_MODIFIED
+	A_ATTR_QUALIFIER    Q_DATE_ACCEPTED
+	A_ATTR_QUALIFIER    Q_DATE_COPYRIGHTED
+	A_ATTR_QUALIFIER    Q_DATE_SUBMITTED
+
+obj [O_LABEL_STRUCTURE] A_TYPE
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Type'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:type')
+	A_ATTR_SHORT_NAME	'type'
+	A_ATTR_DATA_TYPE	T_OBJREF
+	A_ATTR_QUALIFIER    Q_NULL
+
+obj [O_LABEL_STRUCTURE] A_FORMAT
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Format'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:format')
+	A_ATTR_SHORT_NAME	'format'
+	A_ATTR_DATA_TYPE	T_TEXT
+	A_ATTR_QUALIFIER    Q_NULL
+	A_ATTR_QUALIFIER    Q_EXTENT
+	A_ATTR_QUALIFIER    Q_MEDIUM
+
+obj [O_LABEL_STRUCTURE] A_IDENTIFIER
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Identifier'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:identifier')
+	A_ATTR_SHORT_NAME	'identifier'
+	A_ATTR_DATA_TYPE	T_TEXT
+	A_ATTR_QUALIFIER    Q_NULL
+	A_ATTR_QUALIFIER    Q_BIBLIOGRAPHIC_CITATION
+
+obj [O_LABEL_STRUCTURE] A_SOURCE
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Source'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:source')
+	A_ATTR_SHORT_NAME	'source'
+	A_ATTR_DATA_TYPE	T_TEXT
+	A_ATTR_QUALIFIER    Q_NULL
+
+obj [O_LABEL_STRUCTURE] A_LANGUAGE
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Language'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:language')
+	A_ATTR_SHORT_NAME	'language'
+	A_ATTR_DATA_TYPE	T_TEXT
+	A_ATTR_QUALIFIER    Q_NULL
+
+obj [O_LABEL_STRUCTURE] A_RELATION
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Relation'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:relation')
+	A_ATTR_SHORT_NAME	'relation'
+	A_ATTR_DATA_TYPE	T_TEXT
+	A_ATTR_QUALIFIER    Q_NULL
+	A_ATTR_QUALIFIER    Q_IS_VERSION_OF
+	A_ATTR_QUALIFIER    Q_HAS_VERSION
+	A_ATTR_QUALIFIER    Q_IS_REPLACED_BY
+	A_ATTR_QUALIFIER    Q_REPLACES
+	A_ATTR_QUALIFIER    Q_IS_REQUIRED_BY
+	A_ATTR_QUALIFIER    Q_REQUIRES
+	A_ATTR_QUALIFIER    Q_IS_PART_OF
+	A_ATTR_QUALIFIER    Q_HAS_PART
+	A_ATTR_QUALIFIER    Q_IS_REFERENCED_BY
+	A_ATTR_QUALIFIER    Q_REFERENCES
+	A_ATTR_QUALIFIER    Q_IS_FORMAT_OF
+	A_ATTR_QUALIFIER    Q_HAS_FORMAT
+	A_ATTR_QUALIFIER    Q_CONFORMS_TO
+
+obj [O_LABEL_STRUCTURE] A_COVERAGE
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Coverage'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:coverage')
+	A_ATTR_SHORT_NAME	'coverage'
+	A_ATTR_DATA_TYPE	T_TEXT
+	A_ATTR_QUALIFIER    Q_NULL
+	A_ATTR_QUALIFIER    Q_SPATIAL
+	A_ATTR_QUALIFIER    Q_TEMPORAL
+
+obj [O_LABEL_STRUCTURE] A_RIGHTS
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Rights'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:rights')
+	A_ATTR_SHORT_NAME	'rights'
+	A_ATTR_DATA_TYPE	T_TEXT
+	A_ATTR_QUALIFIER    Q_NULL
+	A_ATTR_QUALIFIER    Q_ACCESS_RIGHTS
+	A_ATTR_QUALIFIER    Q_LICENSE
+

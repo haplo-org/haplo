@@ -1,0 +1,136 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+/* DATES */
+
+.z__recent_date_header {
+    margin: 24px 0 2px 0;
+    border-bottom: 1px solid #e0e0e0;
+    color: $C_TEXT_GREY_LIGHT;
+}
+
+.z__webfonts_enabled .z__recent_date_header {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+
+/* don't have the margin on the top date header */
+#z__recent_main_container div:first-child {
+    margin-top: 0;
+}
+
+.z__recent_date_header span {
+    font-size: $FONT_SIZE_LARGE;
+    color: $C_TEXT_GREY_DARK;
+    padding-right: 8px;
+}
+
+/* ENTRY STRUCTURE */
+
+.z__recent_entry {
+    width: 99%;
+    clear: both;
+    margin: 12px 0;
+    padding: 4px;
+    line-height: 1.6em;
+}
+.z__recent_entry:hover {
+    background: #f9f9f9;
+    border-radius: 5px;
+}
+.z__recent_entry > span.z__icon {
+    float: left;
+    position: absolute;
+    margin: 0;
+}
+.z__recent_entry p {
+    margin: 0;
+}
+.z__recent_entry_who {
+    color: $C_TEXT_GREY_LIGHT;
+}
+.z__recent_entry_who span {
+    color: $C_TEXT_GREY_DARK;
+}
+.z__recent_entry_title {
+    display: block;
+    font-weight: bold;
+    width: 90%;
+}
+.z__recent_entry_date {
+    font-style: italic;
+    color: $C_TEXT_GREY_DARK;
+}
+.z__recent_entry_contents {
+    margin: 2px 0 0 32px;
+}
+
+/* OBJECTS */
+
+.z__recent_entry_files {
+    position: relative;
+    left: 10px;
+    margin: 0 0 8px 0;
+}
+
+.z__recent_entry_quick_look /* hidden in printable.css */ {
+    float: right;
+    z-index: 2000;
+}
+.z__recent_entry:hover .z__recent_entry_quick_look {
+    background-position: 0 10px;
+}
+.z__recent_entry_quick_look a, .z__recent_quick_look_holder_close {
+    $ICON_FONT_DIRECTIVES
+    display: block;
+    width: 40px;
+    height: 32px;
+    text-decoration: none;
+    font-size: 20px;
+    line-height: 32px;
+    color: #ccc;
+}
+.z__recent_entry_quick_look a:hover, .z__recent_quick_look_holder_close:hover {
+    color: #444;
+    text-decoration: none;
+}
+
+.z__recent_quick_look_holder {
+    position: absolute;
+    background: $C_PAGE_BACKGROUND;
+    border: 1px solid $C_GREY_MID;
+    border-radius: 4px;
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.15), -1px 1px 5px rgba(0,0,0,0.15);
+    padding: 24px;
+    width: 485px;
+}
+.z__recent_quick_look_holder .z__keyvalue_obj_spacer {
+    height: 2px;    /* reduce the height at the top of the displayed object, where the type icon would have gone */
+}
+.z__recent_quick_look_holder .z__keyvalue_col1_qualifer {
+    width: 102px;
+}
+
+.z__recent_quick_look_holder_close, .z__recent_quick_look_holder_close:hover {
+    position: absolute;
+    z-index: 4000;
+    right: 8px;
+    top: 17px;
+}
+
+
+/* PREVIEW LINKS */
+
+/* Be specific to avoid affecting other preview links elsewhere */
+#z__recent_main_container .z__file_preview_link {
+    margin-left: 16px;
+    color: #666;
+}
+
+#z__recent_main_container .z__file_preview_link:hover {
+    color: #000;
+    text-decoration: none;
+}

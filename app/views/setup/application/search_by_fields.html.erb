@@ -1,0 +1,13 @@
+<% @page_title = 'Search by fields' -%>
+
+<h1>Search by fields</h1>
+
+<p>Fields used in "Fields &amp; options":</p>
+
+<p><%
+  @attrs_used.each do |desc,name|
+    %><i><%= h(name) %></i><br><%
+  end
+%></p>
+
+<%= sys_mng_edit_button('/do/setup/application/search_by_fields_edit') %>

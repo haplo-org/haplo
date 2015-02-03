@@ -1,0 +1,45 @@
+title: Specification
+class: DocNodeTextileWithTOC
+--
+
+Specifications are JSON documents which describe a form. To implement a form, [node:dev/plugin/interface/form-description] objects are created from specifications using the [node:dev/plugin/interface/plugin/response-generation#form] method on your plugin object.
+
+See a [node:dev/plugin/form/usage:simple usage example] for how specifications are used to handle forms.
+
+
+h2. Specification root
+
+The root of the specification contains the following properties:
+
+|@specificationVersion@|Must be @0@|
+|@formId@|A unique identifier for the form, unique within this plugin only. Formed from @a-z0-9_@|
+|@formTitle@|A human readable name of the form.|
+|@elements@|The elements of the top level section.|
+|(section properties)|Other properties from the [node:dev/plugin/form/specification/section] specification, including template choice.|
+
+
+h2. Form elements
+
+Each form element in the specification is a JSON compatible JavaScript object. The properties define the element. Some properties are dependent on the type, but the majority are common to all elements.
+
+
+h3. Common properties
+
+|@type@|The type of the form element.|
+|@path@|The location of the value within the _document_ as a series of @.@ separated property names. See [node:dev/plugin/form/value-path] for details.|
+|@label@|(optional) The human readable label to display on the form above this element.|
+|@name@|(optional) The name of the form element, corresponding to @name@ attributes within the HTML. If it isn't specified, and there is a @label@ property, the name of the element is generated from the @label@. Otherwise it is automatically generated, which is not entirely advisable.|
+|@required@|(optional) If @true@, this is a required field.|
+|@defaultValue@|(optional) The default value for this element, in the format expected by the form element.|
+|@id@|(optional) The HTML @id@ attribute for the form element. Do not use for form elements within repeating sections.|
+|@class@|(optional) The HTML @class@ attribute for the form element.|
+|@placeholder@|(optional) If the form element supports it, the placeholder text to display when the field is empty.|
+|@guidanceNote@|(optional) The text of a note which is displayed when the user focuses on this field.|
+
+
+h2. Autofocus
+
+The client side JavaScript forms support will auto-focus into the first text field. You can skip an element by applying the @oforms-no-autofocus@ class using the @class@ property, or by applying this class to any of its parent elements in the DOM.
+
+
+h2. Form element types

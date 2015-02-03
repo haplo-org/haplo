@@ -1,0 +1,12 @@
+title: Static
+--
+
+Static text output in the form or the document display, used for including explanatory notes without needing to use custom templates.
+
+
+h2. Properties
+
+|@type@|@"static"@|
+|@display@|Where the static text will be displayed, with options @"form"@, @"document"@ or @"both"@. Defaults to @"form"@.|
+|@text@|(optional) Text enclosed in @<p>@ elements. Newline characters start a new @<p>@ element.|
+|@html@|(optional) Literal HTML output directly with no processing.|

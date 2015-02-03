@@ -1,0 +1,9 @@
+FOR: /do/contacts/add_note
+
+
+h1. Contact notes
+
+* search to find the person's record
+* click on _Contact_ (top right of screen)
+* choose _Add Contact note_
+* fill in the details of the contact you've had with the person.

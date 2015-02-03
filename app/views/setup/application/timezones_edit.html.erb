@@ -1,0 +1,9 @@
+<% @page_title = 'Edit time zone list' -%>
+<h1>Edit time zone list</h1>
+
+<form method="POST"><%= form_csrf_token %>
+  <p><input type="submit" value="Save time zone list"></p>
+  <p><% Application_TimeHelper::TIMEZONE_NAMES.each_with_index do |name, index| %>
+    <label><input type="checkbox" name="tz[<%= name %>]"<% if @time_zone_list.include?(name) %> checked<% end %>><%= name %></label><br>
+  <% end %><p>
+</form>

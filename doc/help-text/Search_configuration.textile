@@ -1,0 +1,6 @@
+FOR: /do/setup/application/search_config
+
+h1. Search configuration
+
+[[Sort order]]
+[[Search by fields]]

@@ -1,0 +1,41 @@
+<%
+  # Object info is passed in using the :data_for_template parameter
+  info = data_for_template
+  obj = info[:object]
+
+  # Create presentation string versions of any labels given to the template object, for inclusion in the generated form
+  new_labels = []
+  obj.labels.each { |l| new_labels << l.to_presentation }
+
+  # Use the KEditor class to build the javascript
+  type = obj.first_attr(KConstants::A_TYPE)
+  editor_js_type, editor_js_attrs = KEditor.js_for_obj_attrs(obj, info[:editor_options] || {})
+
+  # Get basic labelling information
+  permission_denied unless @labeller = KEditor.labeller_for(obj, @request_user)
+
+  # Make sure all the necessary client side resources are included
+  client_side_resources(:object_editor)
+  
+  # Options for client side editor
+  client_side_options = editor_client_side_options_and_plugins(obj)
+-%>
+
+<% in_right_column render :partial => 'edit/editor_labelling' %>
+
+<form method="POST" id="z__keditor_form" action="/do/edit"><%= form_csrf_token %>
+<div class="z__editor_buttons">
+<input type="submit" name="save" value="Preview" class="z__editor_buttons_preview"> <input type="submit" name="save" value="Save" class="z__editor_buttons_save">
+</div>
+
+<input type="hidden" name="new" value="<%= type.to_presentation %>">
+
+<% unless new_labels.empty? %>
+  <input type="hidden" name="new_labels" value="<%= new_labels.join(',') %>">
+<% end %>
+
+<% if info.has_key?(:success_redirect) %><input type="hidden" name="success_redirect" value="<%= h(info[:success_redirect]) %>"><% end %>
+
+</form>
+
+<div id="z__keditor_data" data-type="<%= editor_js_type %>" data-attr="<%= h(JSON.generate(editor_js_attrs)) %>" data-opts="<%= h(JSON.generate(client_side_options)) %>"></div>

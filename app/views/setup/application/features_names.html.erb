@@ -1,0 +1,13 @@
+<% @page_title = 'Edit feature names' -%>
+<%= sys_mng_header %>
+
+<p>Use lower case for all names.</p>
+
+<form method="post"><%= form_csrf_token %>
+
+  <%= appglobal_string(:name_latest, 'Name to use for latest updates service') %>
+  <%= appglobal_string(:name_latest_request, 'Name to use for latest update topic (singular)') %>
+  <%= appglobal_string(:name_latest_requests, 'Name to use for latest update topic (plural)') %>
+  
+  <input type="submit" value="Save">
+</form>

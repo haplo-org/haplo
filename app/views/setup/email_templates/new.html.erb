@@ -1,0 +1,15 @@
+<%
+  @page_title = 'New email template'
+-%>
+
+<%= sys_mng_header %>
+
+<%= form_error_messages_for(@email_template) %>
+
+<form method="POST" id="z__template_form"><%= form_csrf_token %>
+  <%= render(:partial => 'form') %>
+  <input type="submit" value="Create">
+</form>
+
+
+<%= render :partial => 'preview' %>

@@ -1,0 +1,13 @@
+<%
+  @page_title = 'Forgotten password'
+  @breadcrumbs = [:login]
+
+  if @forgotten_msg == nil || @forgotten_msg.length == 0
+    @forgotten_msg = 'Please contact your administrator for assistance in changing your password.'
+  end
+-%>
+
+<p><%= h(@forgotten_msg) %></p>
+
+<p>&nbsp;</p>
+<p><a href="login">Log in</a></p>

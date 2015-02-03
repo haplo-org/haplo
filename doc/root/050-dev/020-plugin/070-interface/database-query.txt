@@ -1,0 +1,135 @@
+title: DatabaseQuery
+long_title: DatabaseQuery interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @DatabaseQuery@ interface finds rows in a table in a relational style database.
+
+See [node:dev/plugin/database] for how to use this interface.
+
+
+h2. Construction
+
+Call [node:dev/plugin/interface/database-table#select] on a [node:dev/plugin/interface/database-table] object.
+
+
+h2. Usage
+
+First, set up the query with @where()@ functions and the like.
+
+Execution is implicit when you use the @Array@-like interface, such as the @length@ property or access an element with the @[]@ operator.
+
+
+h2. Interface (build query)
+
+All query specification functions return the query object, making them suitable for chaining.
+
+
+h3(function). where(fieldName, comparison, value)
+
+Add a where clause to the query, as in SQL. This function can be called multiple times to add multiple clauses.
+
+@comparison@ can be one of @"="@, @"<"@, @">"@, @"<="@, @">="@, @"<>"@ or @"LIKE"@. Note that fields taking non-primitive values, such as @link@, @user@ and @ref@, can only use @"="@ or @"<>"@ comparisons. @"!="@ is an alias for @"<>"@.
+
+To select objects based on whether they have @null@ values, use the @"="@ or @"<>"@ operators only.
+
+The values for @"LIKE"@ comparisons use the normal SQL wildcard characters, @_@ for any single character and @%@ for zero or more characters. An exception will be thrown if @value@ is the empty string or the first character is a wildcard.
+
+h4. Implicit joins
+
+You can query on values in linked tables. If you have a field of type @"link"@, you can specify fields in the linked table in the @fieldName@ argument using the notation @"linkedField.fieldInOtherTable"@. Note that the first half is the name of the linked field, which is not necessarily the same name as the database table.
+
+For example, if you had a linked field called @"department"@, and the table included a @"roomNumber"@ field, to find all employees in room @42@, you might use a where clause like @where("department.roomNumber","=",42)@.
+
+Using this notation will create an *join* in the underlying database query, and include all the values of the linked table for efficient access. In the above example, it would behave as if you had also called @include("department")@ on the query object.
+
+
+h3(function). whereMemberOfGroup(fieldName, groupId)
+
+For fields of @user@ type only. Call to select on users who are a member of a given group, specified by group ID. Use schema [node:dev/plugin/schema/group] constants.
+
+This works recursively where groups are members of the specified group.
+
+
+h3(function). or(fn)
+
+Make an OR sub-clause, which matches rows matching any of its sub-clauses.
+
+If the @fn@ argument is a function, that function will be called with the sub-clause as an argument, and the object will return itself for chaining. Otherwise, the sub-clause is returned from this function.
+
+
+h3(function). and(fn)
+
+Similar to @or()@, but creates an AND sub-clause, which matches rows matching all its sub-clauses.
+
+
+h3(function). include(fieldName)
+
+For fields of @link@ type only. Call this to specify that the row from the linked table is loaded to.
+
+If you're going to access a row from a linked table for every single row in the results, use this to avoid a database query when you access the property.
+
+This is a 'hint' for efficiency and will speed things up when used correctly, but makes no change to the behaviour of the API.
+
+
+h3(function). order(fieldName, descending)
+
+Add an order clause to the query. You can call this multiple times to specify orderings over multiple fields, as in SQL.
+
+
+h3(function). stableOrder()
+
+Set the order to an order which is consistent across queries, or if other @order()@ clauses are specified, add a lowest priority ordering. Use when you don't want a 'random' order, but don't mind what the order is as long as it's always the same.
+
+It's faster to not specify any order at all, if you don't mind what the order is.
+
+
+h3(function). limit(count)
+
+Limit the number of rows returned from the query.
+
+
+h3(function). offset(start)
+
+Skip the specified number of rows. Use with @limit()@ for implementing paged results.
+
+
+h2. Interface (counting)
+
+
+h3(function). count()
+
+Return the number of rows the query would return if it was executed. This is equivalent to a @SELECT COUNT(*) ...@ SQL query.
+
+This is similar to the @length@ property, but has very different performance characteristics. Accessing the @length@ property executes the query and loads all the results. Calling @count()@ executes a separate SQL query.
+
+Only use the @count()@ function if you are *not* going to access all the rows which would be returned by this query, otherwise you are performing unnecessary work in the database.
+
+
+h2. Interface (results)
+
+Using any of these properties and functions implicitly executes the query.
+
+
+h3(acts_as). Array
+
+A @DatabaseQuery@ object acts as a read-only JavaScript @Array@. Use the @[]@ operator to read rows.
+
+
+h3(property). length
+
+The number of results from the query.
+
+Since accessing the @length@ property will execute the query and load all the results, if you only want to know how many rows would be returned, used the @count()@ function.
+
+
+h3(function). each(iterator)
+
+The iterator function is called for each row in the result with arguments @(row, index)@. @row@ is a [node:dev/plugin/interface/database-row] object, @index@ is the zero based index into this '@Array@'.
+
+
+h3(function). deleteAll()
+
+Delete all matching rows from the table.
+
+This can be called after the query has been implicitly executed. For efficiency, if @deleteAll()@ is called without accessing any of the results, no data is loaded.

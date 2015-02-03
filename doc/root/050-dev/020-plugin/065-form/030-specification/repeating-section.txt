@@ -1,0 +1,31 @@
+title: Repeating section
+--
+
+Repeating sections allow groups of form elements to be repeated in the form. The user can add and remove the repetitions as required. This allows editing of tabular data to be implemented trivially, along with things like multiple email addresses and phone numbers in forms.
+
+They can be nested to whatever depth is required.
+
+The value in the _document_ is an Array containing zero or more _rows_. A row is an object containing properties defined by the form elements in the @elements@ property, unless there is only one element with a special @path@ of @"."@, in which case it's an array of the raw values.
+
+See [node:dev/plugin/form/value-path#Repeating_sections:path handling for repeating sections] for details of how the @path@ is used.
+
+
+h2. Properties
+
+|@type@|@"repeating-section"@|
+|@path@|Unlike normal sections, a @path@ is required for repeating sections.|
+|@elements@|An array of other form element specifications.|
+|@template@|(optional) The template to use for rendering these form elements. Defaults to @"oforms:default"@|
+|@templateDisplay@|(optional) The template to use for rendering the document. Defaults to whatever specified for @template@ with @":display"@ appended.|
+|@templateOptions@|(optional) Options for the specified template. Ignored by this element, but is available to the template for it to change its behaviour.|
+|@renderDocumentOmitEmpty@|(optional) If true, when rendering the document with [node:dev/plugin/interface/form-instance#renderDocument], omit the section entirely if there are no rows in the document.|
+|@heading@|(optional) A heading to display above this section in forms and documents. See [node:dev/plugin/form/specification/section#Heading_and_labels:section headings and labels].|
+|@allowDelete@|(optional) Whether the user can delete rows in the form. Defaults to @true@.|
+|@allowAdd@|(optional) Whether to display the add button after the repeated sections. Defaults to @true@.|
+|@minimumCount@|(optional) The minimum number of rows required to pass validation.|
+|@maximumCount@|(optional) The maximum number of rows allowed to pass validation.|
+
+h3. Editing tables
+
+Set the @template@ property to @"oforms:table"@ for editing tabular data.
+

@@ -1,0 +1,29 @@
+title: LabelStatements
+long_title: LabelStatements interface
+link_as: keyword
+--
+
+Represents statements of whether operations are allowed using labels in allow and deny sets.
+
+
+h2. Construction
+
+Create a [node:dev/plugin/interface/label-statements-builder] object, add rules, and call @toLabelStatements()@.
+
+
+h2. Interface
+
+h3(function). allow(operation, labelList)
+
+Returns @true@ is if the @operation@ is allowed for the given @labelList@.
+
+
+h3(function). or(labelStatements)
+
+Return a new @LabelStatements@ object which combines this and the other @labelStatements@ object using the @OR@ operator.
+
+
+h3(function). and(labelStatements)
+
+Return a new @LabelStatements@ object which combines this and the other @labelStatements@ object using the @AND@ operator.
+

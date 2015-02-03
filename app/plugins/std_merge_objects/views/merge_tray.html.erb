@@ -1,0 +1,23 @@
+<%
+  @page_title = "Merge items in tray"
+  @breadcrumbs = [["/do/tray", "Tray"]]
+%>
+
+<div class="z__general_alert">Use the merge tool carefully.</div>
+
+<p>Choose the item you would like to keep. The others will be deleted, and links to them will be changed to the item you are keeping.</p>
+
+<form method="POST"><%= form_csrf_token %>
+  <hr>
+  <%
+    @objects.each do |object|
+      %>
+        <p><label><input type="radio" name="keep" value="<%= object.objref.to_presentation %>">Keep this item:</p>
+        <%= render_obj(object, :linkedheading) %>
+        <hr>
+      <%
+    end
+  %>
+  <p>&nbsp;</p>
+  <p><input type="submit" value="Merge items"></p>
+</form>

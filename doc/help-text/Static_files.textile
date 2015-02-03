@@ -1,0 +1,12 @@
+FOR: /do/setup/application/files
+
+h1. Static files
+
+Static files, such as your logo, are used to customise the look of the application as part of the Appearance editor.
+
+* Choose the file to upload from your computer, and click _Upload_.
+* The file will be listed at the top of the static files page.
+
+There is a 64k limit on the size of these files.
+
+*The filenames of images are re-written to use a short path and number only.* Refer to the pathname in the table at the top of the static files page, and use the correct path in your HTML snippets.

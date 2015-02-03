@@ -1,0 +1,8 @@
+<%
+  @page_title = 'Reports'
+  @breadcrumbs = [:menu]
+%>
+
+<% @reports.each do |urlpath,name| %>
+  <p><a href="<%= urlpath %>"><%= name %></a></p>
+<% end %>

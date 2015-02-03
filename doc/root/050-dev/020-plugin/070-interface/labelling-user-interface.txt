@@ -1,0 +1,22 @@
+title: LabellingUserInterface
+long_title: LabellingUserInterface interface
+link_as: keyword
+--
+
+Represents the addition of labelling UI to the object editor.
+
+
+h2. Construction
+
+Created by the Platform and passed to the [node:dev/plugin/hook/labelling-user-interface] hook.
+
+
+h2. Interface
+
+h3(function). label(label, offerAsDefault)
+
+Offer a label to the user in the object editor for optionally labelling an object, at the user's choice.
+
+@label@ is the [node:dev/plugin/interface/ref] of any store object.
+
+@offerAsDefault@ is only applicable for create operation, and if @true@, the checkbox will be checked by default.

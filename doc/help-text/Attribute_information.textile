@@ -1,0 +1,15 @@
+FOR: /do/setup/attribute/show
+
+h1. Attribute information
+
+Attributes are the basic definitions for the data entered in objects.
+
+The most important parts of the attribute definition are the name, which is used in the user interface, the data type, which specifies what kind of information to store in this field, and the qualifiers used.
+
+Click _Edit_ to edit the attribute, or _New alias_ to create an alias.
+
+h4. Further help
+
+[[Attributes]]
+[[Edit attribute]]
+

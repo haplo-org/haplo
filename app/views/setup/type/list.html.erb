@@ -1,0 +1,36 @@
+<%
+  @page_title = 'Types'
+
+  show_thing_types = params.has_key?(:classify) ? false : true
+  selector =
+    [
+      [true, 'THINGS', 'list'],
+      [false, 'CLASSIFY', "list?classify=1"]
+    ]
+-%>
+
+<% if @selected_type != nil %>
+  <div id="k__workspace_url" data-url="/do/setup/type/show/<%= h(@selected_type) %>"></div>
+<% end %>
+
+<h1>Types</h1>
+
+<%= sys_mng_selector(show_thing_types, selector) %>
+
+<% if show_thing_types %>
+
+<%= type_menu_list(@root_types) %>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/type/edit/new" target="workspace">New root type</a></li>
+</ul>
+
+<% else %>
+
+<%= type_menu_list(@root_classifications) %>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/type/edit/new?classification=1" target="workspace">New root classification type</a></li>
+</ul>
+
+<% end %>

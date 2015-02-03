@@ -1,0 +1,12 @@
+{
+  "pluginName": "test_response_plugin",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test Response Plugin",
+  "displayDescription": "For testing",
+  "apiVersion": 3,
+  "privilegesRequired": ["pDatabase"],
+  "load": ["js/test_response_plugin.js", "js/test_requests.js", "js/test_hooks.js"],
+  "respond": ["/do/plugin_test"],
+  "allowAnonymousRequests": true
+}

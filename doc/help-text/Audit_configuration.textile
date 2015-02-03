@@ -1,0 +1,22 @@
+FOR: /do/admin/audit/config
+
+h1. Auditing configuration
+
+By default, the audit trail only records changes. However, for some applications, it is useful to record when users read information.
+
+You can configure the application to audit:
+
+ * Item display: Whenever an item is displayed to a user.
+ * Searches: Any search made by a user. Note that a search will display titles and summaries of the found items.
+ * File downloads: Whenever a file is downloaded by a user.
+
+These apply whether the user reading is information in the main web interface, API access, or mobile app.
+
+Exports of information, and changing these settings are always audited.
+
+
+h2. Plugins and auditing
+
+Plugins can implement their own rules for auditing these optional entries, and the configuration you set is only a default.
+
+Plugins should declare their rules for auditing, and these will be displayed on the configuration page. However, accuracy cannot be guaranteed, so you should check with the authors of plugins if you have any doubts.

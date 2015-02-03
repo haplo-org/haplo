@@ -1,0 +1,681 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+/* reset-min.js */
+/*
+Copyright (c) 2009, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.net/yui/license.txt
+version: 2.7.0
+*/
+html{color:#000;background:#FFF;}body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,button,textarea,p,blockquote,th,td{margin:0;padding:0;}table{border-collapse:collapse;border-spacing:0;}fieldset,img{border:0;}address,caption,cite,code,dfn,em,strong,th,var,optgroup{font-style:inherit;font-weight:inherit;}del,ins{text-decoration:none;}li{list-style:none;}caption,th{text-align:left;}h1,h2,h3,h4,h5,h6{font-size:100%;font-weight:normal;}q:before,q:after{content:'';}abbr,acronym{border:0;font-variant:normal;}sup{vertical-align:baseline;}sub{vertical-align:baseline;}legend{color:#000;}input,button,textarea,select,optgroup,option{font-family:inherit;font-size:inherit;font-style:inherit;font-weight:inherit;}input,button,textarea,select{*font-size:100%;}
+
+/* fonts-min.css */
+/*
+Copyright (c) 2009, Yahoo! Inc. All rights reserved.
+Code licensed under the BSD License:
+http://developer.yahoo.net/yui/license.txt
+version: 2.7.0
+*/
+body{font:13px/1.231 arial,helvetica,clean,sans-serif;*font-size:small;*font:x-small;}select,input,button,textarea,button{font:99% arial,helvetica,clean,sans-serif;}table{font-size:inherit;font:100%;}pre,code,kbd,samp,tt{font-family:monospace;*font-size:108%;line-height:100%;}
+
+/* -------------------------------------------------------------------------------------------------------------- */
+/* web fonts  */
+
+@font-face {
+    font-family: 'Ubuntu';
+    src: url('http://www.oneis.co.uk/images/ubuntu-b-small-webfont.eot');
+    src: url('http://www.oneis.co.uk/images/ubuntu-b-small-webfont.eot?#iefix') format('embedded-opentype'),
+         url('http://www.oneis.co.uk/images/ubuntu-b-small-webfont.woff') format('woff'),
+         url('http://www.oneis.co.uk/images/ubuntu-b-small-webfont.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'Ubuntu';
+    src: url('http://www.oneis.co.uk/images/ubuntu-r-small-webfont.eot');
+    src: url('http://www.oneis.co.uk/images/ubuntu-r-small-webfont.eot?#iefix') format('embedded-opentype'),
+         url('http://www.oneis.co.uk/images/ubuntu-r-small-webfont.woff') format('woff'),
+         url('http://www.oneis.co.uk/images/ubuntu-r-small-webfont.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/*@font-face {
+    font-family: 'ONEISIconsRegular';
+    src: url('http://www.oneis.co.uk/images/oneisicons-regular-webfont.eot');
+    src: url('http://www.oneis.co.uk/images/oneisicons-regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('http://www.oneis.co.uk/images/oneisicons-regular-webfont.woff') format('woff'),
+         url('http://www.oneis.co.uk/images/oneisicons-regular-webfont.ttf') format('truetype'),
+         url('http://www.oneis.co.uk/images/oneisicons-regular-webfont.svg#ONEISIconsRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}*/
+
+/* --------------------------------------------------- */
+
+/* reset2 */
+html, address,
+blockquote,
+body, dd, div,
+dl, dt, fieldset, form,
+frame, frameset,
+h1, h2, h3, h4,
+h5, h6, noframes,
+ol, p, ul, center,
+dir, hr, menu, pre   { display: block; unicode-bidi: embed }
+li              { display: list-item }
+head            { display: none }
+table           { display: table }
+tr              { display: table-row }
+thead           { display: table-header-group }
+tbody           { display: table-row-group }
+tfoot           { display: table-footer-group }
+col             { display: table-column }
+colgroup        { display: table-column-group }
+td, th          { display: table-cell }
+caption         { display: table-caption }
+th              { font-weight: bolder; text-align: center }
+caption         { text-align: center }
+
+b,
+strong          { font-weight: bolder }
+blockquote      { margin-left: 40px; margin-right: 40px }
+i, cite, em,
+var, address    { font-style: italic }
+pre, tt, code,
+kbd, samp       { font-family: monospace }
+pre             { white-space: pre }
+button, textarea,
+input, select   { display: inline-block }
+big             { font-size: 1.17em }
+small, sub, sup { font-size: .83em }
+sub             { vertical-align: sub }
+sup             { vertical-align: super }
+table           { border-spacing: 2px; }
+thead, tbody,
+tfoot           { vertical-align: middle }
+td, th, tr      { vertical-align: inherit }
+s, strike, del  { text-decoration: line-through }
+hr              { border: 1px inset }
+ol, ul, dir,
+menu, dd        { margin-left: 40px }
+ol              { list-style-type: decimal }
+ol ul, ul ol,
+ul ul, ol ol    { margin-top: 0; margin-bottom: 0 }
+u, ins          { text-decoration: underline }
+br:before       { content: "\A"; white-space: pre-line }
+center          { text-align: center }
+:link, :visited { text-decoration: underline }
+
+
+
+/* Begin bidirectionality settings (do not change) */
+BDO[DIR="ltr"]  { direction: ltr; unicode-bidi: bidi-override }
+BDO[DIR="rtl"]  { direction: rtl; unicode-bidi: bidi-override }
+
+*[DIR="ltr"]    { direction: ltr; unicode-bidi: embed }
+*[DIR="rtl"]    { direction: rtl; unicode-bidi: embed }
+
+html, body, #container { height: 100%; }
+#container {*padding-bottom:80px}
+body > #container { height: auto; min-height: 100%;}
+
+div {focus:none}
+
+html
+{
+    background-color: #fff;
+    background-image:url(/presentation/bg.gif);
+    background-position: left;
+    background-repeat:repeat-y;
+}
+body 
+{
+    margin: 0px;
+    font-family: verdana, sans-serif;
+    color: #000;
+    text-align: left;
+    width: 100%;
+}
+
+p, li, pre, table
+{
+    font-size: 12px;
+    line-height: 17px;
+}
+
+td
+{
+    padding-right: 16px;
+}
+
+li
+{
+    maring-top: 2px;
+    margin-bottom: 2px;
+}
+
+#header
+{
+    background: #fff url(/presentation/linksbg.png) 0 0;
+    border-bottom:1px solid #ddd;
+    color:#555;	
+    font-size: 11px;
+    padding: 18px 0 14px 19px;
+    position:fixed;
+    width:100%;
+    left:0;
+    top:0;
+    z-index:1000;
+}
+
+#header span
+{
+    display:block;
+    background-image:url(/presentation/oneis.gif);
+    background-repeat:no-repeat;
+    vertical-align: middle;
+    width:111px;
+    height:0px;
+    padding-top:23px;
+    overflow:hidden;
+    margin-bottom:2px;
+    margin-right:193px;
+    position:relative;
+    left:-1px;
+}
+
+#content
+{
+    width:900px;	
+}
+
+#breadcrumb 
+{
+    font-family:Helvetica, Arial, sans-serif;
+    color:#aaa;
+    position:absolute;
+    top:1px;
+    left:0px;
+    width:670px;
+    padding-bottom:8px;
+    padding-left:90px;
+    padding-top:8px;
+    z-index:999;
+    text-shadow:#fff 1px 1px 0;
+    font-size:15px;
+    border-bottom:1px #eee solid;
+    border-right:1px #eee solid;
+}
+#breadcrumb a,#breadcrumb b
+{
+    font-size:11px;
+    text-decoration:none;
+    color:#555;
+    position:relative;
+    top:-1px;
+}
+#breadcrumb a:hover
+{
+    color:#000;	
+}
+#breadcrumb b
+{
+    color:#666;
+}
+#document
+{
+    position:relative;
+    float:right;
+    width: 540px;
+    margin-top:70px;
+    padding-left:90px;
+    padding-right:30px;
+    padding-bottom:70px;
+    padding-top:35px;
+}
+*html #document
+{
+    margin-top:0;
+}
+#document p
+{
+    line-height:175%;
+    margin-top:15px;
+    margin-bottom:15px;	
+    text-shadow: #fff 1px 1px 0px;
+}
+
+#document h1,#document h2,#document h3
+{
+    font-family: Ubuntu, Helvetica, Arial, sans-serif;
+    font-size: 36px;	
+    line-height:120%;
+    color:#444;
+    padding-top:30px;
+    padding-bottom:5px;
+    position:relative;
+    margin-bottom:20px;
+}
+#document h1
+{
+    left:-2px;
+    padding-bottom:10px;	
+}
+#document h2
+{
+    font-size: 24px;	
+    color:#666;
+    padding-top:20px;
+    margin-top:20px;
+    background:url(/presentation/h2.gif) repeat-x top left;
+    text-shadow: #fff -1px -1px 0px;
+}
+#document h3
+{
+    font-size: 18px;	
+    margin-bottom:5px;
+    padding-bottom:0;
+    margin-top:10px;
+    padding-top:10px;
+}
+#document h4
+{
+    font-weight: bold;
+    color:#666;
+}
+#document ul, #document ol
+{
+    margin-top:15px;	
+}
+#document ul ul
+{
+    margin-top:10px;	
+}
+
+
+#document li
+{
+    list-style-type: square;
+    margin-bottom:10px;
+    color:#333;
+}
+
+#document td
+{
+    border-bottom: 1px solid #eee;
+    padding: 2px 8px;	
+}
+
+#navigation
+{
+    float:left;
+    width: 240px;
+    overflow:hidden;
+    font-size: 11px;
+    color:#aaa;
+    margin-top:65px;
+    padding-top:8px;
+    font-family:Helvetica, Arial, sans-serif;
+    padding-bottom:80px;
+}
+*html #navigation
+{
+    margin-top:0;
+}
+#navigation a
+{
+    color:#444;
+    text-decoration:none;
+}	
+
+#navigation ul
+{
+    margin: 0 0 0 0px;
+    padding: 0;
+    list-style-type: none;
+}
+
+#navigation hr
+{
+    border-top: none;
+    border-bottom: 1px solid #fff;
+    margin:0 ;
+    border-left:none;
+    border-right:none;
+}
+
+#navigation > ul > li
+{
+    font-family: Ubuntu, Helvetica, Arial, sans-serif;
+}
+#navigation > ul > li li
+{
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+#navigation li
+{
+    padding:0px 0;
+    font-size:18px;
+    margin:0;
+}
+#navigation li a,#navigation li b
+{
+    padding:10px 30px 10px 20px;
+    color:#444;	
+    display:block;
+    font-weight:normal;
+
+}
+#navigation li a:hover
+{
+    color:#008;
+}
+#navigation li b,#navigation li a.open
+{
+    color:#000;
+}
+
+#navigation #homelink li{border:none}
+#navigation #homelink li a,#navigation #homelink li b
+{
+    color:#000;
+    font-size:16px;
+}
+#navigation #homelink li b
+{
+    color:#444;	
+}
+#navigation ul li ul
+{
+    margin:0;
+}
+
+#navigation ul ul li
+{
+    padding:0;
+    color:#fff;
+    font-size:15px;
+    border-top:none;
+}
+#navigation ul ul li a,#navigation ul ul li b
+{
+    padding:3px 30px 2px 25px;
+    font-size:12px;
+}
+#navigation ul ul li a.open{
+    color:#444;
+}
+#navigation ul ul li b{
+    color:#ba131a;
+}
+#navigation ul ul li a
+{
+    color:#444;	
+}
+
+#navigation ul ul ul li
+{
+    padding:0;
+    color:#444;
+}
+#navigation ul ul ul li a,#navigation ul ul ul li b
+{
+    padding:2px 30px 1px 40px;
+    font-size:12px;
+    text-align:left;
+}
+#navigation ul ul ul a.open{
+    color:#000;
+}
+#navigation ul ul ul li a
+{
+    color:#444;	
+}
+
+#navigation ul ul ul ul li a,#navigation ul ul ul ul li b{
+    padding:2px 30px 1px 60px;
+    font-size:11px;
+    text-align:left;
+}
+
+#navigation ul ul ul ul ul li a,#navigation ul ul ul ul ul li b{
+    padding:2px 30px 1px 80px;
+    border-bottom:none;
+    text-align:left;
+}
+
+#navigation #homelink
+{
+    margin-bottom:16px;
+}
+
+#footer
+{
+    clear:both;
+    border-top:1px solid #ddd;
+    background-color:#fff;
+    padding: 30px 50px;	
+    color: #aaa;
+    font-size: 11px;
+    position: relative;
+    z-index: 999;
+    margin-top: -92px;
+    zoom:1;
+}
+#footer #updated
+{
+    font-size:10px;	
+    font-family:Arial, Helvetica, sans-serif;
+}
+#copy
+{
+    /* would be nice to put this as a footer when CSS redone */
+    font-weight: normal;
+    padding-bottom:6px;
+}
+
+#links
+{
+    float:right;
+    margin-top:8px;
+}
+
+#links a.external_link
+{
+    background:none;
+    color:#7d92ac;
+    text-decoration:none;
+    padding:0;
+    margin: 10px;
+}
+
+#links a:hover
+{
+    color:#bbc6d3;	
+}
+
+/* Links etc */
+
+a.external_link
+{
+    padding-left:16px;
+    background: transparent url(external_link.gif) 3px center no-repeat;
+}
+
+div.clickpath
+{
+    white-space:nowrap;
+    margin-left: 16px;
+}
+div.clickpath span.clickpath_inner
+{
+    font-size: 13x;
+    background: #f8f8f8;
+    border: 1px solid #eee;
+    width: auto;
+    padding: 4px 8px 4px 12px;
+    color:#114;
+}
+div.clickpath span.clickpath_tools
+{
+    background: #eee url(menu_gear.gif) right center no-repeat;
+    padding-right: 16px;
+    margin-right: 4px;
+}
+
+div.api_endpoint
+{
+    margin-left: 0;
+}
+div.api_endpoint span.api_endpoint_inner
+{
+    font-size: 12px;
+    background: #eee;
+    border: 1px solid #ccc;
+    width: auto;
+    padding: 2px 6px;
+}
+div.api_endpoint span.api_endpoint_label
+{
+    color: #444;
+    font-weight: bold;
+    font-size: 10px;
+    padding-right: 4px;
+}
+div.api_endpoint span.api_endpoint_methods
+{
+    color: #444;
+    padding-left: 16px;
+    font-size: 10px;
+}
+div.api_endpoint span.api_endpoint_methods span.caps
+{
+    font-weight:bold;
+}
+
+p.recommendation
+{
+    border: 1px solid #ccc;
+    background: #eee;
+    padding: 5px 8px;
+    margin-left: 16px;
+    margin-right: 32px;
+}
+
+/* JavaScript API */
+
+h2.jsapi, h3.jsapi
+{
+    font-family: monospace;
+    position:relative;
+    left:-10px;
+    margin-top:20px!important;
+}
+
+h2.jsapi span.apilabel, h3.jsapi span.apilabel
+{
+    font-size: 12px;
+    padding: 0px 4px 2px;
+    border-style: solid;
+    border-width: 1px;
+    position:relative;
+    top:-2px;
+}
+
+h2.key span.apilabel, h3.key span.apilabel
+{
+    border-color: #aaa;
+    background: #eee;
+}
+
+h2.value span.apilabel, h3.value span.apilabel
+{
+    border-color: #faf;
+    background: #fef;
+}
+
+h2.function span.apilabel, h3.function span.apilabel
+{
+    border-color: #aaf;
+    background: #eef;
+}
+
+h2.property span.apilabel, h3.property span.apilabel
+{
+    border-color: #afa;
+    background: #efe;
+}
+
+h2.acts_as span.apilabel, h3.acts_as span.apilabel
+{
+    border-color: #aff;
+    background: #eff;
+}
+
+/* anchor points should be moved up a little bit so the heading doesn't get in the way */
+
+.anchor_point
+{
+    display: block;
+    position: relative;
+    width: 10px;
+    left: -50px;
+    top: -64px;
+}
+
+/* prelminary documentation */
+
+.preliminary, .preliminary_header
+{
+    position: relative;
+    left: -5%;
+    width: 110%;
+    padding: 4px 5%;
+}
+
+.preliminary
+{
+	background-color: #fff;
+
+	-webkit-background-size: 50px 50px;
+	-moz-background-size: 50px 50px;
+	background-size: 50px 50px;
+	
+	background-image: -webkit-gradient(linear, 0 0, 100% 100%,
+							color-stop(.25, rgba(0, 0, 0, .025)), color-stop(.25, transparent),
+							color-stop(.5, transparent), color-stop(.5, rgba(0, 0, 0, .025)),
+							color-stop(.75, rgba(0, 0, 0, .025)), color-stop(.75, transparent),
+	 						to(transparent));
+	background-image: -webkit-linear-gradient(-45deg, rgba(0, 0, 0, .025) 25%, transparent 25%,
+						transparent 50%, rgba(0, 0, 0, .025) 50%, rgba(0, 0, 0, .025) 75%,
+						transparent 75%, transparent);
+	background-image: -moz-linear-gradient(-45deg, rgba(0, 0, 0, .025) 25%, transparent 25%,
+						transparent 50%, rgba(0, 0, 0, .025) 50%, rgba(0, 0, 0, .025) 75%,
+						transparent 75%, transparent);
+	background-image: -ms-linear-gradient(-45deg, rgba(0, 0, 0, .025) 25%, transparent 25%,
+						transparent 50%, rgba(0, 0, 0, .025) 50%, rgba(0, 0, 0, .025) 75%,
+						transparent 75%, transparent);
+	background-image: -o-linear-gradient(-45deg, rgba(0, 0, 0, .025) 25%, transparent 25%,
+						transparent 50%, rgba(0, 0, 0, .025) 50%, rgba(0, 0, 0, .025) 75%,
+						transparent 75%, transparent);
+	background-image: linear-gradient(-45deg, rgba(0, 0, 0, .025) 25%, transparent 25%,
+						transparent 50%, rgba(0, 0, 0, .025) 50%, rgba(0, 0, 0, .025) 75%,
+						transparent 75%, transparent);
+}
+
+.preliminary_header
+{
+    background: #fdd;
+    font-size: 10px;
+    font-weight: bold;
+    text-align: center;
+    margin-top: 32px;
+    text-shadow: white 1px 1px 0;
+}

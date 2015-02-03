@@ -1,0 +1,8 @@
+<%=
+  renderer = SearchResultHelper::ResultRenderer.new(obj, self, options)
+  unless renderer.no_default_rendering
+    renderer.mark_attribute_as_used(A_NOTES)
+    renderer.automatic_value_display
+  end
+  renderer.to_html
+%>

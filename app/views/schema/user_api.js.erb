@@ -1,0 +1,7 @@
+KSchema.user_version=<%= params[:id].to_i %>;
+KSchema.p__userAttrCreateNewAllowed=<%= @user_attr_create_new_allowed.to_json %>;
+var KUserTimeZone=<%= @user_time_zone.to_json %>;
+var KUserHomeCountry=<%= @user_home_country.to_json %>;
+var KSubsets=<%= JSON.generate(@subsets) %>;
+var KTaxonomies=<%= JSON.generate(@taxonomies) %>;
+var KAttrObjChoices=<%= JSON.generate(@choices) %>;

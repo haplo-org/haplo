@@ -1,0 +1,33 @@
+  <% form = form_for(@email_template, :email_template) %>
+
+  <p>Name<br/>
+  <%= form.text_field(:name) %></p>
+  
+  <p>Description<br/>
+  <%= form.textarea(:description, :rows => 4, :class => 'z__full_width_form_element') %></p>
+
+  <p>Purpose<br/>
+  <%= form.select(:purpose, ['Generic','New user welcome','Password recovery','Latest Updates','Task Reminder']) %></p>
+  
+  <p>From (email address)<br/>
+  <%= form.text_field(:from_email_address) %></p>
+  
+  <p>From (name)<br/>
+  <%= form.text_field(:from_name) %></p>
+  
+  <p>Extra CSS<br/>
+  <%= form.textarea(:extra_css, :rows => 10, :class => 'z__full_width_form_element') %></p>
+  
+  <%= render(:partial => 'html_instructions') %>
+  
+  <p>Branding (plain)<br/>
+  <%= form.textarea(:branding_plain, :rows => 10, :class => 'z__full_width_form_element') %></p>
+  
+  <p>Branding (HTML)<br/>
+  <%= form.textarea(:branding_html, :rows => 10, :class => 'z__full_width_form_element') %></p>
+  
+  <p>Header<br/>
+  <%= form.textarea(:header, :rows => 10, :class => 'z__full_width_form_element') %></p>
+  
+  <p>Footer<br/>
+  <%= form.textarea(:footer, :rows => 10, :class => 'z__full_width_form_element') %></p>

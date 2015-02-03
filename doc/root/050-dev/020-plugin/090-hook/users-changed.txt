@@ -1,0 +1,5 @@
+title: hUsersChanged
+class: HookNode
+--
+
+Notification that something about users or groups has changed. This includes adding and editing users or groups, blocking a user, or disabling a group.

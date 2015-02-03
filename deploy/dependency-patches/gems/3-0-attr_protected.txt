@@ -1,0 +1,45 @@
+From 2dfd51247fcbfa14eb99ce8fd5537230a36c11f8 Mon Sep 17 00:00:00 2001
+From: joernchen of Phenoelit <joernchen@phenoelit.de>
+Date: Sat, 9 Feb 2013 15:46:44 -0800
+Subject: [PATCH] Fix issue with attr_protected where malformed input could
+ circumvent protection
+
+Fixes: CVE-2013-0276
+
+Conflicts:
+	activemodel/lib/active_model/attribute_methods.rb
+	activerecord/test/cases/mass_assignment_security_test.rb
+---
+ activemodel/lib/active_model/attribute_methods.rb                       | 2 +-
+ activemodel/lib/active_model/mass_assignment_security/permission_set.rb | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/activemodel/lib/active_model/attribute_methods.rb b/activemodel/lib/active_model/attribute_methods.rb
+index ba1b3ba..af6d27c 100644
+--- a/activemodel/lib/active_model/attribute_methods.rb
++++ b/activemodel/lib/active_model/attribute_methods.rb
+@@ -347,7 +347,7 @@ module ActiveModel
+           def initialize(options = {})
+             options.symbolize_keys!
+             @prefix, @suffix = options[:prefix] || '', options[:suffix] || ''
+-            @regex = /^(#{Regexp.escape(@prefix)})(.+?)(#{Regexp.escape(@suffix)})$/
++            @regex = /\A(#{Regexp.escape(@prefix)})(.+?)(#{Regexp.escape(@suffix)})\z/
+           end
+ 
+           def match(method_name)
+diff --git a/activemodel/lib/active_model/mass_assignment_security/permission_set.rb b/activemodel/lib/active_model/mass_assignment_security/permission_set.rb
+index 9fcb94d..7c7e5df 100644
+--- a/activemodel/lib/active_model/mass_assignment_security/permission_set.rb
++++ b/activemodel/lib/active_model/mass_assignment_security/permission_set.rb
+@@ -17,7 +17,7 @@ module ActiveModel
+     protected
+ 
+       def remove_multiparameter_id(key)
+-        key.to_s.gsub(/\(.+/, '')
++        key.to_s.gsub(/\(.+/m, '')
+       end
+     end
+ 
+-- 
+1.8.1.1
+

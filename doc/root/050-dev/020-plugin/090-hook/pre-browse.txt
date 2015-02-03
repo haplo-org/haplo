@@ -1,0 +1,5 @@
+title: hPreBrowse
+class: HookNode
+--
+
+This hook allows plugins to modify the behaviour of the taxonomy browser, accessed by the user by clicking BROWSE at the top of any page.

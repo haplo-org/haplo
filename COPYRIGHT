@@ -1,0 +1,90 @@
+
+Haplo is copyright ONEIS Ltd. The Haplo Platform is licensed to you under the terms of the
+Mozilla Public License Version 2.0, a copy of which is provided in the LICENSE file.
+ONEIS Ltd asserts its ownership of the design of Haplo.
+
+The logos and icon scheme contained in the font at static/images/oneisicons-regular-webfont.*
+incorporate trademarks of ONEIS Ltd.
+
+------------------------------------------------------------------------------------
+
+This distribution contains software by other authors, licensed to you as follows:
+
+jQuery
+static/javascripts/jquery*.js
+  http://jquery.com/
+  MIT licensed.
+
+jQuery UI (subset)
+static/javascripts/jqueryui_*.js
+  http://jqueryui.com/
+  MIT licensed.
+
+underscore.js
+static/javascripts/underscore.js
+lib/javascript/thirdparty/underscore.js
+  http://underscorejs.org/
+  MIT licensed.
+
+underscore.string.js
+lib/javascript/thirdparty/underscore.string.js
+  https://github.com/epeli/underscore.string
+  MIT licensed.
+
+UglifyJS
+deploy/javascript/uglifyjs/*
+  https://github.com/mishoo/UglifyJS
+  BSD licensed.
+
+moment.js
+lib/javascript/thirdparty/moment.js
+  http://momentjs.com/
+  MIT licensed.
+
+moment-strftime
+lib/javascript/thirdparty/moment-strftime.js
+  https://github.com/benjaminoakes/moment-strftime
+  MIT licensed.
+
+XDate
+lib/javascript/thirdparty/xdate.js
+  http://arshaw.com/xdate/
+  Dual licensed under the MIT and GPL licenses.
+  It is included in this distribution under the MIT license.
+
+BCrypt Java implementation
+src/main/java/com/oneis/common/utils/BCrypt.java
+  http://www.mindrot.org/projects/jBCrypt/
+  BSD licensed.
+
+JSHint
+lib/javascript/thirdparty/jshint.js
+  http://jshint.com/
+  MIT license and JSLint License
+  Used in test suite only, and not required for deployment.
+
+Handlebars (modified)
+lib/javascript/thirdparty/handlebars.js
+  http://handlebarsjs.com/
+  MIT licensed.
+
+Ubuntu Font Family
+static/images/ubuntu-*
+  http://font.ubuntu.com/
+  Ubuntu Font Licence: http://font.ubuntu.com/licence/
+
+SyntaxHighlighter
+doc/web/static/presentation/syntaxhighlighter/*
+  http://alexgorbatchev.com/SyntaxHighlighter
+  Dual licensed under the MIT and GPL licenses.
+  It is included in this distribution under the MIT license.
+
+html-scanner
+test/lib/vendor/html-scanner/html/*
+  Licensed under MIT and/or CC By license.
+  It is included in this distribution under the MIT license.
+
+CGI::Cookie (Ruby stdlib, modified)
+framework/lib/cookie.rb
+  Licensed under BSD or Ruby license.
+  It is included in this distribution under the BSD license.

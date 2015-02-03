@@ -1,0 +1,11 @@
+FOR: /do/setup/application/edit_sluglen
+
+h1. Edit URL slug length
+
+'Slugs' are the text automatically appended to object web addresses (URLs) based on the object's title. When you email a URL to a colleague, they will have an idea of what they'll see before they click on it.
+
+The slug should be long enough to give a description of the object, but not so long that the URL becomes unwieldy. 
+
+The default slug length of 32 is recommended.
+
+Set to 0 to disable slugs.

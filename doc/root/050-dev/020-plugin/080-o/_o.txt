@@ -1,0 +1,10 @@
+title: O (global)
+long_title: O (JavaScript global)
+class: DocNodeTextileWithTOC
+--
+
+The ONEIS JavaScript API is accessed through functions and properties of the global @O@ object. (Upper case letter.)
+
+The application schema is reflected in the JavaScript runtime through [node:dev/plugin/schema].
+
+h2. Categories

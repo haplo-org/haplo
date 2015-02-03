@@ -1,0 +1,11 @@
+title: std:form_csrf_token
+link_as: keyword
+--
+
+This template renders a form hidden @<input>@ containing the CSRF token. You should include this in every @<form>@ you output which uses the @POST@ method.
+
+If this element is not included, the CSRF attack prevention mechanism will reject the user's request and display an error message.
+
+h2. View
+
+This template does not take any values.

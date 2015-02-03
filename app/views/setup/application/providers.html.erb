@@ -1,0 +1,6 @@
+<% @page_title = 'External providers' -%>
+
+<h1>Maps</h1>
+
+<p class="z__management_important_value"><%= h(@map_provider || 'Maps disabled') %></p>
+<%= sys_mng_edit_button("/do/setup/application/edit_map_provider") %>

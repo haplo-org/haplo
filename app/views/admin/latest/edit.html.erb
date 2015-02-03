@@ -1,0 +1,65 @@
+<%
+  @page_title = 'Edit '+h(KApp.global(:name_latest_requests))+' for '+h(@user.name)
+  client_side_resources :latest_user_admin
+-%>
+
+<%= sys_mng_header %>
+
+<form method="post"><%= form_csrf_token %>
+<table id="z__latest_requests_list">
+  <tr>
+    <th width="1%">Offer</th><th width="1%">Default</th><th width="1%">Force</th><th width="98%">Name</th><th></th>
+  </tr>
+<%
+  @requests.each do |r|
+    ref = r.objref.to_presentation
+    inc = r.inclusion
+    %><tr><%
+    LatestRequest::REQ__MIN.upto(LatestRequest::REQ__MAX) do |i|
+      %><td><input type="radio" name="r[<%=ref%>]" value="<%=i%>"<% if i == inc %> checked<% end %>></td><%
+    end
+    %><td><%= h(r.title) %></td>
+    <td><a href="#<%=ref%>">remove</a></td>
+    </tr><%
+  end
+-%>
+</table>
+
+<p id="z__latest_add_message">&nbsp;</p>
+
+<p><input type="submit" value="Save changes"></p>
+</form>
+
+<div class="z__latest_ui_section">
+  <p><a href="#" id="z__latest_admin_add_type">Types...</a></p>
+  <div class="z__latest_ui_ui" id="z__latest_admin_add_type_ui" style="display:none">
+    <%
+      types = Array.new
+      KObjectStore.schema.each_type_desc {|t| types << t}
+      types.sort {|a,b| a.printable_name <=> b.printable_name } .each do |t|
+        %><p><a class="z__latest_admin_add_type_type_link" href="#" name="<%= t.objref.to_presentation %>"><%= h(t.printable_name) %></a></p><%
+      end
+    -%>
+  <div></div></div>
+</div>
+
+<div class="z__latest_ui_section">
+  <p><a href="#" id="z__latest_admin_add_subject">Subjects...</a></p>
+  <div class="z__latest_ui_ui" id="z__latest_admin_add_subject_ui" style="display:none;width:94%">
+    <p><a href="#" id="z__latest_admin_subject_add">Add subject</a><br>&nbsp;</p>
+    <%= control_tree('z__latest_admin_subject_tree', :small) %>
+  </div>
+</div>
+
+<div class="z__latest_ui_section">
+  <p><a href="#" id="z__latest_admin_add_object">Objects...</a></p>
+  <div class="z__latest_ui_ui" id="z__latest_admin_add_object_ui" style="display:none">
+    <%= render :partial => 'latest/add_object_ui' %>
+  </div>
+</div>
+
+<p></p>
+
+<div><%= control_object_insert_menu('z__latest_add_request_admin', 'Add (advanced)') %></div>
+
+<%= @treesource %>

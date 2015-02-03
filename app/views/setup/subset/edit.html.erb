@@ -1,0 +1,35 @@
+<%
+  @page_title = (params[:id] == 'new') ? 'New search subset' : 'Edit '+h(@title.to_s)
+
+  client_side_resources :mng_labels
+  client_side_controller_js "edit_subset"
+-%>
+
+<%= sys_mng_header %>
+
+<form id="z__subset_form" method="post" action="/do/setup/subset/edit/<%= h(params[:id]) %>"><%= form_csrf_token %>
+
+<p><input type="submit" value="Save changes"></p>
+
+<p>Name<br />
+<input type="text" name="title" value="<%= h(@title.to_s) %>">
+</p>
+
+<p>Include labels:
+<%= label_edit_list('z__subset_labels_inc', @included_labels) %>
+</p>
+
+<p>Exclude labels:
+<%= label_edit_list('z__subset_labels_exc', @excluded_labels) %>
+</p>
+
+<p>Include types:<br>
+<%
+  schema = KObjectStore.schema
+  schema.type_descs_sorted_by_printable_name.each do |type_desc|
+    %><label><input type="checkbox" name="type[<%= type_desc.objref.to_presentation %>]" value="1"<% if @included_types.include?(type_desc.objref) %> checked<% end %>><%= h(type_desc.printable_name.to_s) %></label><br><%
+  end
+%>
+</p>
+
+</form>

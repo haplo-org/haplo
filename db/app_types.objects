@@ -1,0 +1,614 @@
+# Haplo Platform                                     http://haplo.org
+# (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# ------------------------------------------------------------------
+#  Taxonomy types
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_TAXONOMY_TERM
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Subject'
+    A_CODE              KIdentifierConfigurationName.new('std:type:subject')
+    A_ATTR_SHORT_NAME   'taxonomy term'
+    A_ATTR_SHORT_NAME   'taxonomy terms'
+    A_ATTR_SHORT_NAME   'subject'
+    A_ATTR_SHORT_NAME   'subjects'
+    A_RELEVANT_ATTR     A_TITLE
+    A_RELEVANT_ATTR     A_NOTES
+    A_RELEVANT_ATTR     A_TAXONOMY_RELATED_TERM
+    A_RENDER_TYPE_NAME  'classification'
+    A_TYPE_BEHAVIOUR    O_TYPE_BEHAVIOUR_CLASSIFICATION
+    A_TYPE_BEHAVIOUR    O_TYPE_BEHAVIOUR_HIERARCHICAL
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_NEVER
+    A_TYPE_BASE_LABEL   O_LABEL_CONCEPT
+
+# ------------------------------------------------------------------
+#  Application types
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_BOOK
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Book'
+    A_CODE              KIdentifierConfigurationName.new('std:type:book')
+    A_ATTR_SHORT_NAME   'book'
+    A_RELEVANT_ATTR     A_TITLE
+    A_RELEVANT_ATTR     A_AUTHOR
+    A_RELEVANT_ATTR     A_ISBN
+    A_RELEVANT_ATTR     AA_YEAR
+    A_RELEVANT_ATTR     A_PUBLISHER
+    A_RELEVANT_ATTR     A_SUBJECT
+    A_RELEVANT_ATTR     A_NOTES
+    A_RENDER_TYPE_NAME  'book'
+    A_RENDER_ICON       'E210,1,f'
+    A_RENDER_CATEGORY   0
+    A_TYPE_BEHAVIOUR    O_TYPE_BEHAVIOUR_PHYSICAL
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_NORMAL
+    A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
+
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_CONTACT_NOTE
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Contact note'
+    A_CODE              KIdentifierConfigurationName.new('std:type:contact-note')
+    A_ATTR_SHORT_NAME   'contact note'
+    A_ATTR_SHORT_NAME   'note'
+    A_RELEVANT_ATTR     A_TITLE
+    A_RELEVANT_ATTR     A_TYPE
+    A_RELEVANT_ATTR     A_NOTES
+    A_RELEVANT_ATTR     A_DATE
+    A_RELEVANT_ATTR     AA_PARTICIPATING_ORGANISATION
+    A_RELEVANT_ATTR     A_PARTICIPANT
+    A_RENDER_TYPE_NAME  'generic'
+    A_RENDER_ICON       'E209,1,f E20A,0,c'
+    A_RENDER_CATEGORY   5
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_INFREQUENT
+    A_RELEVANCY_WEIGHT  750
+    A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
+
+obj [O_LABEL_STRUCTURE] O_TYPE_CONTACT_NOTE_MEETING
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_PARENT            O_TYPE_CONTACT_NOTE
+    A_TITLE             'Meeting'
+    A_CODE              KIdentifierConfigurationName.new('std:type:contact-note:meeting')
+    A_ATTR_SHORT_NAME   'meeting'
+    A_RENDER_ICON       'E20E,1,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_CONTACT_NOTE_TELEPHONE
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_PARENT            O_TYPE_CONTACT_NOTE
+    A_TITLE             'Telephone conversation'
+    A_CODE              KIdentifierConfigurationName.new('std:type:contact-note:telephone-conversation')
+    A_ATTR_SHORT_NAME   'conversation'
+    A_ATTR_SHORT_NAME   'telephone conversation'
+    A_ATTR_SHORT_NAME   'telephone'
+    A_RENDER_ICON       'E218,1,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_CONTACT_NOTE_EMAIL
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_PARENT            O_TYPE_CONTACT_NOTE
+    A_TITLE             'Email'
+    A_CODE              KIdentifierConfigurationName.new('std:type:contact-note:email')
+    A_ATTR_SHORT_NAME   'email'
+    A_RENDER_ICON       'E420,1,f'
+
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_EQUIPMENT
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Equipment'
+    A_CODE              KIdentifierConfigurationName.new('std:type:equipment')
+    A_ATTR_SHORT_NAME   'equipment'
+    A_RELEVANT_ATTR     A_TITLE
+    A_RELEVANT_ATTR     A_TYPE
+    A_RELEVANT_ATTR     A_NOTES
+    A_RELEVANT_ATTR     A_DATE
+    A_RELEVANT_ATTR     A_URL
+    A_RELEVANT_ATTR     A_PURCHASED_FROM
+    A_RELEVANT_ATTR     A_MANUFACTURER
+    A_RELEVANT_ATTR     A_FILE
+    A_RENDER_TYPE_NAME  'generic'
+    A_RENDER_ICON       'E215,1,f'
+    A_RENDER_CATEGORY   1
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_INFREQUENT
+    A_TYPE_BEHAVIOUR    O_TYPE_BEHAVIOUR_PHYSICAL
+    A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
+
+obj [O_LABEL_STRUCTURE] O_TYPE_COMPUTER
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Computer'
+    A_CODE              KIdentifierConfigurationName.new('std:type:equipment:computer')
+    A_ATTR_SHORT_NAME   'computer'
+    A_PARENT            O_TYPE_EQUIPMENT
+    A_RENDER_ICON       'E212,1,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_LAPTOP
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Laptop'
+    A_CODE              KIdentifierConfigurationName.new('std:type:equipment:laptop')
+    A_ATTR_SHORT_NAME   'laptop'
+    A_PARENT            O_TYPE_COMPUTER
+    A_RENDER_ICON       'E213,1,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_PRINTER
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Printer'
+    A_CODE              KIdentifierConfigurationName.new('std:type:equipment:printer')
+    A_ATTR_SHORT_NAME   'printer'
+    A_PARENT            O_TYPE_EQUIPMENT
+    A_RENDER_ICON       'E201,1,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_PROJECTOR
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Projector'
+    A_CODE              KIdentifierConfigurationName.new('std:type:equipment:projector')
+    A_ATTR_SHORT_NAME   'projector'
+    A_PARENT            O_TYPE_EQUIPMENT
+    A_RENDER_ICON       'E217,1,f'
+
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_EVENT
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Event'
+    A_CODE              KIdentifierConfigurationName.new('std:type:event')
+    A_ATTR_SHORT_NAME   'event'
+    A_RELEVANT_ATTR     A_TITLE
+    A_RELEVANT_ATTR     AA_DATE_AND_TIME
+    A_RELEVANT_ATTR     A_TYPE
+    A_RELEVANT_ATTR     A_ORGANISED_BY
+    A_RELEVANT_ATTR     A_VENUE
+    A_RELEVANT_ATTR     A_URL
+    A_RELEVANT_ATTR     A_SPEAKER
+    A_RELEVANT_ATTR     A_ATTENDEE
+    A_RELEVANT_ATTR     A_NOTES
+    A_RELEVANT_ATTR     A_FILE
+    A_RELEVANT_ATTR     A_SUBJECT
+    A_RENDER_TYPE_NAME  'event'
+    A_RENDER_ICON       'E207,1,f E418,5,e'
+    A_RENDER_CATEGORY   2
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_COMMON
+    A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
+    A_TYPE_APPLICABLE_LABEL O_LABEL_CONFIDENTIAL
+
+obj [O_LABEL_STRUCTURE] O_TYPE_EVENT_CONFERENCE
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Conference'
+    A_CODE              KIdentifierConfigurationName.new('std:type:event:conference')
+    A_ATTR_SHORT_NAME   'conference'
+    A_PARENT            O_TYPE_EVENT
+    A_RENDER_ICON       'E20D,1,f E430,1,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_EVENT_NETWORKING
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Networking'
+    A_CODE              KIdentifierConfigurationName.new('std:type:event:networking')
+    A_ATTR_SHORT_NAME   'networking'
+    A_PARENT            O_TYPE_EVENT
+    A_RENDER_ICON       'E20A,1,a E20A,2,b E20A,1,d E20A,1,e'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_EVENT_SOCIAL
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Social'
+    A_CODE              KIdentifierConfigurationName.new('std:type:event:social')
+    A_ATTR_SHORT_NAME   'social'
+    A_PARENT            O_TYPE_EVENT
+    A_RENDER_ICON       'E431,1,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_EVENT_TRAINING
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Training'
+    A_CODE              KIdentifierConfigurationName.new('std:type:event:training')
+    A_ATTR_SHORT_NAME   'training'
+    A_ATTR_SHORT_NAME   'course'
+    A_ATTR_SHORT_NAME   'training'
+    A_PARENT            O_TYPE_EVENT
+    A_RENDER_ICON       'E217,1,f'
+
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_FILE
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'File'
+    A_CODE              KIdentifierConfigurationName.new('std:type:file')
+    A_ATTR_SHORT_NAME   'file'
+    A_RELEVANT_ATTR     A_TITLE
+    A_RELEVANT_ATTR     A_FILE
+    A_RELEVANT_ATTR     A_TYPE
+    A_RELEVANT_ATTR     A_AUTHOR
+    A_RELEVANT_ATTR     A_SUBJECT
+    A_RELEVANT_ATTR     A_NOTES
+    A_RELEVANT_ATTR     A_CLIENT
+    A_RELEVANT_ATTR     A_PROJECT
+    A_RENDER_TYPE_NAME  'file'
+    A_RENDER_ICON       'E203,1,f'
+    A_RENDER_CATEGORY   3
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_COMMON
+    A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
+    A_TYPE_APPLICABLE_LABEL O_LABEL_CONFIDENTIAL
+
+obj [O_LABEL_STRUCTURE] O_TYPE_FILE_ACCOUNTS
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Accounts'
+    A_CODE              KIdentifierConfigurationName.new('std:type:file:accounts')
+    A_ATTR_SHORT_NAME   'accounts'
+    A_PARENT            O_TYPE_FILE
+    A_RENDER_ICON       'E209,1,f E400,0,c'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_FILE_BROCHURE
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Brochure'
+    A_CODE              KIdentifierConfigurationName.new('std:type:file:brochure')
+    A_ATTR_SHORT_NAME   'brochure'
+    A_PARENT            O_TYPE_FILE
+    A_RENDER_ICON       'E201,1,f E416,0,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_FILE_CONTRACT
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Contract'
+    A_CODE              KIdentifierConfigurationName.new('std:type:file:contract')
+    A_ATTR_SHORT_NAME   'contract'
+    A_PARENT            O_TYPE_FILE
+    A_RENDER_ICON       'E203,1,f E415,0,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_IMAGE
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Image'
+    A_CODE              KIdentifierConfigurationName.new('std:type:file:image')
+    A_ATTR_SHORT_NAME   'image'
+    A_PARENT            O_TYPE_FILE
+    A_RENDER_ICON       'E220,1,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_FILE_MINUTES
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Minutes'
+    A_CODE              KIdentifierConfigurationName.new('std:type:file:minutes')
+    A_ATTR_SHORT_NAME   'minutes'
+    A_ATTR_SHORT_NAME   'meeting'
+    A_PARENT            O_TYPE_FILE
+    A_RENDER_ICON       'E203,1,f E41A,0,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_FILE_NEWSLETTER
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Newsletter'
+    A_CODE              KIdentifierConfigurationName.new('std:type:file:newsletter')
+    A_ATTR_SHORT_NAME   'newsletter'
+    A_PARENT            O_TYPE_FILE
+    A_RENDER_ICON       'E209,1,f E451,0,f E505,2,e'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_PRESENTATION
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Presentation'
+    A_CODE              KIdentifierConfigurationName.new('std:type:file:presentation')
+    A_ATTR_SHORT_NAME   'presentation'
+    A_PARENT            O_TYPE_FILE
+    A_RENDER_ICON       'E201,1,f E41D,0,c'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_FILE_PRESS_RELEASE
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Press release'
+    A_CODE              KIdentifierConfigurationName.new('std:type:file:press-release')
+    A_ATTR_SHORT_NAME   'press release'
+    A_PARENT            O_TYPE_FILE
+    A_RENDER_ICON       'E209,1,f E247,0,c'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_REPORT
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Report'
+    A_CODE              KIdentifierConfigurationName.new('std:type:file:report')
+    A_ATTR_SHORT_NAME   'report'
+    A_PARENT            O_TYPE_FILE
+    A_RENDER_ICON       'E209,1,f E520,0,c'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_FILE_TEMPLATE
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Template'
+    A_CODE              KIdentifierConfigurationName.new('std:type:file:template')
+    A_ATTR_SHORT_NAME   'template'
+    A_PARENT            O_TYPE_FILE
+    A_RENDER_ICON       'E202,1,f,z'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_FILE_AUDIO
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Audio'
+    A_CODE              KIdentifierConfigurationName.new('std:type:file:audio')
+    A_ATTR_SHORT_NAME   'audio'
+    A_PARENT            O_TYPE_FILE
+    A_RENDER_ICON       'E410,1,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_FILE_VIDEO
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Video'
+    A_CODE              KIdentifierConfigurationName.new('std:type:file:video')
+    A_ATTR_SHORT_NAME   'video'
+    A_PARENT            O_TYPE_FILE
+    A_RENDER_ICON       'E512,1,f'
+
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_INTRANET_PAGE
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Intranet page'
+    A_CODE              KIdentifierConfigurationName.new('std:type:intranet-page')
+    A_ATTR_SHORT_NAME   'intranet page'
+    A_ATTR_SHORT_NAME   'intranet pages'
+    A_ATTR_SHORT_NAME   'page'
+    A_ATTR_SHORT_NAME   'pages'
+    A_RELEVANT_ATTR     A_TITLE
+    A_RELEVANT_ATTR     A_DOCUMENT
+    A_RELEVANT_ATTR     A_SUBJECT
+    A_RELEVANT_ATTR     A_FILE
+    A_RENDER_TYPE_NAME  'intranetpage'
+    A_RENDER_ICON       'E212,1,f'
+    A_RENDER_CATEGORY   4
+    A_RELEVANCY_WEIGHT  750
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_COMMON
+    A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
+    A_TYPE_APPLICABLE_LABEL O_LABEL_CONFIDENTIAL
+
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_SERIAL
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Journal'
+    A_CODE              KIdentifierConfigurationName.new('std:type:journal')
+    A_ATTR_SHORT_NAME   'journal'
+    A_ATTR_SHORT_NAME   'serial'
+    A_RELEVANT_ATTR     A_TITLE
+    A_RELEVANT_ATTR     A_AUTHOR
+    A_RELEVANT_ATTR     A_DATE
+    A_RELEVANT_ATTR     A_PUBLISHER
+    A_RELEVANT_ATTR     A_SUBJECT
+    A_RELEVANT_ATTR     A_NOTES
+    A_RELEVANT_ATTR     A_URL
+    A_RENDER_TYPE_NAME  'journal'
+    A_RENDER_ICON       'E211,1,f'
+    A_RENDER_CATEGORY   5
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_INFREQUENT
+    A_TYPE_BEHAVIOUR    O_TYPE_BEHAVIOUR_PHYSICAL
+    A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
+
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_NEWS
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'News'
+    A_CODE              KIdentifierConfigurationName.new('std:type:news')
+    A_ATTR_SHORT_NAME   'news'
+    A_RELEVANT_ATTR     A_TITLE
+    A_RELEVANT_ATTR     A_URL
+    A_RELEVANT_ATTR     A_SUBJECT
+    A_RELEVANT_ATTR     A_NOTES
+    A_RENDER_TYPE_NAME  'news'
+    A_RENDER_ICON       'E209,1,f E451,0,f'
+    A_RENDER_CATEGORY   6
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_COMMON
+    A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
+    A_TYPE_APPLICABLE_LABEL O_LABEL_CONFIDENTIAL
+
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_ORGANISATION
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Organisation'
+    A_CODE              KIdentifierConfigurationName.new('std:type:organisation')
+    A_ATTR_SHORT_NAME   'organisation'
+    A_RELEVANT_ATTR     AA_ORGANISATION_NAME
+    A_RELEVANT_ATTR     AA_CONTACT_CATEGORY2
+    A_RELEVANT_ATTR     A_EMAIL_ADDRESS
+    A_RELEVANT_ATTR     A_TELEPHONE_NUMBER
+    A_RELEVANT_ATTR     A_ADDRESS
+    A_RELEVANT_ATTR     A_SUBJECT
+    A_RELEVANT_ATTR     A_NOTES
+    A_RELEVANT_ATTR     A_URL
+    A_RELEVANT_ATTR     A_RELATIONSHIP_MANAGER
+    A_RENDER_TYPE_NAME  'organisation'
+    A_RENDER_ICON       'E20C,1,f'
+    A_RENDER_CATEGORY   7
+    A_DISPLAY_ELEMENTS  %Q!4 right std:linked_objects {"title":"", "type":"20x0", "attr":"works-for"}\n4 bottom std:contact_notes!
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_COMMON
+    A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
+
+obj [O_LABEL_STRUCTURE] O_TYPE_CLIENT
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Client'
+    A_CODE              KIdentifierConfigurationName.new('std:type:organisation:client')
+    A_ATTR_SHORT_NAME   'client'
+    A_PARENT            O_TYPE_ORGANISATION
+    A_RENDER_ICON       'E20C,1,f E505,2,e'
+    A_RENDER_CATEGORY   2
+    A_RELEVANCY_WEIGHT  1250
+
+obj [O_LABEL_STRUCTURE] O_TYPE_ORG_CLIENT_PAST
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             "Client (past)"
+    A_CODE              KIdentifierConfigurationName.new('std:type:organisation:client-past')
+    A_ATTR_SHORT_NAME   'past client'
+    A_ATTR_SHORT_NAME   'client past'
+    A_PARENT            O_TYPE_ORGANISATION
+    A_RENDER_ICON       'E20C,1,f E413,1,f,y'
+    A_RENDER_CATEGORY   2
+
+obj [O_LABEL_STRUCTURE] O_TYPE_ORG_CLIENT_PROSPECTIVE
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             "Client (prospective)"
+    A_CODE              KIdentifierConfigurationName.new('std:type:organisation:client-prospective')
+    A_ATTR_SHORT_NAME   'prospective client'
+    A_ATTR_SHORT_NAME   'client prospective'
+    A_PARENT            O_TYPE_ORGANISATION
+    A_RENDER_ICON       'E414,5,f,y E20C,1,f'
+    A_RENDER_CATEGORY   2
+
+obj [O_LABEL_STRUCTURE] O_TYPE_ORG_PARTNER
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Partner'
+    A_CODE              KIdentifierConfigurationName.new('std:type:organisation:partner')
+    A_ATTR_SHORT_NAME   'partner'
+    A_PARENT            O_TYPE_ORGANISATION
+    A_RENDER_ICON       'E521,1,f E522,1,f E524,1,f E523,7,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_ORG_PRESS
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Press'
+    A_CODE              KIdentifierConfigurationName.new('std:type:organisation:press')
+    A_ATTR_SHORT_NAME   'press'
+    A_PARENT            O_TYPE_ORGANISATION
+    A_RENDER_ICON       'E521,1,f E522,1,f E524,1,f E523,5,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_SUPPLIER
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Supplier'
+    A_CODE              KIdentifierConfigurationName.new('std:type:organisation:supplier')
+    A_ATTR_SHORT_NAME   'supplier'
+    A_PARENT            O_TYPE_ORGANISATION
+    A_RENDER_ICON       'E521,1,f E522,1,f E524,1,f E523,7,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_ORG_PROFESSIONAL_ASSOCIATION
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Professional association'
+    A_CODE              KIdentifierConfigurationName.new('std:type:organisation:professional-association')
+    A_ATTR_SHORT_NAME   'professional association'
+    A_ATTR_SHORT_NAME   'association'
+    A_PARENT            O_TYPE_ORGANISATION
+    A_RENDER_ICON       'E521,1,f E522,1,f E524,1,f E523,6,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_ORG_COMPETITOR
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Competitor'
+    A_CODE              KIdentifierConfigurationName.new('std:type:organisation:competitor')
+    A_ATTR_SHORT_NAME   'competitor'
+    A_PARENT            O_TYPE_ORGANISATION
+    A_RENDER_ICON       'E20C,1,f E238,5,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_ORG_THIS
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'This organisation'
+    A_CODE              KIdentifierConfigurationName.new('std:type:organisation:this-organisation')
+    A_ATTR_SHORT_NAME   'this organisation'
+    A_PARENT            O_TYPE_ORGANISATION
+    A_RENDER_ICON       'E20C,1,f E41B,2,d'
+    A_TYPE_CREATE_SHOW_SUBTYPE	0
+    A_RENDER_CATEGORY   7
+    A_RELEVANCY_WEIGHT  3000
+
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_PERSON
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Person'
+    A_CODE              KIdentifierConfigurationName.new('std:type:person')
+    A_ATTR_SHORT_NAME   'person'
+    A_ATTR_SHORT_NAME   'people'
+    A_RELEVANT_ATTR     AA_NAME
+    A_RELEVANT_ATTR     AA_CONTACT_CATEGORY2
+    A_RELEVANT_ATTR     A_WORKS_FOR
+    A_RELEVANT_ATTR     A_JOB_TITLE
+    A_RELEVANT_ATTR     A_EMAIL_ADDRESS
+    A_RELEVANT_ATTR     A_TELEPHONE_NUMBER
+    A_RELEVANT_ATTR     A_ADDRESS
+    A_RELEVANT_ATTR     A_URL
+    A_RELEVANT_ATTR     A_MEMBER_OF
+    A_RELEVANT_ATTR     A_FIRST_CONTACT_VIA
+    A_RELEVANT_ATTR     AA_EXPERTISE
+    A_RELEVANT_ATTR     A_RELATIONSHIP_MANAGER
+    A_RELEVANT_ATTR     A_NOTES
+    A_RENDER_TYPE_NAME  'person'
+    A_RENDER_ICON       'E20A,1,f'
+    A_RENDER_CATEGORY   1
+    A_DISPLAY_ELEMENTS  %Q!4 right std:sidebar_object {"attr":"works-for"}\n4 bottom std:contact_notes!
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_COMMON
+    A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
+
+obj [O_LABEL_STRUCTURE] O_TYPE_PERSON_ASSOCIATE
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Associate'
+    A_CODE              KIdentifierConfigurationName.new('std:type:person:associate')
+    A_ATTR_SHORT_NAME   'associate'
+    A_PARENT            O_TYPE_PERSON
+    A_RENDER_ICON       'E21A,1,f E21B,3,f'
+
+obj [O_LABEL_STRUCTURE] O_TYPE_STAFF
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Staff'
+    A_CODE              KIdentifierConfigurationName.new('std:type:person:staff')
+    A_ATTR_SHORT_NAME   'staff'
+    A_RENDER_CATEGORY   7
+    A_PARENT            O_TYPE_PERSON
+    A_RENDER_ICON       'E21A,1,f E21B,2,f'
+    A_RELEVANCY_WEIGHT  2000
+
+obj [O_LABEL_STRUCTURE] O_TYPE_PERSON_STAFF_PAST
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             "Staff (past)"
+    A_CODE              KIdentifierConfigurationName.new('std:type:person:staff-past')
+    A_ATTR_SHORT_NAME   'staff past'
+    A_ATTR_SHORT_NAME   'past staff'
+    A_PARENT            O_TYPE_PERSON
+    A_RENDER_ICON       'E21A,1,f E21B,2,f E413,1,f,y'
+
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_PROJECT
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Project'
+    A_CODE              KIdentifierConfigurationName.new('std:type:project')
+    A_ATTR_SHORT_NAME   'project'
+    A_ATTR_SHORT_NAME   'file'
+    A_RELEVANT_ATTR     A_TITLE
+    A_RELEVANT_ATTR     A_DATE
+    A_RELEVANT_ATTR     A_CLIENT
+    A_RELEVANT_ATTR     A_PROJECT_LEADER
+    A_RELEVANT_ATTR     A_PROJECT_TEAM
+    A_RELEVANT_ATTR     A_SUBJECT
+    A_RELEVANT_ATTR     A_DOCUMENT
+    A_RENDER_TYPE_NAME  'project'
+    A_RENDER_ICON       'E511,1,f'
+    A_RENDER_CATEGORY   2
+    A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
+    A_TYPE_APPLICABLE_LABEL O_LABEL_CONFIDENTIAL
+
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_UNKNOWN
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Unknown'
+    A_CODE              KIdentifierConfigurationName.new('std:type:unknown')
+    A_RENDER_TYPE_NAME  'unknown'
+    A_RENDER_ICON       'E419,1,f'
+    A_RELEVANT_ATTR     A_TITLE
+    A_RENDER_CATEGORY   3
+    A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_NEVER
+    A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
+
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_WEB_SITE
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_TITLE             'Web site'
+    A_CODE              KIdentifierConfigurationName.new('std:type:web-site')
+    A_ATTR_SHORT_NAME   'web site'
+    A_ATTR_SHORT_NAME   'web'
+    A_ATTR_SHORT_NAME   'online'
+    A_RENDER_TYPE_NAME  'website'
+    A_RENDER_ICON       'E232,1,f'
+    A_RENDER_CATEGORY   4
+    A_RELEVANT_ATTR     A_TITLE
+    A_RELEVANT_ATTR     A_URL
+    A_RELEVANT_ATTR     A_SUBJECT
+    A_RELEVANT_ATTR     A_NOTES
+    A_RELEVANT_ATTR     A_TYPE
+    A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
+
+obj [O_LABEL_STRUCTURE] O_TYPE_QUICK_LINK
+    A_TYPE              O_TYPE_APP_VISIBLE
+    A_PARENT            O_TYPE_WEB_SITE
+    A_TITLE             'Quick link'
+    A_CODE              KIdentifierConfigurationName.new('std:type:web-site:quick-link')
+    A_ATTR_SHORT_NAME   'link'
+    A_RENDER_CATEGORY   5
+
+# ------------------------------------------------------------------
+

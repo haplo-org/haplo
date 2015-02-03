@@ -1,0 +1,140 @@
+<%
+  @page_title = type_name_with_parents(@type_desc)
+-%>
+
+<%= sys_mng_header %>
+
+<div class="z__type_icon_right_align"><%= html_for_icon(@type_desc.render_icon, :medium) %></div>
+
+<table class="z__mangement_kv_table">
+  <tr><th>Name</th><td><%= h(@type_desc.printable_name) %></td></tr>
+  <%= code_show_in_table(@type_desc.code) %>
+  <tr><th>Search names</th><td><%= h(@type_desc.short_names.join(', ')) %>
+    <% if @type_desc.parent_type != nil %><br><i>Inherits:</i> <%= type_all_short_names(@type_desc.parent_type).map { |n| h(n) } .join(', ') %><% end %>
+  </td></tr>
+  <tr><th>Reference</th><td><%= @type_desc.objref.to_presentation %></td></tr>
+  <tr><th>Behaviours</th><td><%
+    behaviours = @type_desc.behaviours.map {|objref| @schema.type_behaviour_lookup[objref] } .sort {|a,b| a.name <=> b.name }
+    if behaviours.empty?
+      %><i>(no behaviours)</i><%
+    else
+      behaviours.each do |behaviour|
+        %><%= h(behaviour.name) %><br><%
+      end
+    end
+  %></td></tr>
+  <tr><th>Attributes</th><td><%
+    @type_desc.attributes.each do |adesc|
+      attr_desc = @schema.attribute_descriptor(adesc) || @schema.aliased_attribute_descriptor(adesc)
+      %><%= h(attr_desc.printable_name) %><br><%
+    end
+  %></td></tr>
+  <tr><th>Descriptive attribute</th><td><%
+    @type_desc.descriptive_attributes.each do |adesc|
+      attr_desc = @schema.attribute_descriptor(adesc)
+      if attr_desc != nil
+        %><%= h(attr_desc.printable_name) %><br><%
+      end
+    end
+    if @type_desc.descriptive_attributes.empty?
+      %><i>(none set)</i><%
+    end
+  %></td><tr>
+</table>
+
+<% if @classification_type_no_concept_label %>
+<p class="z__management_notice">
+  Classification types should have the <span class="z__label">CONCEPT</span> label as a base label.
+</p>
+<% end %>
+
+<% if @type_has_no_labels %>
+<p class="z__management_notice">
+  There are no base or applicable labels set for this type. Visibility will rely on labelling by plugins.
+</p>
+<% end %>
+
+<% if @msg_no_parent_attr_but_hierarchy %>
+<p class="z__management_notice">
+  This type has the <i>Hierarchical</i> behaviour, but does not use the Parent attribute (or an alias of Parent). Parent relationships
+  will not be able to be specified in the item editor.
+</p>
+<% end %>
+
+<div class="z__management_extra_buttons_holder">
+  <form method="GET" action="/do/setup/type/edit/new">
+    <input type="hidden" name="parent" value="<%= @type_desc.objref.to_presentation %>">
+    <input type="submit" value="New sub-type">
+  </form>
+</div>
+<%= sys_mng_edit_button("/do/setup/type/edit/#{@type_desc.objref.to_presentation}") %>
+
+<h2>Search and retrieval</h2>  
+<table class="z__mangement_kv_table">
+  <tr><th>Relevancy weight</th><td><%= type_optional_value((@type_desc.relevancy_weight != nil) ? (@type_desc.relevancy_weight / KConstants::RELEVANCY_WEIGHT_MULTIPLER) : nil) %></td></tr>
+  <tr><th>Term inclusion</th><td><%
+    term_inc = @type_desc.term_inclusion || KSchema::DEFAULT_TERM_INCLUSION_SPECIFICATION
+    term_inc.errors.each do |error_text|
+      %><div class="z__general_alert"><%= h(error_text) %></div><%
+    end
+    %><p><%
+    term_inc.inclusions.each do |inc|
+      attr_desc = @schema.attribute_descriptor(inc.desc)
+      if attr_desc
+        %><%= inc.relevancy_weight.to_f / KConstants::RELEVANCY_WEIGHT_MULTIPLER.to_f %> <%= h(attr_desc.printable_name.to_s) %><%
+        if attr_desc.data_type < KConstants::T_TEXT__MIN
+          %> <b>(WARNING: Not a text type, has no effect)</b><%
+        end
+        %><br><%
+      end
+    end
+    %></p><%
+  %></td></tr>
+</table>
+
+<h2>Display</h2>  
+<table class="z__mangement_kv_table">
+  <tr><th>Render type</th><td><%= h(@type_desc.render_type) %></td></tr>
+  <tr><th>Icon</th><td><% if @type_desc.render_icon %><%= html_for_icon(@type_desc.render_icon, :micro) %> &nbsp; <small><tt><%= h(@type_desc.render_icon) %></tt></small><% end %></td></tr>
+  <tr><th>Category</th><td><%= type_category_blob(@type_desc.render_category) %></td></tr>
+  <tr><th>Display Elements</th><td><pre><%= h(@type_desc.display_elements) %></pre></td></tr>
+</table>
+
+<h2>Object creation</h2>  
+<table class="z__mangement_kv_table">
+  <tr><th>Show this type in subtypes menu?</th><td><i><%= @type_desc.create_show_type ? 'yes' : 'no' %></i></td></tr>
+  <% if @type_desc.parent_type == nil -%>
+    <tr><th>Offer creation</th><td><%= Setup_TypeController::UIPOSITION_TO_NAME[@type_desc.creation_ui_position] %></td></tr>
+    <tr><th>Default sub-type</th><td><%= 
+      type = @schema.type_descriptor(@type_desc.create_default_subtype)
+      (type == nil) ? '????' : h(type.printable_name)
+    %></td></tr>
+  <% end -%>
+</table>
+
+<% if @type_desc.parent_type == nil -%>
+  <h2>Labelling</h2>  
+  <table class="z__mangement_kv_table">
+
+    <tr><th>Base labels</th><td><%
+      @type_desc.base_labels.each do |ref|
+        %><%= label_html(ref) %><br><%
+      end
+    %></td></tr>
+    <tr><th>Applicable labels</th><td><%
+      @type_desc.applicable_labels.each do |ref|
+        %><%= label_html(ref) %><% if @type_desc.default_applicable_label == ref %> <i>(default)</i><% end %><br><%
+      end
+    %></td></tr>
+    <tr><th>Labelling attributes</th><td><%
+      @type_desc.labelling_attributes.each do |desc|
+        attr_desc = @schema.attribute_descriptor(desc)
+        if attr_desc
+          %><%= h(attr_desc.printable_name.to_s) %><br><%
+        end
+      end
+    %></td></tr>
+  </table>
+<% end -%>
+
+<%= sys_mng_update_submenu(h(@type_desc.printable_name), "/do/setup/type/show/#{@type_desc.objref.to_presentation}") %>

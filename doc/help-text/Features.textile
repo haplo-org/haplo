@@ -1,0 +1,5 @@
+FOR: /do/setup/application/features
+
+h1. Feature names
+
+* Specify the names for features listed. This allows you to change the names of these features in the user interface to match the names already used in your organisation.

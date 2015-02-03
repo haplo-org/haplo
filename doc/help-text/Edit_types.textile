@@ -1,0 +1,52 @@
+FOR: /do/setup/type/edit
+
+h1. Edit type
+
+With a root type, you can edit the full information described below. Sub-types are restricted by the choices made in the root type, and can either inherit settings from their parent type or override them.
+
+h2. General information
+
+* _Name_: choose a name for the type
+* _Search names_: choose a short, lower case, name for use when restricting your search to specific types. To add multiple search names separate them with a comma. Spaces are allowed in these names. Consider including singular and plural versions if you think your users will use them in constraints.
+* _Behaviours_: tick if the item is a classification type, is hierarchical, represents a physical item, or if the user should be asked to choose a section before creating a new item. See [[Hierarchy]] for notes on setting up hierarchical types.
+
+h2. Attributes (root type)
+
+* Tick the attributes you want listed by default for this type and it's sub-types. 
+* Drag the ticked attributes into the order you want them displayed in this type's object editor. 
+* Set a descriptive attribute if the Title of an object is not enough to identify the object, and this attribute is needed to remove any ambiguity from a link to the object. _Use descriptive attributes with care_. If in doubt, do not use a descriptive attribute.
+
+h2. Attributes (sub-type)
+
+* Untick any attributes you don't want to use for this sub-type.
+* You cannot add any attributes which aren't used by the root-type.
+
+h2. Search and retrieval
+
+* _Relevancy weight_: the normal, and default, relevancy weighting in searches is 1. Enter a different number if this type should be ranked higher or lower than average in searches. You can use two decimal places.
+
+* _Term inclusion specification_: Controls which terms are included from this object into another object which links to it. See [[Term inclusion specification]] for more information.
+
+h2. Display
+
+* _Show linked objects under caption_: tick to display at the bottom of this object, all other objects which are linked to this object. Specify the caption underneath which the objects will display.
+
+* _Render type_: rendering determines how objects display. Choose a render style for this type. If ONEIS does not have a special rendering for the specified type, the default _generic_ type will be used.
+
+* _Render icon_: choose an icon to represent this type, used in search results and (usually) at the top of the object page.
+
+* _Category_: specify the background colour with which objects of this type will display in search results. The category colours are edited in the appearance menus. 
+
+h2. Object creation
+
+* _Show this type in subtypes menu_: Untick to stop this type from being selected in the editor. Use this for depreciating types you don't want people to use any more, or for preventing users from creating objects using the root type.
+
+* _Default section_: specifies the default section in which new objects of this type will be created. 
+
+* _Allowed sections_: (root types only) the sections in which objects of this type may be created.
+
+* _First position to offer creating objects of this type_: (root types only) determines where this type is offered on the Add page or whether the user has to click through to a further page. Use "don't offer it anywhere" to deprecate a root type and all it's sub-types.
+
+* _Default sub-type_: (root types only) Which type will be offered by default when creating a new object.
+
+

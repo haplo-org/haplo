@@ -1,0 +1,16 @@
+FOR: /do/setup/attribute/edit_alias
+
+h1. Edit aliased attribute
+
+The 'base' attribute is shown at the top of the form.
+
+* _Aliased attribute name_: for use when display objects and in the editor
+* _Search name_: used in the search constraints. This should contain only lower case letters, numbers and hyphens. By convention it is the same as the aliased attribute name in lower case and with spaces replaced by hyphens.
+* _Example_: shows how data should be entered into this aliased attribute's field
+* _Alias on qualifier_: tick and choose the qualifiers to use a different set of qualifiers from the base attribute.
+* _Alias on type_: tick and choose the type of data for this field from the drop down menu to use a different data type from the base attribute.
+* _Alias on linked type_: tick and choose Types of objects, to be used if the "Link to object" data type is specified above or by the base attribute.
+
+h4. Further help
+
+[[Aliased attribute information]]

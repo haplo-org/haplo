@@ -1,0 +1,25 @@
+h1. Contact relationship management
+
+People and organisations are stored separately, but linked together to show which person works for which organisation. 
+
+Before adding a new organisation record, check it doesn't already exist in the system by searching for the organisation name.
+
+Add the organisation record first:
+* go to _Add_
+* choose _Organisation_
+* describe the organisation using the fields displayed
+* _Save_.
+
+Then add the people records:
+* go to the record of the organisation they work for
+* click on _Contact_ (top right of screen) and choose _Add Person_ 
+* add the details of the person you know who works for that organisation
+* repeat for each person you know working for that organisation
+* there's no need to add the address for each person if it's the same as the organisation they work for. 
+
+Adding people who aren't linked to an organisation:
+* go to _Add_
+* choose _Person_
+* fill in the details of the person
+* _Save_.
+

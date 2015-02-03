@@ -1,0 +1,32 @@
+FOR: /do/admin/user/permissions
+
+h1. Permissions
+
+*Policies* are overall statements of what a user can do in the system. These are settings which don't relate to objects.
+
+*Permissions* control whether users can view and edit objects in each section. If a user has no permissions in a section, they won't see any items within that section.
+
+Policies and Permissions should be set on a group basis. Although you can set permissions on individual users, it is recommended you only do this in exceptional circumstances. Defining permissions by role rather than by individuals simplifies administration. 
+
+Users can belong to more than one group. Policies and Permissions for a user are calculated by using all the settings for all the groups they belong to. All the Allows are summed together, then all the Denies are summed together. If a user has an Allow but not a Deny, then they are given that policy or permission.
+
+When completing the tables there is no need to specify an allow or deny for each line. If membership of a group does not affect permissions or policy, leave both the Allow and Deny boxes unchecked. Check the Allow box only if users are allowed to view it, and the Deny box only if they are definitely not allowed. 
+
+In general you should try and just use the Allow box. Using too many Denies becomes very confusing and make future changes more difficult. Deny is mainly useful for setting up anonymous access (without a login) to the system, where you would explicitly deny access to virtually everything.
+
+h2. Using the Permissions Editor
+
+The permissions editor shows A (Allow) and D (Deny) checkboxes for each Policy, and each Permission for each Section.
+
+The Permissions editor has some shortcuts at the end of each row:
+
+* x - Remove all Allow and Deny statements from this Section
+* r - Set the Section to allow read only access
+* rw - Set the Section to allow read and write access
+* ~ - Swap Allow and Deny statements for this Section
+
+h2. Recommendations
+
+You can use the 'Everyone' group to simplify permissions.
+
+For example, to create a Directors section which only users in the Director group can access, edit the permissions for Everyone so that both the Allow and Deny boxes are unchecked for the Directors section. This will effectively deny everyone access. Now edit permissions for the Director group, and check the Allow box for all the permissions in the Directors section, but leave everything else blank. As long as you don't check the allow or deny boxes in any other group, only Directors have access to the Directors section.

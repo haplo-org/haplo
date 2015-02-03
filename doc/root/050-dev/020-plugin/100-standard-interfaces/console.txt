@@ -1,0 +1,65 @@
+title: console
+link_as: keyword
+--
+
+The standard @console@ global is provided, although only the logging functions are implemented.
+
+
+h2. Usage
+
+While you're developing a plugin, running the [node:dev/tool/plugin/development#Developing_your_plugin:@develop@ command] of the Plugin Tool will display the log entries in your local terminal window.
+
+In addition, the log entries can be viewed in System management.
+
+CLICK_PATH TOOLS > System management > Plugins > Diagnostics
+
+Only a small number of log entries are available. Older entries are discarded.
+
+
+h2. Interface
+
+h3(function). console.log(...)
+
+Logs a message. One or more arguments can be used, and they will be joined together with spaces in a single line.
+
+If the first argument is a string, it can contain printf-like string substitutions. Any arguments which are not used will be appended to the string.
+
+|*Pattern*|*Type*|
+|@%s@|@String@|
+|@%d@|@Number@|
+|@%j@|Convert object to JSON format|
+
+
+h3(function). console.debug(...)
+
+As @log()@, with the message set to DEBUG level.
+
+
+h3(function). console.info(...)
+
+Alias for @log()@.
+
+
+h3(function). console.warn(...)
+
+As @log()@, with the message set to WARN level.
+
+
+h3(function). console.error(...)
+
+As @log()@, with the message set to ERROR level.
+
+
+h3(function). console.dir(object)
+
+Log @object@ in JSON representation.
+
+
+h3(function). console.time(name)
+
+Creates a new timer under the given name. Call @console.timeEnd()@ with the same name to stop the timer and log the time elapsed.
+
+
+h3(function). console.timeEnd(name)
+
+Stops a timer created by a call to @console.time()@ and log the time elapsed.

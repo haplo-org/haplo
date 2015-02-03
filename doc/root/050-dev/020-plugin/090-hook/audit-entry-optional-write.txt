@@ -1,0 +1,11 @@
+title: hAuditEntryOptionalWrite
+class: HookNode
+--
+
+This hook allows your plugin to control which optional events are written to the audit trail, allowing you to implement custom auditing policies for when information is read by users of the application.
+
+You should examine the proposed [node:dev/plugin/interface/audit-entry] object, and set @response.write@ to @true@ or @false@ according to your policy. If your policy does not affect this entry, do not change the value of @response.write@.
+
+The @defaultWrite@ argument to the hook function reflects the default policy for this application.
+
+*Important:* If you implement the hAuditEntryOptionalWrite hook, you must call [node:dev/plugin/interface/plugin/audit#declareAuditEntryOptionalWritePolicy] on your plugin to describe the policy you implement to the administrator.

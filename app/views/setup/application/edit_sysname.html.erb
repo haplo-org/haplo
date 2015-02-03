@@ -1,0 +1,7 @@
+<% @page_title = 'Edit system name' -%>
+<%= sys_mng_header %>
+
+<form method="post"><%= form_csrf_token %>
+  <p>System name<br><input type="text" name="system_name" size="30" value="<%= @system_name %>"></p>
+  <p><input type="submit" value="Save"></p>
+</form>

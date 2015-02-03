@@ -1,0 +1,13 @@
+<h1>Help</h1>
+<%
+  client_side_resources :help_system
+%>
+
+<p><i><a href="#" data-page="0">Contents</a></i></p>
+
+<div id="z__mng_help_text">
+<%= help_text_rename_product!(render :partial => 'help_text') %>
+<div id="z__help_system_mapping" data-mapping="[<%= render :partial => 'help_mapping' %>]"></div>
+</div>
+
+<p><i><a href="#">top</a></i></p>

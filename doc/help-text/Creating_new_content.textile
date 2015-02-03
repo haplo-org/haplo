@@ -1,0 +1,11 @@
+FOR: /do/edit/new
+
+h1. Creating new content
+
+Click on _Add_ in middle of the toolbar. Choose the type of item you wish to create. Fill in the details about the new item and save.
+
+h4. Further help
+
+[[Using the editor]]
+[[Creating intranet pages]]
+[[Creating news items]]

@@ -1,0 +1,5 @@
+<% url = object_urlpath(obj.objref) %>
+<div class="z__linked_heading">
+<% if type_desc != nil %><%= html_for_icon(type_desc.render_icon, :small) %><% end %>
+<a href="<%=url%>"><%= h(obj.first_attr(A_TITLE)) %></a>
+</div>

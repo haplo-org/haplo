@@ -1,0 +1,49 @@
+<%
+  @page_title = "Unsubscribe from "+h(KApp.global(:name_latest))
+%>
+
+<% unless @token_ok -%>
+
+  <p>For security reasons, you must click the link in the latest email we sent you. Links in
+    earlier emails won't work.</p>
+    
+  <p>Instead, please <a href="/do/authentication/login?rdr=/do/latest/settings">log in to your account</a>
+    and change "send emails" to Never. (You will be taken to the settings page after you have logged in.)</p>
+
+<% else -%>
+
+  <% if @done_update -%>
+
+    <p>Your settings have been changed, and you will not receive these emails in future.</p>
+
+  <% else -%>
+
+    <h2>Instant unsubscribe</h2>
+
+    <p>
+      <form method="post" action="/do/unsubscribe/latest/<%= @unsub_user.id %>"><%= form_csrf_token %>
+        <input type="hidden" name="t" value="<%= h(@token) %>">
+        <input type="submit" value="Unsubscribe">
+      </form>
+    </p>
+  
+    <p>Clicking the unsubscribe button sets your <%= h(KApp.global(:name_latest)).capitalize %> email option to Never.
+      You can change this later if you want to receive the emails again.</p>
+
+    <h2>OR...</h2>
+
+    <p>You can choose more convenient settings:</p>
+
+    <% if @request_user.id == @unsub_user.id -%>
+  
+      <p><a href="/do/latest/settings">Adjust your <%= h(KApp.global(:name_latest)).capitalize %> email options.</a></p>
+    
+    <% else -%>
+  
+      <p><a href="/do/authentication/login?rdr=/do/latest/settings&email=<%= h(@unsub_user.email) %>">Log in to adjust your <%= h(KApp.global(:name_latest)).capitalize %> email options.</a> (You will be taken to the settings page after you have logged in.)</p>
+
+    <% end -%>
+
+  <% end -%>
+
+<% end -%>

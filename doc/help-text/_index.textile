@@ -1,0 +1,25 @@
+h1. ONEIS Manual
+
+[[User]]
+[[Admin]]
+[[Glossary]]
+[[Guides]]
+
+h2. Instructions
+
+Build the manual as a wiki. Use descriptive page names with spaces, so don't use \SomeNicePage, use 'Some Nice Page' (in double square brackets) To write a word like \OpenOffice, just write it. It will be shown as a broken link on the wiki (OpenOffice), but will come out right in the help.
+
+To mark a page as being the default page for a particular place in the system, put
+
+FOR: /some/url
+
+at the top. Find /some/url by looking at the address: http://test4.f/do/work/account -> /do/work/account
+
+This page will then be displayed whenever someone clicks Help on any URL starting with /do/work/account.
+
+If a help page is useful on more than one ONEIS page enter multiple fors:
+
+FOR: /some/url
+
+FOR: /some/otherurl
+

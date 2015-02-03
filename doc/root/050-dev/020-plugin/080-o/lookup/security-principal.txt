@@ -1,0 +1,21 @@
+title: O.securityPrincipal()
+link_as: keyword
+--
+
+Look up a user or group, given an ID, and return an object implementing the [node:dev/plugin/interface/security-principal] interface.
+
+Unlike [node:dev/plugin/o/lookup/user] and [node:dev/plugin/o/lookup/group], this function does not perform a type check on the returned object, so can be used where an ID may refer to a group or a user. This can be useful when working with [node:dev/plugin/interface/work-unit] objects which can be actioned by a user or a group.
+
+
+h3(function). O.securityPrincipal(principalId)
+
+Look up the security principal with this ID. An exception will be thrown if the principal does not exist.
+
+
+h3(function). O.securityPrincipal(ref)
+
+Look up the security principal with the @ref@ property set to this [node:dev/plugin/interface/ref].
+
+@null@ will be returned if no such principal exists.
+
+If more than one principal has this @ref@, your code should not rely on which one is returned.

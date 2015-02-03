@@ -1,0 +1,30 @@
+FOR: /do/setup/classification/objects
+
+h1. Edit list
+
+This page shows the names of the Attribute and Object type which make up this lists, along with the objects which form the entries in the list.
+
+h2. Add choice objects
+
+The Choice objects form the entries of the list, and are created in the special _classification_ section. They are normal objects, and have their own page which will list everything linked to them, forming a list of the objects described by this choice.
+
+To add new choices, fill in the Title (which will be the entry in the drop down list in the editor) and any alternative titles for use in searching.
+
+Click _Quick add_ to quickly add the object.
+
+h2. Edit entries
+
+You can edit the choice objects by clicking the _edit_ links next to the name. The editor will pop up in a new window. If you have defined extra attributes for your classification type, they'll be editable here.
+
+Additional alternative titles can be added by clicking the + to the left of title and choosing _Alternative_ from the qualifiers drop down menu. 
+
+h2. Deleting entries
+
+Use the _del_ button to delete a choice object. You can only delete a choice if no object in the system is described with it.
+
+h4. Further help
+
+[[Lists]]
+[[New list]]
+
+

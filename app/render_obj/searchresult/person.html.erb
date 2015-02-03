@@ -1,0 +1,12 @@
+<%=
+  renderer = SearchResultHelper::ResultRenderer.new(obj, self, options)
+  unless renderer.no_default_rendering
+    renderer.line2_from(:first, A_JOB_TITLE) unless renderer.has_line2?
+    renderer.line2_right_from(:first, A_WORKS_FOR) unless renderer.has_line2_right?
+    renderer.display_attributes(A_ADDRESS)
+    renderer.display_attributes(A_EMAIL_ADDRESS)
+    renderer.display_attributes(A_TELEPHONE_NUMBER)
+    renderer.automatic_value_display if renderer.number_of_columns < 2
+  end
+  renderer.to_html
+%>

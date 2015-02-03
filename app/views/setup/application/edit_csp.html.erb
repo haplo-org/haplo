@@ -1,0 +1,19 @@
+<% @page_title = 'Content Security Policy' -%>
+<%= sys_mng_header %>
+
+<form method="POST"><%= form_csrf_token %>
+  <%
+    using_builtin = false
+    Setup_ApplicationController::CONTENT_SECURITY_POLICY_OPTIONS.each do |name,description|
+      selected = false
+      if @content_security_policy == name
+        using_builtin = true
+        selected = true
+      end
+      %><p><label><input type="radio" name="csp" value="<%= name %>"<% if selected %> checked<% end %>><%= h(description) %></label></p><%
+    end
+  %>
+  <p><label><input type="radio" name="csp" value="$_CUSTOM"<% if !using_builtin %> checked<% end %>>Custom:</label><br><textarea name="custom_csp" rows="4" class="z__full_width_form_element"><% if !using_builtin %><%= h(@content_security_policy) %><% end %></textarea></p>
+  <p><input type="submit" value="Set policy"></p>
+</form>
+

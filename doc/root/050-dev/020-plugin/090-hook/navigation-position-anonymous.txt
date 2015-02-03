@@ -1,0 +1,7 @@
+title: hNavigationPositionAnonymous
+class: HookNode
+--
+
+Called to add entries in the left hand navigation for anonymous users, if allowed by application configuration. The navigation should be generated for [node:dev/plugin/o/request/current-user].
+
+See also [node:dev/plugin/hook/navigation-position].

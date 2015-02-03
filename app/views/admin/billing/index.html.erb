@@ -1,0 +1,28 @@
+<%
+  @page_title = 'Billing and usage'
+  @breadcrumbs = [:menu]
+%>
+
+<table class="z__with_alternate_row_stripes">
+  <tr>
+    <th></th>
+    <th>Current usage</th>
+    <th>Limit</th>
+  </tr>
+  <%= usage_display('Users', @users) %>
+  <%= usage_display('Items', @objects) %>
+  <%= usage_display('Storage', @storage, :gb) %>
+</table>
+<% if @usage_info_unavailable %>
+  <p>Some usage information is currently unavailable. Please check again later.</p>
+<% end %>
+
+<p>&nbsp;</p>
+<%
+  billing_html = KApp.global(:billing_page_html)
+  if billing_html == ''
+    %><p><i>Billing information isn't available yet. Please check again in a few minutes.</i></p><%
+  else
+    %><%= billing_html %><%
+  end
+%>

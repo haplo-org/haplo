@@ -1,0 +1,61 @@
+<%= form_error_messages_for(@user) %>
+
+<form method="POST" action="<%= data_for_template[:form_url] %>"><%= form_csrf_token %>
+<% f = form_for(@user, :user) %>
+  <% if params.has_key?(:kind) %><input type="hidden" name="kind" value="<%= h(params[:kind]) %>"><% end %>
+  <% unless @hide_main -%>
+  <% if @user.kind.to_i != User::KIND_USER -%>
+    <p>Name<br><%= f.text_field 'name' %></p>
+    <p>Notification email address <i>(optional)</i><br><%= f.text_field 'email', 'size="30"' %></p>
+    <%= code_value_edit_ui(@user.code, 'user[code]') %>
+  <% else -%>
+    <p>First name<br><%= f.text_field 'name_first', 'size="14"' %></p>
+    <p>Last name<br><%= f.text_field 'name_last', 'size="14"' %></p>
+    <p>Email address<br><%= f.text_field 'email', 'size="30"' %></p>
+    <%
+      if @is_new_user
+        templates = EmailTemplate.find(:all, :select => 'id,name',
+            :conditions => "purpose='New user welcome' AND in_menu", :order => 'name')
+        client_side_resources(:basics)
+
+        unless @no_template_choice
+          client_side_controller_js('userform')
+          %><p>Template for welcome email:<br>
+          <select name="welcome_template" id="z__welcome_template">
+          <option value=""> -- Do not send a welcome email --</option>
+          <%= options_for_select templates.map { |t| [t.name,t.id] }, templates.empty? ? nil : templates.first.id %>
+          </select></p>
+          <p id="z__welcome_no_template" style="display:none" class="z__management_notice">The welcome link for the user will be shown after the user has been created.</p>
+          <%
+        end
+      end
+    -%>
+  <% end -%>
+  <% end -%>
+  
+  <% unless @hide_membership -%>
+  <% unless @hide_main %><h2>Group membership</h2><% end -%>
+  <%
+    direct_groups = @user.direct_groups_ids
+    all_groups = User.find_all_by_kind(User::KIND_GROUP)
+    all_groups.each do |group|
+      # NOT ANONYMOUS AND EVERYONE
+      gid = group.id
+      case gid; when User::GROUP_EVERYONE, @user.id; else
+  -%>
+    <label><input type="checkbox" name="groups[<%= gid %>]" value="member"<% if direct_groups.include? gid %> checked<% end %>><%= h(group.name) %></label>
+      <%
+        implied_groups = group.groups
+        unless implied_groups.empty?
+          %> (implies membership of: <%= implied_groups.map {|g| h(g.name)} .join(', ') %>)<%
+        end
+      %>
+    <br>
+    <% end -%>
+  <% end -%>
+  </p>
+  <% end -%>
+  
+  <p><input type="submit" value="<%= data_for_template[:submit_button_label] %>"></p>
+</form>
+

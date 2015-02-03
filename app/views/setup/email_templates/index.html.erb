@@ -1,0 +1,16 @@
+<%
+  @page_title = 'Email templates'
+-%>
+
+<h1>Email templates</h1>
+
+<ul>
+  <% @templates.each do |template| -%>
+    <li><a href="/do/setup/email_templates/show/<%= template.id %>" target="workspace"><%= h(template.name) %></a></li>
+  <% end -%>
+</ul>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/email_templates/new" target="workspace">New email template</a></li>
+</ul>
+

@@ -1,0 +1,29 @@
+<%
+  @page_title = 'Delete item?'
+  obj_link = object_urlpath(@obj)
+  @breadcrumbs = [[obj_link, 'Cancel']]
+-%>
+<%= render_obj(@obj, :linkedheading) %>
+
+<div class="z__plugin_ui_confirm">
+  <div class="z__plugin_ui_confirm_message">
+    <% unless @warnings.empty? %>
+      <p>You can delete this item, but it will affect other items because:</p>
+      <ul>
+        <% @warnings.each do |warning| %>
+          <li><%= h(warning) %></li>
+        <% end %>
+      </ul>
+    <% end %>
+    <p>Really delete this item?<p>
+  </div>
+  <div class="z__plugin_ui_confirm_action">
+    <form method="POST"><%= form_csrf_token %>
+      <input type="submit" value="Delete item">
+    </form>
+  </div>
+  <div class="z__plugin_ui_confirm_action">
+    <a href="<%= obj_link %>">Cancel</a>
+  </div>
+  <div class="z__plugin_ui_confirm_end"></div>
+</div>

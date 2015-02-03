@@ -1,0 +1,23 @@
+FOR: /do/account
+
+h1. Your account
+
+To get to your account page click on your name in the top right. 
+
+Your account page lists different options specific to you. 
+
+* Checked out files: view the files you currently have checked out.
+
+* Tasks: view current and future tasks assigned to you.
+
+* View latest updates: view new additions to ONEIS matching your interests.
+
+* Latest update topics: select the topics to be included in your latest updates.
+
+* Your account: information about your account including your log in email address, your group memberships, and contact details for your system administrators.
+
+* Change password: click here to change your password.
+
+* Logout: click here to finish using ONEIS, and ensure that anyone else using this computer cannot access your information.
+
+* Devices: Manage computers, laptops and phones activated with your account.

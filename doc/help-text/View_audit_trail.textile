@@ -1,0 +1,13 @@
+FOR: /do/admin/audit/show
+
+h1. View audit trail
+
+The audit trail viewer allows you to see all audited activity within your application.
+
+To find entries of particular interest, use the filters along the top of the listing.
+
+ * Date: Enter a date in YYYY-MM-DD format to filter to all audit entries on or before that date.
+ * Type: The kind of audit entry to display.
+ * User: Show only activities of a given user. You only need to enter a partial name.
+ * Item: Show only entries about a particular item in the system. Use the reference from the item's URL.
+ * Entity: If you have filtered by a kind, you can narrow it down to a particular entity.

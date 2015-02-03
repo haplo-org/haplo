@@ -1,0 +1,13 @@
+<div class="z__ui_choose_container">
+  {{#each options}}
+    {{#if indicator}}
+      <span class="z__ui_indicator{{_internal__indicator_styles indicator}}"></span>
+    {{/if}}
+    <a class="z__ui_choose_option_entry{{#if highlight}} z__ui_choose_option_entry_highlight{{/if}}" href="{{action}}">
+      <span class="z__ui_choose_option_entry_name">{{label}}</span>
+      {{#if notes}}
+        <span>{{notes}}</span>
+      {{/if}}
+    </a>
+  {{/each}}
+</div>

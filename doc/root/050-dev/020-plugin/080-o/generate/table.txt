@@ -1,0 +1,122 @@
+title: O.generate.table
+link_as: keyword
+--
+
+Generators for table-based file formats, such as Microsoft Excel .xls files, TSV and CSV. (Currently only xls and xlsx files are supported.)
+
+
+h3(property). O.generate.table.FORMATS
+
+An array of all the supported formats.
+
+
+h3(function). O.generate.table.xls(filename)
+
+Returns a generator object for a Microsoft Excel .xls file, with the given filename. The filename should *not* include the @.xls@ extension.
+
+xls files have a 64k row limit.
+
+
+h3(function). O.generate.table.xlsx(filename)
+
+Returns a generator object for a Microsoft Excel .xlsx file, with the given filename. The filename should *not* include the @.xlsx@ extension.
+
+xlsx files support many more rows than xls files.
+
+
+h2. Usage
+
+ * Call the function for the required format, with the filename as an argument. Returns a generator object.
+ * Call @newSheet()@ to create a sheet with the required name.
+ * For each row, add cells by using the JavaScript @Array@ interface, or calling the @cell()@ function, then @nextRow()@
+ * Create any more sheets by repeating.
+ * Call @finish()@
+
+
+h2. Cell values
+
+|*Type*|*Output*|
+|String|Output as string|
+|Number|Output as number where possible, converted to string otherwise|
+|Date|Output as date where possible, converted to string otherwise|
+|[node:dev/plugin/interface/store-object]|@descriptiveTitle()@ output as string|
+|[node:dev/plugin/interface/ref]|Object loaded, @descriptiveTitle()@ output as string|
+|[node:dev/plugin/interface/security-principal]|@name@ property output as string|
+|Other JavaScript object|@toString()@ output as string|
+
+
+h2. Table generator interface
+
+Each format of table generator implements this interface.
+
+
+h3. Array functions
+
+While creating a row, the generator implements the JavaScript Array interface, with element access through the @[]@ operator.
+
+
+h3(property). supportsMultipleSheets
+
+@true@ if the format supports multiple sheets in the same file. If @false@ and a file is made with multiple sheets, a zip file will be created containing multiple files.
+
+
+h3(function). newSheet(name, firstRowIsHeader)
+
+Start a new sheet. If this is not called explicitly, a sheet will be generated automatically with a generic name.
+
+Returns itself, making the function suitable for chaining.
+
+
+h3(function). cell(value, options)
+
+Adds a cell to the end of the row. Returns itself, making the function suitable for chaining.
+
+@options@ may be omitted. If it is included and is not recognised option for the given value, it it silently ignored.
+
+|*Option*|*Action*|
+|@date@ (string)|For @Date@ value, only put the date part in the sheet.|
+
+
+h3(property). length
+
+Length of the current row, as with a normal JavaScript @Array@.
+
+
+h3(function). push(value)
+
+Append a value to the current row, just like a normal JavaScript @Array@.
+
+
+h3(function). nextRow()
+
+Start a new row. @length@ set to 0.
+
+Returns itself, making the function suitable for chaining.
+
+
+h3(function). pageBreak()
+
+Add a page break before the current row, if supported by the output format. If the output format doesn't support page breaks, the function will return without error and have no effect.
+
+Returns itself, making the function suitable for chaining.
+
+
+h3(function). sortedSheets()
+
+If called at any time before @finish()@, the sheets will be sorted when @finish()@ is called.
+
+Returns itself, making the function suitable for chaining.
+
+
+h3(function). finish()
+
+Finish the generation, and prepare for serialisation.
+
+When you use these generators to generate a response, this function will be called automatically by the request handling framework.
+
+
+h3(property). hasFinished
+
+Returns @true@ if @finish()@ has been called.
+
+Returns itself.

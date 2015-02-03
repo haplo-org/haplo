@@ -1,0 +1,12 @@
+<% @page_title = 'Edit URL slug length' -%>
+<%= sys_mng_header %>
+
+<form method="post"><%= form_csrf_token %>
+
+  <p>Object URL slug maximum length<br>
+  <input type="text" name="max_slug_length" size="6" value="<%= @max_slug_length %>"></p>
+  
+  <input type="submit" value="Save">
+</form>
+
+<p><span class="z__management_look_at_help">Refer to notes in the help.</span></p>

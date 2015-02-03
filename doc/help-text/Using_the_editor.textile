@@ -1,0 +1,79 @@
+FOR: /do/edit
+
+h1. Using the editor
+
+The editor is used to add or update all items in ONEIS.
+
+Only the Title or Name field is compulsory.
+
+h2. Multiple entries
+
+All fields can have multiple entries. To create another entry within any field click on the plus button to the left of the field. 
+
+h2. Qualifiers
+
+Some fields have qualifiers to add more detail to an entry. If you wish to qualify an entry click into the text box and any qualifiers for this entry will appear in a drop down menu on the left. 
+
+h2. Deleting fields
+
+To delete fields click on the minus button to the right of the field. To restore a field deleted by mistake click on the arrow replacing the minus button.
+
+h2. Controlled fields
+
+Fields shown with a link symbol are controlled fields. You can only complete these fields by choosing entries from a pre-compiled list.
+
+h3. Lookup
+
+The pale yellow fields are lookup fields. Start typing your entry and matching choices will appear below the lookup field. Choose your entry from the list displayed. If your entry is not already in ONEIS, choose _Create new..._ at the bottom of the list and fill in the details.
+
+When choices are displayed, you can use the up and down arrow keys and enter to select a choice.
+
+h3. Drop down choices
+
+Where there are not many entries in a controlled field, these may be listed as a drop down menu. Simply choose your entry from the drop down menu. Your Administrator can add more entries to this drop down menu.  
+
+h3. Subject: _click to set_
+
+To index your item with entries in the hierarchical subject lists click on _click to set_ then click on your chosen term. If you wish to index the item with multiple terms just click on the plus sign to the left of the field and choose your next term. 
+
+When choosing terms from the hierarchical index assign the most specific useful term. Even if a user searches for a broader term, any items indexed using the narrower terms under that broad term will appear in their search results.
+
+h2. Show examples
+
+Click on _Examples_ at the bottom of the editor to see examples above each field showing the correct format for entering information into that field.
+
+h2. Add field
+
+If you wish to add another field to the record you are editing, choose the new field from the drop down list at the bottom of the editor and click on _Add_. If you can not see _Add field_ at the bottom of the form, speak to your Administrator about enabling this function.
+
+h2. Attaching files and images
+
+Some items allow you to attach files, and have a message saying "Drag files here". Drag files from your computer into your browser to upload them. You can change the filename or version number by clicking on them.
+
+The full text of files in common formats are included in the search, including:
+
+* PDF
+* Text (plain and RTF)
+* HTML
+* Microsoft Office, old and new XML formats (Word, Power Point, Excel)
+* OpenOffice (Writer, Calc, Impress, Draw)
+* Apple iWork '09 (Pages, Keynote, Numbers)
+
+See also [[Managing versions of files]].
+
+h2. Date fields
+
+To quickly set a Date field to today's date, press the T key when it's highlighted.
+
+h2. Keyboard shortcuts
+
+To add an additional value for the currently highlighted field, press =ACCESSKEY= + E.
+
+To move between fields, use TAB and SHIFT + TAB.
+
+h4. Further help
+
+[[Creating intranet pages]]
+[[Creating news items]]
+[[Contact notes]]
+[[Managing versions of files]]

@@ -1,0 +1,62 @@
+<%
+  @page_title = "Versions of "+h(@file_history.last.file_identifier.presentation_filename)
+  @breadcrumbs = [[object_urlpath(@object), 'Back']]
+
+  if @request_user.permissions.allow?(:update, @object.labels)
+    client_side_resources(:file_versions)
+    client_side_controller_js("file_version")
+    %>
+      <div id="z__upload_target"></div>
+      <div id="z__file_upload_form" style="display:none">
+        <div id="z__upload_files"></div>
+        <form id="" action="/do/file-version/new-version" method="post"><%= form_csrf_token %>
+          <input type="hidden" name="ref" value="<%= @objref.to_presentation %>">
+          <input type="hidden" name="tracking_id" value="<%= h(@tracking_id) %>">
+          <input type="hidden" name="file" value="">
+          <table>
+            <tr>
+              <td>Filename</td>
+              <td>
+                  <input type="radio" name="rename" value="" checked> <span id="default_name"><%= h(@file_history.last.file_identifier.presentation_filename.gsub(/\.[^\.]+\z/,'')) %></span><span>.</span><span class="file_extension"></span><br>
+                  <input type="radio" name="rename" value="1"> <input type="text" name="basename" value="" size="40"><span>.</span><span class="file_extension"></span>
+              </td>
+            </tr>
+            <tr><td>Log message</td><td><input type="text" name="log_message" size="60" class="z__focus_candidate" placeholder="(briefly describe your changes)"></td></tr>
+            <tr><td>Version</td><td><input type="text" name="version" size="6" value=""></td></tr>
+            <tr><td></td><td><input type="submit" value="Uploading new version..." disabled="disabled"></td></tr>
+          </table>
+        </form>
+      </div>
+    <%
+  end
+
+  # Make sure required data is sent -- render_value_identifier_file doesn't currently use them, so check for future
+  raise "logic error" unless @object && @attr_desc
+
+  sign_url = false
+  @file_history.reverse_each do |entry|
+    fid = entry.file_identifier
+    log_message = fid.log_message
+    # NOTE: $('.z__file_version_info span').first().text() is used to find the next version number to suggest to the user
+    %>
+      <div class="z__file_version_container">
+        <%= render_value_identifier_file(fid, @object, {:sign_file_urls => sign_url}, @attr_desc) %>
+        <div class="z__file_version_info">
+          <span><%= h(fid.version_string) %></span><br>
+          <%= h(User.cache[entry.object.last_modified_user_id].name) %><br>
+          <%= time_format_local(entry.object.obj_update_time, :date_and_time) %>
+        </div>
+        <%
+          if entry.content_not_changed
+            %><div class="z__file_version_notice">Contents not changed since the previous version</div><%
+          elsif entry.old_version
+            %><div class="z__file_version_notice">Reverted to version <%= h(entry.old_version) %></div><%
+          end
+        %>
+        <% if log_message %><div class="z__file_version_log"><%= h(log_message) %></div><% end %>
+      </div>
+    <%
+    # URLs other than the first need to be signed so the file and thumbnail can be downloaded
+    sign_url = true
+  end
+%>

@@ -1,0 +1,25 @@
+<%
+  @page_title = 'Welcome to '+KApp.global(:product_name)
+  @breadcrumbs = [:login]
+-%>
+
+<p><b>Hello <%= h(@user_first_name) %></b></p>
+
+<p>Please choose a password. Your password <%= User::SECURITY_REQUIREMENTS_TEXT %>.</p>
+
+<%= render :partial => 'bad_password', :data_for_template => { :message => 'Password not set.' } %>
+
+<form method="POST"><%= form_csrf_token %>
+<input type="hidden" name="t" value="<%= h(params[:t]) %>">
+
+<p>Password<br>
+<input type="password" name="pw1" value="" class="z__focus_candidate"></p>
+
+<p>Confirm password<br>
+<input type="password" name="pw2" value=""></p>
+
+<p><input type="submit" value="Set password"></p>
+
+</form>
+
+<%= render :partial => 'password_importance' %>

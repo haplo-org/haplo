@@ -1,0 +1,59 @@
+<%
+  has_manage_users = @request_user.policy.can_manage_users?
+  has_setup_system = @request_user.policy.can_setup_system?
+  has_view_audit = @request_user.policy.can_view_audit?
+%>
+
+<% if has_manage_users || has_setup_system -%>
+<h1>Access</h1>
+<ul>
+<% end %>
+<% if has_manage_users %>
+  <li><a href="/do/admin/user/list" target="submenu">Users</a></li>
+  <li><a href="/do/admin/user/list?kind=<%= User::KIND_GROUP %>" target="submenu">Groups</a></li>
+<% end %>
+<% if has_setup_system -%>
+  <li><a href="/do/setup/labels/list" target="submenu">Labels</a></li>
+<% end %>
+<% if has_manage_users || has_setup_system -%>
+</ul>
+<% end -%>
+
+<% if has_setup_system %>
+
+<h1>Schema</h1>
+<ul>
+  <li><a href="/do/setup/type/list" target="submenu">Types</a></li>
+  <li><a href="/do/setup/attribute/list" target="submenu">Attributes</a></li>
+  <li><a href="/do/setup/attribute/list_qual" target="submenu">Qualifiers</a></li>
+  <li><a href="/do/setup/classification/lists" target="submenu">Lists</a></li>
+  <li><a href="/do/setup/taxonomy/list" target="submenu">Taxonomies</a></li>
+  <li><a href="/do/setup/application/search_config" target="submenu">Search configuration</a></li>
+</ul>
+
+<h1>Structure</h1>
+<ul>
+  <li><a href="/do/setup/navigation" target="submenu">Navigation</a></li>
+  <li><a href="/do/setup/subset" target="submenu">Search subsets</a></li>
+</ul>
+
+<h1>Applications</h1>
+<ul>
+  <li><a href="/do/setup/keychain" target="submenu">Keychain</a></li>
+  <li><a href="/do/setup/plugins" target="submenu">Plugins</a></li>
+</ul>
+
+<% end %>
+
+<% if has_setup_system || has_view_audit %>
+  <h1>System</h1>
+  <ul>
+    <% if has_setup_system %>
+      <li><a href="/do/setup/application/behaviour" target="submenu">Configuration</a></li>
+      <li><a href="/do/setup/email_templates" target="submenu">Email templates</a></li>
+    <% end %>
+    <% if has_view_audit || has_setup_system %>
+      <li><a href="/do/admin/audit" target="submenu">Audit trail</a></li>
+    <% end %>
+  </ul>
+<% end %>

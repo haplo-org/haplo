@@ -1,0 +1,22 @@
+<%
+  @page_title = 'Taxonomies'
+  selected = params[:select]
+%>
+<%= sys_mng_header %>
+
+<% if selected != nil %>
+  <div id="k__workspace_url" data-url="/do/setup/taxonomy/info/<%= h(selected) %>"></div>
+<% end %>
+
+<ul>
+<%
+  @taxonomies.each do |obj|
+    ref = obj.objref.to_presentation
+    %><li><a href="/do/setup/taxonomy/info/<%= ref %>"<% if ref == selected %> class="z__selected"<% end %> target="workspace"><%= h(title_of_object(obj)) %></a></li><%
+  end
+%>
+</ul>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/taxonomy/add" target="workspace">New taxonomy</a></li>
+</ul>

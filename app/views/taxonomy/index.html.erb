@@ -1,0 +1,10 @@
+<%
+  @page_title = 'Edit taxonomies'
+-%>
+
+<table class="z__with_alternate_row_stripes">
+  <tr><th>Name</th><th>Actions</th></tr>
+<% @taxonomies.each do |obj| %>
+<tr><td><%= h(title_of_object(obj)) %></td><td><b><a href="/do/taxonomy/edit/<%= obj.objref.to_presentation %>">Edit terms</a></b> &nbsp; &nbsp; <a href="/do/edit/<%= obj.objref.to_presentation %>">Edit taxonomy info</a></td></tr>
+<% end %>
+</table>

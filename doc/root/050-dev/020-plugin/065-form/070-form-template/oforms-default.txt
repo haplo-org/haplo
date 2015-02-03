@@ -1,0 +1,8 @@
+title: oforms:default
+link_as: keyword
+--
+
+The @"oforms:default"@ and @"oforms:default:display"@ templates render the form and document with each element below the preceding element.
+
+It's used as the default template if you do not specify a template, and renders the form and document as you would expect.
+

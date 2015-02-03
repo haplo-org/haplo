@@ -1,0 +1,5 @@
+title: Request
+class: DocNodeTextileWithTOC
+--
+
+If the hook is operating in request context, or the plugin is handling a request itself, information about the current request can be looked up via the @O@ global object.

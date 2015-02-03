@@ -1,0 +1,20 @@
+<% @breadcrumbs = [:account] -%>
+<% @page_title = h(possessive_case_of(@request_user.name))+" account information" -%>
+
+<% in_right_column render :partial => 'info_right' %>
+
+<h2>Log in email address</h2>
+<p>You log into <%= KApp.global(:product_name) %> with your email address, <b><%= h(@user.email) %></b>.</p>
+<p>Contact an administrator if you need to change this.</p>
+
+
+<h2>Items</h2>
+<p><a href="/search?w=%23U<%= @request_user.id %>%23">&raquo; View all items you've created</a></p>
+
+
+<h2>Group membership</h2>
+<p><%
+  @user_groups.each do |group|
+    %><%= h(group.name) %><br><%
+  end
+%></p>

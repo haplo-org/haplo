@@ -1,0 +1,25 @@
+<%
+  @is_management_top_level = true
+  @page_title = "System Management"
+  client_side_controller_js("management")
+%>
+<frameset rows="36,*">
+  <frame name="header" src="header" scrolling="no" noresize frameborder="0" marginwidth="1" marginheight="1">
+  <frameset cols="40%,60%">
+    <frameset rows="70%,30%" id="z__mng_left_container">
+      <frameset cols="50%,50%">
+        <frame name="menu" src="menu" scrolling="auto" frameborder="0" marginwidth="1" marginheight="1">
+        <frame name="submenu" src="blank" scrolling="auto" frameborder="0" marginwidth="1" marginheight="1">
+      </frameset>
+      <frame name="help" src="help" frameborder="0" marginwidth="1" marginheight="1">
+    </frameset>
+    <frameset rows="*,0">
+      <frame name="workspace" src="intro" scrolling="auto" frameborder="0" marginwidth="1" marginheight="1">
+      <frame src="blank" scrolling="no" noresize frameborder="0" marginwidth="1" marginheight="1">
+    </frameset>
+  </frameset>
+</frameset>
+<noframes>
+  <p>System management requires a browser which supports frames.</p>
+  <p><a href="/">Home page</a></p>
+</noframes>

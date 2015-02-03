@@ -1,0 +1,34 @@
+<%
+# Find all the document fields, and concatenate them.
+# Collect the attached files
+documents = []
+attachments = Array.new
+obj.each do |value, desc, qualifier|
+  if value.class == KTextDocument
+    # Store document for rendering
+    documents << value
+  end
+  if value.k_typecode == KConstants::T_IDENTIFIER_FILE
+    attachments << [value, desc]
+  end
+end
+%><% unless documents.empty? %>
+  <% documents.each do |document| %>
+    <%= render_doc_as_html(document, obj.store, options, recursion_limit - 1) %>
+  <% end %>
+<% else %>
+  (no content)
+<% end %>
+<% 
+  # Only render files as attachments if they're not used in the page
+  widget_rendered = options[:file_widget_rendered]
+  attachments.delete_if { |fid| widget_rendered.include?(fid.first) } if widget_rendered != nil
+  # Render attachements
+  unless attachments.empty?
+    %><h2>Attachments</h2><%
+    attachments.each do |a,desc|
+      %><div class="z__file_with_icon_container"><%= render_value(a, obj, options, desc) %></div><%
+    end
+    %><div class="z__file_with_icon_container_list_end"></div><%
+  end
+%>

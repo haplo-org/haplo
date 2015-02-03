@@ -1,0 +1,10 @@
+
+Templates have the following local vars:
+
+	obj - object to render
+	type_desc - schema type descriptor, or nil if there isn't one
+	options - Hash of options
+	recursion_limit - for recursively inserting other objects without potentially going for ever
+	content_for_layout - _layout templates only have the content for the actual template
+
+

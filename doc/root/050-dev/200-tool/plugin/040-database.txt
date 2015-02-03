@@ -1,0 +1,40 @@
+title: Working with databases
+--
+
+The ONEIS Platform provides a [node:dev/plugin/database:relational database] for plugins, with the tables defined in JavaScript.
+
+Currently migration of database schemas is not available, so you need to reset the database whenever you change a table definition.
+
+
+h2. Resetting a database
+
+When you've made changes to the table definitions in your plugin, save the file and let the Plugin Tool upload the new definitions to the server.
+
+To apply the changes, reset the database:
+
+<pre>
+    oneis-plugin reset-db
+</pre>
+
+This will delete the old tables for your plugin, and recreate them with the current definitions. *All the data in the tables will be deleted.*
+
+You don't have to stop another instance of the Plugin Tool waiting to upload changes when you run this command.
+
+
+h2. Test data
+
+If you need some test data, the best way is to create a temporary [node:dev/plugin/request-handling:request handler] which creates it. After you've reset the database, request the URL in your web browser to populate the new database tables.
+
+Alternatively, you can define an @onInstall()@ function in your [node:dev/plugin/interface/plugin] definition. This will be called when you reset the database, and every time the Plugin Tool uploads a new file to the server.
+
+Remember to remove this test data when you submit the plugin.
+
+
+h2. Future developments
+
+Planned development includes:
+
+ * Automatic table migration
+ * Test data loader
+
+

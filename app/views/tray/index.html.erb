@@ -1,0 +1,21 @@
+<%
+  @page_title = 'Tray'
+  @breadcrumbs = [:tray]
+-%>
+
+<% if @objs.empty? -%>
+  <p>There are no items in the tray.</p>
+<% else -%>
+
+<% @objs.each do |obj| -%>
+  <div class="z__tray_entry">
+    <div class="z__tray_remove"><a class="z__button_link" href="?clear=<%= obj.objref.to_presentation %>">&nbsp;</a></div>
+    <%= render_obj(obj, :linkedheading) %>
+  </div>
+<% end -%>
+<div class="z__tray_entry_footer"></div>
+
+<%= workflow_buttons([['Empty tray', '?clear=all']]) %>
+
+<% end -%>
+

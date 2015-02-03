@@ -1,0 +1,64 @@
+<%= 
+  if @data_type == KConstants::T_TEXT_PLUGIN_DEFINED
+    af_name_of_plugin_defined_type(@data_type_options)
+  else
+    KConstants::k_typecode_to_text(@data_type)
+  end
+%>
+
+<% if @data_type == KConstants::T_OBJREF -%>
+  <%
+    case @data_type_ui_options
+    when 'dropdown'
+      %> (as drop down of choices)<%
+    when 'checkbox'
+      %> (as checkboxes)<%
+    when 'radio'
+      %> (as radio buttons)<%
+    else
+      %> (as lookup)<%
+    end
+  %>
+  <%
+    if @control_by_types != nil
+      @control_by_types.each do |objref|
+        td = @schema.type_descriptor(objref)
+        if td != nil
+          %><br><i><%= h(td.printable_name) %></i><%
+        end
+      end
+    end
+    if @control_relax_to_text
+      %><br>Uncontrolled values allowed<%
+    end
+  -%>
+<% end -%>
+
+<% if @data_type == KConstants::T_DATETIME %>
+  <br>
+  <i>
+    Precision: <%= KDateTime::PRECISION_OPTION_TO_NAME[@datetime_precision] %>
+    <% if @datetime_user_precision %> (with user override)<% end %>
+    <% if @datetime_range %><br>Entered as range<% end %>
+    <% if @datetime_use_tz %><br>Use time zone<% end %>
+    <% if @datetime_display_local_tz %><br>Display in user's configured local time zone<% end %>
+  </i>
+<% end %>
+
+<% if @data_type == KConstants::T_TEXT_PERSON_NAME -%>
+  <%
+    KTextPersonName::CULTURES_IN_UI_ORDER.each do |culture|
+      if @pn_cultures[culture]
+        %><br><i><%= culture.to_s.tr('_',' ').capitalize %>:</i> <%
+        KTextPersonName::OUTPUT_ORDERING[culture].each do |field|
+          if @pn_fields[culture][field]
+            %><%= KTextPersonName::FIELD_NAMES_BY_CULTURE[culture][field] %> <%
+          end
+        end
+        if @pn_def_culture == culture
+          %>(default)<%
+        end
+      end
+    end
+  %>
+<% end -%>

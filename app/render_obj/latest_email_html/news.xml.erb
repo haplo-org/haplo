@@ -1,0 +1,7 @@
+<%
+  link = obj.first_attr(A_URL)
+  link = KApp.url_base(:visible)+object_urlpath(obj) if link == nil
+  notes = obj.first_attr(A_NOTES)
+%>
+<p class="link0"><a href="<%= link %>"><%= h(obj.first_attr(A_TITLE)) %></a></p>
+<% if notes != nil %><p class="description"><%= notes %></p><% end %>

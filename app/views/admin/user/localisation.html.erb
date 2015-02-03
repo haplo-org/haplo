@@ -1,0 +1,16 @@
+<%
+  @page_title = 'Localisation settings for '+h(@user.name)
+-%>
+
+<%= sys_mng_header %>
+
+<p>Settings for localised display of data.</p>
+
+<form method="POST"><%= form_csrf_token %>
+
+<p>Home country:<br><%= form_country_select('country', @home_country, '(use setting from parent group)') %></p>
+
+<p>Time zone:<br><select name="tz"><option value="">(use setting from parent group)</option><%= options_for_select(Application_TimeHelper::TIMEZONE_NAMES, @time_zone) %></select></p>
+
+<p><input type="submit" value="Save"></p>
+</form>

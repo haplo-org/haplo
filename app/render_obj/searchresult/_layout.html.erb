@@ -1,0 +1,40 @@
+<div data-ref="<%= obj.objref.to_presentation %>" class="z__searchresult_item c_<%= type_desc == nil ? 0 : type_desc.render_category %>">
+
+<%
+  # Indicate if there are files attached
+  have_files = false
+  obj.each do |value,d,q|
+    if value.k_typecode == T_IDENTIFIER_FILE
+      have_files = true
+    end
+  end
+  if have_files
+    %><div class="z__searchresult_indicators"><%= html_for_icon(Application_IconHelper::ICON_SPECIAL_HAS_FILES, :micro) %></div><%
+  end
+%>
+
+<div class="z__searchresult_col1">
+<div class="z__search_result_col1_inner">
+<% if @request_user.policy.is_anonymous? %>
+  <div class="z__searchresult_tray_ui_none">
+  </div>
+<% else %>
+  <div class="z__searchresult_tray_ui">
+  <input name="<%= obj.objref.to_presentation %>" type="checkbox">
+  </div>
+<% end %>
+
+<% if type_desc != nil && type_desc.render_icon != nil %>
+<%= html_for_icon(type_desc.render_icon, :small, h(type_desc.printable_name.to_s)) %>
+<% else %>
+<%= html_for_icon(Application_IconHelper::ICON_GENERIC, :small) %>
+<% end %>
+</div>
+
+</div>
+<div class="z__searchresult_col2">
+
+<%= content_for_layout %>
+
+</div>
+</div>

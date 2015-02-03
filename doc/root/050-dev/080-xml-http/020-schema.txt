@@ -1,0 +1,135 @@
+title: Schema
+--
+
+API_ENDPOINT /api/schema/data_model (GET only)
+
+Each ONEIS application has its own schema. There is a common schema, which is usually present, but the administrators of that system may have augmented it.
+
+The returned schema has the format:
+
+ * @schema@
+ ** @qualifiers@
+ *** @qualifier@ * - represents a qualifier
+ **** _ref_ - objref used to refer to this qualifier
+ **** _name_ - 'short name' used to refer to this qualifier
+ **** @display_name@
+ ***** _TEXT_ - name displayed to the user
+ ** @attributes@
+ *** @attribute@ * - represents an attribute
+ **** _ref_ - objref used to refer to this attribute
+ **** _name_ - 'short name' used to refer to this attribute
+ **** _vtype_ - usual data type of the attribute (see below for list)
+ **** @display_name@
+ ***** _TEXT_ - name displayed to the user
+ **** @allowed_qualifiers@ ? - qualifiers to be used on this attibute
+ ***** @null_qualifier@ ? - no qualifier is allowed
+ ***** @qualifier@ *
+ ****** _ref_ - reference of an allowed qualifier
+ ** @aliased_attributes@
+ *** @aliased_attribute@ * - represents an aliased attribute
+ **** _ref_ - objref used to refer to this aliased attribute
+ **** _name_ - 'short name' used to refer to this aliased attribute
+ **** _alias_of_ - objref of attribute this aliases
+ **** @display_name@
+ ***** _TEXT_ - name displayed to the user
+ ** @types@
+ *** @type@ * - represents a type
+ **** _ref_ - objref used to refer to this type
+ **** _name_ - 'short name' used to refer to this type
+ **** _root_type_ - ref of root type (equal to _ref_ if this is a root type)
+ **** _parent_ ? - ref of parent type if this is not a root type
+ **** @display_name@
+ ***** _TEXT_ - name displayed to the user
+ **** @behaviours@ ? - list of labels applied to this type (see below)
+ ***** @behaviour@ +
+ ****** _ref_ - objref of behaviour
+ **** @attributes@ ? - list of attributes + aliased attributes which the editor presents to the user (ROOT TYPE ONLY)
+ ***** @attribute@ *
+ ****** _ref_ - ref of this attribute OR aliased attribute
+
+h3. Aliased attributes
+
+Aliased attributes are included in the schema "for information only". Aliased attributes are applied in the user interface only. Stored objects use the underlying attributes, and when writing objects using this API, aliased attributes cannot be used.
+
+h3. Data types
+
+ * 0 - Objref
+ * 2 - Integer
+ * 4 - Datetime
+ * 5 - Boolean
+ * 16 - Text
+ * 24 - Paragraph text
+ * 25 - Document text
+ * 27 - File identifier
+ * 28 - ISBN identifier
+ * 29 - Email address identifier
+ * 30 - URL identifier
+ * 32 - Telephone number
+ * 33 - Multiline text
+ * 35 - Person's name
+ * 36 - Postal address
+
+h3. Type behaviours
+
+ * @1-1z68@ - type is a classification type
+ * @1-1z69@ - type represents a physical object
+
+h3. Example
+
+<pre>language=xml
+<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+  <qualifiers>
+    <qualifier name="alternative" ref="1-3y8">
+      <display_name>Alternative</display_name>
+    </qualifier>
+    ...
+  </qualifiers>
+  <attributes>
+    <attribute vtype="0" name="type" ref="1-x2">
+      <display_name>Type</display_name>
+      <allowed_qualifiers>
+        <null_qualifier/>
+      </allowed_qualifiers>
+    </attribute>
+    <attribute vtype="16" name="title" ref="1-x3">
+      <display_name>Title</display_name>
+      <allowed_qualifiers>
+        <null_qualifier/>
+        <qualifier ref="1-3y8"/>
+      </allowed_qualifiers>
+    </attribute>
+    ...
+  </attributes>
+  <aliased_attributes>
+    <aliased_attribute alias_of="1-9w4" name="review" ref="1-325">
+      <display_name>Review</display_name>
+    </aliased_attribute>
+    ...
+  </aliased_attributes>
+  <types>
+    <type name="event" root_type="1-209y" ref="1-209y">
+      <display_name>Event</display_name>
+      <attributes>
+        <attribute ref="1-x3"/>
+        <attribute ref="1-x9"/>
+        <attribute ref="1-x2"/>
+        <attribute ref="1-25y"/>
+        <attribute ref="1-263"/>
+        <attribute ref="1-190"/>
+        <attribute ref="1-262"/>
+        <attribute ref="1-25q"/>
+        <attribute ref="1-9w5"/>
+        <attribute ref="1-325"/>
+        <attribute ref="1-9w6"/>
+        <attribute ref="1-x5"/>
+      </attributes>
+    </type>
+    <type parent="1-209y" name="networking" root_type="1-209y" ref="1-20q0">
+      <display_name>Networking</display_name>
+    </type>
+    ...
+  </types>
+</schema>
+</pre>
+

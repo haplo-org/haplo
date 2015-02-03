@@ -1,0 +1,561 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+body {
+    background: #eee;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+/* fix "font size in tables" bug in FF */
+
+table {
+    font-size: inherit;
+}
+
+/* basics */
+
+a, a:visited {
+    color: #007;
+}
+
+pre {
+    font-size: 11px;
+    line-height: 14px;
+}
+
+em {
+    font-style: italic;
+}
+
+/* top frame */
+
+#z__management_finish a, #z__management_help a {
+    float: right;
+    margin: 8px 10px 0 0;
+    display: block;
+    width: 92px;
+    text-align: center;
+}
+
+#z__management_finish a, #z__management_help a {
+    line-height: 18px;
+    font-size: 14px;
+    padding: 2px 0;
+    color: #fff;
+
+}
+#z__management_finish a:hover, #z__management_help a:hover {
+    text-decoration: none;
+}
+.z__webfonts_enabled #z__management_finish a, .z__webfonts_enabled #z__management_help a {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+
+#z__management_finish a, #z__management_help a {
+    background: #700;
+}
+#z__management_finish a:hover {
+    background: #d00;
+}
+
+#z__management_help a {
+    background: #060;
+}
+#z__management_help a:hover {
+    background: #0c0;
+}
+
+
+#z__management_heading {
+    font-size: 24px;
+    line-height: 30px;
+    font-weight: bold;
+    color: #777;
+    margin: 0;
+    padding: 2px 16px;
+}
+.z__webfonts_enabled #z__management_heading {
+    font-family: $SPECIAL_FONT_FAMILY;
+    font-weight: normal;
+}
+
+/* intro frame */
+
+#z__management_intro {
+    position: absolute; /* make height work */
+    margin: 20% 10% 0 10%;
+    width: 80%;
+    text-align: center;
+    background: #fff;
+    border: 1px solid #bbb;
+    font-size: 14px;
+}
+#z__management_intro div {
+    padding: 32px;  /* use a div within the main div to get the padding without falling foul of IE's different box model */
+}
+#z__management_intro_logo {
+    font-family: $SPECIAL_FONT_FAMILY;
+    font-weight: bold;
+    color: #888;
+    font-size: 64px;
+    letter-spacing: 16px;
+    line-height: 100px;
+}
+#z__management_intro p {
+    color: #777;
+}
+#z__management_intro b {
+    font-size: 24px;
+}
+
+.z__webfonts_enabled #z__management_intro b {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+
+/* other frames */
+
+#z__management_layout p, #z__management_layout table {
+    margin-left: 4px;
+}
+
+body#z__management_layout .z__management_page {
+    margin: 0;
+    padding-bottom: 24px;
+}
+
+#z__management_layout h1, #z__management_layout h2 {
+    width: 100%;
+    font-size: 15px;
+    background: #ccc;
+    color: #000;
+    padding: 2px 8px 2px 10px;
+    margin: 0 0 4px 0;
+    font-weight: bold;
+}
+
+#z__management_layout.z__webfonts_enabled h1 {
+    font-family: $SPECIAL_FONT_FAMILY;
+    font-weight: normal;
+}
+
+#z__management_layout h2 {
+    font-size: 13px;
+    margin-top: 16px;
+}
+
+#z__management_layout.z__webfonts_enabled h2 {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+
+#z__management_layout .z__management_space_h1 {
+    margin-top: 16px; /* match z__sys_mng_edit_button margin-bottom */
+}
+
+#z__management_layout ul {
+    width: 100%;
+    margin: 1px 0 16px 0;
+    padding: 0;
+}
+
+#z__management_layout ul ul {
+    margin: 1px 0 0 16px;
+}
+
+#z__management_layout li {
+    width: 100%;
+    margin: 0;
+    padding: 0 0 0 0px;
+    text-indent: 10px;
+    list-style-type: none;
+    display: block;
+}
+
+#z__management_layout li a {
+    width: 100%;
+    margin: 0;
+    padding: 1px 8px;
+    display: block;
+}
+#z__management_layout li a:hover {
+    background: #e0e0e0;
+    text-decoration: none;
+    color: #000;
+}
+
+#z__management_layout li a.z__selected {
+    background: #9f9ecd;
+    color: #fff;
+}
+#z__management_layout li a.z__selected:after {
+    content: ' >';
+}
+
+#z__management_layout li.z__management_action a {
+    background-image: url(/images/smallgear.gif);
+    background-repeat: no-repeat;
+    background-position: 16px center;
+    padding-left: 25px;
+}
+
+#z__management_layout li.z__management_action a:hover {
+    background-image: url(/images/smallgear.gif);
+    background-repeat: no-repeat;
+    background-position: 16px center;
+    padding-left: 25px;
+}
+
+#z__management_layout .z__management_selector {
+    text-align: center;
+    margin: 12px 0;
+}
+#z__management_layout.z__webfonts_enabled .z__management_selector {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+#z__management_layout .z__management_selector span a {
+    padding: 0 4px;
+}
+#z__management_layout .z__management_selector span a:hover {
+    background: #d0d0d0;
+    text-decoration: none;
+    color: #000;
+}
+#z__management_layout .z__management_selector span.z__selector_selected {
+    background: #9f9ecd;
+    padding: 0 4px;
+    font-weight: bold;
+    color: #fff;
+}
+
+#z__management_layout .z__sys_mng_edit_button /* edit buttons */ {
+    margin: 4px 0 16px 4px;
+}
+#z__management_layout .z__sys_mng_edit_button input {
+    width: 6em;
+}
+
+#z__management_layout .z__management_extra_buttons_holder {
+    float: right;
+    margin: 4px 32px;
+    width: 60%; /* fix IE */
+}
+#z__management_layout .z__management_extra_buttons_holder form {
+    float: right;
+    display: block;
+}
+#z__management_layout .z__management_extra_buttons_holder form input {
+    margin-left: 16px
+}
+
+/* info tables */
+.z__mangement_kv_table {
+    border-spacing: 8px;
+    width: 95%;
+}
+.z__mangement_kv_table tr {
+    border-bottom: 1px solid #e0e0e0;
+}
+.z__mangement_kv_table th, .z__mangement_kv_table td {
+    vertical-align: top;
+}
+.z__mangement_kv_table th {
+    text-align: right;
+    color: #666;
+    padding-right: 16px;
+    width: 140px;
+}
+.z__mangement_kv_table pre {
+    margin: 2px 0;
+}
+
+/* horizontal info table */
+.z__management_horz_table {
+    border-spacing: 0;
+    width: 95%;
+}
+.z__management_horz_table td, .z__management_horz_table th {
+    vertical-align: top;
+    padding: 2px 8px;
+}
+.z__management_horz_table th {
+    text-align: middle;
+    vertical-align: top;
+    background: #ddd;
+}
+
+/* various */
+
+#z__management_layout p.z__management_important_value {
+    margin: 8px 0 6px 16px;
+}
+
+#z__management_layout p.z__management_notice {
+    font-weight: bold;
+    background: #fff;
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+    margin: 8px;
+}
+
+.z__type_edit_wide_input {
+    width: 94%;
+}
+
+.z__type_icon_right_align {
+    text-align: right;
+    position: absolute;
+    right: 12px;
+}
+.z__type_icon_right_align span {
+    margin: 0 8px 0 0;
+    vertical-align: top;
+}
+
+/* type editing */
+
+.z__type_edit_inherit_selector {
+    width: 95%;
+}
+.z__type_edit_inherit_selector th {
+    width: 32px;
+    text-align: right;
+}
+.z__type_edit_inherit_selector th, .z__type_edit_inherit_selector td {
+    vertical-align: top;
+}
+
+.z__type_edit_disabled_text, .z__type_edit_disabled_text label {
+    color: #666;
+}
+
+/* attribute editing */
+
+.z__attr_edit_type_container .z__attr_edit_type_container {
+    padding-left: 32px;
+}
+
+/* classification objects */
+
+#z__mng_classify_object_container {
+    margin: 8px 16px 0 8px;
+    width: 95%;
+}
+
+#z__mng_classify_object_container div {
+    margin-bottom: 2px;
+}
+
+#z__mng_classify_object_container div:hover {
+    background: #fff;
+}
+
+#z__mng_classify_object_container a {
+    color: #BCBEFF;
+    margin-right: 8px;
+}
+#z__mng_classify_object_container a:hover {
+    color: #0007FF;
+}
+
+.z__mng_classify_alt_titles {
+    color: #666;
+}
+
+.z__mng_user_display {
+    background: url("/images/mng_user.gif") left no-repeat;
+    padding: 0 0 0 20px;
+    margin-bottom: 2px;
+}
+.z__mng_group_display {
+    background: url("/images/mng_group.gif") left no-repeat;
+    padding: 0 0 0 20px;
+    margin-bottom: 2px;
+}
+
+/* help text */
+
+#z__mng_help_text {
+    margin: 0 0 16px 16px;
+}
+
+#z__management_layout #z__mng_help_text p {
+    padding: 0;
+    margin: 0 0 6px 0;
+}
+
+#z__management_layout #z__mng_help_text h1, #z__management_layout #z__mng_help_text h2, #z__management_layout #z__mng_help_text h3, #z__management_layout #z__mng_help_text h3 {
+    background: none;
+    padding: 0;
+}
+
+#z__mng_help_text pre {
+    margin-left: 16px;
+}
+
+#z__management_layout #z__mng_help_text h1 {
+    font-size: 16px;
+    margin: 16px 0 4px 0;
+}
+#z__management_layout #z__mng_help_text h2 {
+    font-size: 14px;
+    margin: 12px 0 2px 0;
+    font-weight: normal;
+}
+#z__management_layout #z__mng_help_text h3 {
+    font-size: 12px;
+    margin: 8px 0 0 0;
+    font-weight: normal;
+}
+#z__management_layout #z__mng_help_text h4 {
+    font-size: 12px;
+    font-style: italic;
+    margin: 8px 0 0 0;
+}
+
+.z__management_look_at_help {
+    font-weight: bold;
+    background: #ffc;
+    color: #000;
+    padding: 2px;
+}
+
+/* fix links inside lists in the help text */
+#z__management_layout #z__mng_help_text li a {
+    display: inline;
+    padding: 0;
+}
+#z__management_layout #z__mng_help_text li a:hover {
+    text-decoration: underline;
+    color: COLOUR[:highlight];
+}
+/* make lists work inside the help text */
+#z__management_layout #z__mng_help_text ul {
+    margin: 0 0 6px 8px;
+}
+#z__management_layout #z__mng_help_text ul li {
+    width: auto;
+    text-indent: 0px;
+    margin: 0 12px 3px 8px;
+    list-style-type: disc;
+    display: list-item;
+    line-height: 1.5em;
+}
+
+/* labels need different colours */
+#z__management_layout .z__label {
+    background: #d8d8d8;
+}
+#z__management_layout .z__label:before {
+    color: #eee;
+}
+
+/* permission table */
+table.z__mng_permission_display {
+    border-spacing: 0;
+    border-color: #ddd;
+    border-width: 0 0 1px 1px;
+    border-style: solid;
+    margin: 16px 0 0 0;
+}
+table.z__mng_permission_display td, table.z__mng_permission_display th {
+    font-size: 12px;
+    border-color: #ddd;
+    border-width: 1px 1px 0 0;
+    border-style: solid;
+    padding: 1px 4px;
+    text-align: center;
+}
+table.z__mng_permission_display td.z__mng_permission_display_label_set {
+    text-align: left;
+}
+table.z__mng_permission_display td.z__mng_permission_display_superseded,
+table.z__mng_permission_display tr.z__mng_permission_display_superseded td {
+    text-decoration: line-through;
+    color: #888;
+}
+table.z__mng_permission_display td.z__permission_section_name {
+    text-align: right;
+    font-style: italic;
+    padding-right: 8px;
+}
+table.z__mng_permission_display td.z__mng_permission_allow {
+    background: #ded;
+}
+table.z__mng_permission_display td.z__mng_permission_deny {
+    background: #edd;
+}
+
+/* codes for JS API schema */
+
+.z__management_code_text {
+    font-family: monospace;
+    font-size: 10px;
+    color: #444;
+}
+
+.z__management_code_edit {
+    font-family: monospace;
+}
+
+.z__management_code_warning {
+    background: #ffc;
+    padding: 2px 4px;
+}
+
+/* audit trail */
+.z__management_audit_trail_date {
+    white-space: nowrap;
+}
+.z__management_audit_trail_search_form {
+    border-bottom: 1px solid #aaa;
+}
+.z__management_audit_trail_schema_type, .z__management_audit_trail_api_key {
+    font-size: 10px;
+    background: #fff;
+}
+.z__management_audit_trail_addr {
+    color: #555;
+}
+.z__management_audit_trail_json div {
+    color: #666;
+    width: 420px;   /* needs to be a pixel width for the stuff below to work to stop wide JSON breaking the display */
+    white-space: pre-line;
+    word-wrap: break-word;
+}
+.z__management_audit_trail_entry_end {
+    border-bottom: 1px solid #ddd;
+}
+
+/* navigation editor */
+
+#z__navigation_editor {
+    margin: 16px 0;
+}
+
+#z__navigation_editor select {
+    max-width: 120px;
+}
+
+#z__navigation_editor div {
+    margin-bottom: 4px;
+}
+
+.z__navigation_editor_type_label {
+    background: #fff;
+    font-size: 10px;
+    padding: 0 4px;
+    text-transform: uppercase;
+}
+
+.z__navigation_editor_title, z__navigation_editor_href {
+    width: 140px;
+}
+
+.z__navigation_editor_delete_link {
+    font-size: 10px;
+    margin-left: 16px;
+}

@@ -1,0 +1,13 @@
+{
+  "pluginName": "test_request_callbacks",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test Requests Callbacks Plugin",
+  "displayDescription": "For testing",
+  "apiVersion": 3,
+  "load": ["js/test_request_callbacks.js"],
+  "locals": {
+      "exampleLocal": "EXAMPLELOCAL"
+    },
+  "respond": ["/do/test_request_callbacks"]
+}

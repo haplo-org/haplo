@@ -1,0 +1,9 @@
+<% @page_title = 'Login failed' %>
+
+<p>The identity service could not verify your identity, or encountered an error. Please contact your administrator for assistance.</p>
+
+<p>When contacting your administrator, tell them the error is 
+    <span class="error_code"><%= @error.error_code %></span>
+</p>
+
+<p><a href="/do/authentication/login">Try again</a></p>

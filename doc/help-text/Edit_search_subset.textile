@@ -1,0 +1,10 @@
+FOR: /do/setup/subset/edit
+
+h1. Edit search subset
+
+* _Name_: enter a short, descriptive name for the search subset
+* Tick all the sections to be included in the search subset.
+
+h4. Further help
+
+[[Search subsets]]

@@ -1,0 +1,12 @@
+title: Digests
+long_title: Cryptographic digests
+--
+
+"Cryptographic hash functions":https://en.wikipedia.org/wiki/Cryptographic_hash_function are algorithms for generating short digests of input data.
+
+
+h3(function). O.security.digest.hexDigestOfString(algorithm, string)
+
+Converts @string@ to UTF-8 bytes, computes the digest with the specified algorithm, and returns a hex-encoded digest as a string.
+
+@algorithm@ can be one of @"SHA1"@ or @"SHA256"@. If you need to work with legacy systems, you can also specify @"MD5"@. (MD5 is not recommended for new applications.)

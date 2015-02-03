@@ -1,0 +1,31 @@
+FOR: /do/setup/navigation
+FOR: /do/setup/navigation/edit
+
+h1. Navigation
+
+The navigation links on the left of each page are divided into groups by separators. The first link in each group is used as the heading, and shown in bold.
+
+This navigation editor allows you to choose which links are displayed to members of specified groups, and in which order they appear.
+
+
+h2. Separators
+
+Separators divide up the links. If there are no links visible between separators, then nothing is displayed.
+
+If _Collapse group below_ is checked, then the entries below will only be displayed if one of the links is selected. This creates a more compact display.
+
+Click _Add separator_ to add a new separator to the navigation.
+
+
+h2. Objects
+
+You can add a link to an object in the system, using the _Add object_ button. This lists all the entries in the Tray. You can also use this button to open a new window to find the required object.
+
+The object will only be displayed if the user has permission to read it, regardless of the group you choose.
+
+
+h2. Links
+
+As an advanced option, you can also add links to any page in the system. Links must begin with '/'.
+
+Click _Add link_ to add a link.

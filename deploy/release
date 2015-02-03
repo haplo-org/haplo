@@ -1,0 +1,26 @@
+#!/bin/sh
+
+. config/paths-`uname`.sh
+
+# Check dependencies
+/usr/bin/env JAVA_HOME=/opt/oneis/platform/java /opt/oneis/platform/jruby/bin/jruby config/check_dependencies.rb
+if [ $? != 0 ]
+then
+    echo "Correct dependencies are not installed, cannot release. Run build script."
+    exit 1
+fi
+
+# Only make a release is the repo queue is empty
+onedeploy check-queue-empty
+QUEUE_EMPTY_RESULT=$?
+
+if [ $QUEUE_EMPTY_RESULT != 0 ]
+then
+    echo "onedeploy repo queue is not empty. Check there's nothing important there:"
+    echo "   onedeploy queue-list"
+    echo "and then delete it:"
+    echo "   onedeploy queue-delete"
+    exit 1
+else
+    $JRUBY_HOME/bin/jruby deploy/_release.rb $@
+fi

@@ -1,0 +1,7 @@
+FOR: /do/admin/audit/admin_note
+
+h1. Add audit admin note
+
+Sometimes it is useful to annotate the audit trail, for example, to explain recent activity or the intent of configuration in the audit trail. Adding an admin note to the trail allows you to add a human readable note.
+
+Because the audit trail is write-only, any note you enter is not editable and it is not possible to delete it.

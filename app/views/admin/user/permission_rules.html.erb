@@ -1,0 +1,42 @@
+<%
+  @page_title = 'Permission rules for '+h(@user.name)
+
+  client_side_resources(:mng_labels)
+  client_side_controller_js('permission_rules')
+
+  rule_info = {
+      "rules" => @rules.map do |rule|
+        {
+          :id => rule.id,
+          :label => KObjRef.new(rule.label_id).to_presentation,
+          :label_name => label_name(rule.label_id),
+          :statement => rule.statement,
+          :permissions => rule.permissions} 
+      end,
+      "statement_choices" => PermissionRule::STATEMENT_NAMES_FOR_UI,
+      "permission_masks" => KPermissionRegistry.entries.map { |e| 1 << e.bitfield_index }
+  }
+%>
+<%= sys_mng_header %>
+<div id="z__permission_rules" data-info="<%= h(rule_info.to_json) %>"></div>
+<%= label_edit_labels_info %>
+
+<form method="POST" id="z__permission_rules_form"><%= form_csrf_token %>
+  <p><input type="submit" value="Save changes"></p>
+</form>
+
+<table id="z__rule_editor" class="z__mng_permission_display">
+  <tr>
+    <th>Statement</th>
+    <th colspan="<%= KPermissionRegistry.entries.length + 1 %>">Permissions</th>
+    <th>Label</th>
+  </tr>
+  <tr id="z__rule_editor_insert_after"><th></th><%
+    KPermissionRegistry.entries.each do |entry|
+      %><th><%= entry.printable_name %></th><%
+    end
+  %><td></th><th></th></tr>
+</table>
+
+<p>&nbsp;</p>
+<div id="z__rule_label_chooser"></div>

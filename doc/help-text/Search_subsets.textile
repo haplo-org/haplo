@@ -1,0 +1,27 @@
+FOR: /do/setup/subset
+
+h1. Search subsets
+
+Search subsets enable users to search within a pre-defined subset of sections. The subsets appear in the _Search in_ drop down menu on the main search screen. 
+
+A search subset will only be offered to a user if they have search permission within at least one of the sections. Even if a section is within the selected search subset, it will only be searched if the user has permission.
+
+Therefore, you can create an _Everything_ search subset which contains all the sections. Any user can select it, and they will search everything that they have permission to search.
+
+h2. Managing search subsets
+
+To edit a search subset:
+
+* choose the search subset
+* choose _Edit_ in the right hand panel.
+
+To set the order in which the subsets appear in the _Search in_ drop down menu, click _Set subset order_.
+
+To create a new search subset, click _New search subset_.
+
+h4. Further help
+
+[[Edit search subset]]
+[[Set subset order]]
+
+

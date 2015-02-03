@@ -1,0 +1,35 @@
+title: Text
+long_title: Text interface
+link_as: keyword
+--
+
+Text objects are used as values for [node:dev/plugin/interface/store-object], and the type of text object specifies how the text is formatted in the user interface.
+
+
+h2. Construction
+
+Use [node:dev/plugin/o/constructor/text].
+
+
+h2. Interface
+
+
+h3(property). typecode
+
+Text typecode, as defined in [node:dev/plugin/o/constants/text-types].
+
+
+h3(function). toString()
+
+Returns a string representation of the text.
+
+
+h3(function). s()
+
+Alias for @toString()@.
+
+
+h3(function). toHTML()
+
+Returns a HTML encoded string representation of the text, formatted appropriately for the text and suitable for outputting directly in generated HTML.
+

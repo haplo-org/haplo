@@ -1,0 +1,57 @@
+title: Plugin
+long_title: Plugin interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @Plugin@ interface acts as a plugin to the ONEIS Platform.
+
+
+h2. Construction
+
+[node:dev/plugin/implement-plugin]
+
+Note that this interface is slightly different to other interfaces in that you define some of the behaviours of this object by overriding functions.
+
+
+h2. Plugin interfaces
+
+The Plugin object is the means for your code to integrate into the Platform, and as such, has several different areas of responsibility. These have been broken down into separate pages for clarity.
+
+
+h3. Platform interface
+
+The core [node:dev/plugin/interface/plugin/platform-interface:platform interface] provides the key @hook()@ function for receiving notifications of events, and high level interfaces for various integration points.
+
+
+h3. Data and databases
+
+Your plugin object provides [node:dev/plugin/interface/plugin/data:data storage] facilities to store arbitrary data outside the main object store.
+
+
+h3. Lifecycle
+
+Your plugin's [node:dev/plugin/interface/plugin/lifecycle:lifecycle functions] are called at various key moments.
+
+
+h3. Request handling
+
+To provide your plugin's user interface, you use [node:dev/plugin/interface/plugin/request-handling:request handlers] to respond to requests from the user.
+
+During the process of handling a request, various [node:dev/plugin/interface/plugin/request-callbacks:request callbacks] are called.
+
+
+h3. Response generation
+
+The plugin object provides HTML templating, form handling, and other [node:dev/plugin/interface/plugin/response-generation:response generation] features.
+
+
+h3. Properties
+
+h3(property). pluginName
+
+The name of the plugin, as defined in the [node:dev/plugin/plugin-json] file.
+
+
+h3. Miscellaneous features
+
+[node:dev/plugin/interface/plugin/audit]

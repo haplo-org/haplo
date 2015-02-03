@@ -1,0 +1,19 @@
+<% @page_title = 'Sort order' -%>
+
+<h1>Sort order</h1>
+
+<p>The <b>Person's name</b> data type with the <i>Western</i> name style sorts as:</p>
+
+<p class="z__management_important_value"><%= @person_name_sort_readable %></p>
+<% if @person_name_sort == 'last_first' %>
+<p>Displayed as: First Last</p>
+<% end %>
+<%= sys_mng_edit_button("/do/setup/application/edit_sort_order") %>
+
+<p><span class="z__management_look_at_help">Sort order does not affect how names are displayed in objects and search results.</span></p>
+
+<p>The sort order of <i>Eastern</i> and <i>Western List</i> name styles is always <b>Last First</b>.</p>
+
+<% if params.has_key?(:changed) %>
+  <p><b>Sort order update has started.</b><br>Changes to sort order may take a few minutes to apply.</p>
+<% end %>

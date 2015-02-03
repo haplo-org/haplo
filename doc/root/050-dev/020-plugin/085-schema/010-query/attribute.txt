@@ -1,0 +1,47 @@
+title: Attribute queries
+--
+
+Plugins can query the schema to find out more information about the attributes defined in the current application.
+
+
+h2. Schema query
+
+h3(function). SCHEMA.getAttributeInfo(attribute)
+
+Returns a JavaScript object with properties describing the attribute, described below.
+
+@attribute@ must be one of the [node:dev/plugin/schema/attr] properties. You should not rely on the exact underlying type of this value in your code.
+
+
+h2. Info properties
+
+Each attribute information object contains the following keys:
+
+
+h3(key). name
+
+The name of the attribute, suitable for displaying to the user.
+
+
+h3(key). code
+
+The API code for the attribute, eg @"dc:attribute:title"@. May be @undefined@ if the attribute does not have an API code.
+
+
+h3(key). shortName
+
+The short name, or "search name", of the attribute. Used in search constraints.
+
+
+h3(key). typecode
+
+The expected typecode of values stored in this attribute. Constants are defined as in [node:dev/plugin/o/constants/value-types] or [node:dev/plugin/o/constants/text-types].
+
+You must not assume that every value in this attribute will be of this type. The object store does not type check values in objects. Changes to the schema can result in other types of values being stored in an attribute.
+
+
+h3(key). types
+
+An array of @Ref@ objects specifying the types to which this attribute may link. Note that the object store does not type check linked objects in attributes.
+
+This is provided only when @typecode === O.T_REF@.

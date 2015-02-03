@@ -1,0 +1,11 @@
+title: Object References
+--
+
+
+Object references (objrefs) look like @1-206w@. They are formed of two hexadecimal numbers, with the transformation @tr/abcdef/qvwxyz/@ applied to remove the possibility of spelling words in object URLs.
+
+The first number is the section ID, the second is the object ID within the section.
+
+Objects in section 1 always have the same meaning, that is, refer to the same type, attribute or qualifier definition. Note that these definitions may have been customised by the user, and may not necessarily exist in all systems depending on which template was used to initialise the system. Given this, it is acceptable to use the objrefs as constants within your code, as long as their existence within the schema is checked.
+
+Since attributes, qualifiers and types are all defined by objects, objrefs are used to describe them in the XML.

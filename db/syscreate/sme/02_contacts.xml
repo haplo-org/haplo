@@ -1,0 +1,11 @@
+<doc>
+    <widget type="SEARCH">
+        <v name="q">type:person or type:organisation</v>
+        <v name="sort">title</v>
+        <v name="style"></v>
+        <v name="paged">0</v>
+        <v name="subset"></v>
+        <v name="limit"></v>
+        <v name="within">link</v>
+    </widget>
+</doc>

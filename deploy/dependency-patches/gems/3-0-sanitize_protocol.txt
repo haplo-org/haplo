@@ -1,0 +1,37 @@
+From 77403a9b04073713e2b758c22174a81bb3cd62b9 Mon Sep 17 00:00:00 2001
+From: Aaron Patterson <aaron.patterson@gmail.com>
+Date: Fri, 15 Mar 2013 15:04:00 -0700
+Subject: [PATCH] fix protocol checking in sanitization [CVE-2013-1857]
+
+Conflicts:
+	actionpack/lib/action_controller/vendor/html-scanner/html/sanitizer.rb
+---
+ .../action_controller/vendor/html-scanner/html/sanitizer.rb    |  4 ++--
+ actionpack/test/template/html-scanner/sanitizer_test.rb        | 10 ++++++++++
+ 2 files changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/actionpack/lib/action_controller/vendor/html-scanner/html/sanitizer.rb b/actionpack/lib/action_controller/vendor/html-scanner/html/sanitizer.rb
+index 6cf4d27..b4c0b0f 100644
+--- a/actionpack/lib/action_controller/vendor/html-scanner/html/sanitizer.rb
++++ b/actionpack/lib/action_controller/vendor/html-scanner/html/sanitizer.rb
+@@ -65,7 +65,7 @@ module HTML
+ 
+     # A regular expression of the valid characters used to separate protocols like
+     # the ':' in 'http://foo.com'
+-    self.protocol_separator     = /:|(&#0*58)|(&#x70)|(%|&#37;)3A/
++    self.protocol_separator     = /:|(&#0*58)|(&#x70)|(&#x0*3a)|(%|&#37;)3A/i
+ 
+     # Specifies a Set of HTML attributes that can have URIs.
+     self.uri_attributes         = Set.new(%w(href src cite action longdesc xlink:href lowsrc))
+@@ -170,7 +170,7 @@ module HTML
+ 
+     def contains_bad_protocols?(attr_name, value)
+       uri_attributes.include?(attr_name) &&
+-      (value =~ /(^[^\/:]*):|(&#0*58)|(&#x70)|(%|&#37;)3A/ && !allowed_protocols.include?(value.split(protocol_separator).first))
++      (value =~ /(^[^\/:]*):|(&#0*58)|(&#x70)|(&#x0*3a)|(%|&#37;)3A/i && !allowed_protocols.include?(value.split(protocol_separator).first.downcase.strip))
+     end
+   end
+ end
+-- 
+1.8.1.1
+

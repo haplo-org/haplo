@@ -1,0 +1,20 @@
+FOR: /do/latest
+
+h1. Latest updates
+
+You can setup bulletins to alert you to any new items added to the system on subjects in which you are interested. These bulletins will be sent to you as an email with a summary of each item and a link to the full item. If you choose to be alerted on several subjects, your updates will be collated into one email that covers new items on all subjects.
+
+To set up a latest updates bulletin:
+* go to your account (click on your name in the top right)
+* click on _Latest update topics_ 
+* choose the types or subjects on which you wish to be kept up to date
+* _Save choices_
+* click on _Settings_ on the right hand side of the page to set the frequency of updates and format of emails. 
+
+h2. Viewing your latest updates in ONEIS
+
+As well as receiving email bulletins, you can also view all new items matching your preferences in ONEIS. Go to:
+
+* your account
+* click on _View latest updates_
+* click on the arrows around the dates at the top of the screen to view previous updates.

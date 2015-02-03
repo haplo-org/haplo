@@ -1,0 +1,18 @@
+title: Generators
+--
+
+Generators are used to build formatted data for sending to the user in response to requests. They encapsulate creation, formatting, and delivering a file to the user.
+
+h2. Example
+
+An example response handler which generates a very simple spreadsheet.
+
+<pre>language=javascript
+P.respond("GET", "/do/example/xls", [
+], function(E) {
+    var xls = O.generate.table.xls("Test");
+    xls.newSheet("Sheet1");
+    xls.cell("Test").cell(2);
+    E.response.body = xls;
+});
+</pre>

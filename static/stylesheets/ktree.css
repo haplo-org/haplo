@@ -1,0 +1,202 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+/* styles for the tree controls */
+
+.z__tree_control_container {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    height: 256px;
+}
+.z__tree_control_placeholder { /* tree placeholder -- displays loading spinner */
+    margin: 16px;
+}
+.z__tree_horizontal_scroller {
+    border: 1px solid #888;
+    overflow: scroll;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    padding: 0;
+    margin: 0;
+    background: #fff;
+}
+.z__tree_horizontal_contents { /* goes within z__tree_horizontal_scroller, and keeps everything together */
+    margin: 0;
+    padding: 0;
+    background: #fff;
+}
+
+.z__tree_actions_bar_action { /* action item in action bar, for optional per-level controls */
+    border-right: 1px solid #888;
+    width: 100px;
+    overflow: hidden;
+    float: left;
+    background: #eee;
+}
+
+/* tree elements in the browser */
+.z__tree_level, .z__tree_level_loading_or_empty {  /* vertical container for the elements */
+    width: 50px;    /* match to KTREE_EMPTY_OR_LOADING_WIDTH in ktree.js */
+    overflow: auto;
+    overflow-x: hidden; /* no horizontal scrollbars in elements */
+    float: left;
+    font-size: 11px;
+    line-height: 16px;
+}
+.z__tree_level {
+    border-right: 1px solid #888;
+}
+.z__tree_level div { /* element within the vertical container */
+    margin: 1px 2px;
+    padding: 1px 2px 1px 1px;
+    width: auto;
+    border-bottom: 1px solid #ccc;
+}
+.z__tree_level div.selected { /* selected element */
+    background: #9A9DFF;
+}
+.z__tree_level div:before {
+    $ICON_FONT_DIRECTIVES
+    content: "\e005";
+    font-size: 8px;
+    margin-top: 1px;
+    float: right;
+    color: #bbb;
+}
+.z__tree_level div.selected:before {
+    color: #333;
+}
+
+.z__tree_empty_level {
+    $ICON_FONT_DIRECTIVES
+    display: block;
+    font-size: 16px;
+    margin: 18px 14px;
+    color: #ccc;
+}
+
+/* stop links looking too much like links */
+.z__tree_level a, .z__tree_level a:hover, .z__tree_level a:visited {
+    text-decoration: none;
+    color: #000;
+    display: block; /* means the clickable area is as wide as it can be, without the width:100% which would break it in IE6 and IE7 */
+}
+.z__tree_level a:hover {
+    text-decoration: underline;
+}
+
+/* fade UI when search results are visible */
+.z__ktree_showing_search_results .z__tree_level a,
+.z__ktree_showing_search_results .z__tree_level a:hover,
+.z__ktree_showing_search_results .z__tree_level a:visited {
+    color: #bbb;
+}
+.z__ktree_showing_search_results .z__tree_level div.selected {
+    background: #e8e8e8;
+}
+.z__ktree_showing_search_results .z__tree_level {
+    border-right: 1px solid #eee;
+}
+.z__ktree_showing_search_results .z__tree_level div {
+    border-bottom: 1px solid #eee;
+}
+
+/*  ------------------------------------------------------------------------------------------------------------   */
+/* search input field */
+
+.z__tree_level input {
+    margin: 4px 0 3px 3px;
+    display: block;
+}
+
+.z__tree_level span.z__tree_level_input_alternative {
+    /* zero size element for levels without search inputs, to make sure all the calculations still work */
+    display: block;
+    margin: 0;
+    padding: 0;
+}
+
+/*  ------------------------------------------------------------------------------------------------------------   */
+/* search results */
+#z__ktree_search_results_dropdown {
+    position: absolute;
+    z-index: 1000;
+    background: #fff;
+    border: 1px solid #000;
+}
+#z__ktree_search_results_dropdown a, #z__ktree_search_results_dropdown div.z__ktree_search_results_dropdown_info {
+    display: block;
+    padding: 4px 8px;
+    color: #000;
+}
+.z__ktree_search_results_dropdown_info {
+    font-style: italic;
+}
+#z__ktree_search_results_dropdown a.z__selected, #z__ktree_search_results_dropdown a:hover {
+    background: #ddd;
+    color: COLOUR[:highlight];
+    text-decoration: none;
+}
+#z__ktree_search_results_dropdown a {
+    font-weight: bold;
+    /* fit everything on one line */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+#z__ktree_search_results_dropdown a span.z__ktree_search_results_alt_title {
+    font-weight: normal;
+}
+#z__ktree_search_results_dropdown a span.z__ktree_search_results_parents {
+    font-weight: normal;
+    font-style: italic;
+    margin-left: 4px;
+}
+
+/*  ------------------------------------------------------------------------------------------------------------   */
+/* small version -- has z__tree_control_container_small on the root container as well as z__tree_control_container */
+
+.z__tree_control_container_small {
+    height: 128px;
+}
+.z__tree_control_container_small .z__tree_level {
+    line-height: 14px;
+}
+.z__tree_control_container_small input {
+    font-size: 9px; /* reduce the size of the search input field a little */
+}
+
+
+/* ---------------------------------------------------------------------- */
+/* Tree view actions */
+
+.z__tree_action { /* action buttons */
+    margin: 2px 0 0 4px;
+    padding: 0;
+    border-right: none;
+    font-size: 11px;
+    line-height: 18px;
+}
+.z__tree_action a, .z__tree_action a:visited {
+    padding-left: 18px;
+    margin: 0;
+    text-decoration: none;
+    color: #000;
+    display: block;
+    height: 16px;
+}
+.z__tree_action a:hover {
+    text-decoration: underline;
+    color: #000;
+}
+/* add */
+.z__tree_action a.z__tree_action_add, .z__tree_action a.z__tree_action_add:visited {
+    background: transparent url(/images/addbutton.gif) -1px -1px no-repeat;
+}
+
+

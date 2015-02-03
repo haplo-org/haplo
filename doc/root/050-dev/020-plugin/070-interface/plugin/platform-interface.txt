@@ -1,0 +1,77 @@
+title: Platform interface
+long_title: Plugin platform interface
+--
+
+These are the core APIs which allow your plugin to integrate into the ONEIS Platform.
+
+
+h2. Interface
+
+h3(function). hook(name, responderFunction)
+
+Register @responderFunction@ to respond to the [node:dev/plugin/hook:hook] named @name@. It'll be called with @this@ set to the Plugin object.
+
+You can call @hook()@ more than once to register multiple functions for the same hook.
+
+See the [node:dev/plugin/hook] documentation for example code for each hook.
+
+
+h3(function). element(name, description, renderer)
+
+Implement an [node:dev/plugin/elements:Element], and enable the default implementations of [node:dev/plugin/hook/element-discover] and [node:dev/plugin/hook/element-render].
+
+@name@ is the name of the Element. The plugin name will automatically be added as a prefix, so if the name is @"home"@, an Element name like @example_plugin:home@ will be generated.
+
+@description@ is a short description of the Element, for displaying to the system administrator when the available Elements are listed.
+
+@renderer@ is a function which will be called to generate the HTML for the element. It'll be called with @this@ set to the Plugin object. The @renderer@ function takes a single argument, a [node:dev/plugin/interface/plugin-element-renderer] object, and by convention, this argument should be named @L@. See [node:dev/plugin/elements] for details on how to implement an Element.
+
+
+h3(function). workUnit(implementation)
+
+Implement support for a [node:dev/plugin/interface/work-unit] using the given @implementation@, a JavaScript object with the following properties:
+
+@workType@ is the work type for the WorkUnits. The plugin name will automatically be added as a prefix, so if the name is @"action"@, a WorkUnit name like @example_plugin:action@ will be generated.
+
+@description@ is a short description of the work unit, for displaying to the application administrator.
+
+@render@ is a function which will be called to generate the HTML for the element. It'll be called with @this@ set to the Plugin object. The function takes a single argument, a [node:dev/plugin/interface/plugin-work-unit-renderer] object, and by convention, this argument should be named @W@.
+
+See [node:dev/plugin/work-flow] for details on how to implement a WorkUnit.
+
+
+h3(function). implementService(name, serviceFunction)
+
+Implement a service for [node:dev/plugin/misc/inter-plugin-comms:inter-plugin communication]. The @serviceFunction@ will be called with @this@ set to the Plugin object when the service is called using [node:dev/plugin/o/service#O_service].
+
+The service @name@ must include a '@:@' character, as by convention, the service name uses a namespace. For example, you might name a service @"example_plugin:do_something"@.
+
+If more than one plugin implements the same service, the functions will be called in order of registration, until one returns something other than @undefined@.
+
+Services should be registered during evaluation of the plugin scripts, but are only available after all the plugin scripts have been loaded. This ensures that you're not accidentally relying on the order that plugins are loaded.
+
+
+h3(function). provideFeature(name, injectFunction)
+
+Implement a 'feature' for other plugins to use. This allows common code for a set of plugins to be encapsulated in another plugin, avoiding duplication or clumsy code. Always consider using a service, rather than a feature.
+
+The feature name must include a '@:@' character, as by convention, the feature name uses a namespace.
+
+@injectFunction@ is called with a argument of the plugin which uses the feature. This is permitted to do anything appropriate to inject the feature into the using plugin. For example:
+
+<pre>language=javascript
+var add = function(a, b) { return a + b; }
+P.provideFeature("example:addition", function(plugin) {
+    plugin.add = add;
+});
+</pre>
+
+The [node:dev/plugin/plugin-json#loadPriority] of the providing plugin should be lower than that of any plugin using the feature.
+
+
+h3(function). use(name)
+
+Use the named feature in a plugin. The providing plugin may make any modifications to your plugin object.
+
+In general, you should should use a [node:dev/plugin/plugin-json#use] directive in your [node:dev/plugin/plugin-json].
+

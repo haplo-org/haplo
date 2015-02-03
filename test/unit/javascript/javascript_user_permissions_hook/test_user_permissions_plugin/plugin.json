@@ -1,0 +1,10 @@
+{
+  "pluginName": "test_user_permissions_plugin",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test User Permissions Plugin",
+  "displayDescription": "For testing",
+  "installSecret": "ABC123",
+  "apiVersion": 3,
+  "load": ["js/test_user_permissions_plugin.js"]
+}

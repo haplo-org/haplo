@@ -1,0 +1,33 @@
+<%
+  @page_title = 'Edit members of '+h(@group.name)
+-%>
+<%= sys_mng_header %>
+
+<form method="POST"><%= form_csrf_token %>
+<%
+  last_kind = -1
+  this_uid = @group.id
+  @all_users.each do |user|
+    # Basic info
+    uid = user.id
+    ukind = user.kind
+    is_member = (user.is_member == 't')
+    # only look at non-protected users and not this one
+    if uid > User::USER_ID_MAX_PROTECTED && uid != this_uid
+      # headings?
+      if last_kind != ukind
+        last_kind = ukind
+        if ukind == User::KIND_USER
+          %><h2>Users</h2><%
+        else
+          %><h2>Groups</h2><%
+        end
+      end
+      # Checkbox
+      %><p><label><input type="checkbox" name="u[<%= uid %>]"<% if is_member %> checked<% end %>><%= h(user.name) %></label></p><%
+    end
+  end
+%>
+<p>&nbsp;</p>
+<p><input type="submit" value="Save changes"></p>
+</form>

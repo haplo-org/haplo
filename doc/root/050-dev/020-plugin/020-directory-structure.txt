@@ -1,0 +1,81 @@
+title: Directory structure
+--
+
+Plugins are a collection of JavaScript code, templates, automated tests, and other resources, stored in a directory named after the plugin. An @example_plugin@ might look like this:
+
+<pre>
+    example_plugin
+      \- plugin.json
+      \- js
+           \- example_plugin.js
+           \- handle_requests.js
+      \- global.js
+      \- static
+           \- ui.js
+           \- picture.gif
+           \- style.css
+      \- template
+           \- page1.html
+      \- test
+           \- test_feature1.js
+</pre>
+
+
+h2. plugin.json
+
+The [node:dev/plugin/plugin-json] file describes the plugin.
+
+
+h2. js
+
+The @js@ directory contains the server side JavaScript code for the plugin. Files in the directory are loaded in the order specified in the @plugin.json@ file.
+
+JavaScript files loaded with an automatically generated wrapper:
+
+<pre>language=javascript
+(function(P) {
+    // Contents of your JavaScript file go here
+})(example_plugin);
+</pre>
+
+If a @locals@ directive is used in the @plugin.json@ file, these are implemented as additional arguments. For example, with @"locals":{"X":"exampleProperty"}@,
+
+<pre>language=javascript
+(function(P, X) {
+    // Contents of your JavaScript file go here
+})(example_plugin, example_plugin.exampleProperty);
+</pre>
+
+
+h2. global.js
+
+The @global.js@ file is optional, and not required by the vast majority of plugins. It's used for initialisation which cannot be done inside the anonymous function which wraps all the other JavaScript files.
+
+If you do use a global.js file, it *must* include the [node:dev/plugin/o/constructor/plugin:O.plugin()] call to create your plugin object, for example,
+
+<pre>language=javascript
+var example_plugin = O.plugin("example_plugin");
+</pre>
+
+
+h2. static
+
+Files in the @static@ directory are made available over HTTP. Use it for client side resources like scripts, stylesheets and images.
+
+Filenames of files in the @static@ directory may only contain the characters @a-zA-Z0-9_-@, and must have an extension which may only contain @a-zA-Z0-9@.
+
+To use these files in your plugin, use the [node:dev/plugin/templates/std-template/plugin-static] template to include references to the files in your HTML, or the @staticDirectoryUrl@ property on your [node:dev/plugin/interface/plugin] object to form URLs.
+
+There is no access control on the files, and they'll be served to anyone who knows the URL.
+
+Files are served with expiry times several years in the future. Whenever the files are updated, for example on plugin upgrade, the URL of the files is changed.
+
+
+h2. template
+
+Templates are stored in the @template@ directory. [node:dev/plugin/templates] are compatible with "Handlebars":http://handlebarsjs.com/.
+
+
+h2. test
+
+[node:dev/plugin/tests:Tests] live in the @test@ directory, as one JavaScript file per test. These are run on the server by the [node:dev/tool/plugin:Plugin Tool].

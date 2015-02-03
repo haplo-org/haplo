@@ -1,0 +1,28 @@
+title: NavigationBuilder
+long_title: NavigationBuilder interface
+link_as: keyword
+--
+
+Collects left hand navigation entries.
+
+
+h2. Construction
+
+Created by the Platform and passed to the [node:dev/plugin/hook/navigation-position] hook.
+
+
+h2. Interface
+
+h3(function). link(path, title)
+
+Adds a link to the navigation, with a given @path@ and @title@.
+
+
+h3(function). separator()
+
+Adds a separator to the navigation.
+
+
+h3(function). collapsingSeparator()
+
+Adds a separator to the navigation where the entries below are hidden by default.

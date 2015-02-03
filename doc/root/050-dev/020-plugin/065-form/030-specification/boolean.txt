@@ -1,0 +1,48 @@
+title: Boolean
+--
+
+A boolean @true@ or @false@ value, as radio buttons or a checkbox.
+
+When the form is rendered as a document, the @trueLabel@ and @falseLabel@ will be used to represent the underlying boolean value.
+
+
+h2. Properties
+
+|@type@|@"boolean"@|
+|@trueLabel@|(optional) Label for the @true@ value. Defaults to @"Yes"@.|
+|@falseLabel@|(optional) Label for the @false@ value. Defaults to @"No"@.|
+|@style@|(optional) Style of element. Defaults to @"radio"@.|
+|@notConfirmedMessage@|(optional) For @"confirm"@ style elements, the error message to display when the box is not checked.|
+
+All the [node:dev/plugin/form/specification#Common_properties:common properties] are supported.
+
+
+h3. Style options
+
+The @style@ property can be set to:
+
+|@"radio"@|Use two HTML @<input type="radio">@ elements, labelled with the @trueLabel@ and @falseLabel@|
+|@"checkbox"@|Use an HTML @<input type="checkbox">@ element, followed by the @label@ of the Element.|
+|@"confirm"@|As @"checkbox"@, but requires that the checkbox is checked by the user to pass validation.|
+
+Note that use of the @"checkbox"@ style means that the value in the Document will always be @true@ or @false@. The @"radio"@ style allows for no answer to be given, in which case the value will be omitted from the Document.
+
+When you're using @"checkbox"@ or @"confirm"@ style elements, consider setting @trueLabel@ if you are rendering it as a document. This will avoid the field being rendered as just "Yes".
+
+
+h3. Confirmation boxes
+
+For the best user experience, a @style:"confirm"@ confirmation box should include the @notConfirmedMessage@ and @trueLabel@ properties. For example:
+
+<pre>language=javascript
+    {
+        type: "boolean",
+        style: "confirm",
+        path: "termsAndConditions"
+        label: "I reluctantly agree to the terms and conditions.",
+        notConfirmedMessage:
+                "You must agree to the terms and conditions before continuing",
+        trueLabel: "You have agreed to terms and conditions."
+    }
+</pre>
+

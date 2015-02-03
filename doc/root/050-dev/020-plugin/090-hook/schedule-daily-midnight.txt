@@ -1,0 +1,9 @@
+title: hScheduleDailyMidnight
+class: HookNode
+--
+
+Called every day, about midnight.
+
+You should not rely on this hook being called only once each day, or that it'll be called at any specific time.
+
+To perform a task on a specific date, or only on some days of the week, test the @year@, @month@, @dayOfMonth@, and @dayOfWeek@ arguments before performing the task.

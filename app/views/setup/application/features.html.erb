@@ -1,0 +1,13 @@
+<%
+  # @page_title = 'Features'
+  @page_title = 'Feature names'
+-%>
+<%= sys_mng_header %>
+
+<table class="z__mangement_kv_table">
+  <tr><th>Latest updates</th><td><%= h(KApp.global(:name_latest)) %></td></tr>
+  <tr><th>Latest update topic</th><td><%= h(KApp.global(:name_latest_request)) %></td></tr>
+  <tr><th>Latest update topics</th><td><%= h(KApp.global(:name_latest_requests)) %></td></tr>
+</table>
+
+<%= sys_mng_edit_button("/do/setup/application/features_names") %>

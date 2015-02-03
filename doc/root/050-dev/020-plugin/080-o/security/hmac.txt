@@ -1,0 +1,18 @@
+title: HMAC
+long_title: HMAC signatures
+--
+
+"HMAC":http://en.wikipedia.org/wiki/Hash-based_message_authentication_code is an algorithm for signing input data using a secret key.
+
+You can use it to sign parameters on URLs and in HTTP requests so that they cannot be forged.
+
+
+h3(function). O.security.hmac.sign(algorithm, secret, input)
+
+Signs @input@ using the specified @algorithm@ and @secret@, and returns a hex-encoded signature.
+
+@algorithm@ can be one of @"SHA1"@ or @"SHA256"@. If you need to work with legacy systems, you can also specify @"MD5"@. (MD5 is not recommended for new applications.)
+
+@secret@ must be at least 32 characters long, as short secrets are a bit pointless.
+
+@secret@ and @input@ are converted to UTF-8 encoded bytes before signing.

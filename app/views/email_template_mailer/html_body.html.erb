@@ -1,0 +1,35 @@
+<%
+  m = data_for_template[:m]
+  if self.branding_html != nil && self.branding_html.include?('%%USER_HTML_ONLY%%')
+    # Just output the generated body
+    %><%= generate_email_html_body(m) %><%
+  else
+%><!DOCTYPE html>
+<html>
+<head>
+<title><%= ERB::Util.h(m[:subject]) %></title>
+<style type="text/css">
+body { background: #fff }
+body, table, h1, h2, h3, h4, h5, p, td {
+font-family: Helvetica, Arial, san-serif;
+line-height: 140%;
+}
+.action_button a { color: #fff !important; }
+<%= self.extra_css %>
+</style>
+</head>
+<body>
+<table cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:640px">
+<tr>
+<td style="width:20px"></td>
+<td style="max-width:600px">
+<table style="background:#<%= @__special_application_colour %>;width:100%;margin-bottom:38px" cellpadding="0" cellspacing="0" border="0">
+<tr><td style="padding:16px 24px;margin:0;color:#fff;font-weight:bold;font-size:20px;line-height:120%"><%= ERB::Util.h(KApp.global(:system_name)) %></td></tr>
+</table><p>&nbsp;</p>
+<%= generate_email_html_body(m) %>
+</td>
+<td style="width:20px"></td>
+</tr>
+</table>
+</body>
+</html><% end %>

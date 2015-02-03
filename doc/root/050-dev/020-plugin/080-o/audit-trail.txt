@@ -1,0 +1,53 @@
+title: Audit trail
+--
+
+The Platform keeps an audit trail of changes and other events. Plugins can write custom entries to the audit trail.
+
+h3(function). O.audit.query()
+
+Constructs a new object implementing the [node:dev/plugin/interface/audit-entry-query] interface.
+
+This object may be used to filter, sort and return audit trail events.
+
+
+h3(function). O.audit.write(dictionary)
+
+Writes an entry to the audit trail. The dictionary passed to the function specifies the entry, using the keys described below.
+
+Returns an [node:dev/plugin/interface/audit-entry] representing the entry written.
+
+
+h3. Example
+
+Given a store object, @storeObject@, this example code writes a custom entry to the audit trail.
+
+<pre>language=javascript
+    O.audit.write({
+        auditEntryType: "example:important_activity",
+        ref: storeObject.ref,
+        data: {
+            "person": "Joe"
+        }
+    });
+</pre>
+
+
+h3. Audit entry specification
+
+The dictionary passed to @O.audit.write()@ only needs to specify the following keys. All the other information found in the [node:dev/plugin/interface/audit-entry] interface is filled in automatically.
+
+
+h3(key). auditEntryType
+
+Required. A @String@ specifying the kind of audit entry, in the form @organisation:type@, where @organisation@ is your organisation's allocated prefix.
+
+
+h3(key). ref
+
+(Optional) A [node:dev/plugin/interface/ref] of a store object, if this entry refers to a store object. Omit entirely to create a general entry.
+
+
+h3(key). data
+
+(Optional) A JSON compatible data structure giving any additional information needed about the entry.
+

@@ -1,0 +1,10 @@
+title: TYPE
+long_title: SCHEMA.TYPE
+link_as: keyword
+--
+
+For each type defined in the application's schema, an entry be defined in the @SCHEMA.TYPE@ dictionary for the type's API code.
+
+The value of the constant is a [node:dev/plugin/interface/ref], although loading the object it refers to is unlikely to be useful.
+
+For example, @TYPE["std:type:book"]@ is the ref of the standard Book type.

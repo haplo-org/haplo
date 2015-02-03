@@ -1,0 +1,27 @@
+
+h1. Term inclusion specifications
+
+When an object links to another object, the search behaves as if some of the text from the linked object appears in the linking object. So if an object linked to another object with a title 'Example', everything will work as if the text 'Example' was included in an attribute.
+
+The end result is that the search will work as a user expects. They see 'Example' in an attribute of an object, and searching for 'Example' will find that object.
+
+A "term inclusion specification" allows you to control exactly what terms (text) is included in the linking object.
+
+Text from the _title_ attribute is always included, and this cannot be overridden since it would yield unexpected results. But you can use the specification to include other fields and change the relative weightings.
+
+Each line of the specification looks like
+
+pre.    weighting attribute-name
+
+Where _weighting_ is a number, and _attribute-name_ is the search name of an attribute.
+
+If an attribute is mentioned, any terms from the text in that attribute is included. For example,
+
+pre.    2.0 title
+   0.25 notes
+
+includes text from the title, boosted in relevance, and from the notes, with reduced relevance.
+
+Term inclusion can only include terms from text values. It won't include anything from, for example, links to other objects.
+
+Use term inclusion with caution, as it may cause your search results to include unexpected items.

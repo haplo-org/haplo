@@ -1,0 +1,32 @@
+FOR: /do/file-version
+
+h1. Managing versions of files
+
+Upload the first version of a file:
+
+* _Add_
+* _File_
+* drag the file into your web browser
+* describe the file 
+* _Save_.
+
+Once saved, click on _Versions_ to the right of the uploaded file. 
+
+h2. Version list
+
+The Versions page will show the current and all previous versions of this file, with details of the author of each version and when it was published.
+
+You can download and view any version from this page.
+
+
+h2. Adding a new version
+
+To add a new version using the file versions page:
+
+* Drag a new version of the file into your web browser to upload it
+* A form will appear with details of the new version
+* Modify the filename if required
+* Enter a log message to describe the changes you made
+* A new version will have been generated for you, but you can edit it if required
+* Once the file has finished uploading, click the _Create new version_ button
+

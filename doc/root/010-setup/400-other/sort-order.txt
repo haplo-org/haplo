@@ -1,0 +1,8 @@
+title: Sort order
+--
+
+You can specify the order in which people and organisations are listed in the contact's directories. Choose to sort by first name or last name.
+
+CLICK_PATH TOOLS > System management > Configuration > Sort order
+
+Eastern and Western List name styles always sort Last, First. 

@@ -1,0 +1,32 @@
+<%
+  is_create = !(@label_ref)
+  @page_title = is_create ? 'Create new Label' : 'Edit Label'
+%>
+<%= sys_mng_header %>
+
+<form method="POST"><%= form_csrf_token %>
+
+<p>Name<br>
+<input type="text" name="title" value="<%= h(@title) %>">
+</p>
+
+<%= code_value_edit_ui(@code) %>
+
+<% if is_create %>
+  <p>Label category<br>
+    <select name="category">
+      <%= options_for_select(@category_choices, @category.to_s) %>
+    </select>
+  </p>
+<% else %>
+  <p>Label category: <i><%= h(KObjectStore.read(@category).first_attr(KConstants::A_TITLE).to_s) %></i></p>
+  <input type="hidden" name="category" value="<%= @category.to_presentation %>">
+<% end %>
+
+<p>Notes (optional)<br>
+<textarea name="notes" rows="4" cols="40" style="width:80%"><%= h(@notes) %></textarea>
+</p>
+
+<p><input type="submit" value="<% if is_create %>Create<% else %>Save changes<% end %>"></p>
+
+</form>

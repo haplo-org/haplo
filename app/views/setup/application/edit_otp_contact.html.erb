@@ -1,0 +1,11 @@
+<% @page_title = 'Edit token admin contact' -%>
+<%= sys_mng_header %>
+
+<form method="post" style="padding:8px"><%= form_csrf_token %>
+<textarea name="contact" cols="40" rows="4" style="width:80%"><%= h(@otp_admin_contact) %></textarea><br>
+<input type="submit" value="Save contact details">
+<form>
+
+<p>&nbsp;</p>
+<p>If the message is left blank, the default text will be displayed:</p>
+<p>"<%= h(KDisplayConfig::DEFAULT_OTP_ADMIN_CONTACT) %>"</p>

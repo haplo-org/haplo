@@ -1,0 +1,16 @@
+title: Qualifiers
+--
+
+Qualifiers are used to add detail to an Attribute, for example, specifying that a title of a book is an alternative title. You can have multiple Qualifiers for each Attribute. For instance a telephone number Attribute could have Qualifiers: mobile, work, home. 
+
+You can specify which Qualifiers are used for which Attributes. A Qualifier can be used with any number of Attributes. 
+
+A Qualifier should not change the meaning of the Attribute. An alternative title is still a title, and it makes sense even if you remove the Qualifier.
+
+CLICK_PATH TOOLS > System management > Qualifiers
+
+On the Qualifiers page you will see all current Qualifiers. To create a new Qualifier click on New qualifier at the bottom of the list and complete the short form:
+
+ * Name: give a brief descriptive name of one or two words for this qualifier. This will be displayed to the user when an object is displayed and in the editor.
+ * Search name: enter the search name for the qualifier to be used in search constraints. This should contain only lower case letters, numbers and hyphens. By convention it is the same as the qualifier name in lower case and with spaces replaced by hyphens.
+

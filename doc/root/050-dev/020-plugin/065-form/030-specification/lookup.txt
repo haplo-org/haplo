@@ -1,0 +1,15 @@
+title: Lookup
+--
+
+A field implemented as an HTML @<input type="text">@ element which autocompletes against a server-side list. This list is defined by a [node:dev/plugin/form/data-source:data source], which provides entries on demand.
+
+Each entry in the list has an ID, which is the value stored in the document, and a display name, which is displayed to the user. The data source maps an ID to display name on the server side when rendering the document.
+
+
+h2. Properties
+
+|@type@|@"lookup"@|
+|@dataSource@|The name of the data source to use for this field.|
+
+All the [node:dev/plugin/form/specification#Common_properties:common properties] are supported.
+

@@ -1,0 +1,12 @@
+{
+  "pluginName": "oauth_authentication_plugin",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "OAuth authentication plugin test",
+  "displayDescription": "For testing JS OAuth integration support",
+  "apiVersion": 3,
+  "privilegesRequired": ["pStartOAuth"],
+  "load": ["js/oauth_authentication_plugin.js"],
+  "respond": ["/do/oauth-authentication-plugin"],
+  "allowAnonymousRequests": true
+}

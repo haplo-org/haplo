@@ -1,0 +1,16 @@
+<div class="z__sidebar_menu">
+<%
+  action_name = params[:action]
+  [
+    ['/do/latest', 'index', h(KApp.global(:name_latest).capitalize)],
+    ['/do/latest/choose', 'choose', 'Choose'],
+    ['/do/latest/settings', 'settings', 'Settings']
+  ].each do |urlpath,action,title|
+    if action_name == action
+      %><div class="z__sidebar_menu_selected"><%= title %></div><%
+    else
+      %><div><a href="<%=urlpath%>"><%= title %></a></div><%
+    end
+  end
+-%>
+</div>

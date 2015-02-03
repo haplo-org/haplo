@@ -1,0 +1,11 @@
+<doc>
+    <widget type="SEARCH">
+        <v name="q">type:event</v>
+        <v name="sort">date</v>
+        <v name="style">cal</v>
+        <v name="paged">0</v>
+        <v name="subset"></v>
+        <v name="limit"></v>
+        <v name="within">link</v>
+    </widget>
+</doc>

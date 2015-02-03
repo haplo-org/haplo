@@ -1,0 +1,25 @@
+<%
+  @page_title = 'Policies for '+h(@user.name)
+-%>
+
+<%= sys_mng_header %>
+
+<form method="post" action="/do/admin/user/policies/<%= h(params[:id]) %>"><%= form_csrf_token %>
+
+<table class="z__mng_permission_display">
+  <tr><td></td><td class="z__mng_permission_allow">Allow</td><td class="z__mng_permission_deny">Deny</td></tr>
+  <%
+    KPolicyRegistry.entries.each do |e|
+      index = e.bitfield_index
+      mask = 1 << index
+      %><tr><td class="z__permission_section_name"><%= h(e.printable_name) %></td>
+      <td class="z__mng_permission_allow"><input type="checkbox" name="a[<%= index %>]" value="x"<% if 0 != (@policies.perms_allow & mask) %> checked<% end %>></td>      
+      <td class="z__mng_permission_deny"><input type="checkbox" name="d[<%= index %>]" value="x"<% if 0 != (@policies.perms_deny & mask) %> checked<% end %>></td>
+      </tr><%
+    end
+  %>
+</table>
+
+<p><input type="submit" value="Save changes"></p>
+
+</form>

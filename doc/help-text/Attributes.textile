@@ -1,0 +1,29 @@
+FOR: /do/setup/attribute/list
+
+h1. Attributes
+
+Attributes specify the fields used to describe objects in the object editor. Each *type* specifies the attributes used to describe objects of that type.
+
+Click on an attribute name to show information about it.
+
+_Aliased attributes_ are shown, indented, under the attribute they alias.
+
+Click on  _New attribute_ at the bottom of the attributes list to create a new attribute -- but consider aliasing another attribute if it's more appropriate.
+
+h2. Aliased attributes
+
+In some situations, while an Attribute accurately describes the data entered, the name is inappropriate in context. For example, the _Subject_ attribute is used for People objects so that you can find relevant people to talk to about the subject, but should be presented to the user as _Expertise_. You can't say that a person is 'about' a subject!
+
+In this case, you use an aliased attribute to rename the field in the object editor, so it makes sense and accurately describes what you need to enter.
+
+h2. Special attributes
+
+*Title* is the only special attribute. Every object must have a title, to display as links to objects and in search results. However, 'title' is not always an appropriate field name, so you can alias it. For example, People objects use the _Name_ alias of _Title_, and use the _Person's name_ data type to help enter names accurately.
+
+h4. Further help
+
+[[Attribute information]]
+[[Aliased attribute information]]
+[[Edit attribute]]
+[[Edit aliased attribute]]
+

@@ -1,0 +1,1 @@
+{{requestBeforeHandle_called_for}}-{{beforeRenderCalled}}-{{templateName}}-{{value}}-{{exampleLocal}}

@@ -1,0 +1,29 @@
+FOR: /
+
+h1. Home page
+
+h2. Noticeboard
+
+The noticeboard displays the most recent ten notices. 
+
+To add a new notice:
+* scroll to the bottom of the noticeboard
+* choose _Add item_
+* enter the details
+* _Save_.
+
+To view more details about a notice click on ... at the end of the title. 
+
+h2. Checked out files
+
+Any checked out files will display on the homepage. 
+
+h2. Quick links
+
+To add a quick link:
+* choose _Add link_ at the end of the list of quick links
+* enter the details
+* _Save_.
+
+To view a quick link, click on the name of the link. To view more details about the quick link, click on the bullet point for each link. 
+

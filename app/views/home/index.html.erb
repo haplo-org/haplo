@@ -1,0 +1,10 @@
+<%
+  @page_title = h(KApp.global(:system_name))
+  @breadcrumbs = [:home]
+  
+  in_right_column @elements.html_for('right', HomeController::HOME_PAGE_ELEMENT_STYLE)
+%>
+
+<div>
+  <%= @elements.html_for('left', HomeController::HOME_PAGE_ELEMENT_STYLE) %>
+</div>

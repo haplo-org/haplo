@@ -1,0 +1,17 @@
+<%
+  @page_title = 'Audit trail'
+%>
+<%= sys_mng_header %>
+
+<% if @request_user.policy.can_setup_system? %>
+  <ul>
+    <li class="z__management_action"><a href="/do/admin/audit/config" target="workspace">Auditing configuration</a></li>
+    <li class="z__management_action"><a href="/do/admin/audit/admin_note" target="workspace">Add admin note</a></li>
+  </ul>
+<% end %>
+<% if @request_user.policy.can_view_audit? %>
+  <ul>
+    <li class="z__management_action"><a href="/do/admin/audit/show" target="workspace">View audit trail</a></li>
+  </ul>
+<% end %>
+</ul>

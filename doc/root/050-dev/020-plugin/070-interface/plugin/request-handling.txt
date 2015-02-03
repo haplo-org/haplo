@@ -1,0 +1,140 @@
+title: Request handling
+long_title: Plugin request handling
+--
+
+As well as integrating into the main platform UI with features like [node:dev/plugin/elements], your Plugin may implement it's own user interface via request handlers. Use @respond()@ to create a request handler, and use the [node:dev/plugin/interface/plugin/response-generation:response generation] features to create your response.
+
+
+h2. Interface
+
+
+h3(function). respond(methods, path, argDeclarations, handlerFunction)
+
+Declare that this plugin responds to a URL. See [node:dev/plugin/request-handling] for how it's used.
+
+Methods declares the HTTP methods this handler will respond to. Acceptable values are @"GET"@, @"POST"@ and @"GET,POST"@. You can declare two handlers for a single @path@ if one responds to @GET@ and the other @POST@, which is handy for avoiding conditional checks on the HTTP method in the handler functions while still having pleasant URL schemes.
+
+@path@ is the URL to be handled. It must begin with @/do/@ or @/api/@.
+
+*WARNING:* If the root of this URL has not been declared in [node:dev/plugin/plugin-json], the request handlers will never be called and will appear to be silently ignored.
+
+@argDeclarations@ is an @Array@ of JavaScript @Objects@, used to define where the values for the handler arguments. See 'Handler argument declarations' below.
+
+@handlerFunction@ is the handler, and will probably be an anonymous function. The first argument should be called @E@, and will be the [node:dev/plugin/interface/exchange] object. The other arguments are defined by the @argDeclarations@ array.
+
+
+h2. Handler argument declarations
+
+A declaration contains
+
+ * A source for the argument (required)
+ * What kind of argument (required)
+ * Optional flag, if the argument may be omitted
+ * Validation specification
+
+
+h3. Argument source
+
+Each handler declaration must contain exactly one of the 'source' keys.
+
+h3(key). pathElement
+
+The argument value will be obtained from the URL path. The value is the zero-based index of the element, with the 0th element as the first element *after* the path the handler handles.
+
+h3(key). parameter
+
+The argument value will be obtained from the request parameters, either from the @GET@ URL or the @POST@ body. The value is the name of the parameter as a string.
+
+
+h3. Argument value
+
+h3(key). as
+
+Declares what type of value is to be used for the handler function argument.
+
+
+h3(value). as: "string"
+
+The value is passed to the handler function as a @String@.
+
+
+h3(value). as: "int"
+
+The value is passed to the handler function as a number.
+
+
+h3(value). as: "ref"
+
+The value is passed to the handler as a [node:dev/plugin/interface/ref]. The argument source should be the presentation string encoding of the object reference, as decoded by [node:dev/plugin/o/constructor/ref].
+
+
+h3(value). as: "object"
+
+The value is passed to the handler as a [node:dev/plugin/interface/store-object]. This is similar to @"ref"@, but the object it refers to is loaded.
+
+If the current user does not have permission to read this object, validation will fail and the handler function will not be called.
+
+
+h3(value). as: "workUnit"
+
+The value is passed to the handler as a [node:dev/plugin/interface/work-unit]. The argument should be the [node:dev/plugin/interface/work-unit#id] of a work unit.
+	
+If no work unit with the specified id exists, then validation will fail and the handler function will not be called.
+
+Unless overridden using the [node:dev/plugin/interface/plugin/request-handling#allUsers] parameter, any work unit that is not actionable by the currently logged in user will fail validation.
+
+
+h3(value). as: "db"
+
+The value is passed to the handler as a [node:dev/plugin/interface/database-row]. The database table is specified with the @table@ key, which must be present.
+
+The source must be the string representation of a positive integer, referring to the row ID in the database table.
+
+
+h3(value). as: "file"
+
+The value is passed to the handler as an [node:dev/plugin/interface/uploaded-file]. All files which may be uploaded by your form must be declared, and the form element must have an @enctype="multipart/form-data"@ attribute. Uploaded files cannot be retrieved from @E.request.parameters@.
+
+You should consider using a form with a [node:dev/plugin/form/specification/file:file element] instead.
+
+
+h3. Argument validation
+
+h3(key). optional
+
+If @optional@ is @true@, then the argument can be omitted. If the request does not include it, the argument value will be @null@.
+
+If the source for this argument is included in the specification, but validation fails, an error is raised and the handler is not called.
+
+
+h3(key). validate
+
+Used for @string@ and @int@ arguments. If it's a function, it will be called with the value as it's only argument, and should return @true@ if the value passes validation.
+
+@string@ arguments also allow a @RegExp@ object for validation. The value must match the regular expression to pass validation.
+
+
+h3(key). allUsers
+
+Used for @workUnit@ arguments.  By default, only work units that are actionable by the currently logged in user pass validation.  Setting @allUsers@ to true disables this check.
+
+
+h3(key). workType
+
+Used for @workUnit@ arguments. If specified, will validate that the work unit's [node:dev/plugin/interface/work-unit#workType] attribute matches this value.
+
+
+h2. Handler argument examples
+
+<pre>language=javascript
+[
+    {pathElement:0, as:"ref"},
+    {pathElement:1, as:"db", table:"employee"},
+    {parameter:"date", as:"string", validate:/^\d\d\d\d-\d\d$/},
+    {parameter:"key", as:"string", validate:function(v) {return v.length > 4;}},
+    {parameter:"number", as:"int", optional:true, validate: function(v) {return (v > 20);}},
+    {parameter:"display", as:"object", optional:true}
+]
+</pre>
+
+

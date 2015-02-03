@@ -1,0 +1,35 @@
+<%
+  @page_title = 'Representative object for ' + h(@user.name)
+
+  client_side_controller_js('set_representative_object')
+%>
+
+<%= sys_mng_header %>
+
+<% if @user.objref%>
+  <p>The representative object is <% if @representative_object %><a href="<%= h(object_urlpath(@representative_object)) %>" target="_blank"><%= h(@representative_object.first_attr(KConstants::A_TITLE).to_s) %></a><% else %><%= @user.objref.to_presentation %><% end %>.</p>
+<% else %>
+  <p>This user does not currently have a representative object.</p>
+<%end %>
+
+<form method="POST"><%= form_csrf_token %>
+
+  <p><label><input type="radio" name="objref" value="_nochange" checked="checked">Do not change the representative object</label></p>
+
+  <% if @matching_object %>
+    <p><label><input type="radio" name="objref" value="<%= @matching_object.objref.to_presentation %>">Set to <a href="<%= h(object_urlpath(@matching_object)) %>" target="_blank"><%= h(@matching_object.first_attr(KConstants::A_TITLE).to_s) %></a></label><br>(This object matches the user's email address, <%= h(@user.email) %>)</p>
+  <% end %>
+
+  <% if @can_create_person %>
+    <p><label><input type="radio" name="objref" value="_create">Create a new Person object to represent this user</label></p>
+  <% end %>
+
+  <p><label><input id="z__choose_object_radio" type="radio" name="objref" value="_choose">Existing object</label> <%= control_object_insert_menu('z__choose_object', 'Choose object...') %> &nbsp; <span id="z__choose_object_title"></span><input type="hidden" name="choosen" id="z__choose_object_hidden"></p>
+
+  <% if @user.objref %>
+    <p><label><input type="radio" name="objref" value="">No representative object</label></p>
+  <% end %>
+
+  <p><input type="submit" value="Set representative object"></p>
+
+</form>

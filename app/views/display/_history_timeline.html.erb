@@ -1,0 +1,20 @@
+<%
+
+  versions = [
+      [0, @history.object, @history.object.objref.to_presentation, "Current"]
+    ]
+
+  @history.versions.reverse_each do |version|
+    versions << [version.version, version.object, "?v=#{version.version}", version.update_time.to_s(:date_and_time)]
+  end
+
+  versions.each do |n, object, href, text|
+    name = User.cache[object.last_modified_user_id].name
+    if @version == n
+      %><p><b><%= h(text) %></b><br><i>&nbsp; <%= h(name) %></i></p><%
+    else
+      %><p><a href="<%= href %>"><%= h(text) %></a><br><i>&nbsp; <%= h(name) %></i></p><%
+    end
+  end
+
+%>

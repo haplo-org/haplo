@@ -1,0 +1,54 @@
+title: Installation (UNIX or Mac)
+--
+
+The plugin tool requires a little bit of setup. These instructions work on Mac OS X and UNIX-like operating systems, such as Linux.
+
+
+h3. Create a working folder
+
+Create a folder anywhere on your hard disc. We'll be using the example of @/Users/developer/oneis-development@ for simplicity. This working folder should be the root of your source control repository.
+
+Open a Terminal window, and @cd@ to that directory.
+
+
+h3. Check Java is installed.
+
+In the command prompt, type @java -version@
+
+If you get an error, install Java using your package manager. Mac OS X will either have Java installed, or this command will open a window offering to install it for you.
+
+
+h3. Download JRuby
+
+Download the current release of "JRuby":http://jruby.org/download. Choose the "binary tar.gz" version.
+
+Decompress the downloaded file, then rename the extracted folder to @jruby@ (without the version number).
+
+
+h3. Install the Plugin Tool
+
+The Plugin Tool is distributed as a Ruby Gem.
+
+Return to the Terminal window you opened. Type
+
+<pre>
+    export PATH=`pwd`/jruby/bin:$PATH
+    jgem install oneis
+</pre>
+
+(This assumes you're running these commands with the current working directory set to the directory containing @jruby@.)
+
+
+h3. Create a project folder
+
+Create a folder inside your working folder, for example, @/Users/developer/oneis-development/example-project@, and @cd@ to it. In the @cmd@ window, type
+
+<pre>
+    mkdir example-project
+    cd example-project
+</pre>
+
+
+h3. Check the installation works
+
+Type @oneis-plugin --help@ to check the plugin tool is installed correctly.

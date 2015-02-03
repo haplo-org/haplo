@@ -1,0 +1,67 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+/* ---------------------------------------------------------------------------- */
+/* File versions page */
+
+.z__file_version_container {
+    position: relative;
+    min-height: 84px;
+    margin-top: 24px;
+}
+.z__file_version_container + .z__file_version_container {
+    border-top: 1px solid #ccc;
+    padding-top: 8px;
+    margin-top: 8px;
+}
+.z__file_version_container .z__file_version_log {
+    font-style: italic;
+    width: 60%;
+}
+.z__file_version_container .z__file_version_info {
+    position: absolute;
+    top: 10px;
+    right: 0;
+    text-align: right;
+    color: #888;
+}
+.z__file_version_container:hover .z__file_version_info {
+    color: #000;
+}
+.z__file_version_container .z__file_version_info span {
+    font-weight: bold;
+    font-size: 24px;
+    line-height: 28px;
+}
+
+.z__file_version_container .z__file_version_notice {
+    display: inline-block;
+    font-size: 10px;
+    line-height: 12px;
+    background: #eee;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 2px 4px;
+    margin-bottom: 6px;
+}
+
+/* new version form */
+
+#z__file_upload_form {
+    background: #eee;
+    border: 1px solid #ddd;
+    padding: 8px 8px 0 8px;
+    border-radius: 3px;
+}
+#z__file_upload_form table tr td {
+    vertical-align: top;
+}
+#z__file_upload_form table tr td:nth-child(1) {
+    font-style: italic;
+    text-align: right;
+    padding-top: 12px;
+    padding-right: 12px;
+}

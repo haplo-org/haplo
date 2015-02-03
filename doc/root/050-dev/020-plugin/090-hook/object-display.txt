@@ -1,0 +1,7 @@
+title: hObjectDisplay
+class: HookNode
+--
+
+Modify the object display page by adding extra user interface elements, providing access to the functionality of your plugin.
+
+To add HTML to the page, you should probably use [node:dev/plugin/elements]. These give greater flexibility than the crude addition of HTML provided by this hook.

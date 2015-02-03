@@ -1,0 +1,26 @@
+FOR: /search?
+
+h1. Search results
+
+The items matching your search criteria are shown in your search results.
+
+h2. No results found
+
+*Did you mean?* When no search results are found and the search term you entered is similar to another word, the alternative word will be shown. Clicking that word will display all items containing the alternative word. 
+
+h2. Limiting results by type
+
+At the top of the results list is a display of how many items of each type are shown in your search results. For example, if you know the item you are looking for is a person or a book, click on that type of material to only show the results of that type. To return to viewing all items click again on the type you chose.
+
+h2. Results ordering
+
+Results will automatically be displayed by relevancy. Those which are more relevant to the search terms entered will be shown first. You can sort your results alphabetically by title, or by date by clicking on those options on the top right of the results list. Ordering by date uses the date field on the item, if no date has been added, the date the item was created is used automatically. 
+
+h2. Result check boxes
+
+Clicking the check box to the left of each search result  will add that search result to your [[Tray]].
+
+
+h4. Further help
+
+[[Search]]

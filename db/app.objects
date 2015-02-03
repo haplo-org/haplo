@@ -1,0 +1,151 @@
+# Haplo Platform                                     http://haplo.org
+# (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+# ------------------------------------------------------------------
+#  Structural objects, extended by application
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_ATTR_ALIAS_DESC
+  A_TITLE       "! Attribute Alias"
+
+# ------------------------------------------------------------------
+#  Attribute Descriptors
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] A_NOTES
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Notes'
+	A_CODE				KIdentifierConfigurationName.new('std:attribute:notes')
+	A_ATTR_SHORT_NAME	'notes'
+	A_ATTR_DATA_TYPE	T_TEXT_PARAGRAPH
+	A_ATTR_QUALIFIER	Q_NULL
+
+obj [O_LABEL_STRUCTURE] A_DOCUMENT
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Text'
+	A_CODE				KIdentifierConfigurationName.new('std:attribute:text')
+	A_ATTR_SHORT_NAME	'text'
+	A_ATTR_DATA_TYPE	T_TEXT_DOCUMENT
+	A_RELEVANCY_WEIGHT	750
+	A_ATTR_QUALIFIER	Q_NULL
+
+# ------------------------------------------------------------------
+#  Other types
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_SUBSET_DESC
+	A_TITLE		"! App Type Subset Descriptor"
+
+# ------------------------------------------------------------------
+#  Labels
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_LABEL_CATEGORY
+	A_TITLE		"! App Type Label Category"
+
+obj [O_LABEL_STRUCTURE] O_TYPE_LABEL
+	A_TITLE		"! App Type Label"
+
+obj [O_LABEL_STRUCTURE] O_LABEL_CATEGORY_SYSTEM
+	A_TYPE		O_TYPE_LABEL_CATEGORY
+	A_TITLE		"SYSTEM"
+
+obj [O_LABEL_STRUCTURE] O_LABEL_UNLABELLED
+	A_TYPE		O_TYPE_LABEL
+	A_TITLE		"UNLABELLED"
+	A_CODE		KIdentifierConfigurationName.new("std:label:unlabelled")
+	A_LABEL_CATEGORY O_LABEL_CATEGORY_SYSTEM
+	A_NOTES		"This item has no labels applied."
+
+obj [O_LABEL_STRUCTURE] O_LABEL_STRUCTURE
+	A_TYPE		O_TYPE_LABEL
+	A_TITLE		"STRUCTURE"
+	A_CODE		KIdentifierConfigurationName.new("std:label:structure")
+	A_LABEL_CATEGORY O_LABEL_CATEGORY_SYSTEM
+	A_NOTES		"This item is part of the application schema."
+
+obj [O_LABEL_STRUCTURE] O_LABEL_CONCEPT
+	A_TYPE		O_TYPE_LABEL
+	A_TITLE		"CONCEPT"
+	A_CODE		KIdentifierConfigurationName.new("std:label:concept")
+	A_LABEL_CATEGORY O_LABEL_CATEGORY_SYSTEM
+	A_NOTES		"This item represents a concept used to describe other items."
+
+obj [O_LABEL_STRUCTURE] O_LABEL_DELETED
+	A_TYPE		O_TYPE_LABEL
+	A_TITLE		"DELETED"
+	A_CODE		KIdentifierConfigurationName.new("std:label:deleted")
+	A_LABEL_CATEGORY O_LABEL_CATEGORY_SYSTEM
+	A_NOTES		"This item has been deleted."
+
+obj [O_LABEL_STRUCTURE] O_LABEL_ARCHIVED
+	A_TYPE		O_TYPE_LABEL
+	A_TITLE		"ARCHIVED"
+	A_CODE		KIdentifierConfigurationName.new("std:label:archived")
+	A_LABEL_CATEGORY O_LABEL_CATEGORY_SYSTEM
+	A_NOTES		"This item has been archived."
+
+obj [O_LABEL_STRUCTURE] O_LABEL_CATEGORY_SENSITIVITY
+	A_TYPE		O_TYPE_LABEL_CATEGORY
+	A_TITLE		"Sensitivity"
+
+obj [O_LABEL_STRUCTURE] O_LABEL_COMMON
+	A_TYPE		O_TYPE_LABEL
+	A_TITLE		"Common"
+	A_CODE		KIdentifierConfigurationName.new("std:label:common")
+	A_LABEL_CATEGORY O_LABEL_CATEGORY_SENSITIVITY
+	A_NOTES		"This item is available to most users."
+
+obj [O_LABEL_STRUCTURE] O_LABEL_CONFIDENTIAL
+	A_TYPE		O_TYPE_LABEL
+	A_TITLE		"Confidential"
+	A_CODE		KIdentifierConfigurationName.new("std:label:confidential")
+	A_LABEL_CATEGORY O_LABEL_CATEGORY_SENSITIVITY
+	A_NOTES		"This item is confidential."
+
+# ------------------------------------------------------------------
+#  Type behaviours
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_TYPE_BEHAVIOUR
+    A_TITLE     "! App Type Behaviour"
+
+obj [O_LABEL_STRUCTURE] O_TYPE_TYPE_BEHAVIOUR_ROOT_ONLY
+    A_PARENT    O_TYPE_TYPE_BEHAVIOUR
+    A_TITLE     "! App Type Behaviour (root only)"
+
+obj [O_LABEL_STRUCTURE] O_TYPE_BEHAVIOUR_CLASSIFICATION
+    A_TYPE      O_TYPE_TYPE_BEHAVIOUR_ROOT_ONLY
+    A_TITLE     "Classification type"
+
+obj [O_LABEL_STRUCTURE] O_TYPE_BEHAVIOUR_PHYSICAL
+    A_TYPE      O_TYPE_TYPE_BEHAVIOUR
+    A_TITLE     "Represents a physical item"
+
+obj [O_LABEL_STRUCTURE] O_TYPE_BEHAVIOUR_HIERARCHICAL
+    A_TYPE      O_TYPE_TYPE_BEHAVIOUR_ROOT_ONLY
+    A_TITLE     "Hierarchical"
+
+obj [O_LABEL_STRUCTURE] O_TYPE_BEHAVIOUR_SHOW_HIERARCHY
+    A_TYPE      O_TYPE_TYPE_BEHAVIOUR_ROOT_ONLY
+    A_TITLE     "Show hierarchy when displaying a link to objects"
+
+obj [O_LABEL_STRUCTURE] O_TYPE_BEHAVIOUR_FORCE_LABEL_CHOICE
+    A_TYPE      O_TYPE_TYPE_BEHAVIOUR_ROOT_ONLY
+    A_TITLE     "Force explicit choice of label when creating new object"
+
+obj [O_LABEL_STRUCTURE] O_TYPE_BEHAVIOUR_SELF_LABELLING
+    A_TYPE      O_TYPE_TYPE_BEHAVIOUR
+    A_TITLE     "Automatically label objects of this type with itself"
+
+# ------------------------------------------------------------------
+#  Application type 'types'
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] O_TYPE_APP_VISIBLE
+	A_TITLE		"Type of object"
+

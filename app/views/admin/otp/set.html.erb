@@ -1,0 +1,31 @@
+<%
+  @page_title = "#{@new_assignment ? 'Issue token to ' : 'Replace token for '} #{h(@user.name)}"
+  @breadcrumbs = [:menu, ['/do/admin/otp', 'Tokens']]
+%>
+
+<% if @set_attempted %>
+  <p class="z__general_alert"><% if @otp_result != nil && @otp_result.message != nil && @otp_result.reason == :reuse %><%= h(@otp_result.message) %><% else %>Incorrect OTP or unknown token serial number. Please try again.<% end %></p>
+<% end %>
+
+<form method="POST"><%= form_csrf_token %>
+
+  <p>1. Enter the serial number of the token. (the long number on the back of the token)<br>
+  &nbsp; &nbsp; <input id="identifier" name="identifier" size="20" type="text"<% unless @set_attempted %> class="z__focus_candidate"<% end %> value="<%= @identifier %>"></p>
+
+  <p>2. Generate a code by pressing the button on the token, and enter it below.<br>
+  &nbsp; &nbsp; <input id="password" name="password" size="20" type="password"<% if @set_attempted %> class="z__focus_candidate"<% end %>></p>
+
+  <p><input type="submit" value="<% if @new_assignment %>Issue token to<% else %>Replace token for<% end %> <%= h(@user.name) %>"></p>
+
+</form>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<p><img src="/images/hardware-otp.png" width="113" height="30"></p>
+<ul>
+  <li>Press the button on your token to generate a One Time Password</li>
+  <li>Type the code into the One Time Password box above</li>
+  <li>Click 'Issue token'</li>
+</ul>
+

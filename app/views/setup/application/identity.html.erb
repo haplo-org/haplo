@@ -1,0 +1,57 @@
+<% @page_title = 'Basics' -%>
+
+<h1>System name</h1>
+
+<p class="z__management_important_value"><%= h(@system_name) %></p>
+<%= sys_mng_edit_button("/do/setup/application/edit_sysname") %>
+
+<h1>Administrator email address</h1>
+
+<p class="z__management_important_value"><%= h(@admin_email_address) %></p>
+<%= sys_mng_edit_button("/do/setup/application/edit_adminemail") %>
+
+<h1>Web addresses and SSL policy</h1>
+
+<table class="z__mangement_kv_table">
+  <tr><th>Hostname</th><td><%= h(@url_hostname) %></td></tr>
+  <tr><th>SSL hostname</th><td><%= h(@ssl_hostname) %></td></tr>
+  <tr><th>SSL policy</th><td>Use for:<%
+    found_one = false
+    n = 0
+    @ssl_policy.each do |type|
+      if type == 'e'
+        found_one = true
+        %><br><%= Setup_ApplicationController::ENCRYPTION_POLICY_NAMES[n] %><%
+      end
+      n += 1
+    end
+    unless found_one
+      %><br><i>(none)<i><%
+    end
+  %></td></tr>
+</table>
+<%= sys_mng_edit_button("/do/setup/application/addresses") %>
+
+<h1>Content Security Policy</h1>
+<%
+  csp_info = Setup_ApplicationController::CONTENT_SECURITY_POLICY_OPTIONS.find { |a| a.first == @content_security_policy }
+  if csp_info
+    %><p><%= h(csp_info.last) %></p><%
+  else
+    %><p><tt><%= h(@content_security_policy) %></tt></p><%
+  end
+%>
+<%= sys_mng_edit_button("/do/setup/application/edit_csp") %>
+
+<h1>Object web addresses</h1>
+
+<table class="z__mangement_kv_table">
+  <tr><th>Slugs in addresses</th><td><% if @max_slug_length == 0 %><i>disabled</i><% else %>Max length <%= @max_slug_length%><% end %></td></tr>
+</table>
+<%= sys_mng_edit_button("/do/setup/application/edit_sluglen") %>
+
+<h1>Copyright notice</h1>
+
+<iframe name="copyrightdisplay" src="copyright_display" style="width:98%;height:200px;margin-left:1%"></iframe>
+<form method="get" action="/do/setup/application/copyright" class="z__sys_mng_edit_button" target="_new"><input type="submit" value="Edit"> (opens in new window)</form>
+<% client_side_controller_js("copyright_reloader") %>

@@ -1,0 +1,91 @@
+title: AuditEntry
+long_title: AuditEntry interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @AuditEntry@ interface represents an audit trail entry.
+
+
+h2. Construction
+
+Use @O.audit.write()@ to write to the [node:dev/plugin/o/audit-trail:audit trail].
+
+Passed to the [node:dev/plugin/hook/audit-entry-optional-write] hook.
+
+
+h2. Interface
+
+h3(property). auditEntryType
+
+A @String@ representing the type of audit entry.
+
+
+h3(property). ref
+
+The [node:dev/plugin/interface/ref] of the store object this audit entries is about, or @null@ if it is not about an object.
+
+
+h3(property). data
+
+A JSON compatible data structure giving additional details about the entry.
+
+
+h3(property). creationDate
+
+The @Date@ when the entry was written.
+
+
+h3(property). remoteAddress
+
+A @String@ representing the remote address of the request, or @null@ if the entry was not written in response to a request.
+
+
+h3(property). userId
+
+The user ID of the user who made the request which prompted this entry.
+
+Use [node:dev/plugin/o/lookup/user] to retrieve user information.
+
+
+h3(property). authenticatedUserId
+
+Similar to @userId@, but the user ID of the user who authenticated. If a user uses the impersonation feature, @userId@ will be set to the impersonated user, and @authenticatedUserId@ to the original user who logged in.
+
+
+h2. Audit Entry Types
+
+Audit entries created by plugins may have any type, prefixed by the plugin name.  The types used by plugins cannot be predicted.
+
+System generated audit entries typically have one of the following types:
+
+|_. Type |_. Description |
+| CONFIG | A change was made to the system configuration |
+| CREATE | A new object store item has been created|
+| DELETE | An object has been deleted |
+| DISPLAY | An object has been displayed (only recorded if enabled in system management) |
+| EXPORT | Search results have been exported |
+| FILE-DOWNLOAD | A file has been downloaded (only recorded if enabled in system management) |
+| FILE-NEW | A new file has been created |
+| GROUP-DISABLE | A group has been disabled |
+| GROUP-ENABLE | A group has been re-enabled |
+| GROUP-MEMBERSHIP | A user or group has been added or removed from a group |
+| GROUP-MODIFY | A group's properties have been changed|
+| GROUP-NEW | A new group has been created |
+| NEW-APPLICATION | One audit entry of this type is created during initial server setup |
+| NOTE | An administrative note added to the audit trail |
+| PERMISSION-CHANGE | A user or group's permissions have changed |
+| PLUGIN-INSTALL | A new plugin has been installed |
+| PLUGIN-UNINSTALL | A plugin has been uninstalled |
+| SEARCH | An object-store search has been performed through the UI (only recorded if enabled in system management) |
+| UPDATE | An object has been edited |
+| USER-AUTH-FAIL | A login attempt failed |
+| USER-BLOCK | A user account has been blocked |
+| USER-CHANGE-PASS | A user account password has been changed |
+| USER-DELETE | A user was deleted |
+| USER-ENABLE | A user account has been re-enabled |
+| USER-IMPERSONATE | An impersonation session was started |
+| USER-LOGIN | A login attempt succeeded |
+| USER-LOGOUT | A user logged out (Note session timeouts are not recorded)|
+| USER-MODIFY | A user account has been edited |
+| USER-NEW | A new user has been created |
+| USER-SET-PASS | A user account password was reset (by clicking 'Forgotten your password?') |

@@ -1,0 +1,8 @@
+<% @breadcrumbs = [:login] -%>
+<% @page_title = 'Locked out' -%>
+
+<p>There have been too many failed login attempts from you, or other users sharing your internet connection.</p>
+
+<p>For security, logins from your internet connection have been temporarily disabled. <b>Please wait <%= KLoginAttemptThrottle::FAILURE_ATTEMPT_TIMEOUT / 60 %> minutes and try again.</b></p>
+
+<p>While inconvenient to forgetful users, this security measure prevents automated systems from guessing your password.</p>

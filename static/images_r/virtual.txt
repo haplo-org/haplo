@@ -1,0 +1,9 @@
+# Virtual filename | input base filename | method (avg, max, blend) | colours... at least one, up to three | options, all beginning with '-', eg -q90 for quality setting for jpegs
+
+# For the right hand sidebar menu
+indicate.gif | indicate.gif | blend | mix(:highlight,70,#fff,30) | #fff
+
+# Home page banners (implemented by home_page_elements plugin, and here because they need recolouring)
+home-page-banner-a.gif | home-page-banner-a.gif | avg | mix(:background0,50,#fff,50) | :background0 | #fff
+home-page-banner-b.gif | home-page-banner-b.gif | avg | mix(:background1,50,#fff,50) | :background1 | #fff
+home-page-banner-c.gif | home-page-banner-c.gif | avg | mix(:background2,50,#fff,50) | :background2 | #fff

@@ -1,0 +1,6 @@
+<%
+  @page_title = 'Add Person'
+  @breadcrumbs = [[object_urlpath(@add_to), 'Cancel']]
+%>
+
+<%= render(:partial => 'shared/editor_for_new_object', :data_for_template => {:object => @object}) %>

@@ -1,0 +1,29 @@
+<div style="border: 1px dotted #aaa; padding: 4px 6px">
+<p>The following interpolated strings are available in the fields below</p>
+<ul>
+  <li>%%FEATURE_NAME%% - name of the feature, use for headings in the email</li>
+  <li>%%DEFAULT_HOSTNAME%% - hostname used in default URLs</li>
+  <li>%%USER_HTML_ONLY%% - for the HTML version, only use the provided HTML in the 'Branding (HTML)' field. Make sure you use the %%MESSAGE%% string. Replaced by a blank string</li>
+  <li>%%MESSAGE%% - a marker for the generated content in the HTML version</li>
+  <li>%%RECIPIENT_NAME%% - name of the person the email is being sent to</li>
+  <li>%%RECIPIENT_NAME_POSSESSIVE%% - e.g. John Smith&apos;s or Joe Bloggs&apos;
+  <li>%%RECIPIENT_FIRST_NAME%%</li>
+  <li>%%RECIPIENT_FIRST_NAME_POSSESSIVE%%</li>
+  <li>%%RECIPIENT_LAST_NAME%%</li>
+  <li>%%RECIPIENT_EMAIL_ADDRESS%% - email address of the person the email is being sent to</li>
+  <li>%%UNSUBSCRIBE_LINK%% - a URL which the user can click to unsubscribe from this type of email.</li>
+  <li>%%IMG:...%% - URL of the image (in static files) with 'filename'. Current files:</li>
+  <ul>
+    <%
+      AppStaticFile.find_all_without_data().each do |file|
+        ext = (file.filename =~ /(\.\w+)\z/) ? $1 : ''
+        %><li>%%IMG:<%= file.id %><%= ext %><%= %>%% (<%= h(file.filename) %>)</li><%
+      end
+    %>
+  </ul>
+</ul>
+<p>Valid unclosed HTML tags: &lt;hr&gt;, &lt;br&gt;, &lt;img&gt;</p>
+<p>Containers styled by default: &lt;h1&gt; &lt;h2&gt; &lt;h3&gt; &lt;blockquote&gt; &lt;p&gt; &lt;p class="description"&gt; (indented, no margin above) &lt;p class="link1"&gt; (indented link) &lt;div class="box"&gt; &lt;div class="footer"&gt; and &lt;hr&gt; draws a line.</p>
+<p>For links in plain text, use &lt;a&gt; within &lt;p class="link0"&gt; &lt;p class="link1"&gt; &lt;p class="action"&gt; &lt;p class="button"&gt; (for varying styles of plain output), otherwise link will be omitted.</p>
+<p>Remember that Outlook 2007 severely limits the range of HTML and CSS which will render properly.</p>
+</div>

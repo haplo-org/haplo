@@ -1,0 +1,21 @@
+<%
+  @page_title = (params[:id] == 'new') ? 'New Qualifier' : 'Edit '+h(@title)
+-%>
+
+<%= sys_mng_header %>
+
+<form method="POST"><%= form_csrf_token %>
+
+<p>Name<br>
+<input type="text" name="title" value="<%= h(@title) %>">
+</p>
+
+<%= code_value_edit_ui(@code) %>
+
+<p>Search name<br>
+<input type="text" name="short_name" value="<%= h(@short_name) %>">
+</p>
+
+<p><input type="submit" value="Save changes"></p>
+
+</form>

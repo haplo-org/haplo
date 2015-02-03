@@ -1,0 +1,22 @@
+title: Text types
+long_title: Constants for types of text
+--
+
+These constants are used as the @typecode@ argument in [node:dev/plugin/o/constructor/text] and the @typecode@ property of [node:dev/plugin/interface/text] objects.
+
+See also [node:dev/plugin/o/constants/value-types].
+
+|*Constant name*|*Description*|
+|@O.T_TEXT@|Plain single line text|
+|@O.T_TEXT_DOCUMENT@|Rich document text|
+|@O.T_TEXT_MULTILINE@|Multi-line plain text|
+|@O.T_TEXT_PARAGRAPH@|Paragraph plain text|
+|@O.T_TEXT_PERSON_NAME@|Person's name, with annotated fields|
+|@O.T_IDENTIFIER_EMAIL_ADDRESS@|Email address|
+|@O.T_IDENTIFIER_ISBN@|Book ISBN number|
+|@O.T_IDENTIFIER_POSTAL_ADDRESS@|Postal address, with annotated fields|
+|@O.T_IDENTIFIER_POSTCODE@|UK postcode|
+|@O.T_IDENTIFIER_TELEPHONE_NUMBER@|Telephone number, with international dialing|
+|@O.T_IDENTIFIER_URL@|URL (web address)|
+|@O.T_IDENTIFIER_CONFIGURATION_NAME@|Configuration name, for use by plugins to identify special objects, or special behaviour of objects.|
+

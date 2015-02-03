@@ -1,0 +1,404 @@
+# Haplo Platform                                     http://haplo.org
+# (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+# ------------------------------------------------------------------
+#  Qualifiers
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] Q_PHYSICAL
+    A_TYPE              O_TYPE_QUALIFIER_DESC
+    A_TITLE             'Physical'
+    A_CODE              KIdentifierConfigurationName.new('std:qualifier:physical')
+    A_ATTR_SHORT_NAME   'physical'
+
+obj [O_LABEL_STRUCTURE] Q_OFFICE
+    A_TYPE              O_TYPE_QUALIFIER_DESC
+    A_TITLE             'Office'
+    A_CODE              KIdentifierConfigurationName.new('std:qualifier:office')
+    A_ATTR_SHORT_NAME   'office'
+
+obj [O_LABEL_STRUCTURE] Q_MOBILE
+    A_TYPE              O_TYPE_QUALIFIER_DESC
+    A_TITLE             'Mobile'
+    A_CODE              KIdentifierConfigurationName.new('std:qualifier:mobile')
+    A_ATTR_SHORT_NAME   'mobile'
+
+obj [O_LABEL_STRUCTURE] Q_HOME
+    A_TYPE              O_TYPE_QUALIFIER_DESC
+    A_TITLE             'Home'
+    A_CODE              KIdentifierConfigurationName.new('std:qualifier:home')
+    A_ATTR_SHORT_NAME   'home'
+
+obj [O_LABEL_STRUCTURE] Q_PERSONAL
+    A_TYPE              O_TYPE_QUALIFIER_DESC
+    A_TITLE             'Personal'
+    A_CODE              KIdentifierConfigurationName.new('std:qualifier:personal')
+    A_ATTR_SHORT_NAME   'personal'
+
+obj [O_LABEL_STRUCTURE] Q_FAX
+    A_TYPE              O_TYPE_QUALIFIER_DESC
+    A_TITLE             'Fax'
+    A_CODE              KIdentifierConfigurationName.new('std:qualifier:fax')
+    A_ATTR_SHORT_NAME   'fax'
+
+obj [O_LABEL_STRUCTURE] Q_SWITCHBOARD
+    A_TYPE              O_TYPE_QUALIFIER_DESC
+    A_TITLE             'Switchboard'
+    A_CODE              KIdentifierConfigurationName.new('std:qualifier:switchboard')
+    A_ATTR_SHORT_NAME   'switchboard'
+
+obj [O_LABEL_STRUCTURE] Q_CORRESPONDENCE
+    A_TYPE              O_TYPE_QUALIFIER_DESC
+    A_TITLE             'Correspondence'
+    A_CODE              KIdentifierConfigurationName.new('std:qualifier:correspondence')
+    A_ATTR_SHORT_NAME   'correspondence'
+
+obj [O_LABEL_STRUCTURE] Q_ROLE
+    A_TYPE              O_TYPE_QUALIFIER_DESC
+    A_TITLE             'Role'
+    A_CODE              KIdentifierConfigurationName.new('std:qualifier:role')
+    A_ATTR_SHORT_NAME   'role'
+
+obj [O_LABEL_STRUCTURE] Q_NICKNAME
+    A_TYPE              O_TYPE_QUALIFIER_DESC
+    A_TITLE             'Nickname'
+    A_CODE              KIdentifierConfigurationName.new('std:qualifier:nickname')
+    A_ATTR_SHORT_NAME   'nickname'
+
+# ------------------------------------------------------------------
+#  Attributes
+# ------------------------------------------------------------------
+
+# Plugin configuration: Attribute intended for marking objects as special to plugins
+
+obj [O_LABEL_STRUCTURE] A_CONFIGURED_BEHAVIOUR
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Configured behaviour'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:configured-behaviour')
+    A_ATTR_SHORT_NAME   'configured-behaviour'
+    A_ATTR_DATA_TYPE    T_IDENTIFIER_CONFIGURATION_NAME
+    A_ATTR_QUALIFIER    Q_NULL
+
+# Taxonomy support
+
+obj [O_LABEL_STRUCTURE] A_TAXONOMY_RELATED_TERM
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Related Term'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:related-term')
+    A_ATTR_SHORT_NAME   'related-term'
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_TAXONOMY_TERM
+
+obj [O_LABEL_STRUCTURE] A_PARENT
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Parent'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:parent')
+    A_ATTR_SHORT_NAME   'parent'
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+
+# Other attributes
+
+obj [O_LABEL_STRUCTURE] A_FILE
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'File'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:file')
+    A_ATTR_SHORT_NAME   'file'
+    A_ATTR_DATA_TYPE    T_IDENTIFIER_FILE
+    A_ATTR_QUALIFIER    Q_NULL
+    A_RELEVANCY_WEIGHT  250
+
+# Data attributes
+
+obj [O_LABEL_STRUCTURE] A_URL
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             "Web address (URL)"
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:url')
+    A_ATTR_SHORT_NAME   'url'
+    A_ATTR_SHORT_NAME   "web-address"
+    A_ATTR_DATA_TYPE    T_IDENTIFIER_URL
+    A_ATTR_QUALIFIER    Q_NULL
+
+obj [O_LABEL_STRUCTURE] A_EMAIL_ADDRESS
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Email address'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:email')
+    A_ATTR_SHORT_NAME   'email'
+    A_ATTR_SHORT_NAME   "email-address"
+    A_ATTR_DATA_TYPE    T_IDENTIFIER_EMAIL_ADDRESS
+    A_ATTR_QUALIFIER    Q_NULL
+
+obj [O_LABEL_STRUCTURE] A_JOB_TITLE
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Job title'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:job-title')
+    A_ATTR_SHORT_NAME   "job-title"
+    A_ATTR_DATA_TYPE    T_TEXT
+    A_ATTR_QUALIFIER    Q_NULL
+
+obj [O_LABEL_STRUCTURE] A_ISBN
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'ISBN'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:isbn')
+    A_ATTR_SHORT_NAME   'isbn'
+    A_ATTR_DATA_TYPE    T_IDENTIFIER_ISBN
+    A_ATTR_QUALIFIER    Q_NULL
+
+obj [O_LABEL_STRUCTURE] A_ADDRESS
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Address'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:address')
+    A_ATTR_SHORT_NAME   'address'
+    A_ATTR_DATA_TYPE    T_IDENTIFIER_POSTAL_ADDRESS
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_QUALIFIER    Q_OFFICE
+    A_ATTR_QUALIFIER    Q_CORRESPONDENCE
+    A_ATTR_QUALIFIER    Q_HOME
+
+obj [O_LABEL_STRUCTURE] A_TELEPHONE_NUMBER
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Telephone number'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:telephone')
+    A_ATTR_SHORT_NAME   'telephone'
+    A_ATTR_SHORT_NAME   "telephone-number"
+    A_ATTR_SHORT_NAME   "tel-no"
+    A_ATTR_DATA_TYPE    T_IDENTIFIER_TELEPHONE_NUMBER
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_QUALIFIER    Q_OFFICE
+    A_ATTR_QUALIFIER    Q_MOBILE
+    A_ATTR_QUALIFIER    Q_HOME
+    A_ATTR_QUALIFIER    Q_PERSONAL
+    A_ATTR_QUALIFIER    Q_FAX
+    A_ATTR_QUALIFIER    Q_SWITCHBOARD
+
+# Links to objects
+
+obj [O_LABEL_STRUCTURE] A_PROJECT
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Project'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:project')
+    A_ATTR_SHORT_NAME   'project'
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_PROJECT
+
+obj [O_LABEL_STRUCTURE] A_EVENT
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Event'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:event')
+    A_ATTR_SHORT_NAME   'event'
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_EVENT
+
+# Links to objects defining roles
+
+obj [O_LABEL_STRUCTURE] A_CLIENT
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Client'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:client')
+    A_ATTR_SHORT_NAME   'client'
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_ORGANISATION
+
+obj [O_LABEL_STRUCTURE] A_WORKS_FOR
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Works for'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:works-for')
+    A_ATTR_SHORT_NAME   "works-for"
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_ORGANISATION
+
+obj [O_LABEL_STRUCTURE] A_ATTENDEE
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Attendees'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:attendee')
+    A_ATTR_SHORT_NAME   'attendee'
+    A_ATTR_SHORT_NAME   'attendees'
+    A_ATTR_SHORT_NAME   "attended-by"
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_PERSON
+
+obj [O_LABEL_STRUCTURE] A_RELATIONSHIP_MANAGER
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Relationship Manager'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:relationship-manager')
+    A_ATTR_SHORT_NAME   "relationship-manager"
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_STAFF
+    A_ATTR_UI_OPTIONS   'dropdown'
+
+obj [O_LABEL_STRUCTURE] A_PROJECT_LEADER
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Project leader'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:project-leader')
+    A_ATTR_SHORT_NAME   "project-leader"
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_STAFF
+
+obj [O_LABEL_STRUCTURE] A_PROJECT_TEAM
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Project team members'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:project-team')
+    A_ATTR_SHORT_NAME   "project-team"
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_STAFF
+
+obj [O_LABEL_STRUCTURE] A_ORGANISED_BY
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Organised by'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:organised-by')
+    A_ATTR_SHORT_NAME   "organised-by"
+    A_ATTR_SHORT_NAME   'organiser'
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_ORGANISATION
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_PERSON
+
+obj [O_LABEL_STRUCTURE] A_PURCHASED_FROM
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Purchased from'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:purchased-from')
+    A_ATTR_SHORT_NAME   'purchased-from'
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_ORGANISATION
+
+obj [O_LABEL_STRUCTURE] A_MANUFACTURER
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Manufacturer'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:manufacturer')
+    A_ATTR_SHORT_NAME   'manufacturer'
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_ORGANISATION
+
+obj [O_LABEL_STRUCTURE] A_PARTICIPANT
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Participant'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:participant')
+    A_ATTR_SHORT_NAME   'participant'
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_ORGANISATION
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_PERSON
+
+obj [O_LABEL_STRUCTURE] A_SPEAKER
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Speaker'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:speaker')
+    A_ATTR_SHORT_NAME   'speaker'
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_PERSON
+
+obj [O_LABEL_STRUCTURE] A_VENUE
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Venue'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:venue')
+    A_ATTR_SHORT_NAME   'venue'
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_ORGANISATION
+
+obj [O_LABEL_STRUCTURE] A_FIRST_CONTACT_VIA
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'First contact via'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:first-contact-via')
+    A_ATTR_SHORT_NAME   'first-contact-via'
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_PERSON
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_ORGANISATION
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_EVENT
+
+obj [O_LABEL_STRUCTURE] A_MEMBER_OF
+    A_TYPE              O_TYPE_ATTR_DESC
+    A_TITLE             'Member of'
+    A_CODE              KIdentifierConfigurationName.new('std:attribute:member-of')
+    A_ATTR_SHORT_NAME   'member-of'
+    A_ATTR_DATA_TYPE    T_OBJREF
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_ORGANISATION
+
+# ------------------------------------------------------------------
+#  Aliased attributes
+# ------------------------------------------------------------------
+
+obj [O_LABEL_STRUCTURE] AA_DATE_AND_TIME
+    A_TYPE              O_TYPE_ATTR_ALIAS_DESC
+    A_TITLE             'Date and time'
+    A_CODE              KIdentifierConfigurationName.new('std:aliased-attribute:date-and-time')
+    A_ATTR_SHORT_NAME   'date-and-time'
+    A_ATTR_ALIAS_OF     A_DATE
+    A_ATTR_DATA_TYPE    T_DATETIME
+    A_ATTR_UI_OPTIONS   'm,n,y,n,n'
+
+obj [O_LABEL_STRUCTURE] AA_YEAR
+    A_TYPE              O_TYPE_ATTR_ALIAS_DESC
+    A_TITLE             'Year'
+    A_CODE              KIdentifierConfigurationName.new('std:aliased-attribute:year')
+    A_ATTR_SHORT_NAME   'year'
+    A_ATTR_ALIAS_OF     A_DATE
+    A_ATTR_DATA_TYPE    T_DATETIME
+    A_ATTR_UI_OPTIONS   'Y,n,n,n,n'
+
+obj [O_LABEL_STRUCTURE] AA_NAME
+    A_TYPE              O_TYPE_ATTR_ALIAS_DESC
+    A_TITLE             'Name'
+    A_CODE              KIdentifierConfigurationName.new('std:aliased-attribute:name')
+    A_ATTR_SHORT_NAME   'name'
+    A_ATTR_ALIAS_OF     A_TITLE
+    A_ATTR_DATA_TYPE    T_TEXT_PERSON_NAME
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_QUALIFIER    Q_ALTERNATIVE
+    A_ATTR_QUALIFIER    Q_NICKNAME
+
+obj [O_LABEL_STRUCTURE] AA_EXPERTISE
+    A_TYPE              O_TYPE_ATTR_ALIAS_DESC
+    A_TITLE             'Expertise'
+    A_CODE              KIdentifierConfigurationName.new('std:aliased-attribute:expertise')
+    A_ATTR_SHORT_NAME   'expertise'
+    A_ATTR_ALIAS_OF     A_SUBJECT
+
+obj [O_LABEL_STRUCTURE] AA_CONTACT_CATEGORY2
+    A_TYPE              O_TYPE_ATTR_ALIAS_DESC
+    A_TITLE             'Contact category'
+    A_CODE              KIdentifierConfigurationName.new('std:aliased-attribute:contact-category')
+    A_ATTR_SHORT_NAME   'contact-category'
+    A_ATTR_ALIAS_OF     A_TYPE
+
+obj [O_LABEL_STRUCTURE] AA_PARTICIPATING_ORGANISATION
+    A_TYPE              O_TYPE_ATTR_ALIAS_DESC
+    A_TITLE             'Participating organisation'
+    A_CODE              KIdentifierConfigurationName.new('std:aliased-attribute:participant')
+    A_ATTR_SHORT_NAME   'participant'
+    A_ATTR_ALIAS_OF     A_PARTICIPANT
+    A_ATTR_CONTROL_BY_TYPE  O_TYPE_ORGANISATION
+
+obj [O_LABEL_STRUCTURE] AA_ORGANISATION_NAME
+    A_TYPE              O_TYPE_ATTR_ALIAS_DESC
+    A_TITLE             'Organisation name'
+    A_CODE              KIdentifierConfigurationName.new('std:aliased-attribute:organisation-name')
+    A_ATTR_SHORT_NAME   'organisation-name'
+    A_ATTR_ALIAS_OF     A_TITLE
+    A_ATTR_QUALIFIER    Q_NULL
+    A_ATTR_QUALIFIER    Q_ALTERNATIVE
+
+obj [O_LABEL_STRUCTURE] AA_PARENT_ORGANISATION
+    A_TYPE              O_TYPE_ATTR_ALIAS_DESC
+    A_TITLE             'Parent organisation'
+    A_CODE              KIdentifierConfigurationName.new('std:aliased-attribute:parent-organisation')
+    A_ATTR_SHORT_NAME   'parent-organisation'
+    A_ATTR_ALIAS_OF     A_PARENT
+

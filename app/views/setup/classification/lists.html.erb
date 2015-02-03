@@ -1,0 +1,38 @@
+<%
+  @page_title = 'Lists'
+%>
+
+<h1>Lists</h1>
+
+<ul>
+<%
+  @lists.each do |attr_desc,show_combined,classification_types|
+    if show_combined
+      %><li><a href="/do/setup/classification/objects/<%= classification_types.first.objref.to_presentation %>?attr=<%= attr_desc.desc %>" target="workspace"><%= h(attr_desc.printable_name) %></a></li><%
+    else
+      %><li><a href="/do/setup/classification/attr/<%= attr_desc.desc %>" target="workspace"><%= h(attr_desc.printable_name) %></a></li><ul><%
+      classification_types.each do |type_desc|
+        %><li><a href="/do/setup/classification/objects/<%= type_desc.objref.to_presentation %>" target="workspace"><%= h(type_desc.printable_name) %></a></li><%
+      end
+      %></ul><%
+    end
+  end
+%>
+</ul>
+
+<% unless @unmatched_types.empty? -%>
+  <ul>
+    <li><a href="/do/setup/classification/unmatched" target="workspace">Other classification types</a></li>
+    <ul>
+    <%
+      @unmatched_types.each do |type_desc|
+        %><li><a href="/do/setup/classification/objects/<%= type_desc.objref.to_presentation %>" target="workspace"><%= h(type_desc.printable_name) %></a></li><%
+      end
+    %>
+    </ul>
+  </ul>
+<% end -%>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/classification/new_list" target="workspace">New list</a></li>
+</ul>

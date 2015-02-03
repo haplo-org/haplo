@@ -1,0 +1,52 @@
+title: Labelling user interface
+--
+
+Users of your application do not need to think about labels in their day-to-day use of the system. Their main interaction with labels is through the object editor.
+
+
+h2. Object editor
+
+h3. Applicable labels
+
+The user applies labels to objects using the normal object editor. If the user has _Create_ permission for more than one Applicable label for that Type, a set of checkboxes to choose will be displayed in the right hand column of the page.
+
+If there is only one possible Applicable label, then no UI is shown. In a typical application, this could be the case for most types for users without special permissions.
+
+
+h3. Explicit label choice
+
+If the Type of object being created has the "Force explicit choice of label when creating new object" behaviour, then when a new object is created, the user will be asked to select which Applicable label they wish to apply before they see the object editor.
+
+If the labels have notes, they will be displayed on this screen.
+
+This forces users to make a conscious decision about which label to apply. This is useful when asking users to choose if material is confidential or not, where applying the wrong label could be problematic.
+
+
+h3. Base labels
+
+Base labels are not shown in the editor user interface, because the user has no choice in whether they're applied.
+
+
+h3. Plugins
+
+Plugins can add to the user interface on the object editor. The easiest UI for them to add is checkboxes which allow the user to apply additional labels.
+
+
+h2. New objects
+
+When creating new objects, the user will only be offered the types for which it's possible to apply a set of labels which match their _Create_ permission label set.
+
+A user can create objects if:
+
+ * the user does *not* have any of the base labels in the *deny* set for their _Create_ permission label set
+ * _and_
+ ** the type has no applicable labels, and the user has at least one of base labels in their *allow* _Create_ permission label set
+ ** _or_ the type has applicable labels, and the user is allowed to label an object with at least one of them.
+
+If plugins are taking over the entire labelling process, they can override these rules.
+
+
+h2. Object pages
+
+When an object is being displayed, the applied labels are discreetly shown at very bottom of the page.
+

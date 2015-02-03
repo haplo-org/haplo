@@ -1,0 +1,15 @@
+FOR: /do/admin/user/edit_membership
+
+h1. Edit group membership
+
+The user or group is a member of all the groups which are ticked. Membership of some groups can imply membership of others, so the resulting membership shown on the information page may not correspond directly with the ticked items here.
+
+h1. Group membership for users
+
+'Everyone' is a special group which automatically contains every single user in the system, and is not shown in this list.
+
+h1. Group membership for groups
+
+Groups can belong to other groups, but avoid using this unless absolutely necessary as it can cause confusion.
+
+

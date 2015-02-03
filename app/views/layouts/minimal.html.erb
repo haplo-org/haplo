@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title><%= h(if @page_title != nil && @page_title != '' then @page_title.to_s + ' : ' else '' end) %><%= KApp.global(:product_name) %></title>
+<%= render(:partial => 'shared/client_side_resources') -%>
+</head>
+<body class="<% if webfonts_enabled? %>z__webfonts_enabled <% end %>z__minimal_layout<%= @minimal_layout_extra_body_class || '' %>"<%= body_tag_data_attributes %>>
+
+<% unless @minimal_layout_no_cancel -%>
+  <a id="z__spawn_close" href="#">Cancel</a>
+<% end -%>
+  
+<div id="z__page">
+    <% if @page_title != nil -%>
+      <div id="z__page_name">
+        <h1><%= h(@page_title) %></h1>
+      </div>
+    <% end -%>
+
+    <div id="z__ws_content">
+      <%= @content_for_layout %>
+    </div>
+
+    <%= render :partial => 'layouts/right_column' %>
+
+  </div>
+</div>    
+</body>
+</html>

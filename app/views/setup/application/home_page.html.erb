@@ -1,0 +1,36 @@
+<% @page_title = 'Home page' -%>
+
+<h1>Home page</h1>
+
+<% if params.has_key?(:show) %>
+<% unless @elements =~ /\S/ %><p><i>(no elements set for home page)</i></p><% else %>
+<pre>
+<%= h(@elements) %>
+</pre>
+<% end %>
+<%= sys_mng_edit_button("/do/setup/application/home_page") %>
+<% else %>
+<form method="POST" action="/do/setup/application/home_page"><%= form_csrf_token %>
+<p><textarea name="elements" cols="80" rows="16" style="width:90%"><%= h(@elements) %></textarea></p>
+<p><input type="submit" value="Save"></p>
+</form>
+<% end %>
+
+<p>&nbsp;</p>
+
+<% if @groups != nil %>
+  <h2>Instructions</h2>
+  <p><span class="z__management_look_at_help">Temporary user interface</span></p>
+  <p>Each line specifies an element to display on the home page. Elements are displayed in the order they are listed.</p>
+  <p>Each line has the format:</p>
+  <pre>         [group ID] [position] [element name] [options]</pre>
+  <p>Group ID: Display this element only if the user is a member of this group.</p>
+  <p>Position: Either <i>left</i> or <i>right</i>, specifying the column of the home page.</p>
+  <p>Element name: Which Element to display. Make sure you have installed the correct plugins.</p>
+  <p>Options: Any options for the Element. This is optional. Options are generally specified in JSON format.</p>
+  <p>Groups IDs are:</p>
+  <table>
+    <% @groups.each do |group| %>
+      <tr><td><%= h(group.name) %></td><td><%= group.id %></td></tr>
+    <% end %>
+<% end %>

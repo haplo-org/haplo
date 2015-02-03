@@ -1,0 +1,12 @@
+FOR: /do/admin/audit
+
+h1. Audit trail
+
+The audit trail keeps a record of all important activities and changes made in your application.
+
+
+h4. Further help
+
+[[Audit configuration]]
+[[Add audit admin note]]
+[[View audit trail]]

@@ -1,0 +1,24 @@
+FOR: /do/admin/user/show
+
+h1. User information
+
+Click _Block_ or _Delete_ to remove access for this user.
+
+Click an _Edit_ button to change an aspect of a user's account. 
+
+* _Basic information_: Name and email address, and if the user has been issued with an authentication token, the token serial number.
+* _Group membership_: The groups the user belongs to.
+* _Permissions_: The effective permissions for this user, taking into account all the permissions for the groups the user belongs to. Note that permissions are usually set on groups, so editing a user's permissions usually make no statement on their permissions.
+* _Latest updates_: (may be renamed) Adjust the latest updates settings, including email frequency.
+* _Home country_: Where the user is based, used for localising the display of information, such as telephone numbers
+* _API keys_: When other software communicates with ONEIS, it uses an API key to gain access, like a username and password. This section lists all the current keys.
+
+h4. Further help
+
+[[Users]]
+[[New user]]
+[[Block or delete a user]]
+[[New API key]]
+
+
+

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head><title>PDF Preview</title></head>
+<body>
+<%
+  transform = "preview/png/l"
+  transform << "/p#{@current_page}" if @current_page != 1
+  # URL should be signed if the main preview URL was signed
+  url_path = file_url_path(@stored_file, transform, @is_signed_file_url ? {:sign_with => session} : nil)
+%>
+<p style="text-align:center;font-size:12px;font-family: verdana, sans-serif;margin:4px 0 16px 0;padding:2px 0;background:#eee"><% if @current_page == 1 %><span style="color:#888">&lt; previous</span><% else %><a href="?page=<%= @current_page - 1 %>">&lt; previous</a><% end %> &nbsp; <i><%= @current_page %> / <%= @pages %></i> &nbsp; <% if @current_page == @pages %><span style="color:#888">next &gt;</span><% else %><a href="?page=<%= @current_page + 1 %>">next &gt;</a><% end %></p>
+<p style="text-align:center"><img style="border:1px solid #ddd" src="<%= url_path %>"></p>
+</body>
+</html>

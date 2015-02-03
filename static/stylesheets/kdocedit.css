@@ -1,0 +1,199 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+/* --- KCtrlDocumentTextEdit ----------------------------------------------------------- */
+
+/* container for document editor */
+.z__document_text_edit {
+    margin: 0;
+    padding: 0 0 2px 0;
+}
+
+/* floating controls */
+.z__document_text_edit_floating_controls {
+    position: absolute;
+    left: -53px;
+    z-index: 500;
+    line-height: 2em;
+}
+.z__document_text_edit_floating_controls a.z__document_text_floating_buttons /* choose h1, h2..., add content button */ {
+    border: 1px solid #888;
+    border-radius: 2px;
+    background: #eee;
+    padding: 0 4px 1px 4px;
+    color: #000;
+}
+
+/* add content controls */
+.z__document_text_edit_add_controls {
+    position: absolute;
+    background: #fff;
+    left: -53px;
+    padding: 2px 2px 2px 0;
+    z-index: 1500;
+}
+.z__document_text_edit_add_controls a {
+    color: #000;
+    white-space: nowrap; /* stop the menus randomly wrapping in non-IE browsers when they actually have plenty of space */
+}
+
+/* contains the actual editable text / widgets */
+.z__document_text_edit_document {
+    border: 1px solid #444;
+    padding: 10px 8px 16px 8px;
+    min-height: 156px;
+    background: #fff;
+}
+
+/* unsupported message (for FF2) */
+.z__document_text_edit_not_supported {
+    border: 1px solid #f00;
+    padding: 4px 4px 4px 20px;
+    margin: 0 0 2px 0;
+    color: #800;
+    background: transparent url(/images/alerticon.gif) 2px 2px no-repeat;
+}
+
+/* text styles */
+#z__ws_content .z__document_text_edit_document p, #z__ws_content .z__document_text_edit_document p.p_p {
+    margin: 0 0 13px 0;
+    line-height: 21px;
+}
+
+    /* headings... don't use hX as it complicates the code */
+.z__document_text_edit_document .p_1 {
+    font-size: 18px;
+    font-weight: normal;
+    margin: 21px 0 9px 0;
+}
+.z__document_text_edit_document .p_2 {
+    font-size: 16px;
+    font-weight: normal;
+    margin: 19px 0 5px 0;
+}
+.z__document_text_edit_document .p_3 {
+    font-size: 13px;
+    font-weight: bold;
+    margin: 17px 0 3px 0;
+}
+.z__document_text_edit_document .p_4 {
+    font-size: 13px;
+    font-weight: bold;
+    color: #444;
+    margin: 15px 0 3px 0;
+}
+.z__webfonts_enabled .z__document_text_edit_document .p_1,
+.z__webfonts_enabled .z__document_text_edit_document .p_2,
+.z__webfonts_enabled .z__document_text_edit_document .p_3,
+.z__webfonts_enabled .z__document_text_edit_document .p_4 {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+
+/* list item */
+.z__document_text_edit_document .p_i:before {
+    display: block;
+    position: absolute;
+    left: 10px;
+    content: '\2022';
+}
+.z__document_text_edit_document .p_i {
+    padding-left: 10px;
+}
+
+
+/* widgets */
+
+.z__document_text_edit_document .z__widget_container {
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    padding: 3px;
+    margin: 4px 0;
+    width: 98%;
+    height: auto;
+    background: #eee;
+}
+
+.z__widget_container_delete /* div containing a link */ {
+    float: right;
+    position: relative;
+    right: 0px;
+    width: 16px;
+    height: 16px;
+    overflow: hidden;
+    z-index: 600;
+}
+
+.z__widget_container_delete a, .z__widget_container_delete a:visited {
+    display: block;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    background: #ddd url(/images/deletebutton.gif) -1px -1px no-repeat;
+    height: 14px;
+    width: 14px;
+}
+
+.z__widget_container_delete a:hover {
+    border: 1px solid #444;
+    background-color: #ddd;
+}
+
+.z__widget_undo_delete_button {
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    position: absolute;
+    background: #FFE8BE;
+    line-height: 13px;
+    padding: 2px 4px;
+    text-align: center;
+    z-index: 1000;
+}
+
+.z__msie_hide_widget_in_contenteditable {
+    /* IE ignores display:none in contentEditable sections. Isn't that nice of it? */
+    position: absolute;
+    left: -20000px;
+}
+
+.z__widget_container_inner {
+    border: 1px solid #fff;
+    border-radius: 2px;
+    width: 93%;
+    line-height: 12px;
+    padding: 2px 4px 4px 4px;
+}
+
+.z__document_text_edit_document .z__widget_type_heading {
+    margin: 0;
+    padding: 2px 4px 3px 0;
+    line-height: 11px;
+    font-weight: bold;
+}
+.z__document_text_edit_document .z__widget_container textarea {
+    width: 99%;
+}
+.z__document_text_edit_document .z__widget_reference {
+    display: none;   /* container for putting objrefs into the DOM */
+}
+.z__document_text_edit_document .z__widget_linked {
+    background: #eee url("/images/linkicon.gif") 2px center no-repeat;
+    padding: 2px 6px 2px 20px;
+    display: block;
+    margin: 0;
+}
+.z__document_text_edit_document .z__widget_checkbox {
+    margin: 3px 4px 0 0;
+    float: right;
+}
+
+/* styles for stopping editing */
+.z__uneditable p {
+    color: #888;
+}
+.z__strike p {
+    color: #888;
+    text-decoration: line-through;
+}

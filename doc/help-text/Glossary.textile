@@ -1,0 +1,43 @@
+h1. Glossary
+
+*Attribute*: used to describe specific elements of a type of object ie a document would have the following attributes: author, title, subject, date.
+
+*Browsing*: as an alternative to searching by entering search terms into a search box, you can browse information by scanning a list of contents. Different browsing lists can be created for different organisations.
+
+*Controlled field*: an indexing field which can only be completed using entries in a controlled list, as opposed to a field in which you can enter any text.
+
+*Embedded search*: a permanently and continuously running search created in a webpage.
+
+*Field*: part of an object which includes an attribute, qualifier and value. 
+
+*Hierarchical subject index*: an index of subject terms arranged hierarchically, thereby showing which are narrower or broader terms of other terms.
+
+*HTML*: Hyper-text markup language, used to create webpages.
+
+*Latest updates*: a function to gather recent items of interest to the user viewable either on a user's latest updates webpage or as an email bulletin.
+
+*Navigation*: links on the left of each webpage enabling users to move between webpages.
+
+*Object*: an entry in the system which records a description of an entity and sometimes the entity itself as an attached file, or text. Also referred to as an _item_.
+
+*Pop-up*: a new window automatically opening in a web browser, you will need pop-ups enabled to use some of the features in ONEIS, instructions for enabling pop-ups are different for each web browser.
+
+*Qualifier*: a term added to an attribute to clarify a particular instance of that attribute ie sub-title is a qualifier for title.
+
+*Relevancy*: search results are listed by relevancy when those items at the top of the list are considered more relevant to the search terms entered.
+
+*Results*: the results of a search are the items displayed which match the search terms entered.
+
+*Search illustrator*: a feature in ONEIS which displays an illustration of how your search terms will be connected together.
+
+*Search operators*: words added to a search by the user to specify how their search terms should be connected. The commonly used search operators are: AND, OR, NOT.
+
+*Subject*: the subject of an item is a description of the subject covered by the item. Subject description terms are normally chosen from a pre-compiled controlled list.
+
+*Tagging*: assigning description terms to an object from a pre-compiled list to improve search results and enable the object to be found when browsing all objects tagged with a certain term.
+
+*Taxonomy*: a subject list systematically arranged to show the relationship between terms, including their hiearchical relationship. A taxonomy would be used in a controlled field to control the terms used to describe objects.
+
+*Tray*: a holding place within ONEIS into which you can add items which you use later.
+
+*Type*: used to distinguish different kinds of object ie a document, book or person are all types of object.

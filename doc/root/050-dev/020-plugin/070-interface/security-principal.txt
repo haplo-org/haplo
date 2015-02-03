@@ -1,0 +1,112 @@
+title: SecurityPrincipal
+long_title: SecurityPrincipal interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @SecurityPrincipal@ interface represents an entity which is used for authentication. Specifically, @SecurityPrincipal@ objects represent users of the application and groups of users.
+
+
+h2. Construction
+
+You can't create new security principals from the JavaScript API. Users and groups are created through the System Management user interface in your web browser.
+
+@SecurityPrincipal@ objects representing users and groups are looked up using [node:dev/plugin/o/lookup/user], [node:dev/plugin/o/lookup/group] and [node:dev/plugin/o/lookup/security-principal], and in request context, by the [node:dev/plugin/o/request/current-user] property.
+
+
+h2. Interface (users and groups)
+
+The following interface is valid for @SecurityPrincipal@ objects representing both users and groups.
+
+
+h3(property). id
+
+ID of this principal.
+
+
+h3(property). name
+
+The name of the principal, suitable for displaying in your user interface.
+
+
+h3(property). email
+
+If the principal represents a user, the email address this user uses to log in.
+
+If the principal represents a group, this property is optional, and is the notification email address for this group.
+
+
+h3(property). isGroup
+
+@true@ if this @SecurityPrincipal@ represents a group, @false@ if it represents a user.
+
+
+h3(property). isActive
+
+@true@ if this @SecurityPrincipal@ represents an active user or group, @false@ if it has been deleted, blocked or disabled.
+
+
+h3(property). groupIds
+
+An array of IDs of the groups this principal belongs to.
+
+
+h3(property). directGroupIds
+
+An array of the IDs of the groups this principal *directly* belongs to.
+
+You probably should use @groupIds@ or @isMemberOf()@ instead of this property, as this array doesn't include implied memberships (when a group is a member of another group) nor the Everyone group.
+
+It's only useful for user syncing plugins. *Don't* use it for anything else.
+
+
+h3(property). data
+
+The [node:dev/plugin/interface/data-store] object for this principal. Plugins can use this to store small amounts of arbitrary data against an principal.
+
+Note there are restrictions and limitations on the data which can be stored. See the [node:dev/plugin/interface/data-store] documentation for details. In addition, any keys used must be of the form @plugin_name:key@, to create a separate namespace for each plugin and avoid conflicts. The inclusion of a @:@ character is enforced.
+
+
+h3(function). isMemberOf(groupId)
+
+Returns @true@ if the principal is a member of the groups specified by @groupId@. Use schema [node:dev/plugin/schema/group] constants.
+
+This is useful for implementing authorisation in your plugin. Create user groups, then check for membership of the group to authorise the user.
+
+
+h2. Interface (users)
+
+The following interface is valid for @SecurityPrincipal@ objects representing users.
+
+
+h3(property). nameFirst
+
+First name.
+
+
+h3(property). nameLast
+
+Last name.
+
+
+h3(property). ref
+
+If there is an object in the object store which represents this user, return a [node:dev/plugin/interface/ref] of that store object. Otherwise, return @null@.
+
+A store object represents the user if it has been explicitly set in System Management or programmatically.
+
+
+h3(function). canCreateObjectOfType(typeRef)
+
+Returns @true@ if the user has permission to create an object specified by the [node:dev/plugin/interface/ref] argument. Use the schema [node:dev/plugin/schema/type] constants.
+
+If @typeRef@ is @null@ or @undefined@, then @false@ will be returned.
+
+
+h2. Interface (groups)
+
+The following interface is valid for @SecurityPrincipal@ objects representing groups.
+
+
+h3(function). loadAllMembers()
+
+Returns an array of @SecurityPrincipal@ objects representing users *only*. If one of the members of this group is another group, the returned array will contain that group's users.

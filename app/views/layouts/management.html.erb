@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title><%= h(if @page_title != nil && @page_title != '' then @page_title.to_s + ' : ' else '' end) %><%= KApp.global(:product_name) %></title>
+<% @suppress_normal_js = true ; client_side_resources :management %>
+<%= render(:partial => 'shared/client_side_resources') -%>
+</head>
+<% unless @is_management_top_level %>
+<body id="z__management_layout"<% if webfonts_enabled? %> class="z__webfonts_enabled"<% end %>>
+<div class="z__management_page">
+<% end %>
+
+<%= @content_for_layout %>
+
+<% unless @is_management_top_level %>
+</div>
+</body>
+<% end %>
+</html>

@@ -1,0 +1,25 @@
+FOR: /do/setup/type/list
+
+h1. Types
+
+Every object in the system has a *type*, which specifies which attributes it uses, how it's displayed, and so on.
+
+Object types are split into two categories:
+
+* THINGS for types which represent entities you use in your business.
+* CLASSIFY for types which represent categories of descriptions used to describe the 'thing' objects. This includes the taxonomies and controlled lists.
+
+Click on a type to show the full information about the type.
+
+Types are hierarchical. Root types specify the general characteristics of a kind of object, and sub-types adjust this to specialise the root type. Sub-types are always a _kind of_ the root type.
+
+To create a sub-type of a type, click on the parent type and choose _New sub-type_ from the right hand panel.
+
+To create a new root type, choose _New root type_ from the bottom of the list of types. 
+
+h4. Further help
+
+[[Type information]]
+[[Edit types]]
+[[Attributes]]
+

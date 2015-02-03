@@ -1,0 +1,26 @@
+title: User groups
+--
+
+Not everyone in the organisation may have the same access to information. You can organise users into groups and apply access permissions to each group. 
+
+Identify the groups of stakeholders inside and outside the organisation who will use ONEIS. Divide your list of stakeholders into groups by role or permission based on common access requirements. An individual can belong to more than one group.
+
+As an example, groups for a small organisation might be:
+
+ * Administrators
+ * Staff
+ * Directors
+ * Associates
+ * Clients
+ * Everyone
+
+__Everyone__ is a special group which automatically contains every user. You can use this group to simplify permissions.
+
+CLICK_PATH TOOLS > System management > Groups
+
+Add a new group by clicking on New group and enter:
+
+ * Name: of group
+ * Group membership: groups can belong to other groups, but avoid using this unless absolutely necessary as it can be confusing. Since Groups form the basis for permissions, you should aim to be as simple as possible to avoid confusion and potential mistakes. 
+
+You'll set up the permissions for these groups after setting up [node:setup/permissions].

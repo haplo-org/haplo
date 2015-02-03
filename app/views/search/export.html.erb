@@ -1,0 +1,26 @@
+<%
+  @page_title = 'Export search results'
+  @breadcrumbs = [['/search?'+search_url_params(@search_spec), 'Results']]
+  
+  subset = nil
+  if @search_spec.has_key?(:subset)
+    subset = KObjectStore.read(@search_spec[:subset])
+    subset = subset.first_attr(KConstants::A_TITLE) if subset != nil
+  end
+  
+  # Search by fields summary?
+  fields_summary = if @search_spec.has_key?(:f)
+    search_by_fields_obj_to_summary(@search_spec[:f_obj])
+  else
+    ''
+  end
+-%>
+
+<p>Export results for <i><%= h(@search_spec[:q]) %> <%= fields_summary%></i><% if @search_spec.has_key?(:w) %> within <i><%= h(@search_spec[:w]) %></i><% end %><% if subset != nil %> in search subset <i><%= h(subset) %></i><% end %></p>
+
+<%= render :partial => 'shared/export_objects', :data_for_template => {
+  :action => '/search/export',
+  :button => 'Download search results',
+  :extra_html => search_params_as_hidden(@search_spec)
+} %>
+

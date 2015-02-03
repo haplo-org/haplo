@@ -1,0 +1,10 @@
+{
+  "pluginName": "badly_coded_plugin",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Badly Coded Plugin",
+  "displayDescription": "For testing each kind of error gets reported neatly",
+  "apiVersion": 3,
+  "load": ["js/badly_coded_plugin.js"],
+  "respond": ["/do/test_error"]
+}

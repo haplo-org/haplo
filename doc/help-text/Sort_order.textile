@@ -1,0 +1,9 @@
+FOR: /do/setup/application/sort_order
+
+h1. Sort order
+
+Objects which use the _Person's name_ data type for their title field, such as _People_, are generally sorted ignoring the _Title_ part of the name, but otherwise as they are written.
+
+However, in some circumstances, it is useful to sort Western names by last name, rather than first name.
+
+Use this option with care, as it may confuse users. Instead, consider adjusting the data type options to use "Western List" format in which names are entered, displayed and sorted in _Last, First_ order.

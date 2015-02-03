@@ -1,0 +1,15 @@
+<%
+  @page_title = 'Browse'
+  @breadcrumbs = [:browse]
+-%>
+
+<%= control_tree('z__search_by_subjects_browser') %>
+<%= render(:partial => 'search/offer_subsets') %>
+
+<div id="z__browse_term_search_result_container"></div>
+<div id="z__browse_term_enough_space_to_keep_scroll_position"></div>
+
+<% client_side_resources(:search_subject) -%>
+<div id="z__browse_info" data-sel="<% if @initial_selection != nil %><%= @initial_selection.to_presentation %><% end %>">
+  <%= @treesource %>
+</div>

@@ -1,0 +1,22 @@
+<%
+  @page_title = 'New list'
+%>
+
+<%= sys_mng_header %>
+
+<p>A List is a drop down menu of choices. After you create it here and add some choices, add the attribute to Types.</p>
+
+<p>See the Help for more information about what's created behind the scenes.</p>
+
+<form method="POST"><%= form_csrf_token %>
+
+<% if request.post? %>
+<p class="z__management_notice">Please enter the name of the new list.</p>
+<% end %>
+
+<p>Name of new list<br>
+<input type="text" name="name"></p>
+
+<p><input type="submit" value="Create new List"></p>
+
+</form>

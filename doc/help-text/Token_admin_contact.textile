@@ -1,0 +1,7 @@
+FOR: /do/setup/application/otp_contact
+
+h1. Token admin contact
+
+Set the contact details which will be displayed to users when they encounter problems with their authentication token.
+
+These contact details will only be shown to users who have successfully entered their password.

@@ -1,0 +1,28 @@
+<%
+  types = Array.new
+  KObjectStore.schema.each_type_desc do |t|
+    types << t
+  end
+  types.sort! {|a,b| a.printable_name <=> b.printable_name}
+%>
+<table class="z__latest_add_obj_search_table">
+  <tr class="z__latest_add_obj_search_table_ui_row">
+    <td><select name="z__latest_add_obj_search_type" id="z__latest_add_obj_search_type">
+      <%
+        types.each do |t|
+          # Don't include hierarchical classification types
+          unless t.is_classification? && t.is_hierarchical?
+            %><option value="<%= t.objref.to_presentation %>"><%= h(t.printable_name) %></option><%
+          end
+        end
+      -%>
+    </select></td>
+    <td width="100%"><input type="text" name="z__latest_add_obj_search_value" id="z__latest_add_obj_search_value" class="z__full_width_form_element" value=""></td>
+    <td><input type="submit" value="Look up..." id="z__latest_add_obj_search_lookup"></td>
+  </tr>
+  <tr>
+    <td></td>
+    <td colspan="2" id="z__latest_add_obj_search_results">
+    </td>
+  </tr>
+</table>

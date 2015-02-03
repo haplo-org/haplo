@@ -1,0 +1,5 @@
+h1. Disable a group
+
+To disable a group, find the group in system management, and choose _Disable_ from the right hand panel.
+
+You can enable a disabled group by going to the list of disabled groups in systems management, choosing the group you wish to enable, and choosing _Enable_ from the right hand panel. 

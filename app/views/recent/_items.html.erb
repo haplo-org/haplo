@@ -1,0 +1,97 @@
+<%
+  days = data_for_template[:days]
+  unnecessary_date_text = data_for_template[:unnecessary_date_text]
+
+  days.each do |day|
+
+    # Day header (maybe omitted if this is via "load more")
+    if day.date_text != unnecessary_date_text
+      %><div class="z__recent_date_header"><span><%= day.day_name_text %></span> <%= day.date_text %></div><%
+    end
+
+    displayed = []
+
+    day.entries.each do |entry|
+
+      action = nil
+      object = nil
+
+      # Decode the audit entry
+      case entry.kind
+      when 'CREATE', 'UPDATE', 'RELABEL'
+        begin
+          object = KObjectStore.read_version(entry.objref, entry.version)
+          # Need to know if it's the current version of the object to see if file links need signing
+          current_object = KObjectStore.read(entry.objref)
+          @is_current_version_of_object = (current_object.version == object.version)
+        rescue KObjectStore::PermissionDenied
+          next # Current labels of object deny access, even though past labels (copied to the AuditEntry) do allow.
+        end
+        display_object = true
+        if entry.data && (filev = entry.data['filev']) && filev.kind_of?(Array)
+          # This was annotated as including new file versions
+          filev.each do |tracking_id|
+            file_identifier = nil
+            object.each do |v,d,q|
+              file_identifier = v if v.kind_of?(KIdentifierFile) && v.tracking_id == tracking_id
+            end
+            if file_identifier
+              displayed << [entry, object,
+                  " uploaded version #{ERB::Util.h(file_identifier.version_string)} of ",
+                  Application_IconHelper::ICON_SPECIAL_RECENT_VERSION,
+                  render(:partial => 'file_version', :data_for_template => {:object => object, :file_identifier => file_identifier})
+                ]
+            end
+          end
+          # Hide the object if only the file versions changed
+          display_object = false unless entry.data['with-filev']
+        end
+        if display_object
+          # Slightly different renderings
+          case entry.kind
+          when 'CREATE'
+            action = 'added'
+          when 'UPDATE'
+            action = 'edited'
+          when 'RELABEL'
+            # PERM TODO: Better display of delete/undelete in recent listing, with icons/other visual hints
+            data = entry.data
+            if data.has_key?('delete')
+              if data['delete']
+                action = 'deleted'
+              else
+                action = 'undeleted'
+              end
+            else
+              action = 'changed permissions'
+            end
+          end
+          type_desc = KObjectStore.schema.type_descriptor(object.first_attr(KConstants::A_TYPE))
+          if type_desc
+            displayed << [entry, object, action, type_desc.render_icon, render_obj(object, :recent_web)]
+          end
+        end
+
+      when 'ERASE'
+        displayed << [entry, nil,
+            'erased an item',
+            Application_IconHelper::ICON_SPECIAL_RECENT_ERASE_OBJ
+          ]
+      end
+    end
+
+    displayed.each do |entry, object, action, icon, html|
+      user_name = User.cache[entry.user_id].name
+      %>
+        <div class="z__recent_entry">
+          <% if object %><div class="z__recent_entry_quick_look"><a href="#<%= object.objref.to_presentation %>/<%= object.version %>">&#xE009;</a></div><% end %>
+          <%= html_for_icon(icon, :small) %>
+          <div class="z__recent_entry_contents">
+            <div class="z__recent_entry_who"><span><%= h(user_name) %></span> <%= action %></div>
+            <%= html %>
+          </div>
+        </div>
+      <%
+    end
+  end
+%>

@@ -1,0 +1,19 @@
+title: Application information
+--
+
+Basic information about the current application. Your plugin can use this to identify the application and generate URLs.
+
+
+h3(property). O.application.id
+
+The numeric application ID.
+
+
+h3(property). O.application.hostname
+
+The hostname of the application.
+
+
+h3(property). O.application.url
+
+The base URL of the application, including the protocol. The returned string does not include a trailing @/@ character.

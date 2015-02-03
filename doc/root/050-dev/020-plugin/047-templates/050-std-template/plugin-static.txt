@@ -1,0 +1,29 @@
+title: plugin:static:*
+link_as: keyword
+--
+
+For each @.js@ and @.css@ file in your plugin's @static@ directory, a template is generated named after the file. For example, @plugin:static:example.js@ and @plugin:static:example.css@.
+
+These templates always render as an empty string, but as a side effect, set the CSS or client side JavaScript resource to be included in the generated HTML page.
+
+This only works when you're using the default HTML layout. If you're generating the entire page yourself, you'll have to write your own tags.
+
+This is an alternative to calling the @useStaticResource()@ function on the [node:dev/plugin/interface/response] object, but can be used when you're not generating the entire response, for example, responding to a [node:dev/plugin/hook:hook].
+
+If you want to include generated CSS and JavaScript files, use the [node:dev/plugin/templates/std-template/resources] template.
+
+
+h2. View
+
+These templates do not use the @view@ argument to the @render()@ function. This allows them to be used to concisely mark that a template requires one of the static resources, without adding unnecessary boilerplate to your plugin.
+
+A @<script>@ or @<link>@ tag will be generated for the resource, using the file extension to determine what kind of resource you're including.
+
+
+h2. Example
+
+<pre>
+{{>plugin:static:example.js}}{{>plugin:static:example.css}}
+<h2>A title</h2>
+<p> ... </p>
+</pre>

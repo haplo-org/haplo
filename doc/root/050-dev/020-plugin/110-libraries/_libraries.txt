@@ -1,0 +1,12 @@
+title: Libraries
+class: DocNodeTextileWithTOC
+--
+
+For convenience, some common JavaScript libraries are pre-loaded into the JavaScript runtime.
+
+Two date and time libraries are included, [node:dev/plugin/libraries/momentjs] and [node:dev/plugin/libraries/xdate], which take slightly different approaches to providing a better Date and time interface than JavaScript's built-in @Date@ objects. Use whichever works best for you.
+
+If there's another library you think would be useful, please get in touch and we'll see if we can include it as standard.
+
+
+h2. Libraries

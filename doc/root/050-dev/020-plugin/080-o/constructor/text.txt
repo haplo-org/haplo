@@ -1,0 +1,19 @@
+title: O.text()
+link_as: keyword
+--
+
+Constructs a object implementing the [node:dev/plugin/interface/text] interface.
+
+
+h3(function). O.text(typecode, text)
+
+@typecode@ is one of the constants defined in [node:dev/plugin/o/constants/text-types].
+
+@text@ is the raw string representation for that type of text.
+
+
+h2. Example
+
+<pre>language=javascript
+var text = O.text(O.T_TEXT_PARAGRAPH, "Paragraph one.\nParagraph two.");
+</pre>

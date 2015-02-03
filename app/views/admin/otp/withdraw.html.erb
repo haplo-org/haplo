@@ -1,0 +1,19 @@
+<%
+  @page_title = "Withdraw token from #{h(@user.name)}"
+  @breadcrumbs = [:menu, ['/do/admin/otp', 'Tokens']]
+%>
+
+<p>Do you really want to withdraw token <b><%= h(@user.otp_identifier) %></b> from <%= h(@user.name) %>?</p>
+
+<p><%= h(@user.name) %> will not <% if @user_requires_token %>be able to log in because system policy requires that they use a token to authenticate.<% else %>need to use a token to log in.<% end %></p>
+
+<form method="POST"><%= form_csrf_token %>
+  <p><input type="submit" value="Withdraw token"></p>
+</form>
+
+<p>&nbsp;</p>
+<% if @user_requires_token %>
+  <p><b>NOTE</b>: Withdrawing a token from this user means they will not be able to log in. You may wish to consider <b>blocking</b> the user in User Management to prevent all log in attempts.</p>
+<% else %>
+  <p><b>NOTE</b>: Withdrawing a token from this user means they only need a password to log on. To prevent this user from logging in, <b>block</b> the user in User Management.</p>
+<% end %>

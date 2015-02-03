@@ -1,0 +1,31 @@
+title: Random
+long_title: Random numbers and data
+--
+
+This API provides access to cryptographically secure random numbers and data. Use these instead of JavaScript's @Math.random()@.
+
+
+h3(function). O.security.random.int32()
+
+Returns a 32 bit random integer.
+
+
+h3(function). O.security.random.hex(length)
+
+Returns @length@ hex-encoded bytes of random data.
+
+If @length@ is not specified, this function will return an amount of data suitable for use as a secret key.
+
+
+h3(function). O.security.random.base64(length)
+
+Returns @length@ Base64-encoded bytes of data.
+
+
+h3(function). O.security.random.identifier(length)
+
+Returns @length@ bytes of random data, encoded using a modified Base64 encoding suitable for use in URLs.
+
+If @length@ is not specified, this function will return an amount of data suitable for use as a secret key in a URL. If you are using this function for this application, you are recommended not to pass in a length and use the default. The default may change over time to meet revised security guidelines.
+
+For compatibility with email clients and other applications which perform non-optimal URL auto-linking, the identifiers will never start or end with a character that is not alphanumeric. This very slightly reduces the amount of entropy in generated API keys.

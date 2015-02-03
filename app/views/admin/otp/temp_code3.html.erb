@@ -1,0 +1,17 @@
+<%
+  @page_title = "Temporary code for #{h(@user.name)}"
+  @breadcrumbs = [:menu, ['/do/admin/otp', 'Tokens']]
+%>
+
+<p>You must now verify <b>your</b> identity by generating a code from <b>your</b> token.</p>
+
+<% if @otp_result != nil %>
+  <p class="z__general_alert"><% if @otp_result.message != nil %><%= h(@otp_result.message) %><% else %>Incorrect code, please try again.<% end %></p>
+<% end %>
+
+<p><img src="/images/hardware-otp.png" width="113" height="30"></p>
+
+<form method="POST"><%= form_csrf_token %>
+  <p><input id="password" name="password" size="20" type="password" class="z__focus_candidate"></p>
+  <p><input type="submit" value="Create temporary code for <%= h(@user.name) %>"></p>
+</form>

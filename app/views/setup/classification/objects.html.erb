@@ -1,0 +1,48 @@
+<%
+  with_attr = (@attr_desc != nil)
+  title_classifcation_objs = 'Classification objects of type '+type_name_with_parents(@type_desc)
+  @page_title = with_attr ? h(@attr_desc.printable_name) : title_classifcation_objs
+  client_side_controller_js('classificationeditor')
+-%>
+
+<%= sys_mng_header %>
+
+<% if params.has_key?(:update) %>
+<p class="z__management_notice">A classification type and a matching attribute have been created.</p>
+<p>Add items to the List here, then add the attribute to Types.</p>
+<hr>
+<% end %>
+
+<% if with_attr %>
+  <%= render :partial => 'attr_info' %>
+  <h1><%= title_classifcation_objs %></h1>
+<% end %>
+
+<div id="z__mng_classify_object_container" data-types="<%= h(@objects.to_json) %>"></div>
+
+<div id="z__adding_spinner" style="display:none;padding:2px 8px"><%= SPINNER_HTML %> Adding...</div>
+
+<p><span id="z__mng_classify_count"><%= @objects.length %></span> objects</p>
+
+<h2>Add new classification object</h2>
+
+<form method="POST" action="/do/setup/classification/no_js" id="z__mng_classify_quick_add_form"><%= form_csrf_token %>
+<input type="hidden" name="type" value="<%= @type_objref.to_presentation %>">
+<table style="border-spacing:2px;width:90%">
+  <tr>
+    <td width="25%">Title</td>
+    <td width="75%" colspan="4"><span class="z__mng_classify_alt_titles">Alternative titles (optional)</span></td>
+  </tr>
+  <tr>
+    <td width="25%"><input type="text" name="title" id="z__mng_classify_title" style="width:95%"></td>
+    <td width="25%"><input type="text" name="alt0" id="z__mng_classify_alt0" style="width:95%"></td>
+    <td width="25%"><input type="text" name="alt1" id="z__mng_classify_alt1" style="width:95%"></td>
+    <td width="25%"><input type="text" name="alt2" id="z__mng_classify_alt2" style="width:95%"></td>
+  </tr>
+  <tr>
+    <td colspan="4"><input type="submit" id="z__mng_classify_new" value="Quick add"></td>
+  </tr>
+</table>
+</form>
+
+<%= sys_mng_update_submenu(@type_desc.printable_name.to_s, "/do/setup/classification/objects/#{@type_objref.to_presentation}?attr=#{with_attr ? @attr_desc.desc : ''}") %>

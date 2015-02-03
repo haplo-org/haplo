@@ -1,0 +1,12 @@
+<% @page_title = 'Keychain' %>
+<%= sys_mng_header %>
+
+<ul>
+  <% @keychain.each do |credential| %>
+    <li><a href="/do/setup/keychain/info/<%= credential.id %>" target="workspace"><%= h(credential.name) %></a></li>
+  <% end %>
+</ul>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/keychain/about" target="workspace">About the Keychain</a></li>
+</ul>

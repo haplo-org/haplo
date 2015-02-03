@@ -1,0 +1,30 @@
+title: Section
+--
+
+A section groups together a number of other form elements. They can be used to render part of the form using a different template, and avoid the need of the enclosed elements to have long @path@ properties by moving the 'context' deeper into the _document_.
+
+See [node:dev/plugin/form/value-path] for details.
+
+
+h2. Properties
+
+|@type@|@"section"@|
+|@elements@|An array of other form element specifications.|
+|@template@|(optional) The [node:dev/plugin/form/form-template:template] to use for rendering this section. Defaults to @"oforms:default"@|
+|@templateDisplay@|(optional) The template to use for rendering the document. Defaults to the name specified for @template@ with @":display"@ appended.|
+|@templateOptions@|(optional) Options for the specified template. Ignored by this element, but is available to the template for it to change its behaviour.|
+|@renderDocumentOmitEmpty@|(optional) If true, when rendering the document with [node:dev/plugin/interface/form-instance#renderDocument], omit any elements which do not have a value in the document. If no elements have a value, omit the section entirely.|
+|@heading@|(optional) A heading to display above this section in forms and documents.|
+|@path@|(optional) @"path"@ is optional for Sections, and moves the _context_ for the enclosed form elements.|
+
+
+h3. Heading and labels
+
+Sections have two similar properties, @label@ and @heading@.
+
+@label@ is one of the common properties for an element specification. Using a @label@ will render the label as it would any other field, which may not be as prominent as you'd like.
+
+In most cases, you should use a @heading@ property and not use a @label@, so the heading will be rendered as a proper section heading.
+
+However, you'd use a @label@ if the section is nested within another section using the @oforms:table@ template, where the label is used for the column headings.
+

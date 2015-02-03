@@ -1,0 +1,88 @@
+title: WorkUnitQuery
+long_title: WorkUnitQuery interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @WorkUnitQuery@ interface represents a query for [node:dev/plugin/interface/work-unit] objects and provides access as a read only @Array@ of @WorkUnit@ objects.
+
+By default, only open work units are returned.
+
+
+h2. Construction
+
+Use [node:dev/plugin/o/work-flow/query], specifying which type of work is to be found.
+
+
+h2. Usage
+
+First, set up the query with @actionableBy()@ functions and the like. If you are interested in work units which are *not* currently open, use @isClosed()@ or @isEitherOpenOrClosed()@.
+
+Execution is implicit when you use the @Array@-like interface, such as the @length@ property or access an element with the @[]@ operator.
+
+The results are sorted so that the newest work units (determined by their @createdAt@ property) are first in the list.
+
+
+h3. Performance notes
+
+If you just need the most recent work unit, based on the @createdAt@ property of the [node:dev/plugin/interface/work-unit], calling @latest()@ will return it from your query without loading all the possible results.
+
+If you use any of the @Array@ interface, such as @length@, all the matching @WorkUnit@ objects will be loaded. Calling @latest()@ after this will not make an additional load, but return the first object in memory.
+
+
+h2. Interface (build query)
+
+Every query function returns the object itself, making the query functions suitable for chaining.
+
+
+h3(function). isOpen()
+
+Find open work units. (default)
+
+
+h3(function). isClosed()
+
+Find closed work units.
+
+
+h3(function). isEitherOpenOrClosed()
+
+Find both open and closed work units.
+
+
+h3(function). createdBy(user)
+
+Find work units created by the user. Either a numeric ID or a [node:dev/plugin/interface/security-principal] object can be used.
+
+
+h3(function). actionableBy(user)
+
+Find work units actionable by the user. Either a numeric ID or a [node:dev/plugin/interface/security-principal] object can be used.
+
+Actionable means the @actionableBy@ property of the work unit is that user, or a group to which the user belongs.
+
+
+h3(function). closedBy(user)
+
+Find work units closed by the user. Either a numeric ID or a [node:dev/plugin/interface/security-principal] object can be used.
+
+
+h3(function). ref(ref)
+
+Find work units referring to the [node:dev/plugin/interface/ref].
+
+
+h2. Interface (results)
+
+h3(acts_as). Array
+
+A @WorkUnitQuery@ object acts as a read-only JavaScript @Array@. Use the @[]@ operator to read rows.
+
+
+h3(function). latest()
+
+Returns the work unit with the most recent @createdAt@ property, or @null@ if the query did not find any results.
+
+
+h3(function). first()
+
+Alias of @latest()@

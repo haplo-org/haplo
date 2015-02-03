@@ -1,0 +1,6 @@
+title: Moment.js
+--
+
+"Moment.js":http://momentjs.com/ provides a better time and date interface than the built-in JavaScript @Date@ objects.
+
+Most of the Platform APIs which expect @Date@ objects will also accept a @moment@ object.

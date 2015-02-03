@@ -1,0 +1,136 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+TEST(function() {
+
+    // NOTE: URL and HTML generation tested by javascript_controller_test, as it needs to be in request context.
+    var objRef = O.ref(OBJ_WITH_FILE);
+    var storeObj = objRef.load();
+    var fileIdentifer = storeObj.first(1000);
+    TEST.assert(fileIdentifer);
+    TEST.assert_equal(O.T_IDENTIFIER_FILE, fileIdentifer.typecode);
+
+    // Properties of stored file
+    var storedFile = O.file(fileIdentifer);
+    TEST.assert(storedFile);
+    TEST.assert(storedFile instanceof $StoredFile);
+    TEST.assert_equal(STORED_FILE_ID, storedFile.id);
+    TEST.assert_equal("example.doc", storedFile.filename);
+    TEST.assert_equal("example", storedFile.basename);
+    TEST.assert_equal("application/msword", storedFile.mimeType);
+    TEST.assert_equal(19456, storedFile.fileSize);
+    TEST.assert_equal("ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06", storedFile.digest);
+    var createdAt = storedFile.createdAt;
+    TEST.assert(createdAt instanceof Date);
+    TEST.assert(createdAt.getUTCFullYear() === (new Date()).getUTCFullYear());  // make sure it's plausible
+
+    // O.file() returns exactly the same stored file object
+    TEST.assert_equal(storedFile, O.file(storedFile));
+
+    // Properties of identifier from object
+    TEST.assert_equal("example.doc", fileIdentifer.toString());
+    TEST.assert_equal("ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06", fileIdentifer.digest);
+    TEST.assert_equal("application/msword", fileIdentifer.mimeType);
+    TEST.assert_equal(19456, fileIdentifer.fileSize);
+    TEST.assert_equal("TEST_TRACKING_ID", fileIdentifer.trackingId);
+    TEST.assert_equal("Test log message", fileIdentifer.logMessage);
+    TEST.assert_equal("3.4", fileIdentifer.version);
+
+    // Can't modify identifer from object
+    TEST.assert_exceptions(function() {
+        fileIdentifer.filename = "a";
+    }, "This is not a mutable File Identifier.");
+    TEST.assert_exceptions(function() {
+        fileIdentifer.logMessage = "pants";
+    }, "This is not a mutable File Identifier.");
+    TEST.assert_exceptions(function() {
+        fileIdentifer.mimeType = "pants";
+    }, "This is not a mutable File Identifier.");
+    // But a clone can
+    var fileIdentiferCopy = fileIdentifer.mutableCopy();
+    fileIdentiferCopy.filename = "x";
+    fileIdentiferCopy.mimeType = "application/x-randomness";
+    TEST.assert_equal("x", fileIdentiferCopy.toString());
+    TEST.assert_equal("example.doc", fileIdentifer.toString()); // original isn't modified
+    TEST.assert_equal("application/x-randomness", fileIdentiferCopy.mimeType);
+    TEST.assert_equal("application/msword", fileIdentifer.mimeType);
+
+    // Properties of newly created identifier
+    var identifier = storedFile.identifier();
+    TEST.assert(identifier instanceof $KText);
+    TEST.assert_equal(O.T_IDENTIFIER_FILE, identifier.typecode);
+    TEST.assert_equal("example.doc", identifier.toString());
+    TEST.assert_equal("example.doc", identifier.filename);  // alternative method
+    TEST.assert_equal("ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06", identifier.digest);
+    TEST.assert_equal(19456, identifier.fileSize);
+    TEST.assert_equal("application/msword", identifier.mimeType);
+    TEST.assert(identifier.trackingId !== "TEST_TRACKING_ID");    // new randomly allocated tracking ID
+    TEST.assert(identifier.trackingId.length > 10);
+    TEST.assert_equal(null, identifier.logMessage);
+    TEST.assert_equal("1", identifier.version);
+
+    // Set properties on new identifier and update object
+    identifier.filename = "js_filename.doc";
+    TEST.assert_equal("js_filename.doc", identifier.toString());
+    TEST.assert_equal("js_filename.doc", identifier.filename);
+    identifier.trackingId = "TRACKING_FROM_JS";
+    identifier.logMessage = "JS log message";
+    identifier.version = "2.6";
+    var mo = storeObj.mutableCopy();
+    mo.append(identifier, 1004);
+    mo.save();
+    // Other properties survived
+    TEST.assert_equal("js_filename.doc", identifier.toString());
+    TEST.assert_equal("ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06", identifier.digest);
+    TEST.assert_equal(19456, identifier.fileSize);
+
+    // Identifier properties shouldn't work on other text objects
+    TEST.assert_exceptions(function() {
+       var msg = O.text(O.T_TEXT_PARAGRAPH, "x").logMessage;
+    }, "This Text object is not a File Identifier.");
+
+    // Lookup by digest and size
+    var fileByDigest = O.file("ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06");
+    TEST.assert(fileByDigest instanceof $StoredFile);
+    TEST.assert_equal("example.doc", fileByDigest.filename);
+    var fileByDigestAndSize = O.file("ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06", 19456);
+    TEST.assert(fileByDigestAndSize instanceof $StoredFile);
+    TEST.assert_equal("example.doc", fileByDigestAndSize.filename);
+    TEST.assert_equal(fileByDigestAndSize.id, fileByDigest.id);
+    var expectingNoFile = function(fn) {
+        TEST.assert_exceptions(fn, "Cannot find or create a file from the value passed to O.file()");
+    };
+    expectingNoFile(function() { O.file("ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a07"); }); // last digit of digest different
+    expectingNoFile(function() { O.file("ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06", 19457); }); // size different
+    expectingNoFile(function() { O.file("ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a07", 2099); }); // both different
+
+    // And again, using properties of a JS object, not as args
+    var fileByDigest2 = O.file({digest:"ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06"});
+    TEST.assert(fileByDigest2 instanceof $StoredFile);
+    TEST.assert_equal("example.doc", fileByDigest2.filename);
+    var fileByDigestAndSize2 = O.file({digest:"ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06", fileSize:19456});
+    TEST.assert(fileByDigestAndSize2 instanceof $StoredFile);
+    TEST.assert_equal("example.doc", fileByDigestAndSize2.filename);
+    TEST.assert_equal(fileByDigestAndSize2.id, fileByDigest2.id);
+    expectingNoFile(function() { O.file({digest:"ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a07"}); }); // last digit of digest different
+    expectingNoFile(function() { O.file({digest:"ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06", fileSize:19457}); }); // size different
+    expectingNoFile(function() { O.file({digest:"ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a07", fileSize:2099}); }); // both different
+
+    // Secret generation and checking
+    var secret = storedFile.secret;
+    TEST.assert_equal("string", typeof(secret));
+    TEST.assert_equal(64, secret.length); // HMAC-SHA256
+    storedFile.checkSecret(secret);
+    TEST.assert_exceptions(function() {
+        storedFile.checkSecret("cd79d9acd54b470ef8e133b50b579c2b81b1a5e2");
+    }, "File secret does not match.");
+
+    // Reading files as text
+    var textFile = O.file(TEXT_STORED_FILE_DIGEST);
+    TEST.assert_equal("\nThis is an example text file!\n\nSome chars: éôõù\n", textFile.readAsString("UTF-8"));
+
+});

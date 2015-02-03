@@ -1,0 +1,7 @@
+<%
+  @page_title = (@hide_membership ? 'Edit main details for ' : 'Edit group membership for ')+h(@user.name)
+-%>
+
+<%= sys_mng_header %>
+
+<%= render :partial => 'form', :data_for_template => {:form_url => "/do/admin/user/#{params[:action]}/#{@user.id}", :submit_button_label => 'Save changes' } %>

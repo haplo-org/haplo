@@ -1,0 +1,7 @@
+title: hLabelUpdatedObject
+class: HookNode
+--
+
+Apply Labels to an updated object, by adding or removing labels using a [node:dev/plugin/interface/label-changes] object passed to the hook function.
+
+See also [node:dev/plugin/hook/label-object] for labelling new objects.

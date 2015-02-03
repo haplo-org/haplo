@@ -1,0 +1,6 @@
+ Tagging your information to show what subject it is about will help retrieve relevant information for anyone searching for information on a particular subject. To be most useful the terms used by you and your colleagues should be chosen from a pre-compiled and controlled vocabulary list. This list can also be hierarchical.
+It improves searching where:
+the subject of an item is not obvious from its title or text
+the language in an area is changing rapidly such as in a new industry
+
+Your subject index should be well-balanced aiming for around the same number of items to be indexed under each term. The number of items under each term should be a browsable number, between 10 - 20. Any less than 10 and you might want to consider whether a seperate category for this subject is necessary, any more than 20 and you would probably want to split the group into smaller categories. 

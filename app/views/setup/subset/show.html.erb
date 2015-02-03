@@ -1,0 +1,40 @@
+<%
+  @page_title = @title
+-%>
+
+<%= sys_mng_header %>
+
+<table class="z__mangement_kv_table">
+  <tr><th>Name</th><td><%= h(@title) %></td></tr>
+  <tr><th>Ordering priority</th><td><%= @ordering %></td></tr>
+  <tr><th>Include labels</th><td>
+    <%
+      @included_labels.each do |label_ref|
+        %><%= label_html(label_ref) %><br><%
+      end
+    %>
+  </td></tr>
+  <tr><th>Exclude labels</th><td>
+    <%
+      @excluded_labels.each do |label_ref|
+        %><%= label_html(label_ref) %><br><%
+      end
+    %>
+  </td></tr>
+  <tr><th>Include types</th><td>
+    <%
+      schema = KObjectStore.schema
+      @included_types.each do |type|
+        type_desc = schema.type_descriptor(type)
+        if type_desc
+          %><%= h(type_desc.printable_name.to_s) %><br><%
+        end
+      end
+    %>
+  </td></tr>
+</table>
+
+<%= sys_mng_edit_button("/do/setup/subset/edit/#{params[:id]}") %>
+
+<%= sys_mng_update_submenu(@title, "/do/setup/subset/show/#{params[:id]}") %>
+

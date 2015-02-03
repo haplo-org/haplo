@@ -1,0 +1,67 @@
+title: PluginElementRenderer
+long_title: PluginElementRenderer interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @PluginElementRenderer@ interface provides information about the context in which an Element is being rendered, and functions to generate the Element HTML using templates.
+
+
+h2. Construction
+
+Automatically created by the built in Element rendering API, and passed to renderer functions. See [node:dev/plugin/elements].
+
+
+h2. Interface
+
+h3(property). name
+
+The name of the Element being rendered.
+
+
+h3(property). path
+
+The path of the page requested by the user.
+
+
+h3(property). object
+
+The [node:dev/plugin/interface/store-object] this Element is being displayed next to, if the Element is being rendered on an object page.
+
+Otherwise, this property is @null@.
+
+
+h3(property). style
+
+A hint about how the Element should be rendered. Values can be @"narrow"@ or @"wide"@, depending on where on the page the Element will be displayed.
+
+
+h3(property). options
+
+Any options specified by the system administrator when declaring the Element to be displayed in a context. The options are decoded from JSON.
+
+If no options are specified, or there is an error decoding them, this property is @{}@.
+
+
+h3(function). render(view, templateName)
+
+This function generates the Element HTML by rendering a [node:dev/plugin/interface/template].
+
+The @templateName@ argument is optional. If it's not specified or is @null@, then an implied name will be used. This is the name of the Element, without the plugin name prefix. For example, the @example_plugin:test@ Element would use the @test@ template unless another template was specified.
+
+As well as the values required by the template, the @view@ should contain the @title@ key. This specifies the title of the Element. Use @""@ if you don't want a title to be displayed above the Element.
+
+
+h3(function). renderLinks(links, title)
+
+This is a shortcut to implementing the common case of displaying links to plugin functionality on the application home page.
+
+@links@ is an array of two element arrays, containing the path and text for the link. For example,
+
+<pre>language=javascript
+    [
+        ['/do/example/action_one', 'Action One'],
+        ['/do/example/action_two', 'Action Two']
+    ]
+</pre>
+
+@title@ is the title of the Element.

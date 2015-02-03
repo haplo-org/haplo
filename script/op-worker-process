@@ -1,0 +1,31 @@
+#!/bin/sh
+
+# Haplo Platform                                     http://haplo.org
+# (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+# Set environment variable DISABLE_IN_PROCESS_WORKERS=yes when running main app or test process
+# to disable the in-process runners.
+
+. config/paths-`uname`.sh
+
+# Default to 32 bits
+if [ X$KFRAMEWORK_BITS = X ]
+then
+    KFRAMEWORK_BITS=32
+fi
+
+WORKER_NUMBER=$1
+if [ X$WORKER_NUMBER = X ]
+then
+    echo Must specify worker number
+    exit 1
+fi
+
+KLOG4J_CONFIG=`pwd`/config/log4j/development-worker.properties
+export KLOG4J_CONFIG
+
+framework/oneis utility $KFRAMEWORK_BITS config/java-worker.config $JAVA_EXECUTABLE $WORKER_NUMBER

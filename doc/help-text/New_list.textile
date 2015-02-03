@@ -1,0 +1,21 @@
+FOR: /do/setup/classification/new_list
+
+h2. New list
+
+To create a new list, enter the name of the list here and click _Create new List_.
+
+This will
+
+* Create a Classification Type with the name of the list.
+* Create an Attribute with the name of the list, set to be a drop down list of all objects of the type.
+
+After creating the list,
+
+* Add choice objects to fill the list on the next page
+* Add the attribute to the Types you want to describe with this list of choices.
+
+h4. Further help
+
+[[Lists]]
+[[Edit list]]
+

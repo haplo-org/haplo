@@ -1,0 +1,22 @@
+<%
+  @page_title = 'Mobile note'
+  object_url = nil
+  if @object != nil
+    object_url = object_urlpath(@object)
+    @breadcrumbs = [[object_url, 'Back']]
+  end
+%>
+
+<div class="z__user_note_container">
+  <%= text_simple_format(@note.data['note']) %>
+</div>
+
+<form method="POST" action="/do/mobile_note/delete/<%= @note.id %>"><%= form_csrf_token   %>
+  <p style="text-align:right"><input type="submit" value="Delete note"></p>
+</form>
+
+<% if @object != nil %>
+  <p>&nbsp;</p>
+  <h2><%= h(@object.first_attr(KConstants::A_TITLE).to_s) %></h2>
+  <%= render_obj @object, :generalview %>
+<% end %>

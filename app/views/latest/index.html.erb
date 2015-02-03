@@ -1,0 +1,29 @@
+<%
+  @page_title = KApp.global(:name_latest).capitalize
+  @breadcrumbs = [:account]
+-%>
+<% in_right_column render(:partial => 'menu') %>
+
+<div class="z__latest_web_date_range">
+<a href="?ago=<%= @weeks_ago + 1 %>">&laquo;</a>
+<b><%= @start_time.to_s(:date_only) %></b>
+<% if @weeks_ago > 0 -%>
+  <a href="latest">&bull;</a>
+<% else -%>
+  <span>&bull;</span>
+<% end -%>
+<b><%= @end_date_display.to_s(:date_only) %></b>
+<% if @weeks_ago > 0 -%>
+  <a href="?ago=<%= @weeks_ago - 1 %>">&raquo;</a>
+<% else -%>
+  <span>&raquo;</span>
+<% end -%>
+</div>
+
+<% @results.each do |obj| -%>
+  <%= render_obj(obj, :latest_web, @requests_lookup) %>
+<% end -%>
+
+<% if @results.length >= LatestController::MAX_LATEST_RESULTS -%>
+  <p>Too many results, showing first <%= LatestController::MAX_LATEST_RESULTS %>.</p>
+<% end -%>

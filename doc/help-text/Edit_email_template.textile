@@ -1,0 +1,26 @@
+FOR: /do/setup/email_templates/edit
+FOR: /do/setup/email_templates/new
+
+h1. Edit email template
+
+Editing an email template requires knowledge of HTML and CSS.
+
+By default, the colours used in the email are chosen from the colours used for the ONEIS sytem.
+
+* _Name_: of the template, used to choose the template in other parts of the system management.
+* _Description_: notes about the template (only viewable to  administrators)
+* _Purpose_: What the template will be used for. Some choices of template will only include templates for a given purpose.
+* _From (email address)_: the 'from' address on the sent emails (the default is the administrator of your ONEIS). Set this to a valid address for the responsible individual in your organisation.
+* _From (name)_: the name shown in the from field of the email
+* _Extra CSS_: Additional CSS included in the HTML, to customise the look of the email.
+* _Branding (plain)_: Text which appears at the top of the plain text version of this email. Use the interpolated strings listed above where required.
+* _Branding (HTML)_: HTML which appears at the top of the HTML version of this email. Use the interpolated strings listed above where required.
+* _Header_: HTML for the header of the email. This will be converted into plain text for the text version. Use the interpolated strings listed above where required.
+* The generated text for the email will be inserted between the header and footer.
+* _Footer_: HTML for the footer of the email. This will be converted into plain text for the text version. Use the interpolated strings listed above where required.
+
+h2. Preview
+
+* _Preview (HTML)_: preview the HTML email on screen below the email template editor
+* _Preview (plain)_: preview the plain email on screen below the email template editor 
+* _Send preview email_: sends a preview email to you. 

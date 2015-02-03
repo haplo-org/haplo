@@ -1,0 +1,33 @@
+<% @page_title = 'Edit Western sort order' -%>
+<%= sys_mng_header %>
+
+<form method="post"><%= form_csrf_token %>
+  <table>
+    <tr><th>Sort as</th><th></th><th>Example sorting</th></tr>
+    <%
+      n = 0
+      KTextPersonName::SORTAS_ORDER_USER_OPTIONS.each do |name,value|
+        %>
+        <tr>
+        <td><label><input type="radio" name="personsname_sortas" id="sortasopt_<%= n %>" value="<%= value %>"<% if @person_name_sort == value %> checked<% end %>><%= name %></label></td>
+        <td>&nbsp; &nbsp;</td>
+        <td>
+          <% if value == 'first_last' %>
+            <b>A</b>dam Smith<br>
+            <b>B</b>ert Appleton<br>
+            <b>C</b>harles Middleton
+          <% else %>
+            Bert <b>A</b>ppleton<br>
+            Charles <b>M</b>iddleton<br>
+            Adam <b>S</b>mith<br>
+          <% end %>
+        </td>
+        </tr>
+        <tr><td>&nbsp;</td></tr>  
+        <%
+        n += 1
+      end
+    %>
+  </table>
+  <p><input type="submit" value="Save"></p>
+</form>

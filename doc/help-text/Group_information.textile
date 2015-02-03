@@ -1,0 +1,13 @@
+FOR: /do/admin/user/group
+
+h1. Group information
+
+Click an _Edit_ button to edit an aspect of this group. 
+
+Click _Disable_ to stop this group having any effect on users.
+
+h4. Further help
+
+[[Disable a group]]
+[[Permissions]]
+

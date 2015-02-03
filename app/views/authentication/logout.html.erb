@@ -1,0 +1,12 @@
+<%
+  @page_title = 'Logging out...'
+  client_side_controller_js("logout")
+-%>
+
+<p>Please wait...</p>
+
+<p>&nbsp;</p>
+
+<form method="POST" id="logout_form"><%= form_csrf_token %>
+  <input type="submit" value="Log out">
+</form>

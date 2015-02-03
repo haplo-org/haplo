@@ -1,0 +1,20 @@
+<div class="z__home_page_panel_noticeboard_entry">
+<%
+  obj_link = object_urlpath(obj)
+  item_link = obj.first_attr(KConstants::A_URL)
+  title = obj.first_attr(KConstants::A_TITLE) || '????'
+  if item_link != nil
+    %><a class="z__home_page_panel_noticeboard_viewlink" href="<%= h(item_link.to_s) %>" target="_blank">View</a><%
+  end
+  %><h3><a href="<%= obj_link %>"><%= h(title) %></a></h3><div class="z__home_page_panel_noticeboard_infoline"><%
+  plink = options[:noticeboard_plink]
+  if plink
+    %><%= plink %>, <%
+  end
+  %><%= obj.obj_creation_time.to_formatted_s(:date_only) %></div><%
+  notes = obj.first_attr(KConstants::A_NOTES)
+  if notes != nil
+    %><%= render_value(notes, obj, {}, KConstants::A_NOTES) %><%
+  end
+  %>
+</div>

@@ -1,0 +1,21 @@
+<%
+  @page_title = 'Help'
+  client_side_resources :help_system
+  @breadcrumbs = [:help]
+%>
+
+<div style="float:right">
+  <a class="z__help_system_popup_link" href="/do/help/contact" target="_blank">Contact Support</a>
+</div>
+<p><i><a href="#" data-page="0">Contents</a></i></p>
+
+<div id="z__help_system_text">
+
+<%= help_text_rename_product!(render :partial => 'help_text') %>
+
+<div id="z__help_system_mapping" data-pop="1" data-mapping="[<%= render :partial => 'help_mapping' %>]"></div>
+
+<p>&nbsp;</p>
+<p><i><a href="#">top</a></i></p>
+
+</div>

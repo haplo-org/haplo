@@ -1,0 +1,21 @@
+FOR: /do/admin/user/home_country
+
+h1. Home country
+
+Set the home country for a group or user to the country where they mainly work. 
+
+The home country controls localised displays of information, for example, telephone numbers are displayed in a format which can be dialed from a phone in the home country.
+
+h2. Recommendation
+
+Home country should be set on groups, rather than on the individual users. If you name the groups by purpose or function, this makes management of settings much easier.
+
+h2. Home country for user's who are members of multiple groups
+
+Users who are members of multiple groups with different home countries, will have their home country set in preference by groups of which they are direct members, and then by the group which was created first.
+
+h2. Home country for individual users
+
+The home country setting for an individual user overrides the group home country setting for the group to which they belong.
+
+

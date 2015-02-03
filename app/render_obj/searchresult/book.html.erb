@@ -1,0 +1,12 @@
+<%=
+  renderer = SearchResultHelper::ResultRenderer.new(obj, self, options)
+  unless renderer.no_default_rendering
+    renderer.line2_from(:all, A_AUTHOR)
+    if renderer.has_line2? && (date = obj.first_attr(A_DATE)) && (date.k_typecode == T_DATETIME)
+      renderer.line2_append(" (#{date.start_datetime.year})")
+      renderer.mark_attribute_as_used(A_DATE)
+    end
+    renderer.automatic_value_display
+  end
+  renderer.to_html
+%>

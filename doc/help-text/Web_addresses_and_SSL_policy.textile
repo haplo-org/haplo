@@ -1,0 +1,11 @@
+FOR: /do/setup/application/addresses
+
+h1. System addresses
+
+The application hostname chooses which of the available addresses is used for the system. All other hostnames are used as aliases and redirected to the application hostname.
+
+*Warning*: changing these settings will invalidate URLs configured in external systems.
+
+There is a separate hostname used for SSL encryption to match the certificate name. Use the clear hostname for branding the URLs you give to your staff and clients. If it's important to use your company URL, uncheck the "Visible URLs" checkbox so that URLs in emails use the clear hostname. They'll be redirected to the SSL hostname if "Logged in users" is checked.
+
+Additional hostnames can be added to this list by ONEIS Support, if required, for example, to brand the web address to match your company URL. For example, if you are _example.com_, you could use _oneis.example.com_. This requires DNS settings to be changed, and your own branded URLs can't be used with SSL for technical reasons.

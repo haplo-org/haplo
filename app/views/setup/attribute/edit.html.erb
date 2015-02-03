@@ -1,0 +1,59 @@
+<%
+  @page_title = (params[:id] == 'new') ? 'New Attribute' : 'Edit '+h(@titles.first)
+  client_side_controller_js('attredit')
+-%>
+
+<%= sys_mng_header %>
+
+<form method="POST"><%= form_csrf_token %>
+
+<p><input type="submit" value="Save changes"></p>
+
+<p>Attribute name<br>
+<%= af_field('title',@titles) %>
+</p>
+
+<%= code_value_edit_ui(@code) %>
+
+<p>Search name<br>
+<%= af_field('short_name',@short_names) %>
+</p>
+
+<p>Relevancy weight<br>
+<input type=text name="weight" value="<%= @weight %>">
+</p>
+
+<p>Data type<br>
+<%= render :partial => 'data_type_with_type_options' %><br>
+<div style="padding: 0 32px;" id="linkedtype">
+  <%= af_types_display('linktypes', @control_by_types || []) %>
+  <hr>
+  <input type="checkbox" name="control_relax_to_text" value="1"<%= if @control_relax_to_text then ' checked' else '' end %>>Allow uncontrolled text values</input>
+</div>
+</p>
+
+<p>Qualifiers allowed<br>
+<input type="radio" name="qual_allow" value="none"<%= if @qual_usage == :none then ' checked' else '' end %>>
+Qualifiers not used on this attribute<br>
+<input type="radio" name="qual_allow" value="any"<%= if @qual_usage == :any then ' checked' else '' end %>>
+Allow any qualifier<br>
+<input type="radio" name="qual_allow" value="specified"<%= if @qual_usage == :specified then ' checked' else '' end %>>
+Allow the qualifiers specified below<br>
+<div class="rhide" style="padding: 0 32px">
+<table>
+<tr><td></td><td>Weight</td></tr>
+<tr><td><input type="checkbox" name="qual[<%= KConstants::Q_NULL %>]"<%= if @quals_used.has_key? KConstants::Q_NULL then ' checked' else '' end %>><i>no qualifier</i></td></tr>
+<%
+  quals = @schema.all_qual_descs.map do |qual|
+    qd = @schema.qualifier_descriptor(qual)
+    [qual, qd.printable_name.to_s]
+  end .sort { |a, b| a.last <=> b.last }
+  quals.each do |qual, name|
+    %><tr><td><input type="checkbox" name="qual[<%= qual %>]"<%= if @quals_used.has_key? qual then ' checked' else '' end %>><%= h(name) %></td><td><input type="text" size="6" name="qual_weight[<%= qual %>]" value="<%= @qual_weights[qual] %>"></td></tr><%
+  end
+%>
+</table>
+</div>
+</p>
+
+</form>

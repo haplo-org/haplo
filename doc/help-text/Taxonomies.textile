@@ -1,0 +1,14 @@
+FOR: /do/setup/taxonomy
+
+h1. Taxonomies
+
+Taxonomies are used for hierarchical description of items. They're set up using:
+
+* A hierarchical classification _Type_, which describes the attributes of each taxonomy term.
+* A taxonomy _root object_, which has the given Type, and names the taxonomy.
+* All taxonomy terms are created in a _Section_, which allows you to control who can use and edit the taxonomy.
+* One or more _Attributes_ which use the "link to object" data type, and are set to link to objects defined by the Type.
+
+h4. Further help
+
+[[New Taxonomy]]

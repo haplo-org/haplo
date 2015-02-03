@@ -1,0 +1,1971 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+/* ONEIS core application styling */
+
+/* NOTE: Print styles at end */
+
+/* -------------------------------------------------------------------------------------------------------------- */
+/* Reset CSS from Yahoo : http://developer.yahoo.com/yui/reset/ */
+
+body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,textarea,p,blockquote,th,td { /* input removed from this list */
+    margin: 0;
+    padding: 0;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+fieldset,img {
+    border: 0;
+}
+address,caption,cite,code,dfn,th,var {
+    font-style: normal;
+    font-weight: normal;
+}
+ol,ul {
+    list-style: none;
+}
+caption,th {
+    text-align: left;
+}
+h1,h2,h3,h4,h5,h6 {
+    font-size: 100%;
+    font-weight: normal;
+}
+q:before,q:after {
+    content: '';
+}
+abbr,acronym {
+    border: 0;
+}
+
+/* -------------------------------------------------------------------------------------------------------------- */
+/* web fonts  */
+
+@font-face {
+    font-family: 'Ubuntu';
+    src: url(WEBFONT[8,'/images/ubuntu-r-webfont.eot']WEBFONT[4,'/images/ubuntu-r-small-webfont.eot']);
+    src: url(WEBFONT[8,'/images/ubuntu-r-webfont.eot?#iefix']WEBFONT[4,'/images/ubuntu-r-small-webfont.eot?#iefix']) format('embedded-opentype'),
+         url(WEBFONT[8,'/images/ubuntu-r-webfont.woff']WEBFONT[4,'/images/ubuntu-r-small-webfont.woff']) format('woff'),
+         url(WEBFONT[8,'/images/ubuntu-r-webfont.ttf']WEBFONT[4,'/images/ubuntu-r-small-webfont.ttf']) format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* would do SVG with something like: */
+/* url(WEBFONT[8,'/images/ubuntu-r-webfont.svg#UbuntuRegular']WEBFONT[4,'/images/ubuntu-r-small-webfont.svg#UbuntuRegular']) format('svg'); */
+/* as last source (remembering to change ; for , after ttf font) */
+
+@font-face {
+    font-family: 'Ubuntu';
+    src: url(WEBFONT[8,'/images/ubuntu-b-webfont.eot']WEBFONT[4,'/images/ubuntu-b-small-webfont.eot']);
+    src: url(WEBFONT[8,'/images/ubuntu-b-webfont.eot?#iefix']WEBFONT[4,'/images/ubuntu-b-small-webfont.eot?#iefix']) format('embedded-opentype'),
+         url(WEBFONT[8,'/images/ubuntu-b-webfont.woff']WEBFONT[4,'/images/ubuntu-b-small-webfont.woff']) format('woff'),
+         url(WEBFONT[8,'/images/ubuntu-b-webfont.ttf']WEBFONT[4,'/images/ubuntu-b-small-webfont.ttf']) format('truetype');
+    font-weight: bold;
+    font-style: normal;
+}
+
+/* would do SVG with something like: */
+/* url(WEBFONT[8,'/images/ubuntu-b-webfont.svg#UbuntuBold']WEBFONT[4,'/images/ubuntu-b-small-webfont.svg#UbuntuBold']) format('svg'); */
+
+/* IMPORTANT: Always make sure of these fonts conditional on the z__webfonts_enabled class being applied to the body tag, and have the fallbacks look acceptable. */
+
+/* -------------------------------------------------------------------------------------------------------------- */
+/* web fonts (special) -- icon font is always included, no matter what the web fonts setting */
+
+@font-face {
+    font-family: 'ONEISIconsRegular';
+    src: url('/images/oneisicons-regular-webfont.eot');
+    src: url('/images/oneisicons-regular-webfont.eot?#iefix') format('embedded-opentype'),
+         url('/images/oneisicons-regular-webfont.woff') format('woff'),
+         url('/images/oneisicons-regular-webfont.ttf') format('truetype'),
+         url('/images/oneisicons-regular-webfont.svg#ONEISIconsRegular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+
+/* -------------------------------------------------------------------------------------------------------------- */
+/* Basic styling */
+
+html {
+    overflow-y: scroll; /* always display scroll bars so the left position doesn't jump around */
+}
+
+body {
+    font-family: $NORMAL_FONT_FAMILY;
+    color: $C_TEXT;
+    text-align: left;
+    background-color: $C_PAGE_BACKGROUND;
+    width: 100%;
+    font-size: $FONT_SIZE_NORMAL;
+    line-height: $LINE_HEIGHT_NORMAL;
+}
+
+p {
+    margin: 0 0 $FONT_SIZE_NORMAL 0;
+}
+
+a {
+    color: $ANCHOR_COLOUR;
+    text-decoration: none;
+    margin: 0 0 0 0;
+}
+
+a:visited {
+    color: #551A8B;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+label input {
+    margin-right: 6px; /* labels on forms need a little bit of space between them and the checkbox/radio they label */
+}
+
+/* Headings */
+h1 {
+    font-size: 18px;
+    font-weight: normal;
+    margin: 21px 0 9px 0;
+}
+h2 {
+    font-size: 16px;
+    font-weight: normal;
+    margin: 19px 0 5px 0;
+}
+h3 {
+    font-size: 13px;
+    font-weight: bold;
+    margin: 17px 0 3px 0;
+}
+h4 {
+    font-size: 13px;
+    font-weight: bold;
+    color: #444;
+    margin: 15px 0 3px 0;
+}
+/* reduce spacing between headings */
+h1 + h2 {
+    margin-top: 2px;
+}
+h2 + h3, h3 + h4 {
+    margin-top: 1px;
+}
+/* Apply web fonts to headings */
+.z__webfonts_enabled h1, .z__webfonts_enabled h2 {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+.z__webfonts_enabled h3, .z__webfonts_enabled h4, .z__webfonts_enabled h5, .z__webfonts_enabled h6 {
+    font-family: $SPECIAL_FONT_FAMILY;
+    font-weight: bold;
+}
+
+/* consistent input fields -- if not overridden, get nasty input fields whenever an icon is displayed at the left, eg search box or link, in Chrome, FF, etc */
+input[type=text], input[type=password], input[type=email], textarea {
+    padding: 3px;
+    border-top: 1px #aaa solid;
+    border-left: 1px #bbb solid;
+    border-right: 1px #bbb solid;
+    border-bottom: 1px #ddd solid;
+    border-radius: 2px;
+    box-shadow: inset 1px 1px 1px rgba(0,0,0,0.08);
+}
+
+/* -------------------------------------------------------------------------------------------------------------- */
+/* Fix some short names for styles */
+
+/* [squish z__action_entry_points=a] */
+/* [squish z__aep_search_form=s] */
+/* [squish z__button_bar=b] */
+/* [squish z__button_bar_holder=g] */
+/* [squish z__header_oneis=h] */
+/* [squish z__help_tab=x] */
+/* [squish z__left_column=f] */
+/* [squish z__logo_display=l] */
+/* [squish z__page=p] */
+/* [squish z__page_name=n] */
+/* [squish z__right_column=r] */
+/* [squish z__webfonts_enabled=w] */
+/* [squish z__ws_content=o] */
+
+/* -------------------------------------------------------------------------------------------------------------- */
+/* Main structural element sizing and borders */
+
+#z__header_oneis, #z__action_entry_points, #z__page, #z__logo_display, #z__spawned_subtask_header {
+    width: $PAGE_WIDTH;
+    margin: auto;
+    border: solid $PAGE_BORDER_COLOUR;
+    border-width: 0 1px 0 1px;
+    clear: both;
+}
+
+#z__page {
+    border-bottom: 1px solid $PAGE_BORDER_COLOUR;
+}
+
+/* -------------------------------------------------------------------------------------------------------------- */
+/* Page top */
+
+/* Used ONLY when there's only text in the 'header HTML' setting */
+#z__header_oneis {
+    position: relative;
+}
+.z__webfonts_enabled #z__header_oneis {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+#z__header_oneis a { /* for making the logo clickable */
+    display: block;
+    width: 940px;
+    height: 54px;
+    line-height: 54px;
+    text-align: right;
+    font-weight: bold;
+    font-size: $FONT_SIZE_MEDIUM;
+    color: #999;
+}
+#z__header_oneis a:hover {
+    text-decoration: none;
+}
+#z__header_oneis:before {
+    position: absolute;
+    content: "HAPLO";
+    font-size: 48px;
+    line-height: 48px;
+    letter-spacing: 8px;
+    font-weight: bold;
+    top: 1px;
+    left: 16px;
+    color: #aaa;
+    text-shadow: #777 1px 1px 2px;
+}
+
+/* ---------------------------------------------------------------------------- */
+/* Page bottom */
+
+#z__page_creation_label {
+    clear: both; /* acts to give z__page the right height by clearing after all the floats */
+    padding: 48px 0 4px 180px;
+    font-style: italic;
+    font-size: 9px;
+    color: #888;
+}
+
+#z__logo_display {
+    height: 64px;
+    border: 0;
+    position: relative; /* to set :after position */
+}
+#z__logo_display:after {
+    font-family: $SPECIAL_FONT_FAMILY;
+    font-weight: bold;
+    content: "HAPLO";
+    color: #ddd;
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    font-size: 32px;
+    letter-spacing: 6px;
+    line-height: 32px;
+}
+
+#z__logo_display a {
+    font-size: 9px;
+    margin: 4px 0 0 16px;
+    color: #888;
+}
+
+/* ---------------------------------------------------------------------------- */
+/* Action entry points - main bar along the top */
+
+#z__action_entry_points, .z__minimal_layout #z__page_name /* borrow look for consistency in minimal layout */ {
+    position: relative;
+    background: $C_AEP_BACKGROUND;
+    height: $AEP_HEIGHT;
+    border-width: 1px;
+    font-size: 13px;
+    box-shadow: inset 0 1px 1px #fff; /* "light source" at top of box */
+    text-shadow: #fff 1px 1px 0px; /* little bit of text shadow, disabled for the indicators later */
+}
+
+.z__webfonts_enabled #z__action_entry_points {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+
+#z__action_entry_points #z__aep_search_form {
+    display: block;
+    float: left;
+    width: 216px;
+    padding: 0;
+    margin: 0;
+}
+#z__action_entry_points #z__aep_search_form form:before {
+    $ICON_FONT_DIRECTIVES
+    content: "\e007";
+    font-size: 11px;
+    font-weight: normal; /* prevents 'double rendering' on iOS */
+    position: absolute;
+    color: #888;
+    top: 3px;
+    left: 19px;
+    z-index: 2;
+}
+
+#z__action_entry_points #z__aep_search_form input {
+    display: block;
+    margin: 9px 0 0 13px;
+    width: 170px;
+    height: 17px;
+    padding: 2px 2px 2px 18px;
+    font-size: 12px;
+}
+
+.z__aep_quick_search_as_label {
+    color: #999;
+}
+
+#z__action_entry_points div {
+    float: left;
+    font-weight: bold;
+    padding: 0 11px 0 13px;
+    height: 40px;
+    line-height: 40px;
+}
+
+#z__action_entry_points div span {
+    background: #68cdf3;
+    color: #fff;
+    padding: 0 4px;
+    margin-left: 5px;
+    border: 1px solid #57abcd;
+    border-radius: 3px;
+    box-shadow: $AEP_INDICATOR_BOX_SHADOW, inset 0 1px 1px rgba(255,255,255,0.5);
+    text-shadow: none; /* override default text shadow in the AEPs */
+}
+#z__action_entry_points div.z__aep_tray_entry_point_flash span { /* used to flash the tray indicator count when it changes for the first time on a page */
+    border-color: #ef7281;
+    background-color: #ef7281;
+}
+
+#z__action_entry_points div + div {
+    background: url(/images/aep_divider.gif) 0 10px no-repeat;
+}
+
+/* disable separator where it's not required */
+#z__action_entry_points div.z__selected + div, #z__action_entry_points #z__aep_search_form + div, #z__action_entry_points .z__aep_entry_point_hidden + div {
+    background-image: none;
+}
+
+.z__aep_entry_point_hidden { /* use explicit class so divider can be turned on/off based on it */
+    display: none;
+}
+
+#z__action_entry_points .z__selected {
+    background: #ccc;
+    margin: 8px 0 0 2px;
+    padding: 0 11px 0 11px;
+    height: 25px;
+    line-height: 24px;
+    border-radius: 4px;
+    text-shadow: none; /* distracts when selected */
+}
+
+#z__action_entry_points #z__aep_tools_tab a:after {
+    $ICON_FONT_DIRECTIVES
+    content: "\e002";
+    font-size: 8px;
+    font-weight: normal;
+    margin-left: 8px;
+}
+
+
+#z__action_entry_points #z__aep_left {
+    background: transparent;
+    padding: 0;
+    float: left;
+    height: 28px;
+    margin: 0;
+    width: auto;
+    border: 0;
+}
+
+
+#z__action_entry_points #z__aep_right {
+    position: absolute;
+    background: transparent;
+    padding: 0 20px 0 0px;
+    right: 0px;
+    height: 28px;
+    margin: 0;
+    border: 0;
+}
+
+
+#z__action_entry_points a {
+    outline: 0; /* no ugly borders on click */
+    padding: 8px 0;
+    color: $C_AEP_LINKS;
+    text-decoration: none;
+}
+
+#z__action_entry_points a:hover {
+    color: COLOUR[:highlight];
+    text-decoration: none;
+}
+
+#z__action_entry_points .z__selected a, #z__action_entry_points .z__selected a:hover {
+    color: $C_TEXT;
+    height: 28px;
+}
+
+
+/* ---------------------------------------------------------------------------- */
+/* Main column sizing and positioning */
+
+#z__left_column, #z__heading_back_nav {
+    float: left;
+    width: 140px;
+    margin: 0 0 0 10px;
+}
+
+#z__page_name, #z__ws_content, #z__button_bar {
+    float: left;
+    width: $PAGE_CONTENT_WIDTH;
+    margin: 0 0 0 30px;
+}
+
+.z__page_wide_layout #z__ws_content {
+    width: $PAGE_TITLE_WIDTH;   /* in wide layout, the main content width should match the title */
+}
+
+#z__ws_content {
+    margin-top: 15px;
+}
+#z__left_column {
+    margin-top: 39px; /* 15px to match z__ws_content + 24px from z__button_bar */
+}
+
+#z__right_column {
+    float: left;
+    width: 220px;
+    margin: 0 0 0 30px;
+}
+
+/* Different bits of the system require different margins at the top of the right hand column. */
+/* This is a sensible default which works for the display of objects and lines up with the top line of the key/value display. */
+#z__right_column > :first-child {
+    margin-top: 75px;
+}
+
+/* ---------------------------------------------------------------------------- */
+/* Main heading row */
+
+#z__heading_back_nav {
+    height: 62px;
+}
+
+#z__heading_back_nav a {
+    position: relative;
+    top: 32px;
+    left: 0px;
+}
+
+#z__page_name {
+    position: relative; /* for positioning z__heading_main_buttons */
+    width: $PAGE_TITLE_WIDTH;
+}
+
+#z__page_name h1 {
+    font-weight: bold;
+    font-size: 21px;
+    line-height: 28px;
+    max-width: $PAGE_CONTENT_WIDTH;
+    margin: 30px 0 6px 0;
+}
+
+.z__webfonts_enabled #z__page_name h1 {
+    font-family: $SPECIAL_FONT_FAMILY;
+    font-weight: normal;
+}
+
+#z__heading_main_buttons {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 71px;
+    width: 220px;
+    padding-top: 32px;
+}
+
+/* ---------------------------------------------------------------------------- */
+/* Button styling */
+
+a.z__button_link,
+#z__button_bar a,
+.z__menu_section a,
+#z__heading_back_nav a {
+    color: #555;
+    font-weight: bold;
+    font-size: 11px;
+    border: 1px solid #aaa;
+    background: #eee;
+    padding: 6px 12px;
+    margin-right: 4px;
+    box-shadow: inset 0 1px 1px #fff;
+    border-radius: 3px;
+    outline: 0; /* not 100% sure this is a good idea, but tidies up the look a lot */
+    white-space: nowrap; /* sort out wrapping of buttons */
+}
+
+a.z__button_link:hover,
+#z__button_bar a:hover,
+.z__menu_section a:hover,
+#z__heading_back_nav a:hover {
+    color: #444;
+    border: 1px solid #666;
+    background-color: #ddd;
+    text-decoration: none;
+}
+
+a.z__button_link:active,
+#z__button_bar a:active,
+.z__menu_section a:active,
+#z__heading_back_nav a:active {
+    color: #333;
+    border: 1px solid #666;
+    background-color: #ccc;
+}
+
+/* overrides for specific buttons */
+
+#z__heading_back_nav a {
+    text-indent: 25px;
+}
+#z__heading_back_nav a:before {
+    $ICON_FONT_DIRECTIVES
+    content: "\e006";
+    font-size: 8px;
+    padding-right: 6px;
+    font-weight: normal; /* prevents 'double rendering' on iOS */
+}
+
+/* various combinations of the edit button */
+
+/* use classes not IDs, as the ID is needed for the drop down button support on the _right part, so use classes everywhere for consistency */
+#z__heading_main_buttons .z__button_edit_left {
+    margin-right: 0;
+    border-radius: 3px 0 0 3px;
+}
+#z__heading_main_buttons .z__button_edit_wide {
+    padding: 6px 22px; /* 20px = 12px + 8px from the right button + 1px from the borders */
+}
+#z__heading_main_buttons .z__button_edit_right {
+    border-radius: 0 3px 3px 0;
+    border-left: none;
+    padding: 6px 8px;
+    font-weight: normal; /* prevents 'double rendering' on iOS */
+}
+#z__heading_main_buttons .z__button_edit_right:after {
+    $ICON_FONT_DIRECTIVES
+    content: "\e001";
+    font-size: 8px;
+    color: #555;
+    position: absolute; /* allows this element to be placed on top of the hidden space */
+    margin: 2px 0 0 -5px;
+}
+#z__heading_main_buttons .z__button_edit_right.z__button_bar_menu_open,
+#z__heading_main_buttons .z__button_edit_right.z__button_bar_menu_open:hover,
+#z__heading_main_buttons .z__button_edit_right.z__button_bar_menu_open:active {
+    /* adjust the effect of the open menu style on this element */
+    border-left: none; /* don't move to the right because the left border is added */
+    box-shadow: $BUTTON_SHADOW_SELECTED_INSET; /* don't add an outside shadow, only the inner one */
+}
+#z__heading_main_buttons .z__button_edit_right:hover {
+    text-decoration: none; /* no underline on the space inserted for IE6 and IE7 compatibility */
+}
+
+/* ---------------------------------------------------------------------------- */
+
+#z__tray_addremove {
+    padding-left: 24px;
+    margin-left: 16px;
+    color: #777;
+}
+#z__tray_addremove:hover {
+    text-decoration: none;
+    color: #444;
+}
+#z__tray_addremove:after {
+    $ICON_FONT_DIRECTIVES
+    content: "\e004";
+    font-size: 16px;
+    position: absolute; /* allows this element to be placed on top of the hidden space */
+    margin: 2px 0 0 -15px;
+    font-weight: normal; /* prevents 'double rendering' on iOS */
+}
+#z__tray_addremove.z__tray_addremove_is_remove:after {
+    content: "\e003";
+}
+
+/* ---------------------------------------------------------------------------- */
+/* Button bar below heading */
+#z__button_bar {
+    /* styles in common with z__ws_content */
+    width: $PAGE_TITLE_WIDTH;
+    padding: 2px 0;  /* need 2px vertical padding for IE to display borders */
+    height: 24px;
+    background: url(/images/rule_light_shadowed.png) 0 12px repeat-x;
+}
+
+#z__button_bar_holder {
+    text-align: right;
+    height: 24px;
+    width: $PAGE_CONTENT_WIDTH;
+}
+
+/* TODO: Don't have the button bar button styles split over two bits of the stylesheet */
+
+#z__button_bar a {
+    padding: 3px 6px;
+    margin: 0 0 0 8px;
+    border: 1px solid #ccc;
+    color: #888;
+    background: #fff;
+    box-shadow: $BUTTON_BAR_SHADOW_OUTER, inset 0 1px 1px #fff;
+}
+
+#z__button_bar a:hover, #z__button_bar a.z__button_bar_menu:hover {
+    background-color: #ddd;
+}
+
+#z__button_bar a.z__button_bar_menu:after {
+    $ICON_FONT_DIRECTIVES
+    content: "\e001";
+    font-size: 8px;
+    font-weight: normal; /* prevents 'double rendering' on iOS */
+    margin: 2px 0 0 6px;
+}
+
+#z__page a.z__button_bar_menu_open, #z__page a.z__button_bar_menu_open:hover, #z__page a.z__button_bar_menu_open:active {
+    box-shadow: $BUTTON_BAR_SHADOW_OUTER, $BUTTON_SHADOW_SELECTED_INSET;
+    border: 1px solid $C_AEP_MENU_BORDER;
+    color: #444;
+    text-decoration: none;
+}
+
+/* ------------ navigation ------------- */
+
+#z__navigation_container {
+    border: 0;
+    font-size: 12px;
+    position: relative;
+    z-index: 100;
+}
+
+.z__webfonts_enabled #z__navigation_container {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+
+#z__navigation_container div {
+    color: $C_NAVIGATION_TEXT;
+}
+
+#z__navigation_container .z__navigation_group {
+    margin-bottom: 15px;
+}
+
+#z__navigation_container .z__navigation_group div {
+    padding: 2px 0 2px 0;
+}
+
+#z__navigation_container .z__navigation_group div:first-child {
+    font-weight: bold;
+    padding: 2px 0 2px 0;
+}
+
+#z__navigation_container .z__navigation_group_collapsed a:before {
+    $ICON_FONT_DIRECTIVES
+    content: "\e005";
+    font-size: 8px;
+    margin-top: 2px;
+    float: right;
+    font-weight: normal; /* prevents 'double rendering' on iOS */
+}
+
+/* when a group is collapsed, hide everything apart from the first item */
+#z__navigation_container .z__navigation_group_collapsed div { display: none; }
+#z__navigation_container .z__navigation_group_collapsed div:first-child { display: block; }
+
+#z__navigation_container .z__nav_selected {
+    text-decoration: underline;
+}
+
+
+#z__navigation_container div a {
+    color: $C_NAVIGATION_TEXT;
+    display: block; /* makes navigation entry click targets the full width of the left hand column */
+}
+
+#z__navigation_container div a:hover {
+    color: $C_NAVIGATION_TEXT;
+}
+
+.z__navigation_group + .z__navigation_group {
+    border-top: 1px solid #ddd;
+    padding-top: 15px;
+}
+
+
+/* regular content */
+
+#z__ws_content {
+    min-height: 448px;
+    text-align: left;
+    padding-bottom: 64px;
+}
+
+
+#z__ws_content table {
+    width: 100%;
+    margin: 8px 0 16px 0;
+    background-color: transparent;
+    border-collapse: collapse;
+    font-size: 12px;
+    line-height: 14px;
+}
+
+#z__ws_content table th,
+#z__ws_content table td {
+    padding: 8px 0 7px 8px;
+}
+
+#z__ws_content table th {
+    background: #e1e1e1;
+    border-bottom: 1px solid #ccc;
+}
+
+#z__ws_content table td {
+    background-color: transparent;
+}
+
+#z__ws_content table tr td {
+    border-style: solid;
+    border-width: 0 0 1px 0;
+    border-color: #fff #fff #eee #fff;
+    background-color: transparent;
+}
+
+#z__ws_content table.z__without_cell_borders tr td {
+    border: none;
+}
+
+#z__ws_content table.z__with_alternate_row_stripes tr:nth-child(odd) td {
+    border-style: solid;
+    border-width: 0 0 1px 0;
+    border-color: #fff #fff #eee #fff;
+    background-color: #fafafa;
+}
+
+#z__ws_content ul, #z__ws_content ol, #z__ws_content dl {
+    margin-bottom: 13px;
+}
+#z__ws_content li {
+    list-style-type: disc;
+    margin: 0 0 4px 22px;
+}
+#z__ws_content dt {
+    font-style: italic;
+}
+#z__ws_content dd {
+    margin: 0 0 4px 16px;
+}
+
+
+#z__ws_content pre {
+    display: block;
+    width: auto;
+    color: #000;
+    margin: 10px 0 10px 0px;
+    font-family: 'courier new', courier, monospaced;
+    font-size: 1em; /* needed for IE */
+    line-height: 1.7em;
+}
+
+/* menu pages */
+
+.z__menu_section {
+    position: relative;
+    width: 100%;
+    padding: 8px 0; /* vertical padding so IE shows the borders */
+    line-height: 33px; /* to flow onto multiple lines if needed */
+}
+
+/* pop up type selection from editor */
+
+.z__new_option_types_pop {
+    margin: 32px 0 0 32px;
+    width: 50%;
+}
+
+.z__new_option_types_pop a, .z__new_option_types_pop a:hover {
+    color: #000;
+    font-weight: bold;
+}
+
+.z__new_option_types_pop p span.z__icon {
+    margin: 1px 10px 1px 0px;
+    vertical-align: middle;
+}
+
+/* types in new object menus */
+.z__new_object_types_list p {
+    /* Abbreviate long type names with ... */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.z__new_object_types_list a {
+    font-size: $FONT_SIZE_MEDIUM;
+    padding: 0 4px;
+    color: #000;
+}
+.z__new_object_types_list p span.z__icon {
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.z__new_object_types_list .z__new_object_types_list_left {
+    float: left;
+    width: 45%;
+}
+.z__new_object_types_list .z__new_object_types_list_right {
+    float: right;
+    width: 45%;
+}
+
+.z__menu_section_type_link_spacer {
+    clear: both;
+    width: 100%;
+    height: 32px;
+    line-height: 0px;
+    font-size: 0px;
+    margin: 0;
+}
+
+.z__new_object_types_list_separator {
+    margin: 0 0 16px 0;
+    border-bottom: 1px solid #eee;
+    clear: both;
+    height: 20px;
+}
+
+/* indicator colours and basics */
+
+.z__ui_indicator:before {
+    $ICON_FONT_DIRECTIVES
+    content: "\e501";
+    color: $C_INDICATOR_STANDARD;
+    line-height: 1.25em;
+}
+
+.z__ui_indicate_primary:before {
+    color: $C_INDICATOR_PRIMARY;
+}
+
+.z__ui_indicate_secondary:before {
+    color: $C_INDICATOR_SECONDARY;
+}
+
+.z__ui_indicate_terminal:before {
+    color: $C_INDICATOR_TERMINAL;
+}
+
+.z__ui_indicate_arrow_forward:after,
+.z__ui_indicate_arrow_back:after {
+    $ICON_FONT_DIRECTIVES
+    color: #fff;
+    line-height: 1.25em;
+}
+
+.z__ui_indicate_arrow_forward:after {
+    content: "\e005";
+}
+
+.z__ui_indicate_arrow_back:after {
+    content: "\e016";
+}
+
+/* generic UI for choosing between options */
+a.z__ui_choose_option_entry, a.z__ui_choose_option_entry:visited {
+    display: block;
+    position: relative;
+    padding: 0 32px 8px 48px;
+    margin: 0 0 8px 0;
+    text-decoration: none;
+    color: #888;
+}
+a.z__ui_choose_option_entry:hover {
+    background: #eee;
+}
+a.z__ui_choose_option_entry span, a.z__ui_choose_option_entry:visited span {
+    display: block;
+    padding: 4px 0 0 0;
+}
+.z__ui_choose_option_entry span.z__ui_choose_option_entry_name {
+    font-size: $FONT_SIZE_LARGE;
+    padding-top: 8px;
+    color: $ANCHOR_COLOUR;
+}
+a.z__ui_choose_option_entry_highlight {
+    font-weight: bold;
+}
+
+.z__ui_choose_container .z__ui_indicator {
+    display: block;
+    position: absolute;
+    z-index: 1000;
+}
+.z__ui_choose_container .z__ui_indicator:before {
+    position: absolute;
+    top: 6px;
+    left: 8px;
+    font-size: 24px;
+}
+.z__ui_choose_container .z__ui_indicator:after {
+    position: absolute;
+    top: 14px;
+    left: 18px;
+    font-size: 8px;
+}
+.z__ui_choose_container .z__ui_indicate_arrow_back:after {
+    left: 17px;
+}
+
+/* drag handles for reordering lists, for example in tracker current work listings */
+
+span.z__drag_handle {  /* drag handle */
+    background: #888;
+    margin-right: 8px;
+    color: #000;
+    padding: 0 4px;
+    cursor: move;
+}
+
+/* -------------------------------------------------------------------------------------------------------------- */
+/* Main application menu */
+
+#z__aep_tools_popup_menu {
+    position: absolute;
+    z-index: 9000;
+    background: $C_AEP_MENU_BACKGROUND;
+    border: 1px solid $C_AEP_MENU_BORDER;
+    padding: 16px 20px;
+    width: 400px;
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.15), -1px 1px 5px rgba(0,0,0,0.15);
+}
+
+/* make arrow pointer at top, slightly modified from http://cssarrowplease.com/ */
+#z__aep_tools_popup_menu:after, #z__aep_tools_popup_menu:before {
+    bottom: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+#z__aep_tools_popup_menu:after {
+    border-bottom-color: $C_AEP_MENU_BACKGROUND;
+    border-width: 11px; /* one more pixel than cssarrowplease, and on the margin */
+    margin-left: -11px;
+    left: 360px;
+    top: -21px; /* use this to stop the little line on an iPad at the base of the arrow */
+}
+#z__aep_tools_popup_menu:before {
+    border-bottom-color: #888; /* needs to be a bit darker than the $C_AEP_MENU_BORDER to appear the same on screen */
+    border-width: 11px;
+    margin-left: -11px;
+    left: 360px;
+}
+/* end of arrow pointer */
+
+/* special style to remove the highlight colour when tools menu entry is clicked */
+#z__aep_tools_tab a.z__aep_tools_menu_popped_up:hover {
+    color: $C_AEP_LINKS;
+}
+
+#z__tools_menu_table {
+    width: 100%;
+    border-collapse: separate;
+}
+
+#z__tools_menu_table td {
+    vertical-align: top;
+}
+
+.z__tools_menu_sep_left {
+    width: 18px;
+    border-right: 1px solid #ccc;
+}
+.z__tools_menu_sep_right {
+    width: 16px;
+    border-left: 1px solid #fff;
+}
+
+.z__tools_menu_group_cell {
+    padding: 12px 0;
+    border-top: 1px solid #fff;
+    border-bottom: 1px solid #ccc;
+}
+#z__tools_menu_table tbody tr:first-child td {
+    padding-top: 4px;
+    border-top: none;
+}
+#z__tools_menu_table tbody tr:last-child td, #z__tools_menu_table .z__tools_menu_table_last_cells_ie_hack td { /* applied in JS */
+    padding-bottom: 4px;
+    border-bottom: none;
+}
+
+.z__tools_menu_group_header {
+    margin: 0 0 4px 2px;
+    font-weight: bold;
+    color: #666;
+}
+.z__webfonts_enabled .z__tools_menu_group_header {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+
+.z__tools_menu_group {
+    margin: 0 0 0 16px;
+}
+
+.z__tools_menu_group li {
+    margin-bottom: 1px;
+}
+
+.z__tools_menu_group a, .z__tools_menu_group a:hover {
+    display: block;
+    width: 100%;
+    color: #666;
+}
+
+#z__aep_tools_popup_menu a[href="/do/authentication/logout"] {
+    position: relative; /* for positioning the icon below */
+}
+#z__aep_tools_popup_menu a[href="/do/authentication/logout"]:before {
+    $ICON_FONT_DIRECTIVES
+    content: "\e00c";
+    font-size: 8px;
+    position: absolute;
+    top: 3px;
+    left: -16px;
+    color: #888;
+}
+
+/* Drop down menus from the button bar */
+.z__title_bar_button_menu {
+    position: absolute;
+    border: 1px solid $C_AEP_MENU_BORDER;
+    background: $C_AEP_MENU_BACKGROUND;
+    padding: 4px 0 2px 0;
+    margin: 0;
+    text-align: left;
+    line-height: 16px;
+    cursor: default;
+    width: auto;
+    font-size: 12px;
+    border-radius: 3px;
+    box-shadow: 1px 2px 4px rgba(0,0,0,0.15);
+    z-index: 9866;
+}
+
+.z__title_bar_button_menu a {
+    position: relative;
+    display: block;
+    color: #666;
+    padding: 3px 32px 5px 12px;
+    margin: 0;
+    cursor: default;
+}
+.z__title_bar_button_menu a:hover {
+    text-decoration: underline;
+}
+
+/* home page */
+
+#z__ws_content h1.z__home_page_panel_title, #z__right_column h1.z__home_page_panel_title {
+    font-size: $FONT_SIZE_LARGE;
+    color: COLOUR[:heading];
+    border-bottom: 1px solid COLOUR[:divider_line];
+    padding: 4px 1px;
+    font-weight: normal;
+    margin: 28px 0 16px 0;
+}
+.z__webfonts_enabled #z__ws_content h1.z__home_page_panel_title, .z__webfonts_enabled #z__right_column h1.z__home_page_panel_title {
+    font-weight: bold;
+}
+
+#z__ws_content h1.z__home_page_panel_title {
+    font-weight: bold;
+    background: url(/images/rule_light_shadowed.png) 0 28px repeat-x;
+    border: none;
+    padding-bottom: 11px;
+}
+#z__right_column h1.z__home_page_panel_title {
+    font-size: 13px;
+    padding-bottom: 1px;
+}
+
+#z__ws_content h1.z__home_page_panel_title:first-child {
+    margin-top: 0;
+}
+#z__right_column h1.z__home_page_panel_title:first-child {
+    margin-top: 18px;
+}
+
+.z__home_page_panel_actions {
+    clear: both;
+    margin: 4px 0 0 0;
+}
+
+.z__home_page_panel_actions a {
+    font-size: 11px;
+    text-decoration: underline;
+    color: #666;
+}
+
+.z__home_page_panel_actions a.z__home_page_panel_actions_right {
+    float: right;
+}
+
+/* ---------------------------------------------------------------------------- */
+/* Action links on home page, primarily used by plugins to link to functionality */
+
+.z__home_page_main_action_link a, #z__home_page_main_action_link a:visited {
+    display: block;
+    color: #666;
+    font-size: 12px;
+    margin: 0 0 4px 0;
+}
+
+/* ---------------------------------------------------------------------------- */
+/* Labels */
+
+.z__label {
+    white-space: nowrap;
+    background: #e8e8e8;
+    padding: 3px 6px 2px 6px;
+    border-radius: 0.7em 0 0 0.7em;
+    margin-right: 4px;
+    /* tried to get angled corners with something like this: */
+/*    background:linear-gradient(45deg, transparent 4px, #ddd 4px), linear-gradient(135deg, transparent 4px, #ddd 4px);
+    background-position: bottom left, top left;
+    background-size: 100% 50%;
+    background-repeat: no-repeat;*/
+}
+.z__label:before {
+    color: #fff;
+    font-weight: bold;
+    padding-right: 4px;
+    position: relative;
+    top: -0.2em;
+    content: '\25CF'; /* BLACK CIRCLE */
+    text-shadow: -1px 1px 1px rgba(0,0,0,0.1);
+}
+
+/* ---------------------------------------------------------------------------- */
+/* Noticeboard on home page */
+
+.z__home_page_panel_noticeboard_entry {
+    margin-top: 20px;
+}
+
+#z__ws_content .z__home_page_panel_noticeboard_entry h3 {
+    font-size: 14px;
+    margin: 0;
+}
+.z__webfonts_enabled #z__ws_content .z__home_page_panel_noticeboard_entry h3 {
+    font-weight: normal;
+}
+#z__ws_content .z__home_page_panel_noticeboard_entry h3 a {
+    color: COLOUR[:heading];
+}
+
+#z__ws_content a.z__home_page_panel_noticeboard_viewlink {
+    float: right;
+    background: url(/images/newwindow.gif) 0 no-repeat;
+    padding-left: 16px;
+    color: #777;
+}
+
+.z__home_page_panel_noticeboard_infoline, .z__home_page_panel_noticeboard_infoline a, .z__home_page_panel_noticeboard_viewlink {
+    font-size: 11px;
+    color: #777;
+}
+
+.z__home_page_panel_noticeboard_infoline {
+    position: relative;
+    top: -2px; /* not necessarily the nicest way of moving the spacing up a bit, but probably nicer than using line-height */
+}
+
+.z__home_page_panel_noticeboard_viewlink {
+    text-decoration: underline;
+}
+
+.z__home_page_panel_noticeboard_entry + .z__home_page_panel_noticeboard_entry {
+    border-top: 1px solid #ddd; /* separator line between entries */
+    margin-top: 4;
+    padding-top: 20px;
+}
+
+
+/* ---------------------------------------------------- */
+/* sidebar menu */
+
+.z__sidebar_menu div {
+    padding: 4px 0 4px 0;
+    border-bottom: 1px solid #eee;
+    text-indent: 16px;
+}
+
+.z__sidebar_menu .z__sidebar_menu_selected {
+    color: COLOUR[:highlight];
+    font-weight: bold;
+    background: $C_PAGE_BACKGROUND url(DYNAMIC_IMAGE[indicate.gif]) 3px center no-repeat;
+    border-bottom: 1px solid #ccc;
+    text-indent: 16px;
+}
+
+.z__sidebar_menu a {
+    color: #666;
+    text-decoration: none;
+}
+
+.z__sidebar_menu a:hover {
+    color: COLOUR[:highlight];
+    text-decoration: none;
+}
+
+
+/* ---------------------------------------------------- */
+/* subtask spawning */
+
+#z__spawned_subtask_header {
+    background-color: #000;
+    border-color: #000;
+    color: #666;
+    font-weight: bold;
+    padding: 16px 0 16px 0;
+    text-indent: 24px;
+}
+
+#z__spawned_subtask_header a, #z__spawned_subtask_header a:visited {
+    color: #fff;
+}
+#z__spawned_subtask_header a:hover {
+    text-decoration: underline;
+}
+
+#z__spawn_close {
+    float: right;
+    margin-right: 24px;
+}
+.z__webfonts_enabled #z__spawn_close {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+
+.z__spawn_fade_page {
+    opacity: .6;
+    background-color: #fff;
+    position: absolute;
+    z-index: 9998;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.z__spawn_fade_dialogue {
+    position: fixed; /* javascript code for IE6 turns this into position:absolute */
+    z-index: 9999;
+    width: 60%;
+    left: 20%;
+    top: 10%;
+    padding: 2.7em 16px 3em 16px;
+    color: $C_TEXT;
+    background-color: $C_PAGE_BACKGROUND;
+    border: 1px solid #bbb;
+    box-shadow: 3px 3px 8px rgba(0,0,0,0.15), -3px 3px 8px rgba(0,0,0,0.15);
+    text-align: center;
+    font-weight: bold;
+}
+.z__spawn_fade_dialogue a {
+    font-weight: normal;
+    color: #f44;
+}
+
+
+/* ---------------------------------------------------------------------------- */
+/* key/value display, eg object data or properties of a tracker query */
+
+.z__keyvalue_obj_spacer /* for spacing before an object display */ {
+    position: relative;
+    width: 100%;
+    height: 35px;
+}
+
+.z__keyvalue_divider {
+    border-top: 1px solid #eee;
+    margin: 0 0 5px 0;
+    width: 100%;
+    font-size: 0px;
+    line-height: 0px;
+    clear: both;
+}
+
+.z__keyvalue_section {
+    position: relative;
+    text-align: left;
+    display: block;
+    height: auto;
+    width: 100%;
+    line-height: 21px;
+    clear: both;
+}
+
+.z__keyvalue_row {
+    position: relative;
+    width: 100%;
+    clear: both;
+    display: block;
+    line-height: 21px;
+}
+
+.z__keyvalue_col1 {
+    clear: left;
+    float: left;
+    width: auto;
+    color: #444;
+    padding-right: 8px; /* so that there's always a space after long left hand attribute names, or push to next line if very close */
+}
+
+.z__keyvalue_col1_qualifer {
+    float: left;
+    clear: left;
+    width: 132px;
+    text-align: right;
+    font-style: italic;
+    color: #444;
+}
+
+.z__keyvalue_col2 {
+    float: right;
+    width: 370px;
+    display: block;
+    line-height: 21px;
+    text-align: left;
+    padding-bottom: 4px;
+}
+
+.z__keyvalue_col2_full  /* a container which goes the full width -- necessary to get IE to put the right hand buttons in the right place */ {
+    width: 99%; /* using 100% here would cause the right hand button to shift position in IE */
+    display: block;
+    line-height: 21px;
+    text-align: left;
+}
+
+/* make sure paragraph text is the right size; necessary to fix up paragraph text in object display and deleted values without qualifiers in the editor */
+#z__ws_content div.z__keyvalue_row p, #z__ws_content div.z__keyvalue_col2 p {
+    margin: 0 0 1em 0;
+}
+
+
+/* ---------------------------------------------------------------------------- */
+
+
+/* misc stuff */
+.z__full_width_form_element { /* any field, element, table cell etc to display as wide as possible */
+    width: 100%;
+}
+
+
+/* ---------------------------------------------------------------------------- */
+/* Tray display (click on tab) */
+
+.z__tray_entry {
+    margin: 0;
+    padding: 12px 0 8px 0;
+    width: 100%;
+    clear: both;
+    border-bottom: 1px solid #eee;
+}
+.z__tray_entry .z__linked_heading {
+    width: 80%;
+}
+.z__tray_remove {
+    float: right;
+    position: relative;
+    top: 8px;
+}
+.z__tray_remove a:before {
+    /* cross icon */
+    $ICON_FONT_DIRECTIVES
+    content: "\e00f";
+    font-size: 8px;
+    padding-right: 6px;
+    font-weight: normal; /* prevents 'double rendering' on iOS */
+    position: absolute;
+    top: 3px;
+    left: 6px;
+}
+.z__tray_remove a {
+    padding: 0;
+    font-weight: normal;
+    font-size: 10px;
+    display: block;
+    width: 19px;
+}
+.z__tray_remove a:hover {
+    color: COLOUR[:highlight];
+    text-decoration: none;
+}
+.z__tray_entry_footer {
+    clear: both;
+    height: 2em;
+}
+
+/* ---------------------------------------------------------------------------- */
+/* Alerts */
+
+.z__general_alert {
+    padding: 4px 4px 4px 24px;
+    margin: 0 0 2px 0;
+    font-weight: bold;
+    background: $C_PAGE_BACKGROUND url(/images/alerticon.gif) 4px 2px no-repeat;
+}
+
+
+/* ---------------------------------------------------------------------------- */
+/* help system */
+
+#z__help_system_text {
+    padding-top: 10px;
+}
+
+.z__help_system_popup_link {
+    display: block;
+    margin: 0;
+    padding: 1px 0 0 18px;
+    background: url(/images/newwindow.gif) 0 no-repeat;
+}
+
+/* ---------------------------------------------------------------------------- */
+/* Put 3D border around spinner */
+.z__spinner {
+    padding: 1px;
+    background: #fff;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #aaa #eee #eee #aaa;
+    vertical-align: top;
+}
+
+/* ---------------------------------------------------------------------------- */
+/* Login page; IE uses different sizes for text and password inputs, even if size= is the same */
+.z__login_input_field {
+    width: 40%;
+}
+.z__login_get_password_reminder, .z__login_get_password_reminder:visited {
+    display: block;
+    width: 40%;
+    text-align: right;
+    margin: 8px 4px;
+    color: $ANCHOR_COLOUR;
+}
+.z__login_get_password_reminder span {
+    padding: 2px 4px;
+}
+#z__login_get_password_reminder_login_attempt {
+    font-weight: bold;
+}
+.z__login_get_password_reminder_highlight {
+    background-color: #FE0;
+}
+.z__login_button {
+    margin-left: 32px;
+    width: 8em;
+}
+.z__login_autologin_ui {
+    color: #666;
+    width: 55%;
+}
+
+/* ---------------------------------------------------------------------------- */
+/* General styles for auto-generated forms */
+
+.z__form_field_error_marker {
+    color: COLOUR[:highlight];
+    font-weight: bold;
+}
+
+.z__form_invalid_field {
+    background-color: #fee;
+}
+
+
+/* ---------------------------------------------------------------------------- */
+/* For the home_page_elements plugin, because dyanmic images are recolouring aren't supported for plugins. */
+
+#z__home_page_banners .bbg0 { background-image: url(DYNAMIC_IMAGE[home-page-banner-a.gif]); }
+#z__home_page_banners .bbg1 { background-image: url(DYNAMIC_IMAGE[home-page-banner-b.gif]); }
+#z__home_page_banners .bbg2 { background-image: url(DYNAMIC_IMAGE[home-page-banner-c.gif]); }
+
+/* Override the font used on the banners, as subsitutions aren't supported for plugins. */
+.z__webfonts_enabled .z__home_page_banner_container div {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+
+/* ---------------------------------------------------------------------------- */
+/* Modify above styles when they're on the minimal layout page */
+
+body.z__minimal_layout {
+    /* no horizontal scrolling */
+    overflow-x: hidden;
+}
+
+.z__minimal_layout #z__page {
+    width: 100% !important;
+}
+
+.z__minimal_layout_for_help_popup #z__page {
+    width: 400px !important;    /* fix the width of the help page, must match the width set in kapplication.js */
+}
+
+.z__minimal_layout #z__page_name {
+    float: none;
+    margin: 0;
+    width: 100%;
+    position: relative;
+    border-bottom: 1px solid $C_AEP_MENU_BORDER;
+}
+.z__minimal_layout #z__page_name h1 {
+    font-size: 16px;
+    line-height: $AEP_HEIGHT;
+    margin: 2px 0 0 16px;
+    color: $C_AEP_LINKS;
+}
+
+.z__minimal_layout #z__page {
+    border: none;
+}
+
+/* optional right column is displayed below the main content, and centered. Important for editor permissions. */
+.z__minimal_layout #z__ws_content,
+.z__minimal_layout #z__right_column {
+    float: none;
+    margin: 20px auto 0 auto;
+    min-height: 200px;
+}
+.z__minimal_layout #z__right_column > :first-child {
+    margin-top: 0;
+}
+
+.z__minimal_layout_for_help_popup div#z__ws_content {
+    width: 88%;
+    margin: 20px 8% 0 4%;
+}
+
+.z__minimal_layout #z__spawn_close {
+    float: none;  /* override z__spawn_close */
+    margin-right: 0px;  /* override z__spawn_close */
+    color: #666;
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 1px;
+    z-index: 100;
+    background: #f8f8f8;
+    padding: 0 16px 0 16px;
+    border-left: 1px solid $C_AEP_MENU_BORDER;
+    font-size: 12px;
+    font-weight: bold;
+    line-height: $AEP_HEIGHT;
+    box-shadow: inset 0 1px 1px #fff; /* "light source" at top of box */
+}
+.z__minimal_layout #z__spawn_close:hover {
+    color: COLOUR[:highlight];
+    text-decoration: none;
+}
+.z__minimal_layout #z__spawn_close:before {
+    /* cross icon */
+    $ICON_FONT_DIRECTIVES
+    content: "\e00f";
+    font-size: 8px;
+    padding-right: 6px;
+    font-weight: normal; /* prevents 'double rendering' on iOS */
+}
+
+/* ---------------------------------------------------------------------------- */
+/* Plugin UI widgets */
+/* TODO: Should/can this be moved somewhere else? */
+
+/* std:ui:confirm */
+
+.z__plugin_ui_confirm {
+    background: #eee;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.z__plugin_ui_confirm_action {
+    float: right;
+    margin-left: 25px;
+}
+
+.z__plugin_ui_confirm_action a {
+    display: block;
+    color: #888;
+    padding-top: 1px;
+}
+
+.z__plugin_ui_confirm_end {
+    clear: both;
+}
+
+/* std:ui:notice */
+/* NOTE: also used by main platform UI, hence no z__plugin prefix */
+
+.z__acknowledgment_notice {
+    border-left: 5px solid #f00;
+    background: #e8e8e8;
+    padding: 10px 15px;
+    margin: 20px 0 24px 0
+}
+
+.z__acknowledgment_notice .z__acknotice_dismiss_icon {
+    float: right;
+}
+
+.z__acknowledgment_notice .z__acknotice_dismiss_icon a {
+    color: #888;
+}
+
+.z__acknowledgment_notice .z__acknotice_message p {
+    margin: 4px 0;
+}
+
+.z__acknowledgment_notice .z__acknotice_go_away a {
+    color: #888;
+}
+
+/* std:ui:panel */
+
+.z__plugin_ui_action_panel {
+    margin: 0 0 25px 0;
+}
+
+.z__plugin_ui_action_panel.z__plugin_ui_action_panel_separate_more {
+    margin-top: 50px;
+}
+
+.z__plugin_ui_action_panel .z__plugin_ui_action_panel_entry,
+.z__plugin_ui_action_panel .z__plugin_ui_action_panel_entry:visited {
+    display: block;
+    position: relative;
+    padding: 5px 10px;
+    color: #555;
+    background: #eee;
+    border-color: #aaa; /* TODO: Add rules to match borders? */
+    border-style: solid;
+    border-width: 0 1px 1px 1px;
+    outline: 0; /* not 100% sure this is a good idea, but tidies up the look a lot */
+}
+.z__plugin_ui_action_panel.z__plugin_ui_action_panel_primary .z__plugin_ui_action_panel_entry,
+.z__plugin_ui_action_panel.z__plugin_ui_action_panel_secondary .z__plugin_ui_action_panel_entry {
+    color: #fff;
+    font-weight: bold;
+}
+.z__plugin_ui_action_panel.z__plugin_ui_action_panel_primary .z__plugin_ui_action_panel_entry,
+.z__plugin_ui_action_panel.z__plugin_ui_action_panel_primary .z__plugin_ui_action_panel_entry:visited {
+    background: COLOUR[mix(:main,75,#fff,25)];
+    border-color: COLOUR[mix(:main,90,#fff,10)];
+}
+.z__plugin_ui_action_panel.z__plugin_ui_action_panel_secondary .z__plugin_ui_action_panel_entry,
+.z__plugin_ui_action_panel.z__plugin_ui_action_panel_secondary .z__plugin_ui_action_panel_entry:visited {
+    background: COLOUR[mix(:main,60,#fff,40)];
+    border-color: COLOUR[mix(:main,70,#fff,30)];
+}
+
+
+.z__plugin_ui_action_panel a.z__plugin_ui_action_panel_entry:hover {
+    color: #333;
+    background: #bbb;
+    text-decoration: none;
+    box-shadow: inset 0 1px 1px rgba(0,0,0,0.1) !important;
+}
+.z__plugin_ui_action_panel.z__plugin_ui_action_panel_primary a.z__plugin_ui_action_panel_entry:hover,
+.z__plugin_ui_action_panel.z__plugin_ui_action_panel_secondary a.z__plugin_ui_action_panel_entry:hover {
+    color: #fff;
+    background: COLOUR[mix(:main,95,#fff,5)];
+}
+
+/* Rounded corners and complete borders for the panel */
+.z__plugin_ui_action_panel .z__plugin_ui_action_panel_entry:first-child {
+    box-shadow: inset 0 1px 1px #fff;
+    border-top-width: 1px;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+}
+.z__plugin_ui_action_panel.z__plugin_ui_action_panel_primary .z__plugin_ui_action_panel_entry:first-child {
+    box-shadow: inset 0 1px 1px COLOUR[mix(:main,50,#fff,50)];
+}
+.z__plugin_ui_action_panel.z__plugin_ui_action_panel_secondary .z__plugin_ui_action_panel_entry:first-child {
+    box-shadow: inset 0 1px 1px COLOUR[mix(:main,30,#fff,70)];
+}
+.z__plugin_ui_action_panel .z__plugin_ui_action_panel_entry:last-child {
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+}
+
+
+/* Make non-links slightly lighter */
+.z__plugin_ui_action_panel div.z__plugin_ui_action_panel_entry {
+    background: #fafafa;
+}
+/* ATTEMPT AT MAKING NON-LINKS LOOK NICE FOR HIGHLIGHTED PANELS
+.z__plugin_ui_action_panel.z__plugin_ui_action_panel_primary div.z__plugin_ui_action_panel_entry,
+.z__plugin_ui_action_panel.z__plugin_ui_action_panel_secondary div.z__plugin_ui_action_panel_entry {
+    background: COLOUR[mix(:main,30,#fff,70)];
+    color: #444;
+}
+*/
+
+/* Disabled entries */
+.z__plugin_ui_action_panel div.z__plugin_ui_action_panel_disabled {
+    background: #eee;
+    color: #888;
+}
+
+/* Light style entries, for displaying information related to, but not directly about, the subject of the panel */
+.z__plugin_ui_action_panel div.z__plugin_ui_action_panel_entry.z__plugin_ui_action_panel_light {
+    background: #fff;
+    border-color: #ddd;
+}
+
+/* Other links / inner text */
+.z__plugin_ui_action_panel .z__plugin_ui_action_panel_inner_text,
+.z__plugin_ui_action_panel div.z__plugin_ui_action_panel_entry a {
+    display: block;
+    padding-left: 25px;
+}
+.z__plugin_ui_action_panel .z__plugin_ui_action_panel_inner_text {
+    font-style: italic;
+}
+
+/* .z__plugin_ui_action_panel_heading { } */
+
+.z__plugin_ui_action_panel_title {
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+    font-size: 11px;
+}
+
+.z__plugin_ui_action_panel .z__ui_indicator {
+    margin-right: 6px;
+}
+.z__plugin_ui_action_panel .z__ui_indicator:before {
+    position: relative;
+    font-size: 14px;
+    top: 2px;
+}
+.z__plugin_ui_action_panel .z__ui_indicator:after {
+    position: absolute;
+    top: 12px;
+    left: 16px;
+    font-size: 6px;
+}
+.z__plugin_ui_action_panel .z__ui_indicator.z__ui_indicate_arrow_back:after {
+    left: 15px;
+}
+
+/* very simple temporary styles for the 'menu' style for action panels */
+.z__plugin_ui_action_panel_menu_block h2 {
+    color: #888;
+}
+.z__plugin_ui_action_panel_menu_block p {
+    padding-left: 16px;
+    margin: 4px 0;
+}
+.z__plugin_ui_action_panel_menu_block a:visited {
+    color: $ANCHOR_COLOUR;
+}
+
+/* tile version of the action panel, intended for main 520px content area */
+
+.z__plugin_ui_action_panel_tile_container {
+    postiion: relative;
+    overflow: auto; width: 100%; /* clear floats */
+}
+.z__plugin_ui_action_panel_tile_container a,
+.z__plugin_ui_action_panel_tile_container a:visited {
+    display: block;
+    float: left;
+    margin: 20px 20px 0 0;  /* right margin cancelled on every third tile */
+    width: 132px;
+    height: 84px;
+    padding: 8px 14px;
+    font-size: 18px;
+    line-height: 24px;
+    color: #fff;
+    background: COLOUR[mix(:main,80,#fff,20)];
+}
+.z__plugin_ui_action_panel_tile_container a:nth-child(3n) {
+    margin-right: 0;
+}
+.z__webfonts_enabled .z__plugin_ui_action_panel_tile_container a {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+.z__plugin_ui_action_panel_tile_container a:hover {
+    background: COLOUR[mix(:main,50,#fff,50)];
+    text-decoration: none;
+}
+
+/* navigation elements */
+
+.z__plugin_ui_nav_arrow {
+    $ICON_FONT_DIRECTIVES
+    display: inline-block;
+    font-size: 8px;
+    font-weight: normal; /* prevents 'double rendering' on iOS */
+    padding: 2px 16px 0 16px;
+    margin: 0 8px;
+    border-radius: 2px;
+}
+a.z__plugin_ui_nav_arrow,
+a.z__plugin_ui_nav_arrow:visited,
+a.z__plugin_ui_nav_arrow:hover {
+    text-decoration: none;
+    color: $ANCHOR_COLOUR;
+}
+a.z__plugin_ui_nav_arrow:hover {
+    background: #ddd;
+}
+span.z__plugin_ui_nav_arrow {
+    color: #aaa;
+}
+
+/* ---------------------------------------------------------------------------- */
+/* File uploads UI */
+
+.z__file_target,
+.z__file_target_unsupported {
+    /* NOTE: If height of this element changes, .oforms-repeat-file-ui will need to be updated too. */
+    position: relative;
+    background: #eee;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: inset 1px 1px 1px rgba(0,0,0,0.25);
+    margin: 0 0 8px 0;
+    padding: 4px 8px 4px 32px;
+    line-height: 28px;
+    color: #666;
+}
+.z__webfonts_enabled .z__file_target,
+.z__webfonts_enabled .z__file_target_unsupported {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+.z__file_target_unsupported {
+    padding-left: 8px;
+    text-align: center;
+    font-size: 14px;
+    border-color: #e00;
+}
+.z__file_target {
+    font-size: 16px;
+}
+.z__file_target:before {
+    position: absolute;
+    top: 6px;
+    left: 4px;
+    $ICON_FONT_DIRECTIVES
+    font-size: 24px;
+    line-height: 28px;
+    content: "\e526";
+    color: #ddd;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.25);
+}
+.z__file_target a,
+.z__file_target a:visited {
+    display: inline-block;
+    position: relative;
+    text-decoration: underline;
+    color: #666;
+}
+.z__file_target input[type=file] {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+}
+.z__file_target.z__file_target_will_drop_here {
+    color: #000;
+    background: #ddd;
+    border: 1px solid #ccc;
+    box-shadow: -2px 0 5px #ffffe0, 0 -2px 5px #ffffe0, 2px 0 5px #ffffe0, 0 2px 5px #ffffe0, inset 1px 1px 1px rgba(0,0,0,0.5);
+}
+.z__file_target.z__file_target_will_drop_here:before {
+    color: #ccc;
+}
+
+#z__file_target_process {
+    position: fixed;
+    z-index: 99999999;
+    width: 100%;
+    background: #eee;
+    box-shadow: 0 0 4px rgba(0,0,0,0.25);
+    border-top: 1px solid #ddd;
+    height: 32px;
+    bottom: -36px; /* negative so off screen to start with, needs to match value in animations in file_upload.js */
+}
+#z__file_target_process div.z__file_target_process_bar {
+    height: 8px;
+    background: #fff;
+}
+#z__file_target_process div.z__file_target_process_bar_progress {
+    background: COLOUR[:highlight];
+    height: 8px;
+    width: 0px;
+}
+#z__file_target_process div.z__file_target_process_text {
+    padding: 2px 0 0 16px;
+    color: #666;
+}
+
+/* ---------------------------------------------------------------------------- */
+/* Printable stylesheet */
+
+@media print {
+    body {
+        margin-left: 16px;
+    }
+        /* .noprint included so headers can be set to not print */
+    .noprint, #z__header_oneis, #z__action_entry_points, #z__left_column, .z__sidebar_menu, #z__logo_display, .z__search_results_search_within_field, .z__recent_entry_quick_look, #z__object_linked_types_banner, #z__button_bar, #z__page_creation_label, #z__heading_main_buttons, #z__heading_back_nav {
+        display: none;
+    }
+    #z__page_name {
+        background: transparent;
+        color: #000;
+    }
+    #z__page {
+        margin-top: 16px;
+        border: none;
+    }
+}

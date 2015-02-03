@@ -1,0 +1,15 @@
+h1. Contacts directory
+
+All contact records will automatically appear in the contacts directory if your organisation uses one. You can normally find the contacts directory in the web page navigation on the left of every page. 
+
+To search the contacts directory click on _search within_ at the top of the contact directory. To view the full records for any entry click on the person's name.
+
+h2. Editing your contact directory entry
+
+Login with your username and password. Search for your record or browse for your record in the Contacts Directory. Click to view your contact directory entry in full. 
+
+Click on the edit button in the top right of the page (symbolised by a pencil.) Make your changes. Save your changes either by choosing _save_, or _preview_ if you wish to see your entry before committing it. Changes will appear immediately.
+
+h2. Creating your contacts directory entry
+
+If you do not already have a contacts directory entry, click on ADD >> PERSON and follow the instructions for _Editing your contact directory entry_ above.

@@ -1,0 +1,48 @@
+<%
+  @page_title = 'Usage Report'
+
+  years = (2010..(Date.today.year)).map { |y| [y.to_s, y] }
+  months = (1..12).map { |m| [sprintf("%02d", m), m] }
+%>
+
+<form method="GET">
+  <p><select name="year"><%= options_for_select(years, @year) %></select> <select name="month"><%= options_for_select(months, @month) %></select> <input type="submit" value="Show"></p>
+</form>
+
+<table>
+  <tr>
+    <th>User</th><th>Action</th><th>Count</th>
+  </tr>
+  <%
+    last_name = nil
+    totals = Hash.new(0)
+    @results.each do |row|
+      name, action, count = row
+      %>
+        <tr>
+          <td><%= h((name != last_name) ? name : '') %></td>
+          <td><%= h(action) %></td>
+          <td><%= count %></td>
+        </tr>
+      <%
+      totals[action] += count.to_i
+      last_name = name
+    end
+  %>
+  <tr>
+    <th>Totals</th>
+    <th></th>
+    <th></th>
+  </tr>
+  <%
+    totals.keys.sort.each do |action|
+      %>
+        <tr>
+          <td></td>
+          <td><%= h(action) %></td>
+          <td><%= totals[action] %></td>
+        </tr>
+      <%
+    end
+  %>
+</table>

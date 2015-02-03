@@ -1,0 +1,18 @@
+<%
+# Render non-document fields, collect documents
+documents = []
+store = obj.store
+table = obj_display_standard_table_rows(obj,store.schema,options,false) do |value,desc,q| # ,false to turn off aliasing
+  if value.class == KTextDocument
+    # Documents go at the end of the object
+    documents << value
+    false  # filter it out
+  else
+    true  # display
+  end
+end
+%>
+<%= table %>
+<% documents.each do |document| %>
+  <%= render_doc_as_html(document, store, options, recursion_limit - 1) %>
+<% end %>

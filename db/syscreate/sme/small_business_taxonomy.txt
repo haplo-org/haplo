@@ -1,0 +1,66 @@
+Finance
+	Payroll
+	Purchasing
+	Accounts
+	Raising finance
+	Taxation
+	Credit control
+Marketing
+	Market research
+		Competitor analysis
+	Promotions
+	Pricing
+	Public relations / PR
+	Advertising
+	Branding
+	Web site
+		Blog
+Sales
+	Sales pitches
+	Sales projections
+	Sales leads
+Strategy
+	Business plan
+	Contingency planning / Crisis management / Business continuity planning
+Human resources / HR / Personnel
+	Recruitment
+		Advertising vacancies
+		Job descriptions and person specifications
+		Interviews
+		Employment contracts
+	Dismissal
+	Redundancy
+	Training
+	Appraisal
+	Remuneration / Salary
+	Benefits
+		Pension schemes
+	Employee relations
+Research and development / R&D / R & D
+	Product development
+	Product testing
+	Intellectual property
+Operations
+	Quality control
+	Customer service
+IT
+	IT disaster recovery
+		Backups
+	IT security
+	Email
+	Internet access
+	IT support
+	Hardware
+	Software
+Administration
+	Reception
+	Telephones
+Facilities
+	Building maintenance
+	Security
+	Health and safety
+	Insurance
+	Environmental issues
+Legal
+	Client contracts / Client terms of service / Client terms and conditions	
+	Supplier contracts

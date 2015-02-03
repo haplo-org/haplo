@@ -1,0 +1,20 @@
+<%
+  @page_title = 'Edit '+h(KApp.global(:name_latest))+' settings for '+h(@user.name)
+  client_side_resources :basics
+-%>
+
+<%= sys_mng_header %>
+
+<%= render(:partial => 'latest/settings_form') %>
+
+<h2>Email template</h2>
+<form method="POST"><%= form_csrf_token %>
+  <p>Email template: <%= render :partial => 'setup/email_templates/template_select', :data_for_template => {:template => @template_id, :name => 'template', :blank => '(use setting from parent group)'} %></p>
+  <p><input type="submit" value="Set template"></p>
+</form>
+
+<h2>Remove settings</h2>
+<form method="POST"><%= form_csrf_token %>
+  <input type="submit" name="todefaults" value="Reset to defaults">
+</form>
+<p><i>Reset to defaults</i> sets this user or group to use the defaults set on the parent group.</p>

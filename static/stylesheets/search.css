@@ -1,0 +1,696 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+/* ---------------------------------------------------------------------- */
+
+#z__search_form_container {
+    display: block;
+}
+
+.z__search_query_search_within_container {
+    position: relative; /* fix for IE */
+    margin: 4px 0 8px 0;
+}
+
+#z__search_form_id {
+    margin: 0 0 16px 0;
+    padding: 0;
+}
+
+#z__ws_content table.z__search_box_container {
+    clear: both; /* make sure it's not shifted right by floating stuff above, eg in linked items */
+    border: 1px solid #aaa;
+    border-collapse: separate;
+    margin: 8px 0 0 0;
+}
+
+#z__ws_content table.z__search_box_container .z__search_form_query_row td {
+    margin: 0;
+    padding: 2px;
+}
+
+#z__ws_content table.z__search_box_container tr .z__search_form_query_input {
+    background: #fff;
+    border: 0;
+}
+#z__ws_content table.z__search_box_container tr .z__search_form_submit_button {
+    background: #eee;
+    border: 0;
+}
+
+.z__search_form_query_input {
+    width: 85%;
+}
+#z__ws_content table.z__search_box_container .z__search_form_query_row .z__search_form_submit_button {
+    width: 15%;
+    border-width: 0 0 0 1px;
+    border-style: solid;
+    border-color: #aaa;
+    box-shadow: inset 0 1px 1px #fff;
+}
+
+.z__search_form_query_input input, .z__search_form_submit_button input {
+    display: block;
+    border: none;
+    background: transparent;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, Helvetica, sans-serif;
+    /* undo default input styling */
+    box-shadow: none; border-radius: 0;
+}
+
+.z__search_form_query_input input {
+    font-size: 15px;
+    padding: 2px 4px;
+    width: 98%;
+}
+.z__search_form_query_input input:focus {
+    outline: none;   /* remove focus ring in WebKit */
+}
+
+.z__search_form_submit_button input {
+    font-size: 13px;
+    font-weight: bold;
+}
+
+#z__search_form_advanced_container {
+    padding: 0;
+    background: #f5f5f5;
+}
+
+#z__search_form_advanced_container_fields {
+    width: 500px;
+    margin: 0 0 0 8px;
+    padding: 0;
+}
+
+/* make the buttons in the search form a little more visible */
+#z__search_form_advanced_container .z__editor_container .z__editor_add a,
+#z__search_form_advanced_container .z__editor_container .z__editor_add a:visited,
+#z__search_form_advanced_container .z__editor_container .z__editor_delete_button a,
+#z__search_form_advanced_container .z__editor_container .z__editor_delete_button a:visited,
+#z__search_form_advanced_container .z__editor_container .z__editor_undo_button a,
+#z__search_form_advanced_container .z__editor_container .z__editor_undo_button a:visited {
+    border-color: #ddd;
+    background-color: #ddd;
+}
+#z__search_form_advanced_container .z__editor_container .z__editor_add a:hover,
+#z__search_form_advanced_container .z__editor_container .z__editor_delete_button a:hover,
+#z__search_form_advanced_container .z__editor_container .z__editor_undo_button a:hover {
+    border-color: #bbb;
+    background-color: #ccc;
+}
+
+/* adjust the size of the form elements */
+#z__search_form_advanced_container .z__editor_container_editor_inner .z__full_width_form_element {
+    width: 441px;
+}
+#z__search_form_advanced_container .z__editor_container_editor_inner textarea.z__full_width_form_element {
+    width: 445px;
+}
+#z__search_form_advanced_container .z__editor_container_editor_inner .z__keyvalue_col2 .z__full_width_form_element {
+    width: 308px;
+}
+#z__search_form_advanced_container .z__editor_objref_lookup_text input {
+    width: 422px;
+}
+#z__search_form_advanced_container .z__editor_link_control {
+    width: 445px;
+}
+#z__search_form_advanced_container .z__keyvalue_col1_qualifer {
+    width: 110px;
+}
+
+
+#z__search_form_advanced_container_fields_form_holder {
+    padding: 8px 0;
+}
+
+.z__search_form_fields_text_display_holder {
+    padding: 16px;
+}
+
+#z__search_form_fields_text_display {
+    display: block;  /* for max clickability */
+    color: #000;
+}
+
+#z__search_form_fields_text_display div /* edit text */ {
+    float: right;
+    padding-top: 0.4em;
+    color: $ANCHOR_COLOUR;
+}
+
+#z__search_form_fields_text_display span /* big text for search text */ {
+    font-size: 1.4em;
+}
+
+#z__search_form_advanced_container_constraints {
+    position: relative; /* to ask IE6 very nicely to display the border and background */
+    padding: 8px 16px;
+    background: #e8e8e8;
+    border-top: 2px solid #ccc;
+    min-height: 26px;
+}
+
+#z__search_form_advanced_toggle_holder {
+    position: relative; /* for positioning the contained elements */
+}
+#z__search_form_advanced_toggle {
+    display: block;
+    padding: 0px 8px;
+    width: 105px;
+    height: 21px;
+    font-size: 12px;
+    background: #e8e8e8;
+    color: #000;
+    position: absolute; /* needs to be absolute, so out of document flow, and :after positions correctly */
+}
+#z__search_form_advanced_toggle_holder:after {
+    display: block;
+    position: relative; /* needs to be relative, so in document flow, and pushes items below it downwards correctly */
+    left: 111px;
+    content: '';
+    width: 10px; /* makes sure there's some overlap to avoid thin lines on iOS */
+    height: 0px;
+    border-top: 21px solid #e8e8e8;
+    border-right: 21px solid transparent;
+}
+#z__search_form_advanced_toggle:hover {
+    color: COLOUR[:highlight];
+    text-decoration: none;
+}
+.z__search_form_advanced_toggle_disabled:hover {
+    color: #000 !important;
+}
+#z__search_form_advanced_toggle:focus {
+    outline: none;  /* no dotted outline please */
+}
+
+.z__search_form_offered_subsets {
+    margin: 3px 0 0 0;
+}
+
+#z__search_form_explaination_holder /* also serves to keep the form in place */ {
+    clear: both;
+    position: relative; /* work round IE bug where display gets corrupted when dropdown disappears */
+}
+
+/* search explaination holder and UI for search page */
+
+
+.z__search_explanation {
+    background: #fff;
+    margin: 10px 0 0 0;
+    padding: 5px;
+    border: 1px solid #888;
+}
+
+
+/* search explaination formatting */
+
+
+.z__search_explanation_box_a {
+    /* alternative box styles for nested search elements */
+    margin: 0;
+    padding: 4px;
+    background: #eee;
+    border: 1px dotted #444;
+}
+
+
+.z__search_explanation_box_b {
+    /* alternative box styles for nested search elements */
+    margin: 0;
+    padding: 4px;
+    background: #fff;
+    border: 1px dotted #444;
+}
+
+
+.z__search_explanation_bool_join {
+    /* join with bool */
+    margin: 0;
+    padding: 2px 2px 2px 12px;
+}
+
+
+.z__search_explanation_bool_join span {
+    /* text in join */
+    background: #ffc;
+}
+
+
+.z__search_explanation_attr_name {
+    /* attribute name */
+    background: #cfc;
+}
+
+.z__search_explanation_linked_to_statement {
+    padding: 2px 0;
+    text-align: center;
+    font-weight: bold;
+}
+.z__search_explanation_linked_to_statement div {
+    font-weight: normal;
+}
+.z__search_explanation_linked_to_statement div span {
+    background: #cfc;
+}
+
+/* ---------------------------------------------------------------------- */
+
+/* Search results */
+
+/* UI elements on top of the results on the normal search interface */
+
+.z__search_error {
+    margin: 0;
+    margin: 4px 0px 4px 16px;
+    padding-left: 20px;
+    background: url("/images/alerticon.gif") left no-repeat;
+}
+
+
+.z__search_results_info_container {
+    /* container for errors, feed link, found statement */
+    position: relative;
+    display: block;
+    width: 100%;
+    margin: 0 0 12px 0;
+}
+
+
+.z__search_results_info_container .z__search_results_found_statement {
+    /* found statement */
+    color: #444;
+    padding-left: 3px;
+}
+
+.z__search_results_found_statement_standalone {
+    margin-bottom: 16px;
+}
+
+.z__search_results_type_counts {
+    position: relative;
+    display: block;
+    padding: 2px 4px;
+    margin-top: 4px;
+    height: auto;
+    font-size: 12px;
+    background: #eee;
+    border-radius: 3px;
+}
+
+.z__search_results_type_counts_box {
+    position: relative;
+    display: block;
+    width: 152px;
+    padding: 2px 4px;
+    margin-right: 10px;
+    float: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.z__search_results_type_counts_box span.z__count_marker {
+    /* count marker */
+    background: #ddd;
+    padding: 0 2px;
+    margin-left: 6px;
+    border-radius: 2px;
+}
+.z__search_results_type_counts .z__search_results_type_selected span.z__count_marker {
+    background: #fff; /* for selected items */
+}
+
+.z__search_results_type_counts .z__search_results_type_selected {
+    background-color: #ddd;
+    border-radius: 2px;
+}
+
+.z__search_results_type_counts_box a {
+    color: #444;
+}
+.z__search_results_type_counts .z__search_results_type_selected a {
+text-decoration:none;
+}
+.z__search_results_type_counts_box span.z__icon {
+    vertical-align: middle;
+    margin-right: 7px;
+}
+.z__search_results_type_counts_prop {
+    display: block;
+    clear: both;
+    width: 100%;
+    height: 1px;
+    font-size: 0px;
+    line-height: 0px;
+}
+
+
+.z__search_did_you_mean {
+    font-size: 12px;
+    margin: 20px 0 8px 0;
+}
+.z__search_did_you_mean span {
+    color: #666;
+    font-style: italic;
+}
+.z__search_did_you_mean a {
+    font-size: 14px;
+    margin: 0 8px;
+    font-weight: bold;
+}
+
+
+#z__search_tips_button {
+    position: relative;  /* show in IE6 */
+    display: block;
+    float: right;
+    margin-top: 2px;
+    padding: 1px 0 2px 0;
+}
+#z__search_tips_button:before {
+    $ICON_FONT_DIRECTIVES
+    content: "\e010";
+    font-size: 8px;
+    padding-right: 6px;
+    color: #666;
+}
+#z__search_tips_button:hover {
+    color: COLOUR[:highlight];
+    text-decoration: none;
+}
+a#z__search_tips_button:focus {
+    outline: none;  /* no dotted outline please */
+}
+
+/* BORROWED BY RECENT TAB! */
+/* TODO: Sort out z__search_results_sort_by style borrowed by RECENT tab */
+.z__search_results_sort_by {
+    /* search results 'sort by' contained */
+    margin: 4px 0;
+    padding: 0;
+    text-align: right;
+    font-size: 12px;
+}
+
+
+.z__search_results_sort_by span {
+    /* selected sort option */
+    background: #ddd;
+    padding: 0 3px;
+    border-radius: 2px;
+}
+
+
+.z__search_results_sort_by .z__search_results_sort_by_not_selectable {
+    /* unselectable sort option */
+    background: none;
+    color: #ddd;
+    padding: 0 3px;
+}
+
+
+.z__search_results_sort_by a {
+    /* link to other sort order */
+    padding: 0 3px;
+}
+
+
+/* UI elements on top of the results where they're displayed elsewhere, eg embedded in the people directory page */
+
+
+.z__search_results_search_within_link {
+    /* link to full search results on top of searches */
+    margin: 4px 0;
+    clear: both; /* for when used as a widget */
+    font-size: 11px;
+}
+/* NOTE: Also see .z__search_results_search_within_link:before in object.css */
+
+.z__search_results_search_within_link a, .z__search_results_search_within_link a:visited {
+    color: $ANCHOR_COLOUR;
+}
+
+/* a form with a search within link, just above embedded results */
+.z__search_results_search_within_field {
+    margin: 2px 0 4px 2px;
+}
+.z__search_results_search_within_query /* input field */ {
+    width: 40%;
+}
+
+/* ---------------------------------------------------------------------- */
+
+
+/* Demand Loading Lists (implemented by KDLList in kdllist.js) */
+
+
+.z__demand_loading_list_filler {
+    background: url(/images/dll_filler.gif) repeat;
+    width: 100%;
+}
+
+/* ----------------------------------------------------------------------------- */
+
+
+/* Search result listing - note demand loaded for long result lists */
+
+
+.z__search_results_container {
+    /* main container */
+    position: relative;
+    margin: 0;
+    display: block;
+    clear: both; /* for when used as a widget */
+}
+
+/* paging at end of results -- turn off javascript and restart browser to see it */
+
+.z__search_results_paging {
+    margin: 12px 0;
+}
+
+
+.z__search_results_paging div {
+    text-align: center;
+    margin-top: 5px;
+}
+
+
+.z__search_results_paging div span {
+    color: #bbb;
+}
+
+
+/* mini search results */
+
+.z__search_result_mini {
+    padding: 1px 1px 3px 8px;
+    margin: 0px 1px 8px 1px;
+    width: auto;
+    height: 24px;
+    line-height: 24px;
+    font-size: 13px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    border-left: 2px solid #eee;
+}
+
+.z__search_result_mini a,
+.z__search_result_mini a:visited {
+    color: #666;
+}
+
+.z__search_result_mini span.z__icon {
+    margin: 0 10px 0 0;
+    vertical-align: middle;
+}
+
+
+/* ----------------------------------------------------------------------------- */
+
+/* browsing */
+
+#z__browse_term_search_result_container {
+    margin-top: 16px;
+}
+
+
+/* ----------------------------------------------------------------------------- */
+
+/*  search results */
+
+.z__searchresult_item {
+    position: relative;
+    margin: 0px 0px 10px 0px;
+    display: block;
+    width: 515px;
+    height: 110px;
+    border-width: 1px 1px 1px 5px;
+    border-style: solid;
+    overflow: hidden;
+    border-color: #eee;
+}
+
+/* implement left colour for search results */
+.z__searchresult_item.c_0, .z__search_result_mini.c_0 { border-left-color: COLOUR[:category0]; }
+.z__searchresult_item.c_1, .z__search_result_mini.c_1 { border-left-color: COLOUR[:category1]; }
+.z__searchresult_item.c_2, .z__search_result_mini.c_2 { border-left-color: COLOUR[:category2]; }
+.z__searchresult_item.c_3, .z__search_result_mini.c_3 { border-left-color: COLOUR[:category3]; }
+.z__searchresult_item.c_4, .z__search_result_mini.c_4 { border-left-color: COLOUR[:category4]; }
+.z__searchresult_item.c_5, .z__search_result_mini.c_5 { border-left-color: COLOUR[:category5]; }
+.z__searchresult_item.c_6, .z__search_result_mini.c_6 { border-left-color: COLOUR[:category6]; }
+.z__searchresult_item.c_7, .z__search_result_mini.c_7 { border-left-color: COLOUR[:category7]; }
+
+.z__searchresult_item .z__icon {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+}
+
+.z__searchresult_item h3,
+.z__searchresult_item h4 {
+    display: block;
+    position: absolute;
+    width: 465px;
+    left: 44px;
+    margin: 0;
+    padding: 0;
+    font-size: 16px;
+    line-height: 22px;
+    height: 22px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.z__searchresult_item h3.z__two_line {
+    white-space: inherit;
+    text-overflow: inherit;
+    height: 44px;
+}
+
+.z__searchresult_item h3 {
+    color: #000;
+    top: 4px;
+    font-weight: bold;
+}
+.z__searchresult_item h3 a,
+.z__searchresult_item h3 a:visited {
+    color: #000;
+}
+
+.z__searchresult_item h4 {
+    color: #666;
+    top: 26px;
+    font-weight: normal;
+}
+.z__searchresult_item h4 a,
+.z__searchresult_item h4 a:visited {
+    color: #666;
+}
+
+.z__searchresult_item h4.z__second_title_short_for_right {
+    width: 280px;
+}
+.z__searchresult_item h4.z__second_title_right {
+    width: 168px;
+    left: 341px;
+}
+.z__searchresult_item h4.z__second_title_right,
+.z__searchresult_item h4.z__second_title_right a,
+.z__searchresult_item h4.z__second_title_right a:visited {
+    color: #999;
+    /* Tempting to use italic, but the font won't be available. And bold is too heavy. */
+    /* But maybe this is too much? */
+    text-transform: uppercase;
+    font-size: 12px;
+    line-height: 25px;  /* choosen by trial and error to get the baseline at the same height as the bit to the left */
+    letter-spacing: 1px;
+}
+
+
+.z__searchresult_tray_ui,
+.z__searchresult_tray_ui_none {
+    position: absolute;
+    right: 4px;
+    bottom: 4px;
+}
+
+.z__searchresult_indicators {
+    position: absolute;
+    top: 52px;
+    left: 14px;
+    width: 16px;
+}
+.z__searchresult_item .z__searchresult_indicators .z__icon {
+    position: static;
+    display: block;
+}
+
+/* information below card titles */
+
+.z__searchresult_information_container {
+    position: absolute;
+    left: 44px;
+    top: 52px;
+    height: 56px;
+    overflow: hidden;
+    font-size: 11px;
+    line-height: 14px;
+    color: #666;
+}
+.z__searchresult_information_container a,
+.z__searchresult_information_container a.z__url_value span,
+.z__searchresult_information_container a.z__url_value:visited span,
+.z__searchresult_information_container a:visited {
+    color: #666;
+    font-weight: normal;    /* for turning off boldness in z__url_value spans for domain highlighting */
+}
+.z__searchresult_information_3,
+.z__searchresult_information_2,
+.z__searchresult_information_1 {
+    position: relative;
+    float: left;
+    margin-right: 10px;
+}
+.z__searchresult_information_3 { width: 437px; }
+.z__searchresult_information_2 { width: 288px; }
+.z__searchresult_information_1 { width: 139px; }
+.z__searchresult_information_line {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.z__searchresult_information_line.z__searchresult_value_caption {
+    font-style: italic;
+    color: #999;
+}
+.z__searchresult_information_truncated {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    color: #000;
+    background: #fff;
+    padding: 0 16px 0 8px;
+}
+
+/* Override styles for attribute display */
+
+.z__searchresult_item .z__map_link {
+    display: none;
+}
+.z__searchresult_item .z__value_postal_address {
+    line-height: inherit;
+}
+

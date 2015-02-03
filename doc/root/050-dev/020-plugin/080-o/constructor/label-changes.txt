@@ -1,0 +1,12 @@
+title: O.labelChanges()
+link_as: keyword
+--
+
+Constructs a object implementing the [node:dev/plugin/interface/label-changes] interface.
+
+
+h3(function). O.labelChanges(add, remove)
+
+@add@ and @remove@ are lists of Refs representing the initial lists of labels to add and remove.
+
+Both arguments are optional.

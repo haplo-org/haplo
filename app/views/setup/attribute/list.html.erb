@@ -1,0 +1,34 @@
+<%
+  @page_title = 'Attributes'
+-%>
+
+<h1>Attributes</h1>
+
+<ul>
+<%
+  # Build lookup of aliased attributes
+  aliased_lookup = Hash.new
+  @schema.each_aliased_attr_descriptor do |aa|
+    aliased_lookup[aa.alias_of] ||= Array.new
+    aliased_lookup[aa.alias_of] << aa
+  end
+
+  # Output the list of attributes
+  @schema.each_attr_descriptor_obj_sorted_by_name do |ad|
+    # Attribute descriptor
+    %><li><a href="/do/setup/attribute/show/<%= ad.desc %>" target="workspace"><%= h(ad.printable_name) %></a></li><%
+    # Aliases of this attribute
+    if aliased_lookup.has_key?(ad.desc)
+      %><ul><%
+      aliased_lookup[ad.desc].sort { |a,b| a.printable_name.to_s <=> b.printable_name.to_s } .each do |aad|
+        %><li><a href="/do/setup/attribute/show_alias/<%= aad.desc %>" target="workspace"><%= h(aad.printable_name) %></a></li><%
+      end
+      %></ul><%
+    end
+  end
+%>
+</ul>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/attribute/edit/new" target="workspace">New attribute</a></li>
+</ul>

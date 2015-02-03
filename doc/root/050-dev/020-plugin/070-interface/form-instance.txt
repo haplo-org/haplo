@@ -1,0 +1,75 @@
+title: FormInstance
+long_title: FormInstance interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @FormInstance@ interface describes an instance of a form, and is used to display the form, validate the fields, and update a document data structure with the submitted data.
+
+
+h2. Construction
+
+Use the [node:dev/plugin/interface/form-description#instance:instance(document)] method on a [node:dev/plugin/interface/form-description] object.
+
+
+h2. Usage
+
+@FormInstance@ objects are created and used for handling a form using data from, and updating data in, the @document@ passed when constructing the object.
+
+These objects are lightweight, and should not be persisted across requests.
+
+
+h2. Interface
+
+h3(property). complete
+
+@true@ if the form was submitted and all the data is valid, @false@ otherwise.
+
+
+h3(property). document
+
+The document used to create this instance.
+
+
+h3(function). update(request)
+
+If the @request@ represents a @POST@ form submission, update the @document@ with the submitted data.
+
+Within a request handler, use @E.request@ as the @request@ argument.
+
+Returns @true@ if the form was submitted and all the data is valid, @false@ otherwise, and updates the @complete@ property.
+
+Unless this function returns @true@, the document *may contain invalid data*.
+
+
+h3(function). renderForm()
+
+Renders the current state of the form as HTML, for inclusion in a template. This includes data from the current state of the document and error messages.
+
+Behind the scenes, the necessary JavaScript is set to be included in the response.
+
+
+h3(function). renderDocument()
+
+Renders the document as HTML, using the form description to lay out the fields.
+
+
+h3(function). choices(name, choices)
+
+Sets instance choices for use by @choice@ elements. This must be called before @update()@ or @renderForm()@.
+
+Use one of the Array formats described in [node:dev/plugin/form/specification/choice#Specifying_the_choice_list].
+
+
+h3(function). documentWouldValidate()
+
+Returns @true@ if the document would pass validation if rendered as a form and submitted by the user.
+
+You probably won't need to use this function, as you will generally check the @complete@ property after a form has been submitted.
+
+
+h3(function). makeView()
+
+Returns a copy of the document, with values replaced by display names where appropriate.
+
+If @renderDocument()@ is not suitable for rendering the document, this function can be useful for generating a view for a template, avoiding lots of fiddly code to look up IDs and choices.
+

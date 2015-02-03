@@ -1,0 +1,23 @@
+<%
+  @page_title = 'Choose type of new item'
+  # Make URL base
+  url = '/do/edit?pop=1'
+  if params.has_key?(:data)
+    t = params[:data][KConstants::A_TITLE.to_s]
+    url << "&data[#{KConstants::A_TITLE}]=#{url_encode(t)}" if t != nil
+  end
+  
+  schema = KObjectStore.schema
+  type_descs = @types.map { |t| schema.type_descriptor(t) }
+  type_descs.sort! { |a,b| a.printable_name.to_s <=> b.printable_name.to_s }
+-%>
+
+<div class="z__new_option_types_pop">
+  <% type_descs.each do |td| %>
+  <p><%= html_for_icon(td.render_icon, :small) %><a href="<%= url %>&new=<%= td.objref.to_presentation %>"><%= h(td.printable_name) %></a></p>
+  <% end %>
+</div>
+
+<% if type_descs.empty? %>
+  <p>No types are defined for this attribute. Please seek assistance from your administrator or <%= KApp.global(:product_name) %> support.</p>
+<% end %>

@@ -1,0 +1,33 @@
+<%
+  @page_title = h(@category.first_attr(KConstants::A_TITLE)) + ' / '+ h(@label.first_attr(KConstants::A_TITLE))
+%>
+<%= sys_mng_header %>
+
+<table class="z__mangement_kv_table">
+  <tr><th>Name</th><td><span class="z__label"><%= h(@label.first_attr(KConstants::A_TITLE)) %></span></td></tr>
+  <%= code_show_in_table(@code) %>
+  <tr>
+    <th>Category</th>
+    <td><%= h(@category.first_attr(KConstants::A_TITLE)) %></td>
+    <% if @category.objref != KConstants::O_LABEL_CATEGORY_SYSTEM %>
+      <td><a href="/do/setup/labels/category/<%= @category.objref.to_presentation %>">Rename category...</a></td>
+    <% end %>
+    </tr>
+  <tr><th>Reference</th><td><%= @label.objref.to_presentation %></td></tr>
+  <tr><th>Notes</th><td><%= h(@label.first_attr(KConstants::A_NOTES)) %></td></tr>
+  <tr><th>Types using this label</th><td>
+    <% @usage.each do |usage, type_desc| %>
+      <%= h(type_desc.printable_name.to_s) %> <i>(<%= h(usage) %>)</i><br>
+    <% end %>
+    Plugins may apply this label to any object.
+  </td></tr>
+</table>
+
+<p>&nbsp;</p>
+<% if @category.objref == KConstants::O_LABEL_CATEGORY_SYSTEM %>
+  <p>SYSTEM labels cannot be edited.</p>
+<% else %>
+  <%= sys_mng_edit_button("/do/setup/labels/edit/#{@label.objref.to_presentation}") %>
+<% end %>
+
+<%= sys_mng_update_submenu(@page_title, "/do/setup/labels/info/#{@label.objref.to_presentation}") %>

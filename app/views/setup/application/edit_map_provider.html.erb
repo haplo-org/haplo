@@ -1,0 +1,16 @@
+<% @page_title = 'Edit map provider' -%>
+<%= sys_mng_header %>
+
+<form method="post"><%= form_csrf_token %>
+  <p>
+    <label><input type="radio" name="map_provider" value="none"<% if @map_provider == nil || @map_provider == 'none' %> checked<% end %>>None. Disable map links on addresses.</label>
+    <%
+      n = 0
+      KMapProvider::PROVIDERS_BY_NAME.each do |provider|
+        %><br><label><input type="radio" name="map_provider" id="map_provider_<%= n %>" value="<%= provider.key %>"<% if @map_provider == provider.key %> checked<% end %>><%= provider.name %></label><%
+        n += 1
+      end
+    %>
+  </p>
+  <p><input type="submit" value="Save"></p>
+</form>

@@ -1,0 +1,12 @@
+<%
+  was_create = !!(params[:create])
+  @page_title = was_create ? 'New label category created' : 'Label category name'
+%>
+<%= sys_mng_header %>
+
+<% if was_create %>
+  <p>Label category created.</p>
+<% else %>
+  <%= sys_mng_reload_submenu(false) %>
+  <p>Label category renamed.</p>
+<% end %>

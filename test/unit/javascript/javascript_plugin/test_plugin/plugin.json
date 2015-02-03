@@ -1,0 +1,11 @@
+{
+  "pluginName": "test_plugin",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test Plugin",
+  "displayDescription": "For testing",
+  "installSecret": "ABC123",
+  "apiVersion": 3,
+  "privilegesRequired": ["pTestPriv1", "pTestPriv2", "pBackgroundProcessing"],
+  "load": ["js/test_plugin.js"]
+}

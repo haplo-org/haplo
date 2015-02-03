@@ -1,0 +1,23 @@
+FOR: /do/admin/user/list
+FOR: /do/admin/user/list?kind=16
+FOR: /do/admin/user/list?kind=8
+
+h1. Users
+
+The user list is split into three categories:
+
+* ACTIVE: Users who can use the system
+* BLOCKED: Users who are temporarily blocked from using the system
+* DELETED: Users who have been deleted.
+
+Once a user has been created, their account will remain in the system to ensure that historical data is maintained. 
+
+h2. New user
+
+* Click _New user_ to create a new user.
+
+h4. Further help
+
+[[New user]]
+[[User information]]
+[[Block or delete a user]]

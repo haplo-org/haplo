@@ -1,0 +1,25 @@
+<%
+  @page_title = 'Create new API key for ' + h(@for_user.name)
+%>
+
+<%= sys_mng_header %>
+
+<p>APIs are used by software to gain automated access to the data in this system. You do not need to create API keys for normal use. Only create them when required by the applications you are using.</p>
+
+<p>This API key will allow access to this system with the permissions granted to the user <b><%= h(@for_user.name) %></b></p>
+
+<p><b>WARNING:</b> Knowledge of the API key is equivalent to knowing the email address and password of the authenticated user. The API key still grants access even if the password is changed.</p>
+
+<%= form_error_messages_for(@data) %>
+
+<% f = form_for(@data, :key) %><form method="POST"><%= form_csrf_token %>
+  <p>API Key name<br><%= f.text_field(:name) %></p>
+  <p>Request path prefix<br><%= f.text_field(:path) %> (must start with / to match)</p>
+  <input type="submit" value="Create new API key">
+</form>
+<p class="z__management_notice">
+  The API key will be shown immediately after creation. It is impossible to show the key again. Do not create a key if someone is overlooking your computer.
+</p>
+
+<p>&nbsp;</p>
+<p><a href="/do/admin/user/show/<%= @for_user.id %>">Cancel</a></p>

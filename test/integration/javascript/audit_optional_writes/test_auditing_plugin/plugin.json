@@ -1,0 +1,9 @@
+{
+  "pluginName": "test_auditing_plugin",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test auditing plugin",
+  "displayDescription": "Changing optional auditing",
+  "apiVersion": 3,
+  "load": ["js/test_auditing_plugin.js"]
+}

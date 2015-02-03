@@ -1,0 +1,15 @@
+<% @page_title = 'Web fonts' -%>
+
+<h1>Web fonts</h1>
+
+<p>Using a custom font for the heading text in your system improves the appearance, but it needs to be downloaded the first time you open the system in your web browser.</p>
+
+<p>To set your desired balance between initial download speed and appearance, you can disable web fonts, or chose to use a reduced or full character set font.</p>
+
+<p>If some of your headings aren't displaying properly, try using the full character set.</p>
+
+<form method="POST"><%= form_csrf_token%>
+  <p><select name="size"><%= options_for_select(@settings, @webfont_size) %></select></p>
+  <% if request.post? %><p><b>Web font setting updated.</b></p><% end %>
+  <p><input type="submit" value="Apply"></p>
+</form>

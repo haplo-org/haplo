@@ -1,0 +1,8 @@
+<%
+  obj_title = @preview_object.first_attr(KConstants::A_TITLE) || '????'
+%>
+<div class="z__editor_preview_obj_title"><%= h(obj_title.to_s) %></div>
+<%=
+  # Sign any URLs for file thumbnails/downloads so that they can be viewed before the object authenticates the download
+  render_obj(@preview_object, :generalview, :sign_file_urls => true)
+%>

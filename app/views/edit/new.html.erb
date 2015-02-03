@@ -1,0 +1,32 @@
+<%
+  @page_title = 'Add new...'
+  @breadcrumbs = [:new_obj]
+-%>
+
+<%= render :partial => 'new_object_types', :data_for_template => [
+    Range.new(KConstants::TYPEUIPOS_COMMON, KConstants::TYPEUIPOS_COMMON),
+    :default,
+    nil
+  ] %>
+
+<div class="z__new_object_types_list_separator"></div>
+
+<%= render :partial => 'new_object_types', :data_for_template => [
+    Range.new(KConstants::TYPEUIPOS_NORMAL, KConstants::TYPEUIPOS_NORMAL),
+    :default,
+    params.has_key?(:full) ? nil : ['/do/edit/new?full=1', 'Full list...']
+  ] %>
+
+<% if params.has_key?(:full) %>
+
+<div class="z__new_object_types_list_separator"></div>
+
+<%= render :partial => 'new_object_types', :data_for_template => [
+    Range.new(KConstants::TYPEUIPOS_INFREQUENT, KConstants::TYPEUIPOS_INFREQUENT),
+    :default,
+    nil
+  ] %>
+
+<% end %>
+
+<% if @extra_html != nil %><%= @extra_html %><% end %>

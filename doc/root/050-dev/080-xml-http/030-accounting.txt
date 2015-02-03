@@ -1,0 +1,21 @@
+title: Accounting information and limits
+--
+
+API_ENDPOINT /api/edit/limits (GET only)
+
+Returns an XML document:
+
+ * @response@
+ ** _status_ - 'success' if the accounting information was retrieved successfully
+ ** @limits@
+ *** @objects@
+ **** _limit_ - maximum of objects allowed, or 0 for no limit
+ **** _usage_ - current number of objects stored
+ *** @storage@
+ **** _limit_ - maximum number of bytes of file storage allowed, or 0 for no limit
+ **** _usage_ - current bytes of file storage used
+
+Note that the values returned may overflow a 32 bit integer.
+
+Usage values may be zero if accounting data is not available. In this case, uploads and object creation will be allowed.
+

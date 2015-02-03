@@ -1,0 +1,16 @@
+h1. Block or delete a user
+
+To block or delete a user go to the user's account in system management, and choose _delete_ or _block_.
+
+h2. Blocked users
+
+Blocked users are intended for temporarily removing access privileges to the system.
+
+You can unblock an account by going to the _Users_ list in systems management and choose _Blocked_ to show all blocked users. Choose the user you wish to undelete from the list and choose _Unblock_ from the right hand panel. 
+
+
+h2. Deleted users
+
+Information about deleted users is kept by the system to maintain historical information.
+
+You can undelete an account by going to the _Users_ list in systems management and choose _Deleted_ to show all deleted users. Choose the user you wish to undelete from the list and choose _Undelete_ from the right hand panel. 

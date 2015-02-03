@@ -1,0 +1,46 @@
+title: DateTime
+long_title: DateTime interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @DateTime@ interface represents a time period with an optional timezone. The end of the range does not need to be specified, in which case it is implicit from the start time and the precision.
+
+@DateTime@ objects are used to specify dates and time values in a [node:dev/plugin/interface/store-object].
+
+
+h2. Construction
+
+Use [node:dev/plugin/o/constructor/datetime].
+
+
+h2. Interface
+
+h3(function). toString()
+
+Returns a human-readable string representation. For clarify, the format will depend on the precision and the values of the range.
+
+
+h3(function). toHTML()
+
+Returns a similar string to @toString()@, but with the text elements surrounded by HTML markup for extra clarity when displayed in a web page.
+
+
+h3(property). start
+
+The start time of the range in the GMT timezone, as a JavaScript @Date@ object.
+
+
+h3(property). end
+
+The end time of the range in the GMT timezone, as a JavaScript @Date@ object. If no end time is specified, this property will be @null@.
+
+
+h3(property). precision
+
+The precision of this @DateTime@, as one of the [node:dev/plugin/o/constants/date-time-precision:DateTime precision constants].
+
+
+h3(property). timezone
+
+A String representing the timezone, for example, @'GMT'@ or @'Europe/London'@. If no timezone is specified, this property will be @null@.
+

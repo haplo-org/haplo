@@ -1,0 +1,61 @@
+title: O.work.create()
+link_as: keyword
+--
+
+Constructs a new object implementing the [node:dev/plugin/interface/work-unit] interface.
+
+The @save()@ function must be called to commit the work unit and actually create it within the system.
+
+
+h2. Default properties
+
+The following properties are set by default, unless overridden by the constructor arguments.
+
+|*Property*|*Default value*|
+|@openedAt@|The current date and time|
+|@createdBy@|[node:dev/plugin/o/request/current-user]|
+|@actionableBy@|[node:dev/plugin/o/request/current-user], unless it is the SYSTEM user|
+
+
+h2. Usage
+
+It can be called in two ways, one with a simple @workType@ argument, and the other with a JavaScript @Object@ as a dictionary of properties.
+
+If the @workType@ does not contain a @:@ character, an exception will be thrown.
+
+
+h3(function). O.work.create(workType)
+
+When called with a @String@ argument, a [node:dev/plugin/interface/work-unit] is created with the default properties and the given work type.
+
+The @workType@ should be in the form @plugin_name:type@ to avoid clashes.
+
+
+h3(function). O.work.create(properties)
+
+When called with a JavaScript @Object@ argument containing the properties as listed in the [node:dev/plugin/interface/work-unit] interface, a new @WorkUnit@ is created with those properties. If one of the default properties is not specified, it is given the default value.
+
+The @properties@ argument *must* contain a @workType@ property.
+
+
+h2. Examples
+
+The first form creates a work unit with default properties and a given @workType@, then properties are modified afterwards.
+
+<pre>language=javascript
+var workUnit1 = O.work.create("example_plugin:publish");
+workUnit1.actionableBy = GROUP["example:group:publishers"];
+workUnit1.save();
+</pre>
+
+The work unit must be saved with an explicit @save()@. The @create()@ function only creates a JavaScript object representing a potential work unit.
+
+Alternatively, all the properties can be specified in the argument to the @create()@ function.
+
+<pre>language=javascript
+var workUnit2 = O.work.create({
+    workType: "example_plugin:number_crunch", // must be included
+    actionableBy: GROUP["example:group:publishers"]
+});
+workUnit2.save();
+</pre>

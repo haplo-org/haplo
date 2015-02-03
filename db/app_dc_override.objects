@@ -1,0 +1,18 @@
+# Haplo Platform                                     http://haplo.org
+# (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+# Make sure these attributes go in valid_attr_objrefs in sme_init.rb
+
+obj [O_LABEL_STRUCTURE] A_DATE
+	A_TYPE				O_TYPE_ATTR_DESC
+	A_TITLE				'Date'
+	A_CODE				KIdentifierConfigurationName.new('dc:attribute:date')
+	A_ATTR_SHORT_NAME	'date'
+	A_ATTR_DATA_TYPE	T_DATETIME
+	A_ATTR_QUALIFIER    Q_NULL
+	A_ATTR_UI_OPTIONS   'd,n,n,n,n'
+

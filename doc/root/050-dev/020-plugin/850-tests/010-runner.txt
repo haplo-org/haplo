@@ -1,0 +1,19 @@
+title: Test runner
+--
+
+The test environment is set up by the @T.test()@ function, which calls the test function passed as the first argument.
+
+You must surround your test with this boilerplate to integrate correctly into the testing environment:
+
+<pre>language=javascript
+T.test(function() {
+    // Your test goes here
+});
+</pre>
+
+
+h3(function). T.test(testFn)
+
+Set up the test environment then run the test, reporting back success or failure via the [node:dev/tool/plugin].
+
+@testFn@ is a function which is called with no arguments. The return value is ignored.

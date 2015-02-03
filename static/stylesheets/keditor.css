@@ -1,0 +1,430 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+/* Adjust side of col2 for qualified values */
+.z__editor_container .z__keyvalue_col2 {
+    width: 321px;
+}
+
+/* top of the editor for overall controls etc */
+.z__editor_buttons {
+    margin: 0 0 12px 0;
+    padding: 0 0 12px 0;
+    border-bottom: 1px solid #ddd;
+    text-align: right;
+}
+.z__editor_buttons_save {
+    width: 96px;
+    margin-left: 18px;
+}
+.z__editor_buttons_preview {
+    width: 70px;
+}
+
+/* z__editor_container -- contains the editor
+   z__editor_new_container_container -- contains new rows added to the editor */
+.z__editor_container, .z__editor_new_container_container {
+    margin: 0;
+    padding: 0;
+}
+
+.z__editor_container_editor_inner {
+    margin: 0 28px 0 33px;
+}
+
+/* add a bit of space to the entries in the editor, but not the preview */
+.z__editor_container_editor_inner .z__keyvalue_row {
+    margin-bottom: 6px;
+}
+
+.z__editor_tool_bar {
+    float: right;
+    z-index: 1000;
+    padding: 2px 32px 0 0;
+    text-align: right;
+}
+
+
+.z__editor_add {
+    position: absolute;
+    top: 5px;
+    left: -32px;
+    display: block;
+    width: 16px;
+    height: 16px;
+    overflow: hidden;
+    z-index: 600;
+    line-height: 16px;
+}
+
+
+/* actual add button */
+.z__editor_add a, .z__editor_add a:visited {
+    border: 1px solid #eee;
+    border-radius: 2px;
+    background: #eee url(/images/addbutton.gif) -1px -1px no-repeat;
+    width: 14px;
+    height: 14px;
+    display: block;
+}
+
+.z__editor_add a:hover, .z__editor_delete_button a:hover, .z__editor_undo_button a:hover {
+    border: 1px solid #444;
+    background-color: #ddd;
+}
+
+
+.z__editor_value_buttons  /* the buttons to the right of the values */ {
+    position: absolute;
+    left: 103%;
+    display: block;
+}
+
+/* preview */
+
+.z__editor_preview_obj_title {
+    color: #000;
+    margin: 16px 0px 20px 0;
+    padding: 1px 0 1px 0;
+    display: block;
+    line-height: 24px;
+    font-weight: bold;
+    font-size: 16px;
+}
+.z__webfonts_enabled .z__editor_preview_obj_title {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+.z__editor_preview_container {
+    background: url(/images/previewbg.gif) repeat -40px -16px;
+    min-height: 450px;
+}
+.z__editor_preview_container .z__keyvalue_obj_spacer {
+    display: none;
+}
+
+/* delete/undo buttons; both <a> elements */
+.z__editor_delete_button {
+    position: absolute;
+    top: 5px;
+    right: -16px;
+    display: block;
+    width: 16px;
+    height: 16px;
+    overflow: hidden;
+    z-index: 600;
+}
+
+.z__editor_delete_button a, .z__editor_delete_button a:visited {
+    border: 1px solid #eee;
+    border-radius: 2px;
+    background: #eee url(/images/deletebutton.gif) -1px -1px no-repeat;
+    width: 14px;
+    height: 14px;
+    display: block;
+}
+
+
+.z__editor_undo_button {
+    position: absolute;
+    top: 5px;
+    left: 0px;
+    display: block;
+    width: 16px;
+    height: 16px;
+    overflow: hidden;
+    z-index: 600;
+}
+
+.z__editor_undo_button a, .z__editor_undo_button a:visited {
+    border: 1px solid #eee;
+    border-radius: 2px;
+    background: #eee url(/images/undobutton.gif) -1px -1px no-repeat;
+    width: 14px;
+    height: 14px;
+    display: block;
+}
+
+
+/* value when it's deleted with undo option */
+.z__editor_undoable_deleted_value {
+    text-decoration: line-through;
+    color: #888;
+    padding-top: 6px;  /* not quite sure why it needs this. probably needs adjusting */
+}
+.z__editor_undoable_deleted_value p {
+    color: #888; /* otherwise colour gets overridden by previous definition */
+}
+
+
+/* qualifier for deleted value */
+.z__editor_strikethrough .z__keyvalue_col1_qualifer {
+    text-decoration: line-through;
+    color: #888;
+}
+
+/* container for extra things below the value row, hidden when item doesn't have focus */
+.z__editor_value_extras_container {
+    width: 99%;  /* need to match width of z__keyvalue_col2_full */
+    margin: 0;
+    padding: 0;
+    border: none;
+    clear: both;
+}
+
+/* error message display */
+.z__editor_value_error_display {
+    clear: both;
+    padding: 0 0 0 24px;
+    margin: 2px 0;
+    font-weight: bold;
+    line-height: 1.7em;
+    background: #fff url(/images/alerticon.gif) 2px 0 no-repeat;
+}
+
+/* linked things, eg authors and subjects, use this style to show they're a value linked to another object. */
+
+.z__editor_link_control {
+    border: 1px solid #ccc;
+    background: #fff;
+    width: 455px;
+    padding: 0;
+    margin: 1px 0;
+    border-radius: 2px;
+}
+.z__editor_objref_ctrl_container {
+    position: relative; /* so the link icon defined next goes in the right place */
+}
+.z__editor_link_control:before,
+.z__editor_objref_lookup_text:before,
+.z__editor_objref_list_ui_styles:before {
+    $ICON_FONT_DIRECTIVES
+    content: "\e011";
+    font-size: 16px;
+    position: absolute;
+    color: #888;
+    top: 1px;
+    left: 6px;
+    z-index: 2;
+}
+.z__keyvalue_col2 .z__editor_link_control {
+    width: 317px;
+}
+.z__editor_link_control_focused /* class added when the control gets the focus */ {
+    background-color: #ffffe0;
+}
+/* needs a little bit of a nasty construction to avoid width:100% causing problems with the margins */
+.z__editor_link_control_container {
+    margin: 0 2px 0 24px;
+    padding: 0;
+}
+/* make the text colour in these 'links' the normal page colour */
+.z__editor_link_control a, .z__editor_link_control a:visited, .z__editor_link_control a:hover {
+    color: #000;
+}
+
+/* objref objref values which *don't* use the lookup UI style */
+
+.z__editor_objref_ctrl_container_checkbox {
+    padding: 0 0 0 22px;    /* indent checkboxes a little, lining up with radios/dropdowns */
+}
+
+.z__editor_objref_list_ui_styles /* container for the dropdown ui style */ {
+    width: 95%;      /* IE requires a width to display the link icon! */
+    padding: 4px 0 0 22px;
+}
+.z__editor_objref_list_ui_styles:before {
+    top: 4px;
+    /* NOTE: See also first definition of .z__editor_objref_list_ui_styles:before above */
+}
+.z__editor_objref_list_ui_styles select /* neaten up runs of dropdown fields, so you don't see lots of ragged right edges */ {
+    /* because of a bug in IE (all versions) this is also implemented in the Javascript */
+    min-width: 50%;
+}
+.z__editor_objref_list_ui_styles label {
+    display: block;
+}
+
+/* editor qualifiers */
+
+.z__editor_container_editor_inner .z__keyvalue_col1_qualifer select {
+    max-width: 99%;
+}
+
+.z__editor_container_editor_inner .z__full_width_form_element,
+.z__editor_container_editor_inner textarea.z__full_width_form_element {
+    width: 449px;
+}
+
+.z__editor_container_editor_inner .z__keyvalue_col2 .z__full_width_form_element {
+    width: 311px;
+}
+
+div.z__editor_objref_lookup_text input /* input control */ {
+    width: 432px;
+    background: #ffffe0;
+    padding-left: 20px;
+}
+.z__editor_objref_lookup_text:before {
+    top: 2px;
+    /* NOTE: See also first definition of .z__editor_objref_lookup_text:before above */
+}
+.z__keyvalue_col2 .z__editor_objref_lookup_text input {
+    width: 294px;
+}
+
+.z__editor_objref_lookup_results_container {
+    border: 1px solid #bbb;
+    background: #eee;
+    padding: 0;
+    margin: 0;
+}
+.z__editor_objref_lookup_results_container a {
+    display: block;
+    padding: 0 8px;
+    color: #000;
+}
+.z__editor_objref_lookup_results_container a.z__selected {
+    background-color: #ffffe0;
+}
+.z__editor_objref_lookup_results_container a:hover {
+    background: #ddd;
+    color: #000;
+}
+.z__editor_objref_lookup_results_not_found_message {
+    background: #fff url(/images/alerticon.gif) 4px 2px no-repeat;
+    padding: 4px 0 4px 24px;
+}
+.z__editor_objref_lookup_commands_container {
+    border-top: 2px solid #eee;
+}
+.z__editor_objref_lookup_commands_container .z__editor_objref_cmd_uncontrolled, .z__editor_objref_lookup_commands_container .z__editor_objref_cmd_uncontrolled:hover {
+    background-image: url("/images/nolinkicon.gif");
+    background-repeat: no-repeat;
+    padding-left: 20px;
+}
+.z__editor_objref_lookup_commands_container .z__editor_objref_cmd_new, .z__editor_objref_lookup_commands_container .z__editor_objref_cmd_new:hover {
+    background-image: url("/images/addlinkicon.gif");
+    background-repeat: no-repeat;
+    padding-left: 20px;
+}
+
+/* attached files */
+
+.z__editor_attached_file {
+    margin: 3px 0;
+}
+.z__editor_attached_file img {
+    margin: 0 4px 0 0;
+    vertical-align: middle; /* best value for IE */
+}
+.z__editor_attached_file a {
+    color: #000;
+}
+.z__editor_attached_file_version a {
+    color: #888;
+}
+
+.z__editor_attached_file_version_holder {
+    float: right;
+}
+.z__editor_attached_file_version_holder {
+    position: relative;
+    display: block;
+    padding: 4px 8px 4px 6px;
+    font-size: 11px;
+    line-height: 11px;
+    color: #000;
+    background: #eee;
+    border-radius: 3px;
+    width: 86px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+.z__editor_attached_file_version_holder input {
+    opacity: 0; /* hide the file input from display so the styled text below shows through, but still make it clickable */
+    position: absolute;
+    top: 0; left: 0;
+    width: 98px;
+}
+.z__editor_attached_file_version_holder:hover {
+    color: #fff;
+    background: #000;
+    text-decoration: none;
+}
+.z__editor_strikethrough .z__editor_attached_file_version_holder {
+    display: none; /* hide when file value is deleted */
+}
+.z__editor_attached_file_version_holder:before {
+    $ICON_FONT_DIRECTIVES
+    content: "\e00b";
+    font-size: 8px;
+    padding-right: 4px;
+}
+
+.z__editor_attached_file_deleted span   /* when it's deleted but undoable */ {
+    text-decoration: line-through;
+    color: #888;
+}
+.z__editor_attached_file_deleted img {
+    opacity: .5; /* js makes this work in IE -- sync value with keditor.js */
+}
+.z__editor_attached_file_uploading {
+    opacity: .25;
+}
+.z__editor_attached_file_upload_failed {
+    color: red;
+}
+
+/* addresses */
+
+.z__editor_address_field {
+    margin-bottom: 8px;
+}
+.z__editor_address_field input {
+    margin: 0;
+}
+
+/* types */
+
+.z__editor_type_ind_primary, .z__editor_type_ind_secondary, .z__editor_type_ind_null {
+    font-weight: bold;
+    padding: 2px 4px;
+    margin-right: 4px;
+    border-radius: 3px;
+    color: #fff; /* also hides the null indicator by making it the same colour as the page, but use the font to ensure the size is consistent */
+}
+.z__editor_type_ind_primary {
+    background: #888;
+}
+.z__editor_type_ind_secondary {
+    background: #bbb;
+}
+
+/* labelling */
+
+#z__editor_labelling {
+    padding-left: 32px;
+}
+
+#z__editor_labelling h3 {
+    font-weight: normal;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+#z__editor_labelling label {
+    display: block;
+}
+
+#z__editor_labelling div {
+    margin-top: 12px;
+}
+
+#z__editor_labelling div + div {
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+}

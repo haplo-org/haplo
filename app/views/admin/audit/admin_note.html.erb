@@ -1,0 +1,17 @@
+<%
+  @page_title = 'Add admin note'
+%>
+<%= sys_mng_header %>
+
+<% if params.has_key?(:added) %>
+  <p>Your note has been added to the audit trail.</p>
+<% else %>
+
+  <form method="POST"><%= form_csrf_token %>
+    <p><textarea name="note" cols="80" rows="4"></textarea></p>
+    <p><input type="submit" value="Add admin note"></p>
+  </form>
+
+  <p><span class="z__management_look_at_help">Refer to important notes in the help.</span></p>
+
+<% end %>

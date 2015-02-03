@@ -1,0 +1,9 @@
+h1. Deleting items
+
+To delete an item:
+
+* find the item for deletion
+* click the down arrow to the right of the _Edit_ button 
+* choose _Delete_.
+
+You cannot delete items which are linked to other items or if they're included in the navigation. You must remove the links and remove them from the navigation before deleting. 

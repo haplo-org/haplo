@@ -1,0 +1,122 @@
+<%
+  @breadcrumbs = [:menu]
+  @page_title = 'Tools'
+  
+  section_names = {
+    :today => 'Today',
+    :account => 'Account',
+    :user_setup => 'Devices &amp; Computers',
+    :content => 'Content',
+    :reports => 'Reports',
+    :system => 'System',
+    :developer => 'Development Support',
+  }
+  sections = {}
+  section_names.each { |n,d| sections[n] = [] }
+
+  # ----------------------------------------------------------------------------------
+
+  user_setup_section = sections[:user_setup]
+  user_setup_section.push(['/do/account/devices', 'Devices'])
+
+  # ----------------------------------------------------------------------------------
+
+  section = sections[:account]
+  # TODO: Replace :_temp_hide_account_details_menu_entry with a proper way of letting plugins manage the account info page
+  section.push(['/do/account/info', 'Account details']) unless KApp.global_bool(:_temp_hide_account_details_menu_entry)
+  section.push(['/do/authentication/change_password', 'Change password'])
+  if @request_user.policy.can_use_latest?
+    section.push(['/do/latest/choose', h(KApp.global(:name_latest_requests).capitalize)])
+  end
+  section.push(['/do/authentication/logout', 'Log out'])
+
+  # ----------------------------------------------------------------------------------
+
+  section = sections[:today]
+  if @request_user.permissions.something_allowed?(:update)
+    section.push(['/do/tasks', 'Tasks'])
+  end
+  if @request_user.policy.can_use_latest?
+    section.push(['/do/latest', 'View '+h(KApp.global(:name_latest))])
+  end
+
+  # ----------------------------------------------------------------------------------
+
+  unless @reports.empty?
+    section = sections[:reports]
+    @reports.each do |urlpath,name|
+      section.push([urlpath,name])
+    end
+  end
+
+  # ----------------------------------------------------------------------------------
+  
+  if @request_user.permissions.something_allowed?(:create)
+    section = sections[:content]
+    if @request_user.policy.can_edit_at_least_one_taxonomy?
+      section.push(['/do/taxonomy', 'Edit taxonomies'])
+    end
+  end
+
+  # ----------------------------------------------------------------------------------
+
+  if PLUGIN_DEBUGGING_SUPPORT_LOADED
+    if @request_user.policy.can_setup_system?
+      KNotificationCentre.notify(:developer_support, :tools_menu, sections[:developer])
+    end
+  end
+
+  # ----------------------------------------------------------------------------------
+
+  section = sections[:system]
+  if @request_user.policy.can_control_trust?
+    section.push(['/do/admin/otp', 'Manage tokens'])
+  end
+  if @request_user.policy.can_impersonate_user?
+    section.push(['/do/authentication/impersonate', 'Impersonate user'])
+  end
+  if session[:impersonate_uid]
+    section.push(['/do/authentication/end_impersonation', 'Finish impersonation'])
+  end
+  if @request_user.policy.can_setup_system?
+    section.push(['/do/admin/billing', 'Billing and usage'])
+  end
+  if @request_user.policy.can_manage_users? || @request_user.policy.can_view_audit? || @request_user.policy.can_setup_system?
+    section.push(['/do/system/management', 'System management'])
+  end
+
+  # ----------------------------------------------------------------------------------
+  
+  sections_with_entries = []
+  sections.each { |n,e| sections_with_entries << [n,e] unless e.empty? }
+  
+  # Display menus
+  %><table id="z__tools_menu_table"><tr><td class="z__tools_menu_group_cell"><%
+  sections_with_entries.each_with_index do |s,index|
+    name,entries = s
+    %><div class="z__tools_menu_group_header"><%= section_names[name] %></div><%
+    %><ul class="z__tools_menu_group"><%
+    entries.each do |path,text|
+      # text may come from untrusted source, so need to be escaped
+      %><li><a href="<%= path %>"><%= h(text) %></a></li><%
+    end
+    %></ul><%
+    if index != (sections_with_entries.length - 1)
+      if (index % 2) == 0
+        %></td><td class="z__tools_menu_sep_left"></td><td class="z__tools_menu_sep_right"></td><td class="z__tools_menu_group_cell"><%
+      else
+        %></td></tr><tr><td class="z__tools_menu_group_cell"><%
+      end
+    end
+  end
+  if (sections_with_entries.length % 2) != 0
+    %></td><td class="z__tools_menu_sep_left"></td><td class="z__tools_menu_sep_right"></td><td class="z__tools_menu_group_cell"><%
+  end
+  %></td></tr></table><%
+
+  # ----------------------------------------------------------------------------------
+  # IE 6 warning?
+  unless @is_popping
+    %><%= render :partial => 'shared/msie6_warning' %><%
+  end
+%>

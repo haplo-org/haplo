@@ -1,0 +1,89 @@
+<%
+  @page_title = 'Appearance'
+  client_side_controller_js('appearance_colours')
+%>
+<h1>Header and CSS</h1><form method="post"><%= form_csrf_token %>
+  <input type="hidden" name="which" value="globals">  <table style="width:100%;" class="z__with_alternate_row_stripes">
+    <tr>
+      <th width="60%">
+        Header HTML
+      </th>
+      <th width="40%">
+        Extra CSS
+      </th>
+    </tr>
+    <tr>
+      <td>
+<textarea name="appearance_header" rows="4" wrap="soft" style="width:100%"><%= h(KApp.global(:appearance_header)) %></textarea>
+      </td>
+      <td>
+<textarea name="appearance_css" rows="4" wrap="soft" style="width:100%"><%= h(KApp.global(:appearance_css)) %></textarea>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <input type="submit" value="Save changes">
+      </td>
+      <td></td>
+    </tr>
+  </table>
+</form>
+<h1>Colours</h1><form method="post" id="appearance_colours"><%= form_csrf_token %>
+  <input type="hidden" name="which" value="colours">  <table cellpadding="1" cellspacing="2" class="z__with_alternate_row_stripes">
+    <tr>
+      <th>
+      </th>
+      <th>
+        Example
+      </th>
+      <th>
+        Colour
+      </th>
+      <th>
+        Links
+      </th>
+    </tr>
+<%= appearance_colours_editor_row_for('<b>Main</b>', :main) %>
+<%= appearance_colours_editor_row_for('<b>Secondary</b>', :secondary) %>
+<%= appearance_colours_editor_row_for('<b>Highlight</b>', :highlight) %>
+<%= appearance_colours_editor_row_for('Heading', :heading) %>
+<%= appearance_colours_editor_row_for('Heading line', :divider_line) %>
+<%= appearance_colours_editor_row_for('Background 1', :background0) %>
+<%= appearance_colours_editor_row_for('Background 2', :background1) %>
+<%= appearance_colours_editor_row_for('Background 3', :background2) %>
+<%= appearance_colours_editor_row_for('Category 1', :category0) %>
+<%= appearance_colours_editor_row_for('Category 2', :category1) %>
+<%= appearance_colours_editor_row_for('Category 3', :category2) %>
+<%= appearance_colours_editor_row_for('Category 4', :category3) %>
+<%= appearance_colours_editor_row_for('Category 5', :category4) %>
+<%= appearance_colours_editor_row_for('Category 6', :category5) %>
+<%= appearance_colours_editor_row_for('Category 7', :category6) %>
+<%= appearance_colours_editor_row_for('Category 8', :category7) %>
+<%= appearance_colours_editor_row_for('Icon 1 (white)', :icon0) %>
+<%= appearance_colours_editor_row_for('Icon 2 (dark grey)', :icon1) %>
+<%= appearance_colours_editor_row_for('Icon 3 (main)', :icon2) %>
+<%= appearance_colours_editor_row_for('Icon 4 (secondary)', :icon3) %>
+<%= appearance_colours_editor_row_for('Icon 5 (highlight)', :icon4) %>
+<%= appearance_colours_editor_row_for('Icon 6 (red)', :icon5) %>
+<%= appearance_colours_editor_row_for('Icon 7 (green)', :icon6) %>
+<%= appearance_colours_editor_row_for('Icon 8 (blue)', :icon7) %>
+  </table>
+  <input type="submit" value="Apply new colours"></form>
+<p style="font-size: 12px; color: #900">
+  Colours marked with = can be set to AUTO, when an automatically calculated value will be used. This will show as grey in the preview.
+</p>
+<style type="text/css">
+/* put CSS inline rather than in the app.css file as this is a temporary implementation */
+#appearance_colours input, #appearance_colours td
+  {
+  color: #000;
+  font-size: 12px;
+  }
+</style>
+
+<form method="post" style="margin-top:64px"><%= form_csrf_token %>
+  <p>Reset the colours to the defaults?</p>
+  <input type="hidden" name="which" value="colourset">
+  <input type="hidden" name="set" value="<%= KApplicationColours::DEFAULT_CUSTOM_COLOURS %>">
+  <input type="submit" value="Reset colours">
+</form>

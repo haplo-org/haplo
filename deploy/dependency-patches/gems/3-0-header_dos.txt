@@ -1,0 +1,41 @@
+From 5aeb472d990fef093a3d674bd20e4e9eb45ac962 Mon Sep 17 00:00:00 2001
+From: Aaron Patterson <aaron.patterson@gmail.com>
+Date: Sat, 30 Nov 2013 17:02:53 -0800
+Subject: [PATCH] Only use valid mime type symbols as cache keys
+
+CVE-2013-6414
+
+Conflicts:
+	actionpack/lib/action_view/lookup_context.rb
+---
+ actionpack/lib/action_view/lookup_context.rb | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/actionpack/lib/action_view/lookup_context.rb b/actionpack/lib/action_view/lookup_context.rb
+index 5ba4173..df539e0 100644
+--- a/actionpack/lib/action_view/lookup_context.rb
++++ b/actionpack/lib/action_view/lookup_context.rb
+@@ -50,9 +50,20 @@ module ActionView
+       @details_keys = Hash.new
+ 
+       def self.get(details)
++        if details[:formats]
++          details = details.dup
++          syms    = Set.new Mime::SET.symbols
++          details[:formats] = details[:formats].select { |v|
++            syms.include? v
++          }
++        end
+         @details_keys[details.freeze] ||= new
+       end
+ 
++      def self.clear
++        @details_keys.clear
++      end
++
+       def initialize
+         @hash = object_hash
+       end
+-- 
+1.8.4.1
+

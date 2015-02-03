@@ -1,0 +1,32 @@
+diff -ur rmail-1.0.0-unpatched/lib/rmail/header.rb rmail-1.0.0/lib/rmail/header.rb
+--- rmail-1.0.0-unpatched/lib/rmail/header.rb	2013-07-18 18:08:57.445616285 +0000
++++ rmail-1.0.0/lib/rmail/header.rb	2013-07-18 18:09:23.964303933 +0000
+@@ -889,7 +889,7 @@
+ 
+     protected
+ 
+-    attr :fields, true
++    attr_accessor :fields
+ 
+     private
+ 
+diff -ur rmail-1.0.0-unpatched/lib/rmail/message.rb rmail-1.0.0/lib/rmail/message.rb
+--- rmail-1.0.0-unpatched/lib/rmail/message.rb	2013-07-18 18:08:57.445996809 +0000
++++ rmail-1.0.0/lib/rmail/message.rb	2013-07-18 18:09:55.037043270 +0000
+@@ -130,14 +130,14 @@
+     # Access the epilogue string for this message.  The epilogue
+     # string is relevant only for multipart messages.  It is the text
+     # that occurs after all parts of the message and is generally nil.
+-    attr :epilogue, true
++    attr_accessor :epilogue
+ 
+     # Access the preamble string for this message.  The preamble
+     # string is relevant only for multipart messages.  It is the text
+     # that occurs just before the first part of the message, and is
+     # generally nil or simple English text describing the nature of
+     # the message.
+-    attr :preamble, true
++    attr_accessor :preamble
+ 
+     # Returns the entire message in a single string.  This uses the
+     # RMail::Serialize class.

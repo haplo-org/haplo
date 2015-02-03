@@ -1,0 +1,46 @@
+<%
+  display = data_for_template[:permissions].ui_display
+
+  if display.kind_of? KLabelStatementsOps
+    allow, deny = display._internal_states
+%>
+<table class="z__mng_permission_display">
+  <tr>
+    <th>Operation</th>
+    <th>Allow set</th>
+    <th>Deny set</th>
+  </tr>
+  <%
+    KPermissionRegistry.entries.each do |entry|
+      %><tr>
+        <td><%= entry.printable_name %></td>
+        <td class="z__mng_permission_display_label_set"><%
+          allow[entry.symbol].each do |label_id|
+            %><%= label_html(label_id) %> <%
+          end
+        %></td><td class="z__mng_permission_display_label_set"><%
+          deny[entry.symbol].each do |label_id|
+            %><%= label_html(label_id) %> <%
+          end
+        %></td>
+      </tr><%
+    end
+  %>
+</table>
+<%
+  else
+
+    %><div style="border: 2px solid #999;padding:8px"><%
+
+    display.each do |entry|
+      if entry.kind_of? String
+        %><div style="background:#ddd;text-align:center;padding:4px;margin:8px 0 4px 0"><%= h(entry) %></div><%
+      else
+        %><%= render :partial => 'permission_rules_table', :data_for_template => {:permissions => entry} %><%
+      end
+    end
+
+    %></div><%
+
+  end
+%>

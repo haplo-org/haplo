@@ -1,0 +1,160 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+/* styles for the latest updates service */
+
+.z__latest_edit_type_heading {
+    position: relative; /* work around IE bug, top rule doesn't display without it */
+    clear: both;
+    font-weight: bold;
+    color: #666;
+    padding-bottom: 2px;
+    border-bottom: 1px solid #ccc;
+}
+
+.z__latest_edit_checkbox_container {
+    float: left;
+    margin-right: 2%;
+    width: 40%;
+    padding: 4px 0 1em 0;
+}
+
+#z__ws_content .z__latest_edit_checkbox_container p {
+    margin: 0;
+    line-height: 1.4em;
+}
+
+#z__latest_edit_user_choices {
+    width: 100%;
+}
+
+#z__ws_content .z__latest_edit_button {
+    border-top: 1px solid #ccc;
+    clear: both;
+    text-align: right;
+    padding: 12px 2px 0 0;
+    margin: 12px 0 0 0;
+}
+
+#z__latest_add_request {
+    float: right;
+}
+
+#z__latest_choose_add_link {
+    margin: 0 0 0 2.6em;
+    line-height: 2.1em;
+}
+
+/* for display of the results on the web */
+
+/* dates at top */
+.z__latest_web_date_range {
+    margin: 0 0 16px 0;
+    text-align: center;
+}
+
+.z__latest_web_date_range b {
+    padding: 0 8px;
+}
+
+.z__latest_web_date_range span {
+    color: #aaa;
+}
+
+/* for the result listing */
+.z__latest_web_container {
+    position: relative; /* to get icons going in the right place */
+    clear: both;
+    border-top: 1px solid #eee;
+    padding-top: 8px;
+    margin-bottom: 10px;
+    min-height: 45px;
+}
+
+.z__latest_web_request  /* the requests (topics) which meant this item showed up */ {
+    float: right;
+}
+
+.z__latest_web_request div {
+    color: #666;
+    text-align: right;
+}
+
+.z__latest_web_request ul {
+    margin: 0;
+    padding: 0;
+}
+
+.z__latest_web_title    /* link for title of object */ {
+    font-weight: bold;
+    padding-left: 60px;
+    background: url(/images/new.gif) 0 1px no-repeat;
+}
+
+.z__latest_web_title:visited {
+    background: none;    /* remove the NEW icon once the link as been followed */
+}
+
+.z__latest_web_title span.z__icon {
+    position: absolute;  /* take it outside the normal flow */
+    left: 30px;
+    z-index: 100;
+}
+
+.z__latest_web_summary  /* summary lines */ {
+    padding-left: 60px;
+}
+
+/* -------------------------------------------------------------------- */
+/* UI for searching for objects UI */
+.z__latest_add_obj_search_table {
+    margin: 4px 0;
+}
+#z__ws_content .z__latest_add_obj_search_table tr td {
+    padding: 4px;
+    border: none;
+}
+.z__latest_add_obj_search_table #z__latest_add_obj_search_results p {
+    line-height: 1.8em;
+}
+
+/* -------------------------------------------------------------------- */
+/* latest admin stuff, move to separate stylesheet if it's large */
+
+.z__latest_ui_section {
+    border-bottom: 1px solid #ccc;
+    clear: both;
+    margin: 4px 0 4px 0;
+}
+
+.z__latest_ui_ui {
+    padding: 4px 0 16px 16px;
+}
+
+#z__latest_admin_add_type_ui p {
+    float: left;
+    width: 22%;
+    line-height: 1.1em;
+    height: 1.1em;
+}
+#z__latest_admin_add_type_ui div {
+    clear: both;
+}
+
+#z__latest_admin_subject_add {
+    font-weight: bold;
+    padding-bottom: 6px;
+}
+
+#z__latest_requests_list {
+    margin: 4px 16px;
+}
+
+#z__latest_requests_list td, #z__latest_requests_list th {
+    padding-right: 4px;
+}
+

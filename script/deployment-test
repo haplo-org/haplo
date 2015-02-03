@@ -1,0 +1,38 @@
+#!/bin/sh
+
+# Haplo Platform                                     http://haplo.org
+# (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+
+# Tests the application after the deployment processing
+
+CHANGES=`fossil changes`
+if [ "X${CHANGES}" != "X" ]
+then
+  echo 
+  echo -------------------------------------------------------------------------------
+  echo WARNING: Uncommited changes will not be tested. Commit changes after successful
+  echo run of script/test, then run script/deployment-test.
+  echo -------------------------------------------------------------------------------
+  echo
+  # Make sure this message is seen
+  sleep 2
+fi
+
+# When debugging tests, check out source elsewhere, then use something like
+#   deploy/release --for-testing --no-clean-up --no-onedeploy --input /export/home/ben/t-oneis version
+# and comment out script/test onwards below.
+
+deploy/release --for-testing --no-clean-up --no-onedeploy version
+
+chmod 0755 code
+cd code
+mkdir log
+cp static/stylesheets/a.css static/stylesheets/app.css
+script/test
+cd ..
+rm -rf code
+

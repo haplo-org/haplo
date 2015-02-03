@@ -1,0 +1,23 @@
+h1. Hierarchy
+
+ONEIS supports two kinds of hierarchical items:
+
+* Classification, as taxonomies for describing items
+* Parent/child relationships between items
+
+h2. Classification hierarchy
+
+Select the _classification_ and _hierarchy_ behaviours when defining the types.
+
+Create an attribute which links to objects of this type. It will use the hierarchical UI in the editor.
+
+Create a new taxonomy based on this type by choosing TOOLS then Manage taxonomies. This taxonomy will then appear in the BROWSE list.
+
+h2. Parent/child relationships
+
+For parent/child relationships in items,
+
+* Select the _hierarchy_ behaviour
+* Add the _Parent_ attribute, or an alias
+
+This will allow the user to specify the parent of an object, which must be of the same type.

@@ -1,0 +1,10 @@
+{
+  "pluginName": "grant_privileges_plugin",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Grant privileges for testing plugin",
+  "displayDescription": "For testing",
+  "apiVersion": 3,
+  "load": [],
+  "privilegesRequired": []
+}

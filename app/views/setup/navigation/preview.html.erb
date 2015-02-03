@@ -1,0 +1,24 @@
+<% @page_title = 'Navigation viewed as member of '+h(@group.name) -%>
+<%= sys_mng_header %>
+
+<style type="text/css">
+.z__management_nav_preview { padding: 24px 0; }
+.z__management_nav_preview_group + .z__management_nav_preview_group { border-top: 2px solid #ccc; padding-top: 12px }
+.z__management_nav_preview_group p { padding-left: 16px }
+.z__management_nav_preview_group p:first-child { font-weight: bold }
+</style>
+
+<div class="z__management_nav_preview">
+<%
+  first = true
+  @nav_groups.each do |group|
+    %><div class="z__management_nav_preview_group"><%
+    group[:items].each do |link, title|
+      %><p title="<%= link %>"><%= h(title) %></p><%
+    end
+    %></div><%
+  end
+%>
+</div>
+
+<p><span class="z__management_look_at_help">Refer to important notes in the help.</span></p>

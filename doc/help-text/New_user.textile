@@ -1,0 +1,19 @@
+FOR: /do/admin/user/new?kind=0
+
+h1. New user
+
+* First name: enter the first name of the user (compulsory)
+* Last name: enter the last name of the user (compulsory)
+* Email address: enter the email address of the user (compulsory)
+* Template for welcome email: choose to automatically send a welcome email to the new user with a link for them to create their own password. If you choose to not send a welcome email, you will be given a link to send to the new user once you click on _Create new user_.
+
+* Group membership: tick all groups to which the user is to belong
+* _Create new user_.
+
+h2. Initial password
+
+Unless you choose not to send a welcome email, the user will be emailed a link to set their initial password.
+
+h2. Welcome email
+
+You can edit the welcome email using [[Email templates]].

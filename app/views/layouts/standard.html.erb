@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<%
+  is_anonymous_user = @request_user.policy.is_anonymous?
+  # Layout options, header HTML
+  layout_options = {}
+  header = nil
+  # Then see if plugins want to modify things
+  call_hook(:hStandardChrome) do |hooks|
+    # TODO: Make this hook a bit nicer to use
+    result = hooks.run()
+    layout_options = result.layoutOptions
+    plugin_header = result.headerHTML
+    header = plugin_header if plugin_header != nil && plugin_header.length > 0
+  end
+  # Make sure empty page titles don't cause the layout to fall to pieces.
+  @page_title = '????' unless @page_title && @page_title.length > 0
+
+  # Build the button bar - both the app and the plugins contribute to it.
+  button_bar_buttons = []
+  button_bar_buttons_idx = {}
+  if !is_anonymous_user
+    button_n = 0
+    @title_bar_buttons.keys.sort.each do |button_name|
+      entries = @title_bar_buttons[button_name]
+      unless entries.empty?
+        button_name_prefix = button_name[0]
+        button_bar_buttons << [button_n, button_name, entries,
+            (button_name_prefix == ?#), # is a special menu
+            (button_name_prefix == ?*)  # is a single click button
+          ]
+        button_bar_buttons_idx[button_name] = button_n
+      end
+      button_n += 1
+    end
+  end  
+-%>
+<html lang="en">
+<head>
+  <title><%= if @page_title != nil && @page_title != '' then @page_title.to_s + ' : ' else '' end %><%= KApp.global(:product_name) %></title>
+<%= render(:partial => 'shared/client_side_resources') -%>
+</head>
+<body<% if webfonts_enabled? %> class="z__webfonts_enabled"<% end %><%= body_tag_data_attributes %>>
+<%
+  if params.has_key?(:_sx)
+    # Show spawned task header
+    # Title gets inserted into the <span></span> by application.js
+    spawn_accept = params[:_sx]
+    %><div id="z__spawned_subtask_header"><a href="#" id="z__spawn_close">Close</a><%
+    if (@represented_objref != nil && spawn_accept.include?('o')) || (@page_selectable_as_search && spawn_accept.include?('s'))
+      %><a href="#" id="z__spawn_return">&laquo; <span></span></a><%
+    else
+      %>&laquo; <span></span><%
+    end
+    %></div><%
+  else
+    # Show normal header - use appearance app global if plugins didn't override it
+    header ||= KApp.global(:appearance_header) # no h() as this is user HTML
+    if header =~ /</
+      # Has HTML, output directly without surrounding div
+      %><%= header%><%
+    else
+      # Surround the text in a reasonably interesting header
+      %><div id="z__header_oneis"><a href="/"><%= header %></a></div><%
+    end
+  end
+
+  first_crumb = (@breadcrumbs != nil) ? @breadcrumbs.first : nil
+
+  num_active_work_units = work_units_number_active_for_current_user()
+%>
+
+<%
+  if session[:impersonate_uid] != nil && !is_anonymous_user
+    unless KApp.global_bool(:_temp_hide_impersonate_top_ui)
+      %><div style="position:fixed; top:-10px; left:0; z-index:90009; width: 98%; text-align: center">
+        <form style="display: inline-block; box-shadow: -2px 2px 8px rgba(0,0,0,0.3); background:red; top:0; left:0; padding: 12px 12px 2px 12px; border-radius: 0 0 4px 4px" method="POST" action="/do/authentication/end_impersonation"><b>Impersonating <i id="z__impersonating_name"><%= h(@request_user.name) %></i></b> <%= form_csrf_token %><input type="submit" value="Finish"></form>
+      </div><%
+    end
+  end
+%>
+
+<div id="z__action_entry_points">
+    <div id="z__aep_left">
+      <% if @request_user.permissions.something_allowed?(:read) -%>
+        <div id="z__aep_search_form">
+        <form method="GET" action="/search"><input type="text" accesskey="f" placeholder="<%= layout_options[:quick_search_label] || 'Quick search' %>" name="q" autocomplete="off"></form>
+        </div>
+        <div<% if first_crumb == :search %> class="z__selected"<% end %>><a id="z__aep_search_link" href="/search">Search</a></div>
+        <div<% if first_crumb == :browse %> class="z__selected"<% end %>><a href="/search/browse">Browse</a></div>
+      <% end %>
+      <% unless is_anonymous_user %>
+        <div<% if first_crumb == :recent %> class="z__selected"<% end %>><a href="/do/recent">Recent</a></div>
+        <% if @request_user.policy.should_show_top_level_add_ui? -%>
+          <div<% if first_crumb == :new_obj %> class="z__selected"<% end %>><a href="/do/edit/new">Add</a></div>
+        <% end %>
+      <% end %>
+    </div>
+    <% unless is_anonymous_user %>
+      <div id="z__aep_right">
+        <div <% if first_crumb == :tray %> class="z__selected"<% elsif tray_contents.length == 0 %> class="z__aep_entry_point_hidden"<% end %>><a href="/do/tray"><%= tray_text_for_tab_with_num_items(tray_contents.length) %></a></div>
+        <div <% if first_crumb == :work_units %> class="z__selected"<% elsif num_active_work_units == 0 %> class="z__aep_entry_point_hidden"<% end %>><a href="/do/tasks">Tasks <span><%= num_active_work_units %></span></a></div>
+        <div id="z__aep_tools_tab"><a href="/do/tools"><%= h(@request_user.name) %></a></div>
+        <div id="z__help_tab"<% if first_crumb == :help %> class="z__selected"<% end %>><a href="/do/help">Help</a></div>
+      </div>
+    <% else %>
+      <div id="z__aep_right">
+        <div<% if first_crumb == :login %> class="z__selected"<% end %>><a href="/do/authentication/login">Log in</a></div>
+      </div>
+    <% end %>
+</div>
+
+<div id="z__page"<% if @standard_layout_page_element_classes %> class="<%= @standard_layout_page_element_classes %>"<% end %>>
+  <div id="z__heading_back_nav">
+  <%
+    if @breadcrumbs != nil && (@breadcrumbs.length > 0)
+      last_crumb = @breadcrumbs.last
+      if last_crumb.class == Array
+        href, text = last_crumb
+        %><a href="<%= href %>"><%= h(text) %></a><%
+      end
+    end
+  %>
+  </div>
+  <div id="z__page_name">
+    <!-- Page title - must be before the buttons to avoid an IE7 bug -->
+    <h1><%= @page_title %></h1>
+
+    <!-- edit and tray buttons to the right of the title -->
+    <%
+      if (! is_anonymous_user) && (@edit_link != nil || @represented_objref != nil)
+        %><div id="z__heading_main_buttons"><%
+        # Edit button
+        if @edit_link != nil
+          # Does it have a drop down menu?
+          edit_link_drop_down_menu_index = button_bar_buttons_idx['#EDIT']
+          # Which classes for the Edit link depend on whether it needs to be wide or have an edit button
+          %><a class="z__button_link <% if edit_link_drop_down_menu_index != nil %>z__button_edit_left<% else %>z__button_edit_wide<% end %>" href="<%= @edit_link %>">Edit</a><%
+          if edit_link_drop_down_menu_index != nil
+            # Space in drop down link required for it to display in IE6 and IE7
+            %><a class="z__button_link z__button_edit_right" id="z__button_bar_button_<%= edit_link_drop_down_menu_index %>" href="#" title="Edit menu"> </a><%
+          end
+        end
+        # Add/remove tray button
+        if @represented_objref != nil
+          if @edit_link == nil
+            # Need to put in an invisible *wide* edit button to keep the tray button in the right place
+            %><a class="z__button_link z__button_edit_wide" href="#" style="visibility:hidden">Edit</a><%
+          end
+          if tray_contents.include?(@represented_objref.to_presentation)
+            %><a id="z__tray_addremove" class="z__button_link z__tray_addremove_is_remove" href="?tray=r" title="Remove from tray">&nbsp;</a><%
+          else
+            %><a id="z__tray_addremove" class="z__button_link" href="?tray=a" title="Add to tray">&nbsp;</a><%
+          end
+        end
+        %></div><%
+      end
+    %>
+  </div>
+
+<!-- left column -->
+  <div id="z__left_column">
+    
+      <div id="z__navigation_container">
+        <!-- left hand navigation is rendered by JavaScript on the client side - see navigation.js -->
+        <% if @request_user.policy.is_not_anonymous? %>
+          <script src="/api/navigation/left/<%= KApp.global(:navigation_version) %>/<%= @request_user.id %>"></script>
+        <% end %>
+      </div>
+  </div>
+  <!-- end of left column -->
+  <!-- right column -->
+
+  <%
+
+    # Always output the div so the height of the title area is consistent
+    %><div id="z__button_bar"><div id="z__button_bar_holder"><%
+    # Render the button bar menus and buttons, omitting the special entries
+    button_bar_buttons.each do |button_n, name, entries, is_special, is_button|
+      unless is_special
+        if is_button
+          %><a href="<%= h(entries.first.first) %>"><%= h(entries.first.last) %></a><%
+        else
+          # note careful use of z__ names with suffixes to work after compressing
+          %><a href="#" id="z__button_bar_button_<%= button_n %>" class="z__button_bar_menu"><%= h(name) %></a><%
+        end
+      end
+    end
+    %></div></div><%
+  %>
+
+  <div id="z__ws_content">
+    <%= @content_for_layout %>
+  </div>
+  
+  <%= render :partial => 'layouts/right_column' %>
+
+  <div id="z__page_creation_label"><%= @page_creation_label_html %></div>    
+</div>
+<!-- end of right column -->
+
+<%
+  # Footer?
+  footer_html = KApp.global(:appearance_footer)
+  if footer_html && footer_html.length > 0
+    %><%= footer_html %><%
+  else
+    %><div id="z__logo_display">
+      <a href="/do/c">Copyright Notice</a>
+    </div><%
+  end
+
+  # Button bar menu entry menus
+  unless button_bar_buttons.empty?
+    button_n = 0
+    button_bar_buttons.each do |button_n, name, entries, is_special, is_button|
+      unless is_button
+        %><div id="z__button_bar_button_<%= button_n %>m" class="z__title_bar_button_menu" style="display:none"><%
+        entries.each do |url_path, menu_text, options|
+          %><a class="z__title_bar_button_action_menu_entry" href="<%= url_path %>"<% if options != nil && options[:new_window] %> target="_blank"<% end %>><%= h(menu_text) %></a><%
+        end
+        %></div><%
+      end
+    end
+  end
+%>
+
+</body>
+</html>

@@ -1,0 +1,151 @@
+FOR: /search
+
+h1. Search
+
+h2. Quick search
+
+Enter your search terms into the quick search box and hit the return key or click on SEARCH.
+
+For even quicker searching, use the =ACCESSKEY= + F keyboard shortcut to select the quick search box.
+
+h2. Search operators
+
+Use 
+
+AND <nowiki>+</nowiki> 
+OR | 
+NOT ! 
+
+to connect your search terms:
+
+AND is used to narrow your search, for example _garden AND shed_ retrieves all items containing both _garden_ and _shed_. Using AND will give less results as you are being more specific about the terms that must appear in your search results. AND is added automatically between search results so there is normally no need to add it yourself. The shortcut for AND is <nowiki>+</nowiki>
+
+OR is used to broaden your search, for example _garden OR shed_ retrieves all items containing _garden_ and all items containing _shed_, but both terms will not necessarily appear in all the items retrieved. You are being less specific about the terms that must appear in your search results, therefore you will retrieve more results. The shortcut for OR is |
+
+NOT is used to remove results from your search which mention the term you don't wish to retrieve. For example, _garden NOT shed_ retrieves all items containing _garden_ but will not display any items that contain _shed_, even those that also mention garden. NOT should be used sparingly and with caution, as you may unintentionally cut out potentially relevant results. The shortcut for NOT is !
+
+You can combine AND, OR and NOT operators to form more complex queries. The search illustrator, which appears underneath the search box, will explain the search as you type it.
+
+h2. Stemming, truncation and plurals
+
+ONEIS uses automatic stemming so you don't have to worry about the different endings of words in your queries. For example _stopping_ will be treated the same as _stop_, so a search for _stop_ will find _stopping_ and you can use either in your query.
+
+Stemming also handles singular and plural forms of common words. For instance _meetings_ retrieves _meeting_ and vice versa; and _lady_ retrieves _ladies_.
+
+However, the singular and plural version of words with irregular plurals are *not* stemmed as equivalents. For instance _women_ does not retrieve _woman_.
+
+You can use <nowiki>*</nowiki> to search for truncated words ie _survi<nowiki>*</nowiki>_ will find _survivor, survival, survive_.
+
+h2. Phrase searching
+
+To search for a phrase (multiple words next to each other in the same order) enter the phrase within double speech marks ie _"your phrase"_
+
+This retrieves items where the words appear next to each other in the same order you specified. 
+
+The usual stemming treatment will apply to phrases in double speech marks. For example, a search for _"invoicing template"_ will find items which contain the phrase _invoice template_.
+
+To search for an exact phrase, where stemming does not apply, use single speech marks '...' 
+
+h2. Proximity searching
+
+To search for a term within a number of words of another term use: 
+
+bq. _term <nowiki>_10</nowiki> other_
+
+the search string above will retrieve all items where the word _term_ is found within ten words of the word _other_. You can specify any number. 
+
+h2. Search subsets
+
+You can restrict your search using search subsets via the SEARCH page. Underneath the search box choose your search subset from the drop down menu, _Search in_. Choosing from this drop down menu will narrow your search to just searching the sections included in the chosen search subset. Your Administrator can edit and add search subsets.
+
+h2. Field search
+
+For accurate lookup, click _Fields & options_, and enter your query in the fields. An item will match the query if it has all the fields you enter.
+
+Your administrator can change the fields to match your requirements.
+
+You can also search for terms in specific fields using the main search box. Enter the field name followed by a : then your search terms, for example:
+
+bq. _author:Austen_
+_title:Hamlet_
+_subject:coffee_
+_type:document_
+
+You can search for fields with qualifiers using field/qualifier:  
+
+For example:
+
+bq. _title/alternative:by means of natural selection_
+
+You can't currently search by submitter, submitted date (unless it was entered into the date field) or format of uploaded files (ie excel, word.) 
+
+h2. Date and time search
+
+You can search the date and time fields as follows:
+
+bq. _date: 2008-01-30_
+for items with this specific date in the date field
+
+bq. _date: 2008-01-01 .. 2008-12-31_
+for items with dates between this range in the date field
+
+bq. _date: .. 2008-03-31_
+for items with dates before 31 March 2008 in the date field
+
+bq. _date: 2008-04-01 .._
+for items with dates after 1 April 2008 in the date field
+
+If you want include the time in the query, use syntax like
+
+bq. _2008-04-01T12.30_
+
+This must include the _T_ and the _._ to be unambiguously recognised as a date and time.
+
+h2. Complex search strings
+
+Use parenthesis to group concepts within complex search strings, to ensure they are treated as you expect by the search. For instance:
+
+bq. _type:presentation and (author:howson or author:johnson)_
+
+h2. Search illustrator
+
+The search illustrator appears when you enter a more complex search. It shows you how the system will search for the terms you've entered.
+
+For instance a search for: 
+
+bq. _bowl and cat or dog_
+
+shows the search treated as: 
+
+bq. _bowl and (cat or dog)_
+
+So your search results will contain all items that mention _bowl_ plus either _cat_ or _dog_.
+
+
+h2. Full text document search
+
+The search includes the full text of all documents uploaded in all major formats (Office, PDF, OpenOffice, iWork '09, RTF, HTML and plain text.) It does not search the file name of the uploaded file.
+
+h2. Links to and from a sub-query
+
+>> finds all items linked to any of the items retrieved by a query. For instance:
+
+bq. _John >works-for> type:client_
+
+finds all the people named John who work for a client (or more precisely, all items which contain the word 'John' which are linked to client records.)
+
+<< finds all items which are linked from any of the items retrieved by a query. For instance:
+
+bq. _<author< type:book_
+
+finds all the people who are linked from books in the author field. These are all the people who have written a book.
+
+Both >> and << can be used without a field name to find links in any field.
+
+
+
+h4. Further help
+
+[[Search results]]
+[[Browse]]
+

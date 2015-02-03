@@ -1,0 +1,29 @@
+<%
+  @page_title = 'Edit search by fields'
+  client_side_resources :jquery_ui
+  client_side_controller_js("search_by_fields")
+%>
+
+<h1>Edit search by fields</h1>
+
+<p>&nbsp;</p>
+
+<div id="z__search_by_fields_edit_form_fields">
+  <%
+    @attrs_used.each do |desc,name|
+      %><div><span class="z__drag_handle">drag</span> 
+        <input type="checkbox" value="<%= desc %>" id="a_<%= desc %>" checked> <label id="a_<%= desc %>l" for="a_<%= desc %>"><%= h(name) %> </label>
+      </div><%
+    end
+    @attrs_unused.each do |desc,name|
+      %><div><span class="z__drag_handle">drag</span> 
+        <input type="checkbox" value="<%= desc %>" id="a_<%= desc %>"> <label id="a_<%= desc %>l" for="a_<%= desc %>"><%= h(name) %> </label>
+      </div><%
+    end
+  %>
+</div>
+
+<form method="POST" id="z__search_by_fields_edit_form"><%= form_csrf_token %>
+  <input type="hidden" name="fields" id="z__search_by_fields_edit_form_value" value="">
+  <p><input type="submit" value="Save"></p>
+</form>

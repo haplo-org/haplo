@@ -1,0 +1,10 @@
+title: Plugin Tool
+--
+
+The Plugin Tool enables you to edit a plugin on your computer and run it on a development application server.
+
+It's a cross-platform tool, written in JRuby and running on the standard Java runtime. You can install it on [node:dev/tool/plugin/install-windows:Windows] or [node:dev/tool/plugin/install-unix:UNIX-like OSes] such as Mac OS X and Linux.
+
+The Plugin Tool creates template plugins to get you started, and uploads plugins in development to a test server. When running, it monitors changes to files and uploads them automatically [node:dev/tool/plugin/development:as you work].
+
+You need to be comfortable working in the command line. The current version requires a little bit of setup work, but afterwards, you just need to run a command and leave it running while you write code in your text editor.

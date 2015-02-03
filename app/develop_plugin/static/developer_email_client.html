@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Starting development email...</title>
+    <style type="text/css">
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        line-height: 18px;
+      }
+      #toolbar {
+        position:fixed;
+        top: 0;
+        height: 20px;
+        background: #eee;
+        width: 100%;
+        padding: 1px 0;
+      }
+      #clear-all {
+        display: block;
+        padding: 0 16px;
+        float: right;
+      }
+      #connection, #status {
+        display: inline-block;
+        padding: 0 4px;
+        font-size: 10px;
+        color: #666;
+      }
+      #messages {
+        position:fixed;
+        top: 0;
+        border-bottom: 2px solid #666;
+        width: 100%;
+        height: 30%;
+        overflow: scroll;
+      }
+      #messages-space {
+        height: 20px;
+      }
+      #messages-list {
+        width: 100%;
+      }
+      #messages-list a {
+        display: block;
+        padding: 1px 4px;
+        text-decoration: none;
+        color: #000;
+        border-bottom: 1px solid #eee;
+      }
+      #messages-list a:hover {
+        background: #ddd;
+      }
+      #messages-list a span {
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #messages-list a span.to {
+        font-weight: bold;
+        width: 20%;
+      }
+      #messages-list a span.subject {
+        width: 50%;
+      }
+      #messages-list a span.part {
+        margin-right: 12px;
+        font-style: italic;
+      }
+      #messages-list a.selected, #messages-list a.selected:hover {
+        background: #69f;
+      }
+      #message-body {
+        position: fixed;
+        top: 31%;
+        height: 68%;
+        width: 100%;
+        border: 0;
+      }
+    </style>
+  </title>
+  <body>
+    <div id="messages">
+      <div id="messages-space">&nbsp;</div>
+      <div id="messages-list"></div>
+    </div>
+    <div id="toolbar">
+      <a id="clear-all" href="#">Clear all messages</a>
+      <span id="connection"></span><span id="status"></span>
+    </div>
+    <iframe id="message-body" src="about:blank"></iframe>
+    <script src="/do/development-email-client/js"></script>
+  </body>
+</html>

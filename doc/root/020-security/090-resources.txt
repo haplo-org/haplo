@@ -1,0 +1,26 @@
+title: Resources
+--
+
+h2. Full disk encryption software
+
+h3. Windows
+
+Some versions of Windows have "BitLocker":http://windows.microsoft.com/en-US/windows7/products/features/bitlocker built in. If your version of Windows doesn't include this feature, you can use products such as "PGP Whole Disk Encryption":http://www.symantec.com/business/whole-disk-encryption and "TrueCrypt":http://www.truecrypt.org/.
+
+h3. Mac OS X
+
+Mac OS X includes FileVault for hard disc encryption. It was significantly improved in the Mac OS X 10.7 (Lion) release.
+
+ * "FileVault 2":http://support.apple.com/kb/HT4790 in Mac OS X Lion transparently encrypts the entire hard disc.
+ * "Legacy FileVault":http://docs.info.apple.com/article.html?path=Mac/10.6/en/8727.html in previous versions of Mac OS X encrypt users' home folders only. This protects confidential information on lost laptops, but doesn't prevent tampering with the operating system.
+
+It's worth upgrading to the latest Mac OS X for FileVault 2.
+
+h3. Linux
+
+See your distribution's documentation for the options available to you. "TrueCrypt":http://www.truecrypt.org/ is available for Linux.
+
+
+h2. Technical articles
+
+Wikipedia has a useful article on the more technical aspects of "password strength":https://secure.wikimedia.org/wikipedia/en/wiki/Password_strength.

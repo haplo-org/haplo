@@ -1,0 +1,35 @@
+title: O.file()
+link_as: keyword
+--
+
+Constructs a object implementing the [node:dev/plugin/interface/file] interface.
+
+If it is necessary to add the file to the file store, it will be added and committed before the @O.file()@ function returns. If the same file is added twice, only one copy will be stored, and it will retain the original filename.
+
+If the requested file cannot be retrieved or added to the file store, an exception will be thrown.
+
+
+h3(function). O.file(file)
+
+If a [node:dev/plugin/interface/file] is passed as an argument, the exact same object will be returned.
+
+
+h3(function). O.file(fileIdentifier)
+
+If a [node:dev/plugin/interface/file-identifier] is passed as an argument, the @File@ it references will be returned from the file store.
+
+
+h3(function). O.file(uploadedFile)
+
+An [node:dev/plugin/interface/uploaded-file] will be added to the file store, then a @File@ object returned after committing the file to the file store.
+
+
+h3(function). O.file(digest, fileSize)
+
+Look up a @File@ by @digest@ and optional @fileSize@.
+
+
+h3(function). O.file(object)
+
+Look up a @File@ by properties on the @object@ passed as an argument. @object.digest@ must be a string, and the optional @object.fileSize@ must be a number.
+

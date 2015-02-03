@@ -1,0 +1,7 @@
+<%
+if @results != nil
+  @first.upto(@last) do |i|
+    %><%= render_obj(@results[i], @render_style, @render_options) %><%
+  end
+end
+%>

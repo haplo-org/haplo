@@ -1,0 +1,37 @@
+<%
+  @page_title = 'Auditing configuration'
+%>
+<%= sys_mng_header %>
+
+<% if params.has_key?(:updated) %>
+  <p><b>Configuration updated</b></p>
+<% else %>
+  <p>&nbsp;</p>
+<% end %>
+
+<form method="POST"><%= form_csrf_token %>
+
+  <p><label><input type="checkbox" name="audit_object_display" value="1"<% if @audit_object_display %> checked<% end %>>Audit item display</label></p>
+
+  <p><label><input type="checkbox" name="audit_search" value="1"<% if @audit_search %> checked<% end %>>Audit searches</label></p>
+
+  <p><label><input type="checkbox" name="audit_file_downloads" value="1"<% if @audit_file_downloads %> checked<% end %>>Audit file downloads</label></p>
+
+  <p><input type="submit" value="Apply"></p>
+
+</form>
+
+<p>The display of filenames and thumbnail images is not audited.</p>
+
+<p>To apply custom auditing rules, Plugins can change whether these events are audited.</p>
+
+<% if @policies.empty? %>
+  <p>None of the installed <b>plugins</b> have declared any auditing policies.</p>
+<% else %>
+  <p>The installed <b>plugins</b> have declared the following auditing policies:</p>
+  <ul>
+    <% @policies.each do |policy| %><li><%= h(policy) %></li><% end %>
+  </ul>
+<% end %>
+
+<p><span class="z__management_look_at_help">Refer to important notes in the help.</span></p>

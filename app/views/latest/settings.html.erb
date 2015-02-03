@@ -1,0 +1,7 @@
+<%
+  @page_title = KApp.global(:name_latest).capitalize + ' settings'
+  @breadcrumbs = [:account, ['/do/latest', KApp.global(:name_latest).capitalize]]
+-%>
+<% in_right_column render(:partial => 'menu') %>
+
+<%= render(:partial => 'latest/settings_form') %>

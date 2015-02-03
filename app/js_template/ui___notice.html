@@ -1,0 +1,16 @@
+<div class="z__acknowledgment_notice">
+  {{#if dismissLink}}
+    <div class="z__acknotice_dismiss_icon">
+      <a href="{{dismissLink}}">&#x00d7;</a>
+    </div>
+  {{/if}}
+  <div class="z__acknotice_message">
+    {{#if message}}{{std:text:paragraph message}}{{/if}}
+    {{#if html}}{{{html}}}{{/if}}
+  </div>
+  {{#if dismissText}}
+    <div class="z__acknotice_go_away">
+      <a href="{{dismissLink}}">{{dismissText}}</a>
+    </div>
+  {{/if}}
+</div>
