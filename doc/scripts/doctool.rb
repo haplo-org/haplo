@@ -11,18 +11,14 @@ require 'fileutils'
 gem 'json'
 require 'json/ext'
 
-require "lib/common/source_control/source_control.rb"
-
 require 'doc/scripts/doc_node'
 require 'doc/scripts/documentation'
 require 'doc/scripts/documentation_html'
 require 'doc/scripts/doc_server'
 
 
-source_control = SourceControl.current_revision
-SOURCE_CONTROL_REVISION = source_control.displayable_id
-SOURCE_CONTROL_DATE = source_control.displayable_date_string
-PACKAGING_VERSION = "#{source_control.filename_time_string}-#{SOURCE_CONTROL_REVISION}"
+SOURCE_CONTROL_REVISION = 'OPEN'
+SOURCE_CONTROL_DATE = DateTime.now.strftime("%d %b %Y")
 puts "Docs revision: #{SOURCE_CONTROL_REVISION} on #{SOURCE_CONTROL_DATE}"
 
 

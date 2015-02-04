@@ -69,6 +69,26 @@ if ! [ -d $POSTGRESQL_INCLUDE ]; then
     exit 1
 fi
 
+# Check for RVM, which does weird things to the shell
+if [ -d ~/.rvm ]; then
+    echo
+    echo "RVM appears to be installed. It will probably break this installation script."
+    echo "If this script fails, disable RVM for your session, remove ${DEV_SUPPORT_DIR}"
+    echo "then try again."
+    echo
+    sleep 5
+fi
+
+# ----------------------------------------------------------------------------------
+
+mkdir -p app/views/object
+mkdir -p log
+mkdir -p tmp/properties
+mkdir -p tmp/properties-test
+mkdir -p target
+# Create a blank classpath so config/paths-*.sh works before Maven runs
+touch target/classpath.txt
+
 # ----------------------------------------------------------------------------------
 
 if ! [ -d $VENDOR_DIR/archive ]; then
@@ -121,9 +141,6 @@ get_gem() {
 }
 
 get_gem "RedCloth" "4.2.9-java" "698688bb64b73a0477855902aaf0844cb1b0dd2c"
-get_gem "abstract" "1.0.0" "171f897e4d5c31063f18cebe5b417e21bf58b209"
-get_gem "actionmailer" "3.0.20" "c5b1a446d921dbd512a2d418c50f144b4540a657"
-get_gem "actionpack" "3.0.20" "79ec243f6ec301b0a73ad45f89d4ea2335f90346"
 get_gem "activemodel" "3.0.20" "80c7d881ed64ed7a66f4d82b12c2b98b43f6fbde"
 get_gem "activerecord" "3.0.20" "d8fc6e02bf46f9b5f86c3a954932d67da211302b"
 get_gem "activerecord-jdbc-adapter" "1.2.7" "0937ed7d87f5d305a3a63f3b0abd3ae5297856e7"
@@ -132,9 +149,6 @@ get_gem "activeresource" "3.0.20" "e465e7d582c6d72c487d132e5fac3c3af4626353"
 get_gem "activesupport" "3.0.20" "5bc7b2f1ad70a2781c4a41a2f4eaa75b999750e4"
 get_gem "arel" "2.0.10" "758e4172108a517d91c526dcab90355a7d07c527"
 get_gem "builder" "2.1.2" "d0ea89ea793c75853abd636ab86a79b7b57d6993"
-get_gem "bundler" "1.3.1" "cb07cd56fdc920b8e1bc95b5594c0dcb6c235dc5"
-get_gem "erubis" "2.6.6" "f044e9500a272d4fb2e40368c352350bf92f46f5"
-get_gem "gem_plugin" "0.2.3" "14cb572dbee665b19ecac26dfcd1150d1f35de1e"
 get_gem "haml" "4.0.0" "dd35eda28a98d70d75f4a0c07cdb20f6920e5a2d"
 get_gem "hoe" "3.6.3" "7f2323e812efd292cdca7ebd0e44266c55814995"
 get_gem "i18n" "0.5.0" "74ec4aeb2c46d6d59864e5fceecd3cd496963a3f"
@@ -142,20 +156,12 @@ get_gem "jdbc-postgres" "9.2.1002.1" "927e9e24f86d4d785ddb0fcf58bce3e89b3c87e4"
 get_gem "json" "1.8.0-java" "1288feae1fe8aa8e3b93a2d32bc232ba7ad0749c"
 get_gem "mail" "2.2.19" "d117d132cf6f28f914ee32eb1343d6ffcdca49ea"
 get_gem "mime-types" "1.21" "4a8ff499e52a92b0c3a7354717c6ac920fd8024d"
-get_gem "polyglot" "0.3.3" "5ae5a65dd058a5c9a02f1fe02707031dd0d3c8a8"
-get_gem "rack" "1.2.8" "dd19c41600f49709c3540028efbdb9fb9d0888b6"
-get_gem "rack" "1.5.2" "a17f40c9beb03b458f537f42cf36dd90d8230625"
-get_gem "rack-mount" "0.6.14" "075e967b6ff9b81025ef3acfbea515f96ce2f1d4"
-get_gem "rack-test" "0.5.7" "09fd7cc10fc7dfca87cb139cbf939f82d26f0c2e"
-get_gem "rails" "3.0.20" "ba9fb9dba41ce047feef11b4179cd9c3f81b2857"
 get_gem "railties" "3.0.20" "42b0025e4cb483d491a809b9d9deb6fd182c2a57"
-get_gem "rake" "10.0.3" "606ae35717d8a576647f3fcb4d8cb14628209d14"
 get_gem "rdoc" "3.12.2" "687cd1bc56c2ad79fd9e2e3854d0a6db575e2aa2"
 get_gem "rmail" "1.0.0" "0c946e2e7daf5468a338ce42177f52bd4f89eb82"
 get_gem "test-unit" "1.2.3" "9ad7eefe7d289713a072130d51312ebe0529d48b"
 get_gem "thor" "0.14.6" "cb09bba64959b0ea470d1b8c266c42858a8f7e11"
 get_gem "tilt" "1.3.5" "ae2951246c258b60826de66256467d379acf363b"
-get_gem "treetop" "1.4.12" "af6a81c09789ca1907ee9678d8606e1687491c4e"
 get_gem "tzinfo" "1.0.1" "fc4c6f1c140dcf2634726ed5dddb568aa07dfec2"
 get_gem "tzinfo-data" "1.2013.4" "84a532b59c313ab9b484ea84041c95ed9de434b8"
 
@@ -222,7 +228,7 @@ g++ framework/support/oneis.cpp -O2 -o framework/oneis
 
 echo "Compiling Java sources with maven..."
 mvn package
-cp target/haplo-3.20150203.0914.d9825471b3.jar framework/oneis.jar
+cp target/haplo-3.20150203.2017.cf001d406f.jar framework/oneis.jar
 
 mvn -Dmdep.outputFile=target/classpath.txt dependency:build-classpath
 

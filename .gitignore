@@ -4,9 +4,7 @@ framework/oneis
 components/
 lib/xapian_pg/*.o
 lib/xapian_pg/*.so
-lib/xapian_pg/_all.cpp
 lib/xapian_pg/_textidx
-log/*.log
-log/*.log.*
-tmp/properties/
+log/
+tmp/
 

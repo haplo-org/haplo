@@ -35,6 +35,17 @@ end.parse! KTEST_ARGS
 # Arguments?
 test_filenames = KTEST_ARGS
 
+if test_filenames.empty?
+  puts
+  puts "-----------------------------------------------------------------------------------"
+  puts " * These tests will take about 5 minutes to run."
+  puts " * A small number of tests will fail due to platform differences."
+  puts " * The long stack trace is expected as part of a test of plugin error reporting."
+  puts " * If lots of tests fail, you don't have enough memory."
+  puts "-----------------------------------------------------------------------------------"
+  puts
+end
+
 # Constants
 FIRST_TEST_APP_ID = 9999
 DEFAULT_CONCURRENCY = 2
@@ -220,6 +231,9 @@ unless test_options.has_key?(:noinit)
   # Init all the test applications
   last_test_app_id = LAST_TEST_APP_ID
   last_test_app_id += 1 # one more app for the cross-app tests
+  puts
+  puts "Setting up object store for multiple concurrent tests, taking snapshots for restoration during tests..."
+  puts
   puts "Initialising #{last_test_app_id - FIRST_TEST_APP_ID + 1} applications..."
   FIRST_TEST_APP_ID.upto(last_test_app_id) do |test_app_id|
     TestApplicationInit.app(test_app_id)
