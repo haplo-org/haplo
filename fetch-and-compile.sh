@@ -14,13 +14,14 @@ XAPIAN_DOWNLOAD_URL=http://oligarchy.co.uk/xapian/1.2.15/xapian-core-${XAPIAN_VE
 # NOTE: Gem names and digests below
 
 # ----------------------------------------------------------------------------------
-
-DARWIN_POSTGRESQL_INCLUDE=/Library/PostgreSQL/9.3/include/postgresql/server
-DARWIN_POSTGRESQL_LIB=/Library/PostgreSQL/9.3/lib
+if ! `type "pg_config" >/dev/null 2>/dev/null`; then
+    echo "pg_config is not available, make sure it's installed and on your PATH"
+    exit 1
+fi
+POSTGRESQL_INCLUDE=`pg_config --includedir-server`
+POSTGRESQL_LIB=`pg_config --libdir`
 DARWIN_OXP_LINK="-dynamiclib -undefined suppress -flat_namespace"
 DARWIN_XAPIAN_LIB_EXT=a
-OTHER_POSTGRESQL_INCLUDE=/usr/include/postgresql/9.3/server
-OTHER_POSTGRESQL_LIB=/usr/lib/postgresql/9.3/lib
 OTHER_OXP_LINK="-shared"
 OTHER_XAPIAN_LIB_EXT=so
 
@@ -54,13 +55,9 @@ if ! which mvn; then
 fi
 
 if [ `uname` = Darwin ]; then
-    POSTGRESQL_INCLUDE=$DARWIN_POSTGRESQL_INCLUDE
-    POSTGRESQL_LIB=$DARWIN_POSTGRESQL_LIB
     OXP_LINK=$DARWIN_OXP_LINK
     XAPIAN_LIB_EXT=$DARWIN_XAPIAN_LIB_EXT
 else
-    POSTGRESQL_INCLUDE=$OTHER_POSTGRESQL_INCLUDE
-    POSTGRESQL_LIB=$OTHER_POSTGRESQL_LIB
     OXP_LINK=$OTHER_OXP_LINK
     XAPIAN_LIB_EXT=$OTHER_XAPIAN_LIB_EXT
 fi
