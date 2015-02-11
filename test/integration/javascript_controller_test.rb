@@ -407,9 +407,20 @@ class JavaScriptControllerTest < IntegrationTest
 
     # Rewriting CSS and url of static files
     get '/do/plugin_test/css_rewrite'
-    assert_equal response.body, %Q!div {background: url(#{KPlugin.get('test_response_plugin').static_files_urlpath}/ping.png)}!
+    assert_equal %Q!div {background: url(#{KPlugin.get('test_response_plugin').static_files_urlpath}/ping.png)} p {color:#000077}!, response.body
     assert_equal KPlugin.get('test_response_plugin').static_files_urlpath, response['X-staticDirectoryUrl']
     assert response['X-staticDirectoryUrl'] !~ /\/\z/ # make sure it doesn't end with a /
+    # CSS 'static' files get rewriting too
+    get "#{KPlugin.get('test_response_plugin').static_files_urlpath}/teststyle.css"
+    assert_equal <<__E, response.body
+div {background:url(#{KPlugin.get('test_response_plugin').static_files_urlpath}/hello.gif)}
+p {color:#000077}
+b {color:#0000ff}
+i {color:#ff0000}
+__E
+    # Other static files don't geyt rewritten
+    get "#{KPlugin.get('test_response_plugin').static_files_urlpath}/testscript.js"
+    assert_equal '(function() { return "APPLICATION_COLOUR_MAIN"; })();', response.body
 
     # Null and undefined arguments to templates
     get '/do/plugin_test/special_arguments_to_templates/null'

@@ -187,6 +187,9 @@ class KSchemaApp < KSchema
     def is_hierarchical?
       @behaviours.include?(O_TYPE_BEHAVIOUR_HIERARCHICAL)
     end
+    def is_hidden_from_browse?
+      is_classification? || @behaviours.include?(O_TYPE_BEHAVIOUR_HIDE_FROM_BROWSE)
+    end
   end
   def type_descriptor_class; TypeDescriptorApp; end
 

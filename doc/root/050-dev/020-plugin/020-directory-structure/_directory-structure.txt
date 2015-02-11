@@ -62,6 +62,8 @@ h2. static
 
 Files in the @static@ directory are made available over HTTP. Use it for client side resources like scripts, stylesheets and images.
 
+Note that CSS files are [node:dev/plugin/directory-structure/css-rewriting:rewritten slightly].
+
 Filenames of files in the @static@ directory may only contain the characters @a-zA-Z0-9_-@, and must have an extension which may only contain @a-zA-Z0-9@.
 
 To use these files in your plugin, use the [node:dev/plugin/templates/std-template/plugin-static] template to include references to the files in your HTML, or the @staticDirectoryUrl@ property on your [node:dev/plugin/interface/plugin] object to form URLs.

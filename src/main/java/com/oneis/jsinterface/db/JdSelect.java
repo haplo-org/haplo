@@ -62,6 +62,7 @@ public class JdSelect extends JdSelectClause {
 
     // Limit the number of results
     public Scriptable jsFunction_limit(int limit) {
+        checkNotExecutedYet();
         if(limit < 0) {
             throw new OAPIException("Limit cannot be negative");
         }
@@ -71,6 +72,7 @@ public class JdSelect extends JdSelectClause {
 
     // Specify offset for the results
     public Scriptable jsFunction_offset(int offset) {
+        checkNotExecutedYet();
         if(offset < 0) {
             throw new OAPIException("Offset cannot be negative");
         }
@@ -80,6 +82,7 @@ public class JdSelect extends JdSelectClause {
 
     // Load references to linked objects in a single query
     public Scriptable jsFunction_include(String fieldName) {
+        checkNotExecutedYet();
         JdTable.Field field = this.table.getField(fieldName);
         if(field == null || !(field instanceof JdTable.LinkField)) {
             throw new OAPIException("Field '" + fieldName + "' does not exist or isn't a link field");
@@ -90,6 +93,7 @@ public class JdSelect extends JdSelectClause {
 
     @Override
     protected void addIncludedTable(JdTable.LinkField field) {
+        checkNotExecutedYet();
         if(this.includes == null) {
             this.includes = new ArrayList<JdTable.LinkField>(2);
         }
@@ -141,7 +145,7 @@ public class JdSelect extends JdSelectClause {
         try {
             return this.table.executeCount(this);
         } catch(java.sql.SQLException e) {
-            throw new RuntimeException("Couldn't execute SQL query", e);
+            throw new OAPIException("Couldn't execute SQL query (does the underlying database table need migrating?)", e);
         }
     }
 
@@ -169,7 +173,7 @@ public class JdSelect extends JdSelectClause {
             try {
                 this.results = this.table.executeQuery(this);
             } catch(java.sql.SQLException e) {
-                throw new RuntimeException("Couldn't execute SQL query", e);
+                throw new OAPIException("Couldn't execute SQL query (does the underlying database table need migrating?)", e);
             }
         }
     }

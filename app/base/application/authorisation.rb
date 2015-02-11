@@ -163,7 +163,6 @@ class ApplicationController
 
 private
 
-  # PERM TODO: Proper tests for unauthorised 403 responses & redirects -- needs careful testing
   def respond_to_unauthorised_request
     if !(@request_user) || @request_uses_api_key || exchange.annotations[:api_url]
       # Non-interactive request -- use mini-response without all the usual chrome

@@ -28,6 +28,8 @@ h3(property). id
 
 The numeric @ID@ of this work unit.
 
+Accessing this property on a work unit which has not been saved with @save()@ will throw an exception.
+
 
 h3(property). workType
 
@@ -114,6 +116,11 @@ You must call @save()@ to commit this change.
 h3(function). save()
 
 Commit the changes to the work unit.
+
+
+h3(property). isSaved
+
+@true@ if this work unit has been saved with @save()@.
 
 
 h3(function). deleteObject()

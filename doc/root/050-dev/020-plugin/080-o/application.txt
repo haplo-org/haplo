@@ -9,6 +9,11 @@ h3(property). O.application.id
 The numeric application ID.
 
 
+h3(property). O.application.name
+
+The human readable name of this application, typically the name of the organisation using it.
+
+
 h3(property). O.application.hostname
 
 The hostname of the application.

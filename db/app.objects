@@ -142,6 +142,10 @@ obj [O_LABEL_STRUCTURE] O_TYPE_BEHAVIOUR_SELF_LABELLING
     A_TYPE      O_TYPE_TYPE_BEHAVIOUR
     A_TITLE     "Automatically label objects of this type with itself"
 
+obj [O_LABEL_STRUCTURE] O_TYPE_BEHAVIOUR_HIDE_FROM_BROWSE
+    A_TYPE      O_TYPE_TYPE_BEHAVIOUR
+    A_TITLE     "Hide from Browse"
+
 # ------------------------------------------------------------------
 #  Application type 'types'
 # ------------------------------------------------------------------

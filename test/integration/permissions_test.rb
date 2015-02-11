@@ -81,6 +81,26 @@ class PermissionsTest < IntegrationTest
     joe = login(@user_joe)
     joan = login(@user_joan)
 
+    # Check 403 responses are correct
+    joe.get obj_path(:p1)
+    joe.assert_select '#z__page_name h1', obj_title(:p1)
+    joe.get_403 obj_path(:p2)
+    joe.assert_select '#z__page_name h1', 'Unauthorised'
+    api_key = ApiKey.new(:user => @user_joe, :path => '/', :name => 'test')
+    api_key_secret = api_key.set_random_api_key
+    api_key.save()
+    get_403 obj_path(:p2), nil, {'X-ONEIS-Key' => api_key_secret}
+    assert response.body.include?("Unauthorised")
+    if File.exist?("app/views/authentication/unauthorised_api.html.erb")
+      assert_equal File.open("app/views/authentication/unauthorised_api.html.erb") {|f| f.read}, response.body
+    else
+      # for when test run after deployment packing
+      assert response.body.include?("<body><h1>Unauthorised</h1>") # HTML minimised
+    end
+    get obj_path(:p1), nil, {'X-ONEIS-Key' => api_key_secret}
+    assert_select '#z__page_name h1', obj_title(:p1)
+    api_key.destroy
+
     # Read some objects, and check the response is correct
     joe.get obj_path(:o1)
     joe.assert_select '#z__page_name h1', obj_title(:o1)

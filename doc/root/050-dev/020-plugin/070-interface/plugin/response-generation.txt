@@ -30,10 +30,9 @@ The path returned does *not* contain a trailing @/@.
 
 h3(function). rewriteCSS(css)
 
-Given a string containing some CSS, rewrite it to reflect the current installation. Replacements made are:
+Given a string containing some CSS, rewrite it to reflect the current application.
 
-|*String*|*Replaced with*|
-|@PLUGIN_STATIC_PATH@|Public path of the static files, as @staticDirectoryUrl@|
+The replacements are the same as the [node:dev/plugin/directory-structure/css-rewriting:CSS rewriting for static files].
 
 
 h3(function). form(specification)

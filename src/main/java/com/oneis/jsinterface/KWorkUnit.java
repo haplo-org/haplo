@@ -52,8 +52,16 @@ public class KWorkUnit extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public int jsGet_id() {
-        return this.workUnit.id();
+    public Integer jsGet_id() {
+        Integer id = this.workUnit.id();
+        if(id == null) {
+            throw new OAPIException("WorkUnit has not been saved yet.");
+        }
+        return id;
+    }
+
+    public boolean jsGet_isSaved() {
+        return this.workUnit.persisted();
     }
 
     public String jsGet_workType() {

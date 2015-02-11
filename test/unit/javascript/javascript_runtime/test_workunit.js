@@ -46,8 +46,13 @@ TEST(function() {
         createdBy:USER3_ID,   // as numeric ID
         actionableBy:user2 // as user object
     });
+    TEST.assert_equal(false, unit1.isSaved);
     TEST.assert_equal("test:pants", unit1.workType);
+    TEST.assert_exceptions(function() {
+        var x = unit1.id;
+    }, "WorkUnit has not been saved yet.");
     unit1.save();
+    TEST.assert_equal(true, unit1.isSaved);
     TEST.assert_equal(dateStr(new Date()), dateStr(unit1.createdAt));   // check it was created today
     TEST.assert_equal(USER3_ID, unit1.createdBy.id);
     TEST.assert_equal(USER2_ID, unit1.actionableBy.id);

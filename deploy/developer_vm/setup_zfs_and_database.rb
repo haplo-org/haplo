@@ -33,7 +33,7 @@ system "/usr/bin/pfexec /usr/bin/chown #{ENV['USER']}:#{ENV['USER']} #{TEST_DATA
 # Setup database
 DATABASE_DIR = "#{TEST_DATA_DIR}/khq-database"
 Dir.mkdir(DATABASE_DIR)
-system "#{ENV['POSTGRESQL_HOME']}/bin/initdb -E UTF8 -D #{DATABASE_DIR}"
+system "#{ENV['POSTGRESQL_BIN']}/initdb -E UTF8 -D #{DATABASE_DIR}"
 
 # Write manifest and methods
 user = ENV['USER']
@@ -78,7 +78,7 @@ File.open("#{SVC_DIR}/postgresql", "w") do |file|
   file.write <<__E
 #!/sbin/sh
 . /lib/svc/share/smf_include.sh
-PGBIN=#{ENV['POSTGRESQL_HOME']}/bin
+PGBIN=#{ENV['POSTGRESQL_BIN']}
 PGDATA=#{DATABASE_DIR}
 PGLOG=server.log
 ulimit -n 8096

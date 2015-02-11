@@ -54,6 +54,8 @@ class JSSupportRoot
     case item
     when "id"
       KApp.current_application.to_s
+    when "name"
+      KApp.global(:system_name)
     when "hostname"
       KApp.global(:ssl_hostname)
     when "url"

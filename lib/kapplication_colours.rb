@@ -50,8 +50,8 @@ module KApplicationColours
   # Make definitions for colours?
   NAME_TO_INDEX = {}
   CUSTOM_COLOURS.each_with_index do |defn, index|
+    NAME_TO_INDEX[defn[1]] = index
     if defn.length > 2
-      NAME_TO_INDEX[defn[1]] = index
       # Yes - replace with a function definition
       method_name = "__cc_defaults_#{defn[1]}".to_sym
       KColourEvaluator.module_eval("def #{method_name}\n#{KColourEvaluator.expression_to_ruby(defn[2])}\nend", method_name.to_s, -1)

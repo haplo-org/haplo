@@ -104,11 +104,15 @@ class KPlugin
     # Security check, to make sure it's a filename without any traversal attempts
     # TODO: Test for plugin files security check to avoid traversal of filesystem (low risk as there's a filter on allowed filenames)
     return nil unless filename =~ PLUGIN_STATIC_FILENAME_ALLOWED_REGEX
+    extension = $2
     # Make the pathname within the static files directory
     pathname = "#{plugin_path}/static/#{filename}"
     return nil unless File.exists?(pathname)
-    [:file, pathname]
-    # TODO: If it's a CSS file, rewrite image pathnames for other static files.
+    if extension == 'css'
+      [:data, plugin_rewrite_css(File.open(pathname) { |f| f.read })]
+    else
+      [:file, pathname]
+    end
   end
 
   # The url path where the static files appear to the client
@@ -117,8 +121,18 @@ class KPlugin
   end
 
   # Rewrite CSS
+  ALLOWED_COLOUR_NAMES = {
+    "MAIN" => :main,
+    "SECONDARY" => :secondary,
+    "HIGHLIGHT" => :highlight
+  }
   def plugin_rewrite_css(css)
-    css.gsub('PLUGIN_STATIC_PATH', static_files_urlpath)
+    css.
+      gsub('PLUGIN_STATIC_PATH', static_files_urlpath).
+      gsub(/APPLICATION_COLOUR_([A-Z]+)/) do
+        name = ALLOWED_COLOUR_NAMES[$1]
+        name ? "##{KApplicationColours.get_colour(name)}" : "#f0f"
+      end
   end
 
   # -----------------------------------------------------------------------------------------------------------------

@@ -81,7 +81,11 @@ class Setup_TypeController < ApplicationController
           @obj.add_attr(O_LABEL_CONCEPT, A_TYPE_BASE_LABEL)
           @obj.add_attr("classification", A_RENDER_TYPE_NAME)
         else
-          @obj.add_attr(O_LABEL_COMMON, A_TYPE_APPLICABLE_LABEL, Q_TYPE_LABEL_DEFAULT)
+          # Some systems don't use the COMMON label, so check it exists before adding it by default
+          common_label = KObjectStore.read(O_LABEL_COMMON)
+          if common_label && !(common_label.deleted?)
+            @obj.add_attr(O_LABEL_COMMON, A_TYPE_APPLICABLE_LABEL, Q_TYPE_LABEL_DEFAULT)
+          end
         end
       end
       @is_new = true

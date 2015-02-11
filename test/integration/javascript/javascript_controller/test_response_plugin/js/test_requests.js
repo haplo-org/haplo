@@ -307,7 +307,7 @@
     ], function(E) {
         E.response.kind = 'text';
         E.response.headers['X-staticDirectoryUrl'] = this.staticDirectoryUrl;
-        E.response.body = this.rewriteCSS("div {background: url(PLUGIN_STATIC_PATH/ping.png)}");
+        E.response.body = this.rewriteCSS("div {background: url(PLUGIN_STATIC_PATH/ping.png)} p {color:APPLICATION_COLOUR_MAIN}");
     });
 
     P.respond("GET", "/do/plugin_test/audit_table", [

@@ -11,14 +11,14 @@ export JRUBY_HOME
 JRUBY_JFFI_LIB_PATH=$JRUBY_HOME/lib/jni/Darwin/libjffi-1.2.jnilib
 export JRUBY_JFFI_LIB_PATH
 
-POSTGRESQL_HOME=/usr/lib/postgresql/9.3
-POSTGRESQL_SHARE=/usr/share/postgresql/9.3
-POSTGRESQL_INCLUDE=/usr/include/postgresql/9.3/server
-export POSTGRESQL_HOME
+POSTGRESQL_BIN=`pg_config --bindir`
+POSTGRESQL_SHARE=`pg_config --sharedir`
+POSTGRESQL_INCLUDE=`pg_config --includedir-server`
+export POSTGRESQL_BIN
 export POSTGRESQL_SHARE
 export POSTGRESQL_INCLUDE
 
-PATH=$POSTGRESQL_HOME/bin:$PATH
+PATH=$POSTGRESQL_BIN:$PATH
 export PATH
 
 FONTS_DIRECTORY=/opt/oneis/platform/fonts

@@ -10,7 +10,9 @@ import java.util.Date;
 
 public interface AppWorkUnit {
     // Data access
-    public int id();
+    public Integer id();
+
+    public boolean persisted();
 
     public String work_type();
 

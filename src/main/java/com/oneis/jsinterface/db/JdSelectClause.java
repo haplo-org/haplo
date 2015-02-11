@@ -170,6 +170,7 @@ public class JdSelectClause extends KScriptable {
     }
 
     protected Scriptable doWhereSubClause(Object arg, boolean isAndClause) {
+        checkNotExecutedYet();
         // Make the subclause and add it to the list
         Runtime runtime = Runtime.getCurrentRuntime();
         JdSelectClause subClause = (JdSelectClause)runtime.createHostObject("$DbSelectClause", this.table, isAndClause);

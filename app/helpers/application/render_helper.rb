@@ -289,12 +289,12 @@ module Application_RenderHelper
       end
       # Generate the URL -- OK to put img_size in 'cos it'll checked by the above, otherwise it originated from the
       # browser and is therefore dangerous.
-      src = stored_file.url_path(img_size)
+      src = file_url_path(stored_file, img_size)
       # Make tags for linking, if required
       atag1 = nil
       atag2 = nil
       if link_to_download
-        download_link = stored_file.url_path()
+        download_link = file_url_path(stored_file)
         atag1 = %Q!<a href="#{download_link}">!
         atag2 = '</a>'
       end

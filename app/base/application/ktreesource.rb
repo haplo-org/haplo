@@ -129,8 +129,7 @@ class ApplicationController
       # ==== Type root
       objref = 'TYPES'
       KObjectStore.schema.root_type_descs_sorted_by_printable_name.each do |td|
-        # Don't include classification types, or types which are hidden
-        unless td.is_classification? || td.creation_ui_position >= TYPEUIPOS_NEVER
+        unless td.is_hidden_from_browse?
           children << [td.printable_name.to_s, td.objref.to_presentation]
         end
       end
@@ -144,8 +143,7 @@ class ApplicationController
           # Children of this type
           type_desc.children_types.each do |child_objref|
             td = KObjectStore.schema.type_descriptor(child_objref)
-            # Only include this child type if it would be shown in the editor as an option
-            if td.create_show_type
+            unless td.is_hidden_from_browse?
               children << [td.printable_name.to_s, child_objref.to_presentation]
             end
           end

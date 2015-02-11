@@ -14,12 +14,6 @@ XAPIAN_DOWNLOAD_URL=http://oligarchy.co.uk/xapian/1.2.15/xapian-core-${XAPIAN_VE
 # NOTE: Gem names and digests below
 
 # ----------------------------------------------------------------------------------
-if ! `type "pg_config" >/dev/null 2>/dev/null`; then
-    echo "pg_config is not available, make sure it's installed and on your PATH"
-    exit 1
-fi
-POSTGRESQL_INCLUDE=`pg_config --includedir-server`
-POSTGRESQL_LIB=`pg_config --libdir`
 DARWIN_OXP_LINK="-dynamiclib -undefined suppress -flat_namespace"
 DARWIN_XAPIAN_LIB_EXT=a
 OTHER_OXP_LINK="-shared"
@@ -53,6 +47,10 @@ if ! which mvn; then
     echo Maven is not available
     exit 1
 fi
+if ! which pg_config; then
+    echo pg_config is not available, make sure it is installed, and the PostgreSQL bin directory is on your PATH
+    exit 1
+fi
 
 if [ `uname` = Darwin ]; then
     OXP_LINK=$DARWIN_OXP_LINK
@@ -61,6 +59,9 @@ else
     OXP_LINK=$OTHER_OXP_LINK
     XAPIAN_LIB_EXT=$OTHER_XAPIAN_LIB_EXT
 fi
+
+POSTGRESQL_INCLUDE=`pg_config --includedir-server`
+POSTGRESQL_LIB=`pg_config --libdir`
 if ! [ -d $POSTGRESQL_INCLUDE ]; then
     echo "Can't find PostgreSQL include directory, is it installed? Tried ${POSTGRESQL_INCLUDE}"
     exit 1
@@ -225,7 +226,7 @@ g++ framework/support/oneis.cpp -O2 -o framework/oneis
 
 echo "Compiling Java sources with maven..."
 mvn package
-cp target/haplo-3.20150203.2017.cf001d406f.jar framework/oneis.jar
+cp target/haplo-3.20150211.1430.7a1c878ca6.jar framework/oneis.jar
 
 mvn -Dmdep.outputFile=target/classpath.txt dependency:build-classpath
 

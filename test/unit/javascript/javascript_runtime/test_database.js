@@ -140,6 +140,11 @@ TEST(function() {
         // Check that the query can't be modified after it's been run
         alldepartments.where("name","=",'Human resources');
     }, "Query has been executed, and cannot be modified.");
+    _.each(["order","stableOrder","limit","offset","include","whereMemberOfGroup","and","or"], function(fn) {
+        TEST.assert_exceptions(function() {
+            alldepartments[fn].call(alldepartments);
+        }, "Query has been executed, and cannot be modified.");
+    });
 
     // Check has() function in Java JdSelect objects
     TEST.assert_equal(false, -1 in alldepartments);
