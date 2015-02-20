@@ -1,9 +1,11 @@
-title: Objects
+title: Object Store concepts
 --
 
-Objects are ordered lists of (descriptor, qualifier, value) triples. The descriptor and qualifier say what the value means, eg "Title, Alternative", to implement qualified Dublin Core meta data schemes. The value is a bit of data, of various types including text, datetime, numbers and identifiers (phone number, ISBN, URL, etc) and most importantly, object reference, acting as a link to other objects.
+ONEIS' Object Store allows 'any' information to be represented as a linked graph of loosely typed objects.
 
-Objects are stored in sections, used to divide up the objects into groups in a user defined manner. Object references are formed of the section number plus an id within that section. Section 1 is special, used to contain the default schema.
+h2. Objects
+
+Objects are ordered lists of (descriptor, qualifier, value) triples. The descriptor and qualifier say what the value means, eg "Title, Alternative", to implement qualified Dublin Core meta data schemes. The value is a bit of data, of various types including text, datetime, numbers and identifiers (phone number, ISBN, URL, etc) and most importantly, object reference, acting as a link to other objects.
 
 Everything is defined in terms of objects, eg descriptors themselves are object references to a schema object describing the descriptor.
 
@@ -23,3 +25,10 @@ Aliased attributes are included in the [node:dev/xml-http/schema] "for informati
 A good example of the use of aliased attributes is in the default Person type. ONEIS uses taxonomies in the Subject attribute to classify all objects consistently. However, people are not about a subject, rather they have an expertise in a subject. So the Subject attribute is aliased to Expertise, when used on a Person type. In addition, the Title field is aliased to Name and set to the Person's name data type. While every object must have a title for display in search results and links, Title means something different when referring to people, and the person's name data type is much better for writing names than a simple text field.
 
 Aliased attributes are applied in the user interface only. Stored objects use the underlying attributes, and when writing objects using this API, aliased attributes cannot be used.
+
+
+h2. Object References
+
+Object references (objrefs) look like @8qw57@. They are formed as a hexadecimal number, with the transformation @tr/abcdef/qvwxyz/@ applied to remove the possibility of spelling words in object URLs.
+
+Since attributes, qualifiers and types are all defined by objects, objrefs are used to describe them in the XML API.

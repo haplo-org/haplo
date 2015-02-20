@@ -22,7 +22,7 @@ Optional. If this key is specified, the user's browser will be redirected to thi
 
 The path must be a string beginning with '/', and not contain any strange characters. Use URL %-encoding to include other characters.
 
-A parameter for the new object's reference will be appended to the URL. If the ref is @1234-56@, and the URL contains a '?', @"&ref=1234-56"@ will be appended to the URL, otherwise @"?ref=1234-56"@
+A parameter for the new object's reference will be appended to the URL. If the ref is @88x56@, and the URL contains a '?', @"&ref=88x56"@ will be appended to the URL, otherwise @"?ref=88x56"@
 
 If this path is not specified, the user will be redirected to the object page.
 

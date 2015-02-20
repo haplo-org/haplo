@@ -22,7 +22,6 @@ class User < ActiveRecord::Base
   validates_presence_of :name_first, :if => Proc.new { |u| u.kind == KIND_USER }
   validates_presence_of :name_last, :if => Proc.new { |u| u.kind == KIND_USER }
   validates_presence_of :email, :if => Proc.new { |u| u.kind == KIND_USER }
-  validates_uniqueness_of :email, :if => Proc.new { |u| u.kind == KIND_USER }
   validates_format_of :code, :with => /\A[a-z0-9:-]+\z/, :allow_nil => true
 
   composed_of :objref, :allow_nil => true, :class_name => 'KObjRef', :mapping => [[:obj_id,:obj_id]]
@@ -237,7 +236,19 @@ class User < ActiveRecord::Base
 
   # Find by lower case email
   def self.find_first_by_email(email)
-    find(:first, :conditions => ["lower(email) = lower(?) AND kind=#{KIND_USER}", email.gsub(/\s+/,'')])
+    users = find_all_by_email(email)
+    # When more than one user has the same email address, always pick the oldest active user for consistency
+    users.empty? ? nil : users.first
+  end
+
+  def self.find_all_by_email(email)
+    find(:all,
+      :conditions => ["lower(email) = lower(?) AND kind=#{KIND_USER}", email.gsub(/\s+/,'')],
+      :order => 'id') # required so find_first_by_email() returns expected user
+  end
+
+  def self.find_all_by_email_of_any_kind(email)
+    find(:all, :conditions => ["lower(email) = lower(?)", email.gsub(/\s+/,'')], :order => 'id')
   end
 
   # Find by lower case name prefix (has index)

@@ -129,7 +129,7 @@ class WorkUnit < ActiveRecord::Base
   #   Automatic notifications
   # ----------------------------------------------------------------------------------------------------------------
 
-  before_create Proc.new { |wu|
+  after_create Proc.new { |wu|
     wu.auto_notify if wu.actionable_by_id != AuthContext.user.id
   }
   after_update Proc.new { |wu|

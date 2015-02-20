@@ -55,7 +55,7 @@ module Application_HtmlHelper
     if msgs.empty?
       ''
     else
-      '<div class="z__general_alert">Small problem</div><ul><li>'+msgs.join("</li><li>")+'</li></ul>'
+      '<div class="z__general_alert">Small problem</div><ul><li>'+msgs.map { |m| ERB::Util.h(m) }.join("</li><li>")+'</li></ul>'
     end
   end
 

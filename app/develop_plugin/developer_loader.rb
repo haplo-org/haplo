@@ -173,8 +173,16 @@ class DeveloperLoader
           if device && device.path == '/api/development-plugin-loader/'
             user_object = User.cache[device.user_id]
             if user_object && user_valid_for_request(user_object)
-              user_policy = user_object.user_groups.calculate_policy_bitmask()
-              if (user_policy & REQUIRED_POLICY) == REQUIRED_POLICY
+              user_allowed = false
+              if user_object.kind == User::KIND_SUPER_USER
+                user_allowed = true
+              else
+                user_policy = user_object.user_groups.calculate_policy_bitmask()
+                if (user_policy & REQUIRED_POLICY) == REQUIRED_POLICY
+                  user_allowed = true
+                end
+              end
+              if user_allowed
                 # User is authenticated sufficiently to be allowed to use the plugin loader
                 # Don't set AuthContext, as it'll call plugins, and if they're broken, that's going break the loader too
                 @request_user = user_object

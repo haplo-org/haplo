@@ -13,6 +13,8 @@ public interface AppRoot {
     // Application information
     public String getApplicationInformation(String item);
 
+    public String getApplicationConfigurationDataJSON();
+
     // Runtime properties
     public boolean javascriptWarningsAreErrors();
 

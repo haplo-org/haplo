@@ -33,6 +33,7 @@ private
     permission_denied unless @request_user.permissions.something_allowed?(:read)
     # Get *displayable* entries from audit trail
     finder = AuditEntry.where_labels_permit(:read, @request_user.permissions).where({:displayable => true}).
+      where("obj_id IS NOT NULL"). # for backwards compatibility with converted applications
       limit(number_of_items).
       order('id DESC');
     finder = finder.where(['id < ?', older_than]) if older_than != nil

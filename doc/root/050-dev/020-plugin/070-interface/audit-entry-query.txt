@@ -138,7 +138,7 @@ might produce:
 
 <pre>language=javascript
     [
-       ["CREATE", "225-194", "2013-06-27 09:54:57.691"], // First
-       ["FILE-NEW", "225-190", "2013-06-26 10:43:46.580"]  // Second
+       ["CREATE", "88y19", "2013-06-27 09:54:57.691"], // First
+       ["FILE-NEW", "89x10", "2013-06-26 10:43:46.580"]  // Second
     ]
 </pre>

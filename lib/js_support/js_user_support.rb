@@ -46,6 +46,10 @@ module JSUserSupport
     User.find_first_by_email(email)
   end
 
+  def self.getAllUsersByEmail(email)
+    User.find_all_by_email(email).to_a
+  end
+
   def self.getUserByRef(ref)
     User.find_active_user_by_objref(ref)
   end
@@ -180,7 +184,6 @@ module JSUserSupport
 
   def self.createUser(json)
     details = validatedUserJSON(json)
-    raise JavaScriptAPIError, "User with email address #{details['email']} already exists" if User.find_first_by_email(details['email'])
     group_membership = details['groups']
     if group_membership != nil
       raise JavaScriptAPIError, "groups attribute must be an Array" unless group_membership.kind_of? Array

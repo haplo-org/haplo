@@ -1,4 +1,4 @@
-FOR: /do/edit?new=1-2012
+FOR: /do/edit?new=2012
 
 h1. Creating intranet pages
 

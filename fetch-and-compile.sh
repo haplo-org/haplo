@@ -1,4 +1,11 @@
 #!/bin/sh
+
+# Haplo Platform                                     http://haplo.org
+# (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 set -e
 
 DEV_SUPPORT_DIR=~/haplo-dev-support
@@ -226,7 +233,7 @@ g++ framework/support/oneis.cpp -O2 -o framework/oneis
 
 echo "Compiling Java sources with maven..."
 mvn package
-cp target/haplo-3.20150211.1430.7a1c878ca6.jar framework/oneis.jar
+cp target/haplo-3.20150220.1055.60b783afbe.jar framework/oneis.jar
 
 mvn -Dmdep.outputFile=target/classpath.txt dependency:build-classpath
 

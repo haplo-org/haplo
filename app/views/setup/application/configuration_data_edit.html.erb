@@ -1,0 +1,13 @@
+<%
+  @page_title = 'Configuration data'
+-%>
+<%= sys_mng_header %>
+
+<% if @not_valid_json %>
+  <p class="z__management_notice">The configuration data is not valid JSON, and was not saved.</p>
+<% end %>
+
+<form method="POST"><%= form_csrf_token %>
+  <textarea name="data" cols="80" rows="20"><%= h(@display_data) %></textarea>
+  <p><input type="submit" value="Save configuration data"></p
+</form>

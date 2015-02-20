@@ -208,39 +208,39 @@ The system supports referring to the same file from two different objects, but t
 h3. Example
 
 <pre>language=xml
-<object ref="6-6"
+<object ref="88y4w"
         created_user="20" updated="2008-10-30T14:38:33+00:00"
         updated_user="20" created="2008-10-30T14:38:33+00:00">
   <attributes>
-    <a d="1-x3" vt="35">
+    <a d="x3" vt="35">
       <person_name culture="western">
         <last>Bloggs</last>
         <first>Joe</first>
       </person_name>
     </a>
-    <a d="1-x2" vt="0">1-20x1</a>
-    <a d="1-259" vt="0">6-5</a>
-    <a d="1-193" vt="16">
+    <a d="x2" vt="0">20x1</a>
+    <a d="259" vt="0">88y4q</a>
+    <a d="193" vt="16">
       <text default="true" lang="en">Developer</text>
     </a>
-    <a d="1-191" vt="29">
+    <a d="191" vt="29">
       <text>joe@example.com</text>
     </a>
-    <a d="1-195" vt="32">
+    <a d="195" vt="32">
       <telephone_number>
         <country>GB</country>
         <number>020 1234 5678</number>
         <intl_form>+44 20 1234 5678</intl_form>
       </telephone_number>
     </a>
-    <a d="1-195" q="1-76x" vt="32">
+    <a d="195" q="76x" vt="32">
       <telephone_number>
         <country>GB</country>
         <number>07777 123 456</number>
         <intl_form>+44 7777 123456</intl_form>
       </telephone_number>
     </a>
-    <a d="1-194" vt="36">
+    <a d="194" vt="36">
       <postal_address>
         <street1>1 High Street</street1>
         <city>Some City</city>
@@ -249,13 +249,13 @@ h3. Example
         <country>GB</country>
       </postal_address>
     </a>
-    <a d="1-x5" vt="0">3-3v</a>
-    <a d="1-25v" vt="0">q-3000</a>
-    <a d="1-9w5" vt="24">
+    <a d="x5" vt="0">8ww43</a>
+    <a d="25v" vt="0">88293</a>
+    <a d="9w5" vt="24">
       <text default="true" lang="en">Some example text.
 Includes line breaks.</text>
     </a>
-    <a d="1-190" vt="30">
+    <a d="190" vt="30">
       <url>http://www.example.com</url>
     </a>
   </attributes>

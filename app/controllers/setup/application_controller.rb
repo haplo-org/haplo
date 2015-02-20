@@ -119,6 +119,29 @@ class Setup_ApplicationController < ApplicationController
     end
   end
 
+  def handle_configuration_data
+    @data_text = JSON.pretty_generate(JSON.parse(KApp.global(:javascript_config_data) || '{}'))
+  end
+  
+  _GetAndPost
+  def handle_configuration_data_edit
+    @data = KApp.global(:javascript_config_data) || '{}'
+    @parsed_data = JSON.parse(@data)
+    @display_data = JSON.pretty_generate(@parsed_data)
+    if request.post?
+      @data = params[:data] || '{}'
+      @display_data = @data # show data user entered if there's an error
+      begin
+        # Attempt to parse the data to ensure it is valid JSON
+        @parsed_data = JSON.parse(@data)
+        KApp.set_global(:javascript_config_data, JSON.generate(@parsed_data))
+        redirect_to '/do/setup/application/configuration-data'
+      rescue => e
+        @not_valid_json = true
+      end
+    end
+  end
+
   _GetAndPost
   def handle_copyright
     if request.post?

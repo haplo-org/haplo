@@ -65,6 +65,10 @@ class JSSupportRoot
     end
   end
 
+  def getApplicationConfigurationDataJSON
+    KApp.global(:javascript_config_data) || '{}'
+  end
+
   # For working out which plugin is to blame for an error
   def last_used_plugin_name
     @last_used_plugin_name

@@ -26,3 +26,10 @@ Look up the user with the @ref@ property set to this [node:dev/plugin/interface/
 @null@ will be returned if no such user exists.
 
 If more than one user has this @ref@, your code should not rely on which one is returned.
+
+
+h3(function). O.allUsersWithEmailAddress(emailAddress)
+
+Return an @Array@ of zero or more [node:dev/plugin/interface/security-principal] objects which have the specified email address and are currently active.
+
+In general, you should use @O.user(emailAddress)@, which will return the oldest active @SecurityPrincipal@ object with that email address. However, if you're writing a custom authentication system, you may need to create multiple users with the same email address and this function will be useful to find them all.

@@ -61,6 +61,15 @@ public class KUser extends KScriptable {
         return (user == null) ? null : KUser.fromAppUser(user);
     }
 
+    public static Scriptable jsStaticFunction_getAllUsersByEmail(String email) {
+        AppUser users[] = rubyInterface.getAllUsersByEmail(email.toLowerCase().trim());
+        Scriptable jsUsers = Runtime.getCurrentRuntime().createHostObject("Array", users.length);
+        for(int i = 0; i < users.length; ++i) {
+            jsUsers.put(i, jsUsers, fromAppUser(users[i]));
+        }
+        return jsUsers;
+    }
+
     public static Scriptable jsStaticFunction_getUserByRef(KObjRef ref) {
         AppUser user = rubyInterface.getUserByRef(ref.toRubyObject());
         return (user == null) ? null : KUser.fromAppUser(user);
@@ -305,6 +314,8 @@ public class KUser extends KScriptable {
         public AppUser getUserById(int id);
 
         public AppUser getUserByEmail(String email);
+
+        public AppUser[] getAllUsersByEmail(String email);
 
         public AppUser getUserByRef(AppObjRef ref);
 

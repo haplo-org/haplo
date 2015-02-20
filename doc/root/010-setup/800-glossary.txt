@@ -22,7 +22,7 @@ An item in the system.
 
 h3. Permissions
 
-Determines what users can and can't do with objects in a Section.
+Determines what users can and can't do with objects based on their labels.
 
 [node:setup/permissions:More...]
 

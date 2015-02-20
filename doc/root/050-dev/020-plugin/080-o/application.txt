@@ -22,3 +22,10 @@ The hostname of the application.
 h3(property). O.application.url
 
 The base URL of the application, including the protocol. The returned string does not include a trailing @/@ character.
+
+
+h3(property). O.application.config
+
+The configuration data for this application, editable in System Management as a JSON document.
+
+The properties of this object will not change after your plugin has been loaded. If the administrator edits the configuration data, the plugins are reloaded into a new JavaScript runtime. Therefore, you can safely use the contents of this document to change how things like request handlers and forms are declared.

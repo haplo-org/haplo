@@ -5,12 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
-P.workUnit({
-    workType:"test_auto_notify",
-    description:"Test automatic notifications",
-    render:function(W) { /* do nothing */ },
-    notify: function(workUnit) {
-        var checkWorkUnitHasId = workUnit.id;
-        return workUnit.data.notify; // allow test to control response
-    }
+TEST(function() {
+
+    TEST.assert_equal("test value", O.application.config["TEST_VALUE"]);
+    TEST.assert_equal(true, O.application.config["TEST_TRUE"]);
+    TEST.assert_equal(false, O.application.config["TEST_FALSE"]);
+
 });

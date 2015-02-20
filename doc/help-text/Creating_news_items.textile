@@ -1,4 +1,4 @@
-FOR: /do/edit?new=1-2198
+FOR: /do/edit?new=2198
 
 h1. Creating news items
 

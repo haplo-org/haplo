@@ -73,6 +73,10 @@ public class KONEISHost extends KScriptable {
         return this.supportRoot.getApplicationInformation(item);
     }
 
+    public String jsFunction_getApplicationConfigurationDataJSON() {
+        return this.supportRoot.getApplicationConfigurationDataJSON();
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     public void setNextPluginToBeRegistered(String pluginName, String databaseNamespace) {
         this.nextPluginToBeRegistered = pluginName;

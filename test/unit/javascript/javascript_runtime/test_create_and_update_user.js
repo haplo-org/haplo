@@ -27,7 +27,6 @@ TEST(function() {
     TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x"}); }, "User must have a non-empty String nameLast attribute");
     TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y"}); }, "User must have a non-empty String email attribute");
     TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y",email:"z"}); }, "User must have a valid email address");
-    TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y",email:"user2@example.com"}); }, "User with email address user2@example.com already exists");
     TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y",email:"ping@example.com", groups:"a"}); }, "groups attribute must be an Array");
     TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y",email:"ping@example.com", groups:[1,"two"]}); }, "groups attribute must be an Array of integer group IDs");
 
@@ -125,5 +124,22 @@ TEST(function() {
     TEST.assert_equal("js-email-44@example.com", user44.email);
     // Setting the same details just returns false
     TEST.assert_equal(false, user44.setDetails({nameFirst:"JSfirst", nameLast:"JSlast", email:"js-email-44@example.com"}));
+
+    // It's possible to create another user with the same email address as an existing user
+    // Check BEFORE creating another
+    var existingUser2 = O.user("user2@example.com");
+    TEST.assert_equal(42, existingUser2.id);
+    var users2query1 = O.allUsersWithEmailAddress("user2@example.com");
+    TEST.assert_equal(1, users2query1.length);
+    TEST.assert(users2query1[0] instanceof $User);
+    TEST.assert_equal(42, users2query1[0].id);
+
+    // Check AFTER creating another user with the same email address
+    var duplicateUser2 = O.setup.createUser({nameFirst:"x",nameLast:"y",email:"user2@example.com"});
+    TEST.assert(duplicateUser2.id != existingUser2.id);
+    var users2query2 = O.allUsersWithEmailAddress("user2@example.com");
+    TEST.assert_equal(2, users2query2.length);
+    TEST.assert_equal(42, users2query2[0].id);
+    TEST.assert_equal(duplicateUser2.id, users2query2[1].id);
 
 });

@@ -16,16 +16,6 @@ For flexibility, tend towards creating a new type for each taxonomy, unless the 
 
 If you create a new type and attribute pair, you will need to add this attribute to other types before you can use it to describe items.
 
-h3. Section
-
-Sections control who can see and who can edit the taxonomy.
-
-For flexibility, create a new section for each taxonomy, which allows you to set up permissions on a per-taxonomy basis. For smaller systems, or where you have several related taxonomies, you may wish to group taxonomies together in a section.
-
-Sections created here copy the permissions from the _Classification_ section. After creation, you can edit access permissions for the taxonomy section by editing permissions as normal in the in the Groups menu.
-
-Taxonomy sections are automatically added to any Search subset which includes the Classification section. You can edit this after creation in the Search subsets menu.
-
 h2. Editing your taxonomy
 
-The automatic taxonomy creation sets up a type, attribute, and section for the new taxonomy. You can edit any of these using the normal type, attribute and section editors in System Management.
+The automatic taxonomy creation sets up a type and attribute. You can edit any of these using the normal type, attribute editors in System Management.

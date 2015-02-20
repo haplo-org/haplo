@@ -44,27 +44,27 @@
 <h3>Structure</h3>
 <p><a href="#" data-page="38">Navigation</a><br>
 <a href="#" data-page="39">Navigation preview</a><br>
-<a href="#" data-page="40">Sections</a><br>
-<a href="#" data-page="41">Edit section</a><br>
-<a href="#" data-page="42">Search subsets</a><br>
-<a href="#" data-page="43">Edit search subset</a><br>
-<a href="#" data-page="44">Set subset order</a></p>
+Sections<br>
+<a href="#" data-page="40">Edit section</a><br>
+<a href="#" data-page="41">Search subsets</a><br>
+<a href="#" data-page="42">Edit search subset</a><br>
+<a href="#" data-page="43">Set subset order</a></p>
 <h3>System</h3>
-<p><a href="#" data-page="45">Identity</a><br>
-<a href="#" data-page="46">Web addresses and SSL policy</a><br>
-<a href="#" data-page="47">Object web addresses</a></p>
-<p><a href="#" data-page="48">Login options</a><br>
-<a href="#" data-page="49">Token admin contact</a><br>
-<a href="#" data-page="50">Static files</a><br>
-<a href="#" data-page="51">Appearance</a><br>
-<a href="#" data-page="52">Features</a><br>
-<a href="#" data-page="53">External providers</a></p>
-<p><a href="#" data-page="54">Email templates</a><br>
-<a href="#" data-page="55">Edit email template</a></p>
-<p><a href="#" data-page="56">Audit trail</a><br>
-<a href="#" data-page="57">Audit configuration</a><br>
-<a href="#" data-page="58">Add audit admin note</a><br>
-<a href="#" data-page="59">View audit trail</a></p>
+<p><a href="#" data-page="44">Identity</a><br>
+<a href="#" data-page="45">Web addresses and SSL policy</a><br>
+<a href="#" data-page="46">Object web addresses</a></p>
+<p><a href="#" data-page="47">Login options</a><br>
+<a href="#" data-page="48">Token admin contact</a><br>
+<a href="#" data-page="49">Static files</a><br>
+<a href="#" data-page="50">Appearance</a><br>
+<a href="#" data-page="51">Features</a><br>
+<a href="#" data-page="52">External providers</a></p>
+<p><a href="#" data-page="53">Email templates</a><br>
+<a href="#" data-page="54">Edit email template</a></p>
+<p><a href="#" data-page="55">Audit trail</a><br>
+<a href="#" data-page="56">Audit configuration</a><br>
+<a href="#" data-page="57">Add audit admin note</a><br>
+<a href="#" data-page="58">View audit trail</a></p>
 </div>
 
 <div id="p1" style="display:none">
@@ -101,7 +101,7 @@
 <h2>Initial password</h2>
 <p>Unless you choose not to send a welcome email, the user will be emailed a link to set their initial password.</p>
 <h2>Welcome email</h2>
-<p>You can edit the welcome email using <a href="#" data-page="54">Email templates</a>.</p>
+<p>You can edit the welcome email using <a href="#" data-page="53">Email templates</a>.</p>
 </div>
 
 <div id="p3" style="display:none">
@@ -215,23 +215,11 @@
 <div id="p13" style="display:none">
 <h1>Permissions</h1>
 <p><strong>Policies</strong> are overall statements of what a user can do in the system. These are settings which don&#8217;t relate to objects.</p>
-<p><strong>Permissions</strong> control whether users can view and edit objects in each section. If a user has no permissions in a section, they won&#8217;t see any items within that section.</p>
+<p><strong>Permissions</strong> control whether users can view and edit objects.</p>
 <p>Policies and Permissions should be set on a group basis. Although you can set permissions on individual users, it is recommended you only do this in exceptional circumstances. Defining permissions by role rather than by individuals simplifies administration.</p>
-<p>Users can belong to more than one group. Policies and Permissions for a user are calculated by using all the settings for all the groups they belong to. All the Allows are summed together, then all the Denies are summed together. If a user has an Allow but not a Deny, then they are given that policy or permission.</p>
-<p>When completing the tables there is no need to specify an allow or deny for each line. If membership of a group does not affect permissions or policy, leave both the Allow and Deny boxes unchecked. Check the Allow box only if users are allowed to view it, and the Deny box only if they are definitely not allowed.</p>
+<p>Users can belong to more than one group. Policies for a user are calculated by using all the settings for all the groups they belong to. All the Allows are summed together, then all the Denies are summed together. If a user has an Allow but not a Deny, then they are given that policy.</p>
+<p>When completing the tables there is no need to specify an allow or deny for each line. If membership of a group does not affect policy, leave both the Allow and Deny boxes unchecked. Check the Allow box only if users are allowed to view it, and the Deny box only if they are definitely not allowed.</p>
 <p>In general you should try and just use the Allow box. Using too many Denies becomes very confusing and make future changes more difficult. Deny is mainly useful for setting up anonymous access (without a login) to the system, where you would explicitly deny access to virtually everything.</p>
-<h2>Using the Permissions Editor</h2>
-<p>The permissions editor shows A (Allow) and D (Deny) checkboxes for each Policy, and each Permission for each Section.</p>
-<p>The Permissions editor has some shortcuts at the end of each row:</p>
-<ul>
-	<li>x &#8211; Remove all Allow and Deny statements from this Section</li>
-	<li>r &#8211; Set the Section to allow read only access</li>
-	<li>rw &#8211; Set the Section to allow read and write access</li>
-	<li>~ &#8211; Swap Allow and Deny statements for this Section</li>
-</ul>
-<h2>Recommendations</h2>
-<p>You can use the &#8216;Everyone&#8217; group to simplify permissions.</p>
-<p>For example, to create a Directors section which only users in the Director group can access, edit the permissions for Everyone so that both the Allow and Deny boxes are unchecked for the Directors section. This will effectively deny everyone access. Now edit permissions for the Director group, and check the Allow box for all the permissions in the Directors section, but leave everything else blank. As long as you don&#8217;t check the allow or deny boxes in any other group, only Directors have access to the Directors section.</p>
 </div>
 
 <div id="p14" style="display:none">
@@ -245,7 +233,7 @@
 <h2>Email template</h2>
 <p>Choose the email template for your latest updates emails.</p>
 <p>Choosing to <em>use setting from parent group</em> uses the parent group&#8217;s email template setting by default, where this group is a member of another group.</p>
-<p>Templates can be created or amended using <a href="#" data-page="54">Email templates</a>. You can apply different templates to different groups; for example, your staff could receive an internal newsletter, but your clients receive a branded news service.</p>
+<p>Templates can be created or amended using <a href="#" data-page="53">Email templates</a>. You can apply different templates to different groups; for example, your staff could receive an internal newsletter, but your clients receive a branded news service.</p>
 <h2>Remove settings</h2>
 <p><em>Reset to defaults</em> sets this user or group to use the defaults set on the parent group.</p>
 <h2>Recommendation</h2>
@@ -345,7 +333,7 @@
 	<li><em>Relevancy weight</em>: the normal, and default, relevancy weighting in searches is 1. Enter a different number if this type should be ranked higher or lower than average in searches. You can use two decimal places.</li>
 </ul>
 <ul>
-	<li><em>Term inclusion specification</em>: Controls which terms are included from this object into another object which links to it. See <a href="#" data-page="60">Term inclusion specification</a> for more information.</li>
+	<li><em>Term inclusion specification</em>: Controls which terms are included from this object into another object which links to it. See <a href="#" data-page="59">Term inclusion specification</a> for more information.</li>
 </ul>
 <h2>Display</h2>
 <ul>
@@ -544,7 +532,6 @@
 <ul>
 	<li>A hierarchical classification <em>Type</em>, which describes the attributes of each taxonomy term.</li>
 	<li>A taxonomy <em>root object</em>, which has the given Type, and names the taxonomy.</li>
-	<li>All taxonomy terms are created in a <em>Section</em>, which allows you to control who can use and edit the taxonomy.</li>
 	<li>One or more <em>Attributes</em> which use the &#8220;link to object&#8221; data type, and are set to link to objects defined by the Type.</li>
 </ul>
 <h4>Further help</h4>
@@ -560,13 +547,8 @@
 <p>You can have more than one type of taxonomy. When setting up an taxonomy attribute, you choose which of the taxonomy types the attribute will use. By having multiple taxonomy types, you can use different sets of taxonomies in different attributes.</p>
 <p>For flexibility, tend towards creating a new type for each taxonomy, unless the taxonomies are definitely related.</p>
 <p>If you create a new type and attribute pair, you will need to add this attribute to other types before you can use it to describe items.</p>
-<h3>Section</h3>
-<p>Sections control who can see and who can edit the taxonomy.</p>
-<p>For flexibility, create a new section for each taxonomy, which allows you to set up permissions on a per-taxonomy basis. For smaller systems, or where you have several related taxonomies, you may wish to group taxonomies together in a section.</p>
-<p>Sections created here copy the permissions from the <em>Classification</em> section. After creation, you can edit access permissions for the taxonomy section by editing permissions as normal in the in the Groups menu.</p>
-<p>Taxonomy sections are automatically added to any Search subset which includes the Classification section. You can edit this after creation in the Search subsets menu.</p>
 <h2>Editing your taxonomy</h2>
-<p>The automatic taxonomy creation sets up a type, attribute, and section for the new taxonomy. You can edit any of these using the normal type, attribute and section editors in System Management.</p>
+<p>The automatic taxonomy creation sets up a type and attribute. You can edit any of these using the normal type, attribute editors in System Management.</p>
 </div>
 
 <div id="p34" style="display:none">
@@ -636,29 +618,6 @@
 </div>
 
 <div id="p40" style="display:none">
-<h1>Sections</h1>
-<p>Sections are used to divide the objects stored in ONEIS. They have two main roles:</p>
-<ul>
-	<li><strong>administering permissions</strong>: permissions are applied to Sections. What a user can do to an object (read, edit, etc) depends on which Section it is in and the user&#8217;s permissions for that section.</li>
-</ul>
-<ul>
-	<li><strong>enabling search subsets</strong>: sections divide up the objects, so you can search subsets of information.</li>
-</ul>
-<p>Keep the list as small as possible. Creating too many sections will just cause confusion as a user must choose in which section to create each object.</p>
-<p>When working with sections,</p>
-<ul>
-	<li>Set the permissions on the section using <em>Groups</em>.</li>
-	<li>Choose which types of object can be created in the section using <em>Types</em>.</li>
-</ul>
-<p>When a user creates an object, they choose which section it is created in.</p>
-<h2>Managing sections</h2>
-<p>To edit a section, choose the section in the list and click <em>Edit</em> in the right hand panel.</p>
-<p>To create a new section, click <em>New section</em>.</p>
-<h4>Further help</h4>
-<p><a href="#" data-page="41">Edit section</a></p>
-</div>
-
-<div id="p41" style="display:none">
 <h1>Edit section</h1>
 <ul>
 	<li><em>Name</em>: enter a descriptive name for the section. This is the name displayed in the user interface. Make it short and easy to understand, and plural where appropriate.</li>
@@ -682,7 +641,7 @@
 <p>You can edit these later in the Group and Search subsets menus.</p>
 </div>
 
-<div id="p42" style="display:none">
+<div id="p41" style="display:none">
 <h1>Search subsets</h1>
 <p>Search subsets enable users to search within a pre-defined subset of sections. The subsets appear in the <em>Search in</em> drop down menu on the main search screen.</p>
 <p>A search subset will only be offered to a user if they have search permission within at least one of the sections. Even if a section is within the selected search subset, it will only be searched if the user has permission.</p>
@@ -696,31 +655,31 @@
 <p>To set the order in which the subsets appear in the <em>Search in</em> drop down menu, click <em>Set subset order</em>.</p>
 <p>To create a new search subset, click <em>New search subset</em>.</p>
 <h4>Further help</h4>
-<p><a href="#" data-page="43">Edit search subset</a><br>
-<a href="#" data-page="44">Set subset order</a></p>
+<p><a href="#" data-page="42">Edit search subset</a><br>
+<a href="#" data-page="43">Set subset order</a></p>
 </div>
 
-<div id="p43" style="display:none">
+<div id="p42" style="display:none">
 <h1>Edit search subset</h1>
 <ul>
 	<li><em>Name</em>: enter a short, descriptive name for the search subset</li>
 	<li>Tick all the sections to be included in the search subset.</li>
 </ul>
 <h4>Further help</h4>
-<p><a href="#" data-page="42">Search subsets</a></p>
+<p><a href="#" data-page="41">Search subsets</a></p>
 </div>
 
-<div id="p44" style="display:none">
+<div id="p43" style="display:none">
 <h1>Search subset ordering</h1>
 <p>The ordering priority sets the order in which search subsets appear in the &#8220;Search within&#8221; drop down menu on the Search page.</p>
 <p>To change the order, change the numerical value in the Ordering priority column. The first subset in the list, the one with the lowest number in the Ordering priority column, is the default subset. This should normally be called &#8220;everything&#8221; and include all sections which users would most often want to search.</p>
 <p>A subset is only offered to a user if they have read and search permissions on at least one section specified in the search.</p>
 <p>If there are no subsets, then the user searches all sections where they have read and search permissions.</p>
 <h4>Further help</h4>
-<p><a href="#" data-page="42">Search subsets</a></p>
+<p><a href="#" data-page="41">Search subsets</a></p>
 </div>
 
-<div id="p45" style="display:none">
+<div id="p44" style="display:none">
 <h1>Identity</h1>
 <p>Choose <em>Edit</em> to edit an identity option.</p>
 <h2>System name</h2>
@@ -735,7 +694,7 @@
 <p>The copyright notice editor will open in a new window. The copyright notice is linked to the bottom right of every page in ONEIS.</p>
 </div>
 
-<div id="p46" style="display:none">
+<div id="p45" style="display:none">
 <h1>System addresses</h1>
 <p>The application hostname chooses which of the available addresses is used for the system. All other hostnames are used as aliases and redirected to the application hostname.</p>
 <p><strong>Warning</strong>: changing these settings will invalidate URLs configured in external systems.</p>
@@ -743,7 +702,7 @@
 <p>Additional hostnames can be added to this list by ONEIS Support, if required, for example, to brand the web address to match your company URL. For example, if you are <em>example.com</em>, you could use <em>oneis.example.com</em>. This requires DNS settings to be changed, and your own branded URLs can&#8217;t be used with SSL for technical reasons.</p>
 </div>
 
-<div id="p47" style="display:none">
+<div id="p46" style="display:none">
 <h1>Edit URL slug length</h1>
 <p>&#8216;Slugs&#8217; are the text automatically appended to object web addresses (URLs) based on the object&#8217;s title. When you email a URL to a colleague, they will have an idea of what they&#8217;ll see before they click on it.</p>
 <p>The slug should be long enough to give a description of the object, but not so long that the URL becomes unwieldy.</p>
@@ -751,7 +710,7 @@
 <p>Set to 0 to disable slugs.</p>
 </div>
 
-<div id="p48" style="display:none">
+<div id="p47" style="display:none">
 <h1>Auto-login</h1>
 <p>Auto-login allows users to automatically log into the system without needing to enter their username and password, after their first successful login.</p>
 <p>Enabling auto-login enabled the <em>&#8220;In future, automatically log in on this computer&#8221;</em> option on the login page.</p>
@@ -769,13 +728,13 @@
 </ul>
 </div>
 
-<div id="p49" style="display:none">
+<div id="p48" style="display:none">
 <h1>Token admin contact</h1>
 <p>Set the contact details which will be displayed to users when they encounter problems with their authentication token.</p>
 <p>These contact details will only be shown to users who have successfully entered their password.</p>
 </div>
 
-<div id="p50" style="display:none">
+<div id="p49" style="display:none">
 <h1>Static files</h1>
 <p>Static files, such as your logo, are used to customise the look of the application as part of the Appearance editor.</p>
 <ul>
@@ -786,7 +745,7 @@
 <p><strong>The filenames of images are re-written to use a short path and number only.</strong> Refer to the pathname in the table at the top of the static files page, and use the correct path in your HTML snippets.</p>
 </div>
 
-<div id="p51" style="display:none">
+<div id="p50" style="display:none">
 <h1>Appearance</h1>
 <h2>Header</h2>
 <p>The header area at the top of your ONEIS is customised using the Header HTML and Extra CSS fields.</p>
@@ -821,19 +780,19 @@
 </ul>
 </div>
 
-<div id="p52" style="display:none">
+<div id="p51" style="display:none">
 <h1>Feature names</h1>
 <ul>
 	<li>Specify the names for features listed. This allows you to change the names of these features in the user interface to match the names already used in your organisation.</li>
 </ul>
 </div>
 
-<div id="p53" style="display:none">
+<div id="p52" style="display:none">
 <h1>External providers</h1>
 <p>Choose which external providers are used by ONEIS.</p>
 </div>
 
-<div id="p54" style="display:none">
+<div id="p53" style="display:none">
 <h1>Email templates</h1>
 <p>Email templates allow you to customise the emails sent by ONEIS. You need knowledge of HTML and CSS to edit these templates, and it&#8217;s recommended you seek the assistance of a designer to get the best results.</p>
 <h2>Edit an email template</h2>
@@ -854,10 +813,10 @@
 	<li>Choose <em>New email template</em> to create a new email template.</li>
 </ul>
 <h4>Further help</h4>
-<p><a href="#" data-page="55">Edit email template</a></p>
+<p><a href="#" data-page="54">Edit email template</a></p>
 </div>
 
-<div id="p55" style="display:none">
+<div id="p54" style="display:none">
 <h1>Edit email template</h1>
 <p>Editing an email template requires knowledge of HTML and CSS.</p>
 <p>By default, the colours used in the email are chosen from the colours used for the ONEIS sytem.</p>
@@ -882,16 +841,16 @@
 </ul>
 </div>
 
-<div id="p56" style="display:none">
+<div id="p55" style="display:none">
 <h1>Audit trail</h1>
 <p>The audit trail keeps a record of all important activities and changes made in your application.</p>
 <h4>Further help</h4>
-<p><a href="#" data-page="57">Audit configuration</a><br>
-<a href="#" data-page="58">Add audit admin note</a><br>
-<a href="#" data-page="59">View audit trail</a></p>
+<p><a href="#" data-page="56">Audit configuration</a><br>
+<a href="#" data-page="57">Add audit admin note</a><br>
+<a href="#" data-page="58">View audit trail</a></p>
 </div>
 
-<div id="p57" style="display:none">
+<div id="p56" style="display:none">
 <h1>Auditing configuration</h1>
 <p>By default, the audit trail only records changes. However, for some applications, it is useful to record when users read information.</p>
 <p>You can configure the application to audit:</p>
@@ -907,13 +866,13 @@
 <p>Plugins should declare their rules for auditing, and these will be displayed on the configuration page. However, accuracy cannot be guaranteed, so you should check with the authors of plugins if you have any doubts.</p>
 </div>
 
-<div id="p58" style="display:none">
+<div id="p57" style="display:none">
 <h1>Add audit admin note</h1>
 <p>Sometimes it is useful to annotate the audit trail, for example, to explain recent activity or the intent of configuration in the audit trail. Adding an admin note to the trail allows you to add a human readable note.</p>
 <p>Because the audit trail is write-only, any note you enter is not editable and it is not possible to delete it.</p>
 </div>
 
-<div id="p59" style="display:none">
+<div id="p58" style="display:none">
 <h1>View audit trail</h1>
 <p>The audit trail viewer allows you to see all audited activity within your application.</p>
 <p>To find entries of particular interest, use the filters along the top of the listing.</p>
@@ -926,7 +885,7 @@
 </ul>
 </div>
 
-<div id="p60" style="display:none">
+<div id="p59" style="display:none">
 <h1>Term inclusion specifications</h1>
 <p>When an object links to another object, the search behaves as if some of the text from the linked object appears in the linking object. So if an object linked to another object with a title &#8216;Example&#8217;, everything will work as if the text &#8216;Example&#8217; was included in an attribute.</p>
 <p>The end result is that the search will work as a user expects. They see &#8216;Example&#8217; in an attribute of an object, and searching for &#8216;Example&#8217; will find that object.</p>

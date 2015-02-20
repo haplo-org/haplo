@@ -234,16 +234,17 @@ input[type=text], input[type=password], input[type=email], textarea {
     text-decoration: none;
 }
 #z__header_oneis:before {
+    font-family: $SPECIAL_FONT_FAMILY;
     position: absolute;
     content: "HAPLO";
     font-size: 48px;
     line-height: 48px;
-    letter-spacing: 8px;
+    letter-spacing: 6px;
     font-weight: bold;
     top: 1px;
     left: 16px;
-    color: #aaa;
-    text-shadow: #777 1px 1px 2px;
+    color: #33A3D4;
+    text-shadow: rgba(0,0,0,0.3) -1px 1px 3px;
 }
 
 /* ---------------------------------------------------------------------------- */

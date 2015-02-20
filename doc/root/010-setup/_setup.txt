@@ -9,9 +9,9 @@ The system is customised using:
  * *Types and subtypes* of information
  * *Attributes* to describe each type of information
  * *Qualifiers* making attributes more specific
+ * *Labels* for expressing permissions
  * *Taxonomies* hierarchical subject indexes to describe information
  * *Groups* of users
- * *Sections* of information
  * *Permissions* assigned to groups and sections
 
 

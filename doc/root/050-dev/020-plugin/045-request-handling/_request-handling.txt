@@ -42,7 +42,7 @@ Line 1 declares that the plugin will respond to @GET@ requests for any URL at @/
 
 Line 2 defines the argument for the handler function. In this case, the first path element after the given path is expected to be an object reference. This will be loaded and passed as the @displayedObject@ argument. If the object doesn't exist or the user is not permitted to read it, the handler function will never be called.
 
-Line 3 declares the handler function. The first argument, @E@, is the [node:dev/plugin/interface/exchange] object which represents the HTTP request / response exchange. The other arguments have been declared previously. This handler will respond to @/do/example/object/123-y5@.
+Line 3 declares the handler function. The first argument, @E@, is the [node:dev/plugin/interface/exchange] object which represents the HTTP request / response exchange. The other arguments have been declared previously. This handler will respond to @/do/example/object/123y5@.
 
 Line 4 is the actual handler. The arguments are guaranteed to have passed validation, so don't need to be checked, and hopefully you won't need to do much processing of parameters yourself.
 

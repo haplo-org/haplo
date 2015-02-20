@@ -11,18 +11,9 @@ Taxonomies are hierarchical with no limits to the number of hierarchical levels 
 
 The taxonomies menu in System Management lists all current taxonomies, allows you to create new taxonomies, and links to the taxonomy editor.
 
-Users without the "setup system" policy can edit taxonomies, subject to their permissions, from the pop up menu. These users should be given read and write access to the section in which the taxonomy has been created.
+Users without the "setup system" policy can edit taxonomies, subject to their permissions, from the pop up menu.
 
 CLICK_PATH TOOLS > Edit taxonomies
-
-
-h2. Taxonomy Sections
-
-It is best practice to create a Section for each Taxonomy, and set Permissions so that only approved people can change them. For a small application, you may consider using a single Classification Section for all taxonomies, for simplicity.
-
-Permissions for the Section should allow virtually everyone to be able to Read and Search, and any search subsets should include it so the subject classifications are used when searching. 
-
-When creating a new taxonomy, you have the option to automatically create a new section for it.
 
 
 h2. Setting up a hierarchical attribute
@@ -43,7 +34,6 @@ Click "New taxonomy", then enter
 
  * Name: __Your taxonomy name__
  * Type: Create a new type and attribute
- * Section: Create a new section
 
 Click "Edit terms" in the taxonomy information display, and create some terms in the taxonomy editor.
 
@@ -83,19 +73,6 @@ Click "New attribute", then enter
  * Select '__Example__' in the type list below
 
 
-h3. Create section
-
-This is an optional step. If the taxonomy is large, or you need to set the permissions so that only some users can see the taxonomy, create a separate section for the taxonomy. If in doubt, use a separate section.
-
-CLICK_PATH TOOLS > System management > Sections
-
-Click "New section", then enter
-
- * Name: __Example__
- * URL name: __example__
- * Copy permissions from: __Classification__
-
-
 h3. Create taxonomies
 
 Create the taxonomy itself.
@@ -106,9 +83,6 @@ Click "New taxonomy", then enter
 
  * Name: __Example__
  * Type: Use existing type - __Example__
- * Section: Create in existing section - __Example__
-
-If you're creating multiple taxonomies, use a different name for each, and optionally a different section.
 
 Click "Edit terms" in the taxonomy information display, and create some terms in the taxonomy editor.
 

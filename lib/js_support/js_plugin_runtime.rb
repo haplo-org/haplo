@@ -18,6 +18,7 @@ class KJSPluginRuntime
     [:jspluginruntime_internal, :label_mapping_changed],
     [:jspluginruntime_internal, :invalidation_requested],
     [:os_schema_change],
+    [:app_global_change, :javascript_config_data],
     [:plugin,            :install],
     [:plugin,            :uninstall],
     [:user_modified,     :group]

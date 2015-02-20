@@ -42,6 +42,9 @@ INSERT INTO app_globals(key,value_int,value_string) VALUES('plugin_db_namespaces
 -- Schema editing
 INSERT INTO app_globals(key,value_int,value_string) VALUES('schema_api_codes_locked',1,NULL);
 
+-- JavaScript configuration data (as O.application.config)
+INSERT INTO app_globals(key,value_int,value_string) VALUES('javascript_config_data',NULL,'{}');
+
 -- Auditing options (plugins can override)
 -- Auditing of read-like actions is off by default
 INSERT INTO app_globals(key,value_int,value_string) VALUES('audit_object_display',0,NULL);

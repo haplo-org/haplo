@@ -1,7 +1,7 @@
 title: Schema
 --
 
-API_ENDPOINT /api/schema/data_model (GET only)
+API_ENDPOINT /api/schema/data-model (GET only)
 
 Each ONEIS application has its own schema. There is a common schema, which is usually present, but the administrators of that system may have augmented it.
 
@@ -71,8 +71,8 @@ h3. Data types
 
 h3. Type behaviours
 
- * @1-1z68@ - type is a classification type
- * @1-1z69@ - type represents a physical object
+ * @1z68@ - type is a classification type
+ * @1z69@ - type represents a physical object
 
 h3. Example
 
@@ -80,52 +80,52 @@ h3. Example
 <?xml version="1.0" encoding="UTF-8"?>
 <schema>
   <qualifiers>
-    <qualifier name="alternative" ref="1-3y8">
+    <qualifier name="alternative" ref="3y8">
       <display_name>Alternative</display_name>
     </qualifier>
     ...
   </qualifiers>
   <attributes>
-    <attribute vtype="0" name="type" ref="1-x2">
+    <attribute vtype="0" name="type" ref="x2">
       <display_name>Type</display_name>
       <allowed_qualifiers>
         <null_qualifier/>
       </allowed_qualifiers>
     </attribute>
-    <attribute vtype="16" name="title" ref="1-x3">
+    <attribute vtype="16" name="title" ref="x3">
       <display_name>Title</display_name>
       <allowed_qualifiers>
         <null_qualifier/>
-        <qualifier ref="1-3y8"/>
+        <qualifier ref="3y8"/>
       </allowed_qualifiers>
     </attribute>
     ...
   </attributes>
   <aliased_attributes>
-    <aliased_attribute alias_of="1-9w4" name="review" ref="1-325">
+    <aliased_attribute alias_of="9w4" name="review" ref="325">
       <display_name>Review</display_name>
     </aliased_attribute>
     ...
   </aliased_attributes>
   <types>
-    <type name="event" root_type="1-209y" ref="1-209y">
+    <type name="event" root_type="209y" ref="209y">
       <display_name>Event</display_name>
       <attributes>
-        <attribute ref="1-x3"/>
-        <attribute ref="1-x9"/>
-        <attribute ref="1-x2"/>
-        <attribute ref="1-25y"/>
-        <attribute ref="1-263"/>
-        <attribute ref="1-190"/>
-        <attribute ref="1-262"/>
-        <attribute ref="1-25q"/>
-        <attribute ref="1-9w5"/>
-        <attribute ref="1-325"/>
-        <attribute ref="1-9w6"/>
-        <attribute ref="1-x5"/>
+        <attribute ref="x3"/>
+        <attribute ref="x9"/>
+        <attribute ref="x2"/>
+        <attribute ref="25y"/>
+        <attribute ref="263"/>
+        <attribute ref="190"/>
+        <attribute ref="262"/>
+        <attribute ref="25q"/>
+        <attribute ref="9w5"/>
+        <attribute ref="325"/>
+        <attribute ref="9w6"/>
+        <attribute ref="x5"/>
       </attributes>
     </type>
-    <type parent="1-209y" name="networking" root_type="1-209y" ref="1-20q0">
+    <type parent="209y" name="networking" root_type="209y" ref="20q0">
       <display_name>Networking</display_name>
     </type>
     ...

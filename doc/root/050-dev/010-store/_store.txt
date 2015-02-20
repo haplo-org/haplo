@@ -1,4 +1,0 @@
-title: Object Store concepts
---
-
-ONEIS' Object Store allows 'any' information to be represented as a linked graph of loosely typed objects.

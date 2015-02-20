@@ -490,10 +490,19 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
   # ===============================================================================================
 
   def test_app_info
+    KApp.set_global(:javascript_config_data, '{}')
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_app_info.js', {
       "_TEST_APP_ID" => _TEST_APP_ID,
       "SERVER_PORT_EXTERNAL_CLEAR_IN_URL" => KApp::SERVER_PORT_EXTERNAL_CLEAR_IN_URL
     })
+    KJSPluginRuntime.current # ensures cache checked out, to test invalidation next
+    assert nil != KJSPluginRuntime.current_if_active
+    KApp.set_global(:javascript_config_data, JSON.generate({
+      "TEST_VALUE" => "test value", "TEST_TRUE" => true, "TEST_FALSE" => false
+    }))
+    assert nil == KJSPluginRuntime.current_if_active  # runtime was invalidated
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_app_info2.js')
+    KApp.set_global(:javascript_config_data, '{}')
   end
 
   # ===============================================================================================

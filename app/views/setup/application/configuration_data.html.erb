@@ -1,0 +1,9 @@
+<%
+  @page_title = 'Configuration data'
+-%>
+<%= sys_mng_header %>
+
+<p>This JSON encoded configuration data is available to all plugins running in this application.</p>
+
+<pre><%= h(@data_text) %></pre>
+<%= sys_mng_edit_button("/do/setup/application/configuration-data-edit") %>

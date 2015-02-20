@@ -94,6 +94,7 @@ __E
     opts = decode_options(options)
     number_items = (opts['items'] || 5)
     recent = AuditEntry.where_labels_permit(:read, AuthContext.user.permissions).where({:displayable => true, :kind => 'CREATE'}).
+      where("obj_id IS NOT NULL"). # for backwards compatibility with converted applications
       limit(number_items + 20). # +20 to allow for a few deletions
       order('id DESC');
     # TODO: It'd be lovely to load objects in bulk to avoid having to inefficiently load them one by one

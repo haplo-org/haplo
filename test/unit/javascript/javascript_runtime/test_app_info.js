@@ -12,4 +12,7 @@ TEST(function() {
     TEST.assert_equal("www"+_TEST_APP_ID+".example.com", O.application.hostname);
     TEST.assert_equal("http://www"+_TEST_APP_ID+".example.com"+SERVER_PORT_EXTERNAL_CLEAR_IN_URL, O.application.url);
 
+    // Not set yet
+    TEST.assert_equal(undefined, O.application.config["TEST_VALUE"]);
+
 });

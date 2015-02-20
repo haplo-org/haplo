@@ -29,7 +29,7 @@ h3(property). extraPathElements
 
 An array of path elements below the root URL of the handler.
 
-For example, @["123-y7","view"]@ for a request of @/do/example/object/123-y7/view@.
+For example, @["123y7","view"]@ for a request of @/do/example/object/123y7/view@.
 
 
 h3(property). parameters

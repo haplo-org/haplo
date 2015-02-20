@@ -21,7 +21,7 @@ h3. Example
 <pre>language=xml
 <?xml version="1.0" encoding="UTF-8"?>
 <response status="success">
-  <read url="http://dev/contact/6-6/joe-bloggs" ref="6-6">
+  <read url="http://dev/contact/88y4w/joe-bloggs" ref="88y4w">
     <object>
       ...
     </object>

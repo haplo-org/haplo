@@ -112,6 +112,9 @@ class Admin_UserController < ApplicationController
       # Set a 'password' which won't work
       @user.set_invalid_password
     end
+    unless check_user_for_email_duplications(@user)
+      return render :action => 'new'
+    end
     User.transaction do
       if @user.save
         update_groups(@user, params[:groups])
@@ -166,13 +169,12 @@ class Admin_UserController < ApplicationController
       ok = true
       unless @hide_main
         @user.attributes = params[:user]
-        ok = false unless @user.save
+        ok = false unless check_user_for_email_duplications(@user)
+        ok = false unless ok && @user.save
       end
       unless @hide_membership
-        # Update groups
         update_groups(@user, params[:groups])
       end
-      # Tell user
       return redirect_to_edited_user(@user) if ok
     end
     render :action => 'edit'
@@ -486,4 +488,17 @@ private
       false
     end
   end
+
+  def check_user_for_email_duplications(user)
+    unless user.is_group
+      # Check that it's not duplicating an existing user (groups OK, because the notification email address may duplicate a user)
+      duplications = User.find_all_by_email_of_any_kind(user.email).select { |u| u.id != user.id && !(u.is_group) }
+      unless duplications.empty?
+        user.errors.add(:email, "duplicates another #{duplications.first.is_active ? 'active' : 'deleted or blocked'} user (#{duplications.first.name})")
+        return false
+      end
+    end
+    true
+  end
+
 end

@@ -63,8 +63,8 @@ h3(function). url(asFullURL)
 Returns the url of this object. If @asFullURL@ is @true@, this will include the protocol and hostname, otherwise just the path on the server suitable for an intra-site link. Examples:
 
 |*asFullURL*|*String returned*|
-|@false@, or omitted|@/main/292q-98z/example-object@|
-|@true@|@http://clientname.example.com/main/292q-98z/example-object@|
+|@false@, or omitted|@/main/8y98z/example-object@|
+|@true@|@http://clientname.example.com/main/8y98z/example-object@|
 
 Only works if the object has been saved.
 
