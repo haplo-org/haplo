@@ -57,12 +57,12 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.2.7.v20150116</version>
+      <version>9.2.9.v20150224</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-continuation</artifactId>
-      <version>9.2.7.v20150116</version>
+      <version>9.2.9.v20150224</version>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>
