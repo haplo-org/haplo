@@ -32,6 +32,18 @@ A plugin can be 'actioned' by a user if the [node:dev/plugin/interface/work-unit
 Only actionable work units are shown in task lists.
 
 
+h2. Visibility
+
+Plugins have a @visible@ property which controls whether they are shown in the various listings on the Tasks page and on object pages.
+
+If the @autoVisible@ property is @true@, which it is by default, _open_ work units have their visibility changed:
+
+ * when the associated object is updated or relabelled, if the work unit is actionable by a group, it is set to visible. If it's actionable by a user, the visibility is set to match whether the user has read permissions on the object.
+ * if the actionable user is changed, the work unit is automatically set to visible regardless of permissions on any associated object.
+
+These auto-visibility rules are intended to 1) have minimal unexpected behaviour, but 2) generally, when a work unit is actionable by a user, the visibility of the work unit matches the visibility of the associated object.
+
+
 h2. Plugin implementation
 
 Plugins create [node:dev/plugin/interface/work-unit] objects with [node:dev/plugin/o/work-flow/create]. Work units can be created in response to [node:dev/plugin/hook:hooks], or to user interface added [node:dev/plugin/request-handling:elsewhere].

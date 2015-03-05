@@ -29,6 +29,8 @@ TEST(function() {
     unit0.ref = O.ref(2);
     TEST.assert(O.ref(2) == unit0.ref);
     TEST.assert(typeof(unit0.data) == 'object');
+    TEST.assert_equal(true, unit0.visible);
+    TEST.assert_equal(true, unit0.autoVisible);
 
     // Without all the bits filled in, saving a work unit will fail
     TEST.assert_exceptions(function() { O.work.create("ptest:pfdjn").save(); });
@@ -225,5 +227,35 @@ TEST(function() {
     datesUnit.deadline = new XDate("2013-01-04");
     TEST.assert_equal("2013-01-04", dateStr(datesUnit.deadline));
     TEST.assert_exceptions(function() { datesUnit.openedAt = null; }, "openedAt must be set to a Date");
+
+    // Visibility properties
+    var visunit = O.work.create({workType:"test:pants", createdBy:USER3_ID, actionableBy:user2});
+    TEST.assert_equal(true, visunit.visible);
+    TEST.assert_equal(true, visunit.autoVisible);
+    visunit.save();
+    visunit.visible = false;      TEST.assert_equal(false, visunit.visible);
+    visunit.save();
+    var visunitb = O.work.load(visunit.id);
+    TEST.assert_equal(false, visunitb.visible);
+    TEST.assert_equal(true, visunitb.autoVisible);
+    visunitb.visible = true;      TEST.assert_equal(true, visunitb.visible);
+    visunitb.autoVisible = false; TEST.assert_equal(false, visunitb.autoVisible);
+    visunitb.save();
+    var visunitc = O.work.load(visunit.id);
+    TEST.assert_equal(true, visunitc.visible);
+    TEST.assert_equal(false, visunitc.autoVisible);
+    // Test visibility properties in the constructor
+    var visunit2 = O.work.create({workType:"test:abc", visible:false, autoVisible:false});
+    TEST.assert_equal(false, visunit2.visible);
+    TEST.assert_equal(false, visunit2.autoVisible);
+
+    // Visibility queries
+    O.work.create({workType:"test:visquery", createdBy:USER3_ID, actionableBy:user2, visible:true}).save();
+    O.work.create({workType:"test:visquery", createdBy:USER3_ID, actionableBy:user2, visible:true}).save();
+    O.work.create({workType:"test:visquery", createdBy:USER3_ID, actionableBy:user2, visible:false}).save();
+    TEST.assert_equal(2, O.work.query("test:visquery").length); // default is only to return visible work units
+    TEST.assert_equal(2, O.work.query("test:visquery").isVisible().length);
+    TEST.assert_equal(1, O.work.query("test:visquery").isNotVisible().length);
+    TEST.assert_equal(3, O.work.query("test:visquery").anyVisibility().length);
 
 });

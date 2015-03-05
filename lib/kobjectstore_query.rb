@@ -943,9 +943,9 @@ class KObjectStore
       end
       type_obj_ids.uniq!
       if type_obj_ids.length == 1
-        "(SELECT id FROM os_index_link WHERE object_id = #{type_obj_ids.first})"
+        "(SELECT id FROM os_index_link WHERE object_id = #{type_obj_ids.first} AND attr_desc = #{KConstants::A_TYPE})"
       else
-        "(SELECT id FROM os_index_link WHERE object_id IN (#{type_obj_ids.join(',')}))"
+        "(SELECT id FROM os_index_link WHERE object_id IN (#{type_obj_ids.join(',')}) AND attr_desc = #{KConstants::A_TYPE})"
       end
     end
   end

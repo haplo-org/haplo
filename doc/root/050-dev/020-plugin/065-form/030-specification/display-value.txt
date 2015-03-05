@@ -1,0 +1,12 @@
+title: Display value
+--
+
+Display the value at the @path@ of this element in both the form and the document. Use @inForm@ and @inDocument@ properties to control where it's displayed.
+
+This is intended to be used for displaying relevant information in the middle of a form.
+
+
+h2. Properties
+
+|@type@|@"display-value"@|
+|@as@|If @"html"@, the value will not be HTML escaped.|

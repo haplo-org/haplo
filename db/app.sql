@@ -227,6 +227,8 @@ CREATE INDEX idx_file_cache_entries_lookup ON file_cache_entries(stored_file_id,
 CREATE TABLE work_units (
     id SERIAL PRIMARY KEY,
     work_type TEXT NOT NULL,                          -- What kind of work unit this is
+    visible BOOLEAN NOT NULL DEFAULT(TRUE),           -- Is this work unit visible? (see also opened_at which implicitly hides them from lists)
+    auto_visible BOOLEAN NOT NULL DEFAULT(TRUE),      -- Should this work unit's visibility be automatically changed?
     -- The various dates for this unit of work
     created_at TIMESTAMP NOT NULL,
     opened_at TIMESTAMP NOT NULL,                     -- may be in future

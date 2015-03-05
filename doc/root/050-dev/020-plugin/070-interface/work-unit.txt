@@ -129,3 +129,13 @@ Delete this work unit.
 
 If it's useful to keep the work unit in the system as a record of a past action, consider closing the work unit and saving it instead of deleting it.
 
+
+h3(property). visible
+
+@true@ if this work unit is visible in listings of work units.
+
+
+h3(property). autoVisible
+
+@true@ if the platform should apply [node:dev/plugin/work-flow#Visibility:sensible rules] for setting the @visible@ property.
+

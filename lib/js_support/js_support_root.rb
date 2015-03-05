@@ -215,6 +215,8 @@ class JSSupportRoot
         args[i].to_i
       when :boolean
         !!(args[i])
+      when :array
+        args[i].to_a
       else
         nil
       end

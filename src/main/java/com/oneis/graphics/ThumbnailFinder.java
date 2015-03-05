@@ -40,6 +40,7 @@ public class ThumbnailFinder extends Operation {
     private String outFormat;
     private int maxDimension;
     private String internalFilenameBase;
+    private String internalFilenameBase2;
     private int expectatedFormat;
     private ThumbnailSize.Dimensions thumbnailDimensions;
 
@@ -62,7 +63,15 @@ public class ThumbnailFinder extends Operation {
         this.outFormat = outFormat;
         this.maxDimension = maxDimension;
         this.internalFilenameBase = internalFilenameBase;
+        this.internalFilenameBase2 = null;
         this.expectatedFormat = expectatedFormat;
+    }
+
+    public void addAdditionalInternalFilenameBase(String internalFilenameBase2) {
+        if(this.internalFilenameBase2 != null) {
+            throw new RuntimeException("Only supports one additional filename base");
+        }
+        this.internalFilenameBase2 = internalFilenameBase2;
     }
 
     public boolean hasMadeThumbnail() {
@@ -83,6 +92,7 @@ public class ThumbnailFinder extends Operation {
         }
 
         String base = internalFilenameBase.toLowerCase();
+        String base2 = (internalFilenameBase2 != null) ? internalFilenameBase2.toLowerCase() : null;
 
         ZipFile zipFile = null;
         try {
@@ -101,7 +111,7 @@ public class ThumbnailFinder extends Operation {
                 }
 
                 // Is this the file we're interested in?
-                if(name.equals(base)) {
+                if(name.equals(base) || ((base2 != null) && name.equals(base2))) {
                     // Got a potential file, let's see what it is.
                     if(expectatedFormat == EXPECTATION_IMAGE) {
                         thumbnailDimensions = tryImageFormat(zipFile.getInputStream(entry), outFilename, outFormat, maxDimension);

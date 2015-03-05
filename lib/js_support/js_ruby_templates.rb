@@ -23,9 +23,10 @@ module JSRubyTemplates
     "object" => [:method, :render_obj, [[0, :kobject, true], [1, :symbol, false, true, :generic]]],
     "link_to_object" => [:method, :stdtmpl_link_to_object, [[0, :kobject, false, true, nil]]],
     "link_to_object_descriptive" => [:method, :stdtmpl_link_to_object_descriptive, [[0, :kobject, false, true, nil]]],
-    "new_object_editor" => [:partial, "shared/editor_for_new_object", [
-          [:object, :kobject, true],
-          [:success_redirect, :string, false]
+    "new_object_editor" => [:method, :stdtmpl_new_object_editor, [
+          [0, :kobject, true], # object
+          [1, :string, false, true, nil], # successRedirect
+          [2, :array, false, true, nil] # readOnlyAttributes
         ]],
     "search_results" => [:method, :stdtmpl_search_results, [
           [0, :string, false, false], # query
@@ -40,6 +41,8 @@ module JSRubyTemplates
           [1, :string, false, true, nil], # options
           [2, :kobject, false, true, nil] # object
         ]],
+    "document_text_control" => [:method, :control_document_text_edit, [[0, :string, true], [1, :string, true, true, '<doc></doc>']]],
+    "document_text" => [:method, :stdtmpl_document_text_display, [[0, :string, true]]],
     "icon_type" =>        [:method, :stdtmpl_icon_type,         [[0, :kobjref, true], [1, :string, false, true, 'medium']]],
     "icon_object" =>      [:method, :stdtmpl_icon_object,       [[0, :kobject, true], [1, :string, false, true, 'medium']]],
     "icon_description" => [:method, :stdtmpl_icon_description,  [[0, :string, true],  [1, :string, false, true, 'medium']]]
@@ -81,6 +84,15 @@ module JSRubyTemplateControllerSupport
     %Q!<a href="#{object_urlpath(obj)}">#{h(title_of_object(obj,:full))}</a>!
   end
 
+  def stdtmpl_new_object_editor(object, success_redirect, read_only_attributes)
+    data_for_template = {:object => object}
+    data_for_template[:success_redirect] = success_redirect if success_redirect
+    if read_only_attributes
+      data_for_template[:editor_options] = {:read_only_attributes => read_only_attributes}
+    end
+    render :partial => 'shared/editor_for_new_object', :data_for_template => data_for_template
+  end
+
   def stdtmpl_treesource(root, type)
     url = "/api/taxonomy/fetch?v=#{KApp.global(:schema_user_version)}&"
     ktreesource_generate(KObjectStore.store, url, root, type, nil)
@@ -111,6 +123,12 @@ module JSRubyTemplateControllerSupport
     # Things to consider: position, auto-JSON encoding for options in template
     renderer = elements_make_renderer_for_single("std:element", name, options, self.request.path, object_maybe)
     renderer.html_for("std:element")
+  end
+
+  # ------------------------------------------------------------------------------------------
+
+  def stdtmpl_document_text_display(document)
+    render_doc_as_html(document, KObjectStore.store)
   end
 
   # ------------------------------------------------------------------------------------------

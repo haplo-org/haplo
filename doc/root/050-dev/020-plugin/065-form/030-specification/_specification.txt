@@ -29,12 +29,15 @@ h3. Common properties
 |@path@|The location of the value within the _document_ as a series of @.@ separated property names. See [node:dev/plugin/form/value-path] for details.|
 |@label@|(optional) The human readable label to display on the form above this element.|
 |@name@|(optional) The name of the form element, corresponding to @name@ attributes within the HTML. If it isn't specified, and there is a @label@ property, the name of the element is generated from the @label@. Otherwise it is automatically generated, which is not entirely advisable.|
-|@required@|(optional) If @true@, this is a required field.|
+|@required@|(optional) If @true@, or a [node:dev/plugin/form/conditional-statement:conditional statement] which evaluates to true, this is a required field.|
+|@deprecated@|(optional) If @true@, this is a deprecated element. If the value exists in the document, it will be displayed and editable, but if not, the element is never rendered.|
 |@defaultValue@|(optional) The default value for this element, in the format expected by the form element.|
 |@id@|(optional) The HTML @id@ attribute for the form element. Do not use for form elements within repeating sections.|
 |@class@|(optional) The HTML @class@ attribute for the form element.|
 |@placeholder@|(optional) If the form element supports it, the placeholder text to display when the field is empty.|
 |@guidanceNote@|(optional) The text of a note which is displayed when the user focuses on this field.|
+|@inForm@|(optional) If @true@, or a [node:dev/plugin/form/conditional-statement:conditional statement] which evaluates to true, the element is included in the form. Defaults to @true@.|
+|@inDocument@|(optional) If @true@, or a [node:dev/plugin/form/conditional-statement:conditional statement] which evaluates to true, the element is displayed in the document. Defaults to @true@.|
 
 
 h2. Autofocus

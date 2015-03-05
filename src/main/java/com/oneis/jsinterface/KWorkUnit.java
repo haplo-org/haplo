@@ -68,6 +68,23 @@ public class KWorkUnit extends KScriptable {
         return this.workUnit.work_type();
     }
 
+    // ---- visibility
+    public boolean jsGet_visible() {
+        return this.workUnit.visible();
+    }
+
+    public void jsSet_visible(boolean visible) {
+        this.workUnit.jsset_visible(visible);
+    }
+
+    public boolean jsGet_autoVisible() {
+        return this.workUnit.auto_visible();
+    }
+
+    public void jsSet_autoVisible(boolean autoVisible) {
+        this.workUnit.jsset_auto_visible(autoVisible);
+    }
+
     // ---- createdAt
     public Object jsGet_createdAt() {
         Date d = this.workUnit.created_at();

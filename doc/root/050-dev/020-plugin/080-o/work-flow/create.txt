@@ -15,6 +15,8 @@ The following properties are set by default, unless overridden by the constructo
 |@openedAt@|The current date and time|
 |@createdBy@|[node:dev/plugin/o/request/current-user]|
 |@actionableBy@|[node:dev/plugin/o/request/current-user], unless it is the SYSTEM user|
+|@visible@|@true@|
+|@autoVisible@|@true@|
 
 
 h2. Usage

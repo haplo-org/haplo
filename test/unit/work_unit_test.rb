@@ -35,6 +35,112 @@ class WorkUnitTest < Test::Unit::TestCase
 
   # -------------------------------------------------------------------------------------------------------
 
+  def test_work_unit_auto_visible
+    restore_store_snapshot("basic")
+
+    # Check defaults are as expected
+    wu_defaults = WorkUnit.new({:work_type => 'test2', :opened_at => Time.new, :created_by_id => 41, :actionable_by_id => 42})
+    assert_equal true, wu_defaults.visible
+    assert_equal true, wu_defaults.auto_visible
+    wu_defaults.save!
+    wu_defaults.reload
+    assert_equal true, wu_defaults.visible
+    assert_equal true, wu_defaults.auto_visible
+
+    permission_rule = PermissionRule.new_rule!(:deny, User::GROUP_EVERYONE, 9999, :read)
+
+    test_visible = Proc.new do |auto_visible, initial_visible, closed_work_unit, &block|
+      obj = KObject.new([KConstants::O_LABEL_COMMON])
+      obj.add_attr(KConstants::O_TYPE_BOOK, KConstants::A_TYPE)
+      obj.add_attr("Test workunit auto_visible #{auto_visible}", KConstants::A_TITLE)
+      KObjectStore.create(obj)
+
+      wu = WorkUnit.new({
+        :work_type => 'test3',
+        :opened_at => Time.new,
+        :created_by_id => 41, # member of group 21 to which permission_rule applies
+        :actionable_by_id => 41,
+        :objref => obj.objref,
+        :auto_visible => auto_visible,
+        :visible => initial_visible
+      })
+      wu.set_as_closed_by(User.find(21)) if closed_work_unit
+      wu.save!
+      block.call(wu, initial_visible)
+
+      # Change labelling
+      obj = KObjectStore.relabel(obj, KLabelChanges.new([9999],[]))
+      assert_equal false, User.cache[41].permissions.allow?(:read, obj.labels)
+      wu.reload; block.call(wu, false) # now denied by permission_rule
+
+      obj = KObjectStore.relabel(obj, KLabelChanges.new([],[9999]))
+      assert_equal true, User.cache[41].permissions.allow?(:read, obj.labels)
+      wu.reload; block.call(wu, true) # now visible again
+
+      # Delete & undelete
+      obj = KObjectStore.delete(obj)
+      wu.reload; block.call(wu, false)
+
+      obj = KObjectStore.undelete(obj)
+      wu.reload; block.call(wu, true)
+
+      # Change actionable always changes it to true if auto_visible
+      [true, false].each do |allow_obj_read|
+        obj = KObjectStore.relabel(obj, allow_obj_read ? KLabelChanges.new([],[9999]) : KLabelChanges.new([9999],[]))
+        assert_equal allow_obj_read, User.cache[42].permissions.allow?(:read, obj.labels)
+
+        wu.reload
+        wu.visible = initial_visible
+        wu.save!
+        wu.actionable_by_id = 42
+        wu.save!
+        wu.reload
+        assert_equal (auto_visible ? true : initial_visible), wu.visible
+
+        wu.visible = false
+        wu.save!
+
+        # Changing actionable to a group always makes it visible
+        wu.actionable_by_id = 21
+        wu.save!
+        wu.reload
+        assert_equal (auto_visible ? true : false), wu.visible
+
+        wu.actionable_by_id = 41; wu.visible = initial_visible; wu.auto_visible = auto_visible; wu.save! # reset
+      end
+    end
+
+    test_visible.call(true, true, false) do |wu, expected|
+      assert_equal true, wu.auto_visible
+      assert_equal expected, wu.visible
+    end
+
+    test_visible.call(true, false, false) do |wu, expected|
+      assert_equal true, wu.auto_visible
+      assert_equal expected, wu.visible
+    end
+
+    test_visible.call(false, true, false) do |wu, expected|
+      assert_equal false, wu.auto_visible
+      assert_equal true, wu.visible
+    end
+
+    test_visible.call(false, false, false) do |wu, expected|
+      assert_equal false, wu.auto_visible
+      assert_equal false, wu.visible
+    end
+
+    # Closed units don't have their visibility changed
+    [[true,true], [true,false], [false,true], [false,false]].each do |auto_visible, initial_visible|
+      test_visible.call(auto_visible, initial_visible, true) do |wu, expected|
+        assert_equal auto_visible, wu.auto_visible
+        assert_equal initial_visible, wu.visible
+      end
+    end
+  end
+
+  # -------------------------------------------------------------------------------------------------------
+
   NOTIFY_TYPE = "work_unit_notifications:test_auto_notify"
 
   def test_automatic_notifications

@@ -1,0 +1,11 @@
+title: std:text:document
+link_as: keyword
+--
+
+This helper renders XML document text as HTML.
+
+<pre>
+    {{std:text:document text}}
+</pre>
+
+@text@ is the name of the property in the view which contains the string.

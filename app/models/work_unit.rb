@@ -12,7 +12,38 @@ class WorkUnit < ActiveRecord::Base
   belongs_to :actionable_by,  :class_name => 'User', :foreign_key => 'actionable_by_id'
   belongs_to :closed_by,      :class_name => 'User', :foreign_key => 'closed_by_id'
 
-  # PERM TODO: Decide whether WorkUnits need to be labelled.
+  # Hide work units when the object becomes unreadable or deleted, if they're set for
+  # automatic visibilty changes.
+  KNotificationCentre.when_each([
+    [:os_object_change, :update],
+    [:os_object_change, :relabel]
+  ]) do |name, detail, previous_obj, modified_obj, is_schema_object|
+    find_all_by_objref(modified_obj.objref).each do |work_unit|
+      if work_unit.auto_visible && !(work_unit.is_closed?)
+        required_visibility = if modified_obj.deleted?
+          false
+        else
+          user = User.cache[work_unit.actionable_by_id]
+          if !user || !(user.is_active) || user.is_group
+            true # if a group (which don't have calculated permissions), or not an active user, keep it visible
+          else
+            user.permissions.allow?(:read, modified_obj.labels)
+          end
+        end
+        if work_unit.visible != required_visibility
+          work_unit.visible = required_visibility
+          work_unit.save!
+        end
+      end
+    end
+  end
+
+  # If the actionable user changes, automatically make the work unit visible again
+  before_update Proc.new { |wu|
+    if wu.auto_visible && wu.actionable_by_id_changed?
+      wu.visible = true
+    end
+  }
 
   # Delete all work units for an erased object, as this implies removing everything about the object
   KNotificationCentre.when(:os_object_change, :erase) do |name, detail, previous_obj, modified_obj, is_schema_object|
@@ -53,9 +84,10 @@ class WorkUnit < ActiveRecord::Base
     find(:all, :conditions => conditions_for_actionable_by_user(user, actionable_when), :order => 'created_at,id')
   end
 
+  # Conditions will only find visible work units
   def self.conditions_for_actionable_by_user(user, actionable_when)
     user = User.cache[user] if user.kind_of? Integer
-    c = "closed_at IS NULL AND actionable_by_id IN (#{(user.groups_ids + [user.id]).join(',')})"
+    c = "closed_at IS NULL AND actionable_by_id IN (#{(user.groups_ids + [user.id]).join(',')}) AND visible=TRUE"
     case actionable_when
     when :now
       c << ' AND opened_at <= NOW()'
@@ -123,7 +155,7 @@ class WorkUnit < ActiveRecord::Base
     self.deadline = deadline ? Time.at(deadline.getTime/1000) : nil
   end
 
-  KActiveRecordJavaInterface.make_jsset_methods(WorkUnit, :created_by_id, :actionable_by_id, :closed_by_id, :obj_id)
+  KActiveRecordJavaInterface.make_jsset_methods(WorkUnit, :visible, :auto_visible, :created_by_id, :actionable_by_id, :closed_by_id, :obj_id)
 
   # ----------------------------------------------------------------------------------------------------------------
   #   Automatic notifications

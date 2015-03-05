@@ -337,6 +337,7 @@ class KFileTransform
             is_iwork_file ? "QuickLook/Thumbnail" : "Thumbnails/thumbnail",
             ThumbnailFinder::EXPECTATION_IMAGE
         )
+        thumbfinder_op.addAdditionalInternalFilenameBase("preview") if is_iwork_file # new iWorks SFF non-XML formats
 
       elsif MSOFFICE_NEW_MIME_TYPES.include?(mime_type)
         # Try to extract from new MSOffice file

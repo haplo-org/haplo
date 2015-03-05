@@ -16,6 +16,14 @@ public interface AppWorkUnit {
 
     public String work_type();
 
+    public boolean visible();
+
+    public void jsset_visible(boolean visible);
+
+    public boolean auto_visible();
+
+    public void jsset_auto_visible(boolean auto_visible);
+
     public Date created_at();
 
     public Date opened_at();

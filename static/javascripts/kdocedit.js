@@ -1165,5 +1165,30 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
 KCtrlDocumentTextEdit.iePasteBugFound = false;
 KCtrlDocumentTextEdit.iePasteBugReported = false;
 
+// --------------------------------------------------------------------------------------
+// oForms integration
+
+KApp.j__onPageLoad(function() {
+    var editors = $('.oform .z__oforms_docedit');
+    if(editors.length > 0) {
+        var controls = [];
+        editors.each(function() {
+            var input = $('input[type=hidden]', this)[0];
+            $('.z__document_text_edit', this).each(function() {
+                var control = new KCtrlDocumentTextEdit();
+                control.j__attach(this.id);
+                controls.push({control:control, input:input});
+            });
+        });
+        $('.oform').each(function() {
+            $(this).parents('form').first().on('submit', function() {
+                _.each(controls, function(i) {
+                    i.input.value = i.control.j__value();
+                });
+            });
+        });
+    }
+});
+
 })(jQuery);
 

@@ -2745,31 +2745,32 @@ _OBJS
 
     # Objects to create
     creations = [
-      [O_TYPE_BOOK, 4],
-      [O_TYPE_PERSON, 2],
-      [O_TYPE_STAFF, 3],
-      [O_TYPE_PERSON_ASSOCIATE, 6],
-      [O_TYPE_FILE, 4],
-      [O_TYPE_PRESENTATION, 1],
-      [O_TYPE_FILE_BROCHURE, 3],
-      [O_TYPE_FILE_AUDIO, 8]
+      # type, quantity, quantity of this type and subtypes
+      [O_TYPE_BOOK, 4, 4],
+      [O_TYPE_PERSON, 2, 11], # has subtypes
+      [O_TYPE_STAFF, 3, 3],
+      [O_TYPE_PERSON_ASSOCIATE, 6, 6],
+      [O_TYPE_FILE, 4, 16], # has subtypes
+      [O_TYPE_PRESENTATION, 1, 1],
+      [O_TYPE_FILE_BROCHURE, 3, 3],
+      [O_TYPE_FILE_AUDIO, 8, 8]
     ]
-    total_objs = creations.map {|a,b| b }.sum
+    total_objs = creations.map {|a,b,c| b }.sum
     filters = Array.new
-    creations.each { |t,q| filters << [[t],q]}
+    creations.each { |t,q,qs| filters << [[t],q,qs]}
     filters += [
-      [[O_TYPE_BOOK, O_TYPE_PERSON], 6],
-      [[O_TYPE_FILE_BROCHURE, O_TYPE_PERSON_ASSOCIATE], 9],
+      [[O_TYPE_BOOK, O_TYPE_PERSON], 6, 15],
+      [[O_TYPE_FILE_BROCHURE, O_TYPE_PERSON_ASSOCIATE], 9, 9],
       # And with subtypes...
-      [[O_TYPE_BOOK], 4, [O_TYPE_BOOK], :with_subtypes],
-      [[O_TYPE_PERSON], 11, [O_TYPE_PERSON, O_TYPE_STAFF, O_TYPE_PERSON_ASSOCIATE], :with_subtypes],
-      [[O_TYPE_FILE], 16, [O_TYPE_FILE, O_TYPE_PRESENTATION, O_TYPE_FILE_BROCHURE, O_TYPE_FILE_AUDIO], :with_subtypes],
-      [[O_TYPE_FILE_BROCHURE], 3, [O_TYPE_FILE_BROCHURE], :with_subtypes],
-      [[O_TYPE_FILE, O_TYPE_PERSON], 27, [O_TYPE_FILE, O_TYPE_PRESENTATION, O_TYPE_FILE_BROCHURE, O_TYPE_FILE_AUDIO, O_TYPE_PERSON, O_TYPE_STAFF, O_TYPE_PERSON_ASSOCIATE], :with_subtypes]
+      [[O_TYPE_BOOK], 4, 4, [O_TYPE_BOOK], :with_subtypes],
+      [[O_TYPE_PERSON], 11, 11, [O_TYPE_PERSON, O_TYPE_STAFF, O_TYPE_PERSON_ASSOCIATE], :with_subtypes],
+      [[O_TYPE_FILE], 16, 16, [O_TYPE_FILE, O_TYPE_PRESENTATION, O_TYPE_FILE_BROCHURE, O_TYPE_FILE_AUDIO], :with_subtypes],
+      [[O_TYPE_FILE_BROCHURE], 3, 3, [O_TYPE_FILE_BROCHURE], :with_subtypes],
+      [[O_TYPE_FILE, O_TYPE_PERSON], 27, 27, [O_TYPE_FILE, O_TYPE_PRESENTATION, O_TYPE_FILE_BROCHURE, O_TYPE_FILE_AUDIO, O_TYPE_PERSON, O_TYPE_STAFF, O_TYPE_PERSON_ASSOCIATE], :with_subtypes]
     ]
 
     # Make test objects
-    creations.each do |type,quantity|
+    creations.each do |type,quantity,quantity_with_subtypes|
       quantity.times do |i|
         o = KObject.new()
         o.add_attr(type, A_TYPE)
@@ -2784,7 +2785,7 @@ _OBJS
     assert_equal total_objs, KObjectStore.query_and.free_text('hellox').execute().length
 
     # Check queries - by a single type and multiple types, with subtypes and without
-    filters.each do |types,quantity,all_types_in_results,type_filter_kind|
+    filters.each do |types,quantity,quantity_with_subtypes,all_types_in_results,type_filter_kind|
       all_types_in_results ||= types
       r = KObjectStore.query_and.free_text('hellox').execute(:all, :any, {:type_filter => types, :type_filter_kind => type_filter_kind})
       assert_equal quantity, r.length
@@ -2796,7 +2797,7 @@ _OBJS
       h = Hash.new
       all_types_in_results.each do |type|
         x = creations.detect { |a,b| a == type }
-        x.last.times { |i| h["#{type.to_presentation} #{i}"] = true }
+        x[1].times { |i| h["#{type.to_presentation} #{i}"] = true }
       end
       r.each do |obj|
         t = obj.first_attr(A_TITLE).to_s
@@ -2804,6 +2805,10 @@ _OBJS
         h.delete(t)
       end
       assert_equal 0, h.length
+
+      # Try query using the types clause
+      otq = KObjectStore.query_and.object_types(types).execute(:all, :any)
+      assert_equal quantity_with_subtypes, otq.length
     end
 
   end

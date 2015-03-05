@@ -61,6 +61,7 @@ module SearchResultHelper
     end
 
     def display_attributes(desc, caption = nil, show_qualifiers = true)
+      return if @seen_descs.include?(desc)
       @seen_descs << desc
       if caption === :caption_from_schema
         ad = _schema.attribute_descriptor(desc)

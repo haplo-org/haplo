@@ -19,11 +19,11 @@ h3. Example
 This hook implementation pre-fills the date field in new File objects with the current date:
 
 <pre>language=javascript
-hPreObjectEdit: function(response, object, isTemplate, isNew) {
+P.hook('hPreObjectEdit', function(response, object, isTemplate, isNew) {
     if(isTemplate && object.isKindOf(TYPE["std:type:file"])) {
         var r = response.replacementObject || object.mutableCopy();
         r.appendDate(new Date());
         response.replacementObject = r;
     }
-}
+});
 </pre>

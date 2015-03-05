@@ -127,7 +127,7 @@ class StdDisplayElementsPlugin < KPlugin
     opts = decode_options(options)
     return if opts['hideAll']
 
-    work_units = WorkUnit.find_all_by_objref(object.objref)
+    work_units = WorkUnit.find(:all, :conditions => {:objref => object.objref, :visible => true})
     return if work_units.empty?
 
     # Hide closed work units?

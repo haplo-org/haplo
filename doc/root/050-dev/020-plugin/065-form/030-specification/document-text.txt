@@ -1,0 +1,9 @@
+title: Document text
+--
+
+A simple rich text editor, supporting widgets which include items from the object store. Stores the text in an XML document.
+
+
+h2. Properties
+
+|@type@|@"document-text"@|

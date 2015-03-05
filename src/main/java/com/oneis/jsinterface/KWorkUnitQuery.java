@@ -15,12 +15,14 @@ import java.util.Date;
 public class KWorkUnitQuery extends KScriptable {
     private String workType;
     private String status;
+    private String visibility;
     private Integer createdById;
     private Integer actionableById;
     private Integer closedById;
     private Integer objId;
 
     private static final String DEFAULT_STATUS = "open";
+    private static final String DEFAULT_VISIBILITY = "visible";
 
     private KWorkUnit[] results;
     private boolean executedForFirstResult;
@@ -36,6 +38,7 @@ public class KWorkUnitQuery extends KScriptable {
         }
         this.workType = workType;
         this.status = DEFAULT_STATUS;
+        this.visibility = DEFAULT_VISIBILITY;
     }
 
     public String getClassName() {
@@ -59,6 +62,24 @@ public class KWorkUnitQuery extends KScriptable {
     public Scriptable jsFunction_isEitherOpenOrClosed() {
         checkNotExecuted();
         this.status = null;
+        return this;
+    }
+
+    public Scriptable jsFunction_isVisible() {
+        checkNotExecuted();
+        this.visibility = "visible";
+        return this;
+    }
+
+    public Scriptable jsFunction_isNotVisible() {
+        checkNotExecuted();
+        this.visibility = "not-visible";
+        return this;
+    }
+
+    public Scriptable jsFunction_anyVisibility() {
+        checkNotExecuted();
+        this.visibility = null;
         return this;
     }
 
@@ -161,6 +182,10 @@ public class KWorkUnitQuery extends KScriptable {
 
     public String getStatus() {
         return this.status;
+    }
+
+    public String getVisibility() {
+        return this.visibility;
     }
 
     public Integer getCreatedById() {

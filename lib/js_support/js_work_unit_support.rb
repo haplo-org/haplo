@@ -30,6 +30,15 @@ module JSWorkUnitSupport
       raise "logic error, bad status #{status}"  # should never run
     end
 
+    visibility = query.getVisibility();
+    if visibility == "visible"
+      units = units.where('visible=TRUE')
+    elsif visibility == "not-visible"
+      units = units.where('visible=FALSE')
+    elsif visibility != nil
+      raise "logic error, bad visibility #{visibility}"  # should never run
+    end
+
     created_by_id = query.getCreatedById()
     units = units.where(:created_by_id => created_by_id) if created_by_id != nil
 

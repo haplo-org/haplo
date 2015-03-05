@@ -1,0 +1,50 @@
+title: Conditional statements
+--
+
+Conditional statements are used with @required@, @inForm@ and @inDocument@ properties to make them conditional on values in the document.
+
+They may only refer to 1) values which are not modified by this form, or 2) values which are modified by an element which is defined by *before* this element.
+
+Conditional statements are defined using JSON compatible data structures, as functions cannot be serialised into JSON.
+
+The @operation@ property defines what operation is performed.
+
+
+h2. Equality and inequality
+
+Use the @"==="@ operation to test the value at @path@ for equality with a constant value, and the @"!=="@ operation to test for inequality.
+
+<pre>language=javascript
+    {
+        path: "path.to.value"
+        operation: "===",
+        value: 17
+    }
+</pre>
+
+
+h2. Defined and undefined values
+
+Use the @"defined"@ and @"not-defined"@ operations to test whether value at @path@ is present in the document.
+
+<pre>language=javascript
+    {
+        path: "some.value"
+        operation: "not-defined"
+    }
+</pre>
+
+
+h2. Boolean operators
+
+Use the @"AND"@ and @"OR"@ operations to combine the tests in the @statements@ array. Boolean operations may be nested.
+
+<pre>language=javascript
+    {
+        operation: "AND",
+        statements: [
+            {path:"value1", operation:"===", value:24},
+            {path:"value2", operation:"defined"}
+        ]
+    }
+</pre>

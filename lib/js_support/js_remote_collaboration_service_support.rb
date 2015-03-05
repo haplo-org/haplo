@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# Provide utility functions to KUser JavaScript objects
+# Provide utility functions to KCollaborationService JavaScript objects
 
 module JSRemoteCollaborationServiceSupport
 

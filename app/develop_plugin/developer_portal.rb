@@ -29,7 +29,7 @@ class StdDeveloperPortalPlugin < KPlugin
     edit_app_description = controller.params[:edit_app_description]
 
     db = KApp.get_pg_database
-    apps = db.exec("SELECT application_id,hostname FROM applications ORDER BY hostname")
+    apps = db.exec("SELECT application_id,hostname FROM applications WHERE application_id<>#{KApp.current_application.to_i} ORDER BY hostname")
 
     app_html = []
     apps.each do |application_id,hostname|
@@ -79,6 +79,7 @@ __E
 
       application_id = params[:appid].to_i
       raise "Bad application ID" unless application_id > 0
+      raise "Can't use portal to log into current application" if application_id == KApp.current_application
 
       hostname = KApp.get_pg_database.exec("SELECT hostname FROM applications WHERE application_id=#{application_id.to_i}").first.first
       raise "Unknown application" unless hostname

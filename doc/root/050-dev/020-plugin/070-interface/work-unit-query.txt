@@ -5,7 +5,7 @@ link_as: keyword
 
 A JavaScript object implementing the @WorkUnitQuery@ interface represents a query for [node:dev/plugin/interface/work-unit] objects and provides access as a read only @Array@ of @WorkUnit@ objects.
 
-By default, only open work units are returned.
+By default, only open and visible work units are returned.
 
 
 h2. Construction
@@ -69,6 +69,21 @@ Find work units closed by the user. Either a numeric ID or a [node:dev/plugin/in
 h3(function). ref(ref)
 
 Find work units referring to the [node:dev/plugin/interface/ref].
+
+
+h3(function). isVisible()
+
+Find work units which are visible. (default)
+
+
+h3(function). isNotVisible()
+
+Find work units which are not visible.
+
+
+h3(function). anyVisibility()
+
+Ignore the @visible@ property when finding work units.
 
 
 h2. Interface (results)

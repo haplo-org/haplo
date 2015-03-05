@@ -9,9 +9,9 @@ You shouldn't use this hook directly. Use the default implementation provided by
 A plugin should append to the @elements@ array, being careful not to remove any entries added by other plugins. For example,
 
 <pre>language=javascript
-hElementDiscover: function(response) {
+P.hook('hElementDiscover', function(response) {
     response.elements.push(
         ["example_plugin:test", "Example Test Element"]
     );
-}
+});
 </pre>

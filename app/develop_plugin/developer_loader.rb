@@ -205,6 +205,15 @@ class DeveloperLoader
       exchange.response = render_result
     end
 
+    def handle_application_info_api
+      info = {
+        "name" => KApp.global(:system_name),
+        "config" => JSON.parse(KApp.global(:javascript_config_data) || '{}'),
+        "installedPlugins" => KPlugin.get_plugins_for_current_app.plugin_factories.map { |f| f.name }
+      }
+      render :text => JSON.generate(info), :kind => :json
+    end
+
     # See if a plugin is already registered, and if so, get the ID and manifest
     _PostOnly
     def handle_find_registration_api

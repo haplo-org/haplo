@@ -25,6 +25,10 @@ public class KStoredFile extends KScriptable {
         this.storedFile = storedFile;
     }
 
+    public AppStoredFile toRubyObject() {
+        return this.storedFile;
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     public void jsConstructor() {
     }
