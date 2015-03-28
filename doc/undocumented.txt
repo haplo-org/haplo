@@ -68,10 +68,15 @@ SecurityPrincipal setAsLoggedInUser() + pSetLoggedInUser (NOTE: doesn't take eff
 
 Cache invalidation
 ------------------
+Not currently documented because an efficient implementation requires imperfect cache invalidation rules. Generally changes only take effect on the next request, but some things happen immediately in specific cases. Model generally works well, but may be confusing to use, so perhaps should be reconsidered.
+IMPORTANT: When documenting, also document the invalidation model.
 O.reloadJavaScriptRuntimes() - delayed invalidation of runtimes in all threads
+O.reloadUserPermissions() - possibly delayed invalidation of cached permissions
+O.reloadNavigation() - update serial for navigation so requested again
 
 System setup
 ------------
+IMPORTANT: Note on cache invalidation and when changes will take effect.
 O.setup.createUser({nameFirst:'', nameLast:'', email:'', ref:O.ref(x), groups:[]}) and pCreateUser privilege
 O.setup.createGroup() and pSetupSystem privilege (extend later with pSetupSystemOnInstall for setup with onInstall only)
 SecurityPrincipal setIsActive() and pUserActivation privilege

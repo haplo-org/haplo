@@ -87,7 +87,6 @@ private
     ensure
       # Reset state after tests
       @runtime_testing_support.endTesting()
-      @plugin_runtime.last_used_plugin_name = nil
       # Log output and flush logs
       KApp.logger.info(@output)
       KApp.logger.flush_buffered
@@ -99,7 +98,6 @@ private
     success = false
     begin
       @plugin_runtime.using_runtime do
-        @plugin_runtime.last_used_plugin_name = @plugin_name
         # Run script with the plugin object as the P global
         @runtime.loadScript(pathname, "p/#{@plugin_name}/#{name}", "var P=#{@plugin_name}; ", nil)
       end

@@ -27,10 +27,13 @@ class KObjectStoreApplicationDelegate
       end
     end
   end
-  # Update the user object in the store when the user cache is invalidated, so any
-  # revised permissions are picked up immediately.
+  # Update the user object in the store when the user cache is invalidated, if superuser permissions are not in use.
+  # Note that any AuthContext states on the stack will use old user objects when they're restored, and if
+  # superuser permissions are active, an old object will be pushed off the stack.
   KNotificationCentre.when(:user_cache_invalidated, nil) do
-    KObjectStore.set_user(User.cache[KObjectStore.external_user_id])
+    unless KObjectStore.has_superuser_permissions?
+      KObjectStore.set_user(User.cache[KObjectStore.external_user_id])
+    end
   end
 
   def initialize

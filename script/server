@@ -8,6 +8,7 @@
 
 set -e
 
+USES_JAVA_FONT_RENDERING=yes
 . config/paths-`uname`.sh
 
 if [ X$KFRAMEWORK_ENV = X ]

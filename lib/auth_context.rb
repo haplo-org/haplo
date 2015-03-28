@@ -5,6 +5,10 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
+# AuthContext stores actual User objects on a stack. If the user cache is invalidated, the stack will
+# still contain the old User objects with their old permissions. User invalidation should be considered
+# to properly take effect on the next request.
+
 module AuthContext
 
   def self.set_as_system

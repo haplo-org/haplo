@@ -17,7 +17,7 @@ import com.oneis.utils.ProcessStartupFlag;
 
 public class OpWorkerProcess extends Thread {
     static final private int CONNECTION_ATTEMPTS = 20;   // will retry this number of times with 1 second pauses between
-    static final private int RESTART_IF_MEMORY_USAGE_OVER = 42; // memory usage in percent
+    static final private int RESTART_IF_MEMORY_USAGE_INCREASES_BY = 32; // in percent
     // TODO: Reduce RESTART_IF_MEMORY_USAGE_OVER, and implement another limit that, if exceeded, the op worker restarts after 5 minutes of being idle.
 
     static public boolean restartOnHighMemoryUsage = true;
@@ -98,7 +98,9 @@ public class OpWorkerProcess extends Thread {
             return;
         }
         this.logger.info("Authenticated with server, waiting for operations.");
-        this.logger.info("Approx initial memory usage: " + approxMemoryUsagePercent() + "%");
+        int initialMemoryUsage = approxMemoryUsagePercent();
+        int restartWhenMemoryUsageOver = initialMemoryUsage + RESTART_IF_MEMORY_USAGE_INCREASES_BY;
+        this.logger.info("Approx initial memory usage: " + initialMemoryUsage + "%, will restart when memory usage over " + restartWhenMemoryUsageOver + "%");
 
         while(true) {
             OpServerMessage.DoOperation doOperation = (OpServerMessage.DoOperation)pipe.receiveObject(1000 * 60 * 5);
@@ -124,7 +126,7 @@ public class OpWorkerProcess extends Thread {
                 // Check memory usage
                 int memoryPercent = approxMemoryUsagePercent();
                 this.logger.info("Approx memory usage after operation: " + memoryPercent + "%");
-                if((memoryPercent > RESTART_IF_MEMORY_USAGE_OVER) && restartOnHighMemoryUsage) {
+                if((memoryPercent > restartWhenMemoryUsageOver) && restartOnHighMemoryUsage) {
                     this.logger.info("Will exit after sending reply.");
                     doneOperation.willExit = true;
                 }

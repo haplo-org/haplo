@@ -13,7 +13,8 @@ class JavascriptRemoteAuthenticationTest < Test::Unit::TestCase
     install_grant_privileges_plugin_with_privileges('pRemoteAuthenticationService')
     begin
       # Check error cases
-      run_javascript_test(:file, 'unit/javascript/javascript_remote_authentication/test_remote_authentication1.js')
+      run_javascript_test(:file, 'unit/javascript/javascript_remote_authentication/test_remote_authentication1_no_priv.js')
+      run_javascript_test(:file, 'unit/javascript/javascript_remote_authentication/test_remote_authentication1.js', nil, "grant_privileges_plugin")
       # Set a known password
       user42 = User.find(42)
       user42.password = 'abcd5432'
@@ -32,7 +33,7 @@ class JavascriptRemoteAuthenticationTest < Test::Unit::TestCase
       # Wait for LDAP server to start (probably have started by now anyway, so no point in doing anything fancy with mutexes etc)
       sleep(0.1) while ! @@test_ldap_server_started
       # Check normal use
-      run_javascript_test(:file, 'unit/javascript/javascript_remote_authentication/test_remote_authentication2.js')
+      run_javascript_test(:file, 'unit/javascript/javascript_remote_authentication/test_remote_authentication2.js', nil, "grant_privileges_plugin")
     ensure
       KeychainCredential.delete_all
       uninstall_grant_privileges_plugin

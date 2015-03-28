@@ -8,7 +8,7 @@
 # Called before the application files are loaded.
 
 # Check Java version
-raise "Bad Java version" unless (0 == java.lang.System.getProperty('java.version').index('1.7.'))
+raise "Bad Java version" unless (0 == java.lang.System.getProperty('java.version').index('1.8.'))
 
 # Regexp for filtering parameters from the logs
 KFRAMEWORK_LOGGING_PARAM_FILTER = /\A__|_ak|password|old|pw1|pw2\z/
@@ -69,7 +69,6 @@ require 'jruby/synchronized'
 # Gems
 gem 'rmail'
 require 'rmail'
-
 
 # Add some useful extensions to Rails and Ruby
 require 'kextend_rails_and_ruby'

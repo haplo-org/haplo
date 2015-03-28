@@ -545,9 +545,6 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
   # ===============================================================================================
 
   def test_security_functions
-    if java.lang.Integer::MAX_VALUE != javax.crypto.Cipher.getMaxAllowedKeyLength("AES")
-      puts "Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy not installed, SHA256 test will fail" if _TEST_APP_ID == FIRST_TEST_APP_ID
-    end
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_security.js')
   end
 
@@ -658,7 +655,8 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     begin
       assert_equal nil, User.find_first_by_email('js@example.com')
       assert User.find(43).objref
-      run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_create_and_update_user.js')
+      run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_create_and_update_user_no_priv.js')
+      run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_create_and_update_user.js', nil, "grant_privileges_plugin")
       jsuser = User.find_first_by_email('js@example.com')
       assert nil != jsuser
       assert_equal 'Java', jsuser.name_first
@@ -691,7 +689,8 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     install_grant_privileges_plugin_with_privileges('pSendEmail')
     begin
       d_before = EmailTemplate.test_deliveries.size
-      run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_email_template.js', {})
+      run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_email_template_no_priv.js')
+      run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_email_template.js', nil, "grant_privileges_plugin")
       assert_equal d_before + 1, EmailTemplate.test_deliveries.size
       sent = EmailTemplate.test_deliveries.last
       assert_equal ['Test Person <test@example.com>'], sent.header.to

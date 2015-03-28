@@ -19,7 +19,8 @@ module JavaScriptTestHelper
   end
 
   # Run a JavaScript test in a framework managed runtime
-  def run_javascript_test(kind, input, predefines = {})
+  def run_javascript_test(kind, input, predefines = nil, with_plugin_name = "UNSPECIFIED_TEST_PLUGIN")
+    predefines ||= {}
     # Add line numbers into the javascript, because it appears to be impossible to get a stack trace out of Rhino
     debug_filename = nil
     line_number = 1
@@ -50,7 +51,7 @@ module JavaScriptTestHelper
     yield runtime if block_given?
     begin
       KJSPluginRuntime.current.using_runtime do
-        runtime.evaluateString(javascript, debug_filename)
+        runtime.evaluateString(javascript, "p/#{with_plugin_name}/#{debug_filename}")
       end
     ensure
       KApp.cache_invalidate(KJSPluginRuntime::RUNTIME_CACHE)

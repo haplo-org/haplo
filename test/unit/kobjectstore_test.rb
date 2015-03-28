@@ -2653,6 +2653,26 @@ _OBJS
 
   # ------------------------------------------------------------------------
 
+  def test_superuser_permissions_with_user_invalidation
+    # Make sure the system which updates the object store permissions when users are invalidation doesn't lose superuser permissions
+    db_reset_test_data
+    AuthContext.with_user(User.find(41)) do
+      assert_equal false, KObjectStore.has_superuser_permissions?
+      assert KObjectStore.active_permissions.kind_of? KLabelStatements
+      KObjectStore.with_superuser_permissions do
+        assert_equal true, KObjectStore.has_superuser_permissions?
+        assert KObjectStore.active_permissions.kind_of? KLabelStatementsSuperUser
+        User.invalidate_cached
+        assert_equal true, KObjectStore.has_superuser_permissions?
+        assert KObjectStore.active_permissions.kind_of? KLabelStatementsSuperUser
+      end
+      assert KObjectStore.active_permissions.kind_of? KLabelStatements
+      assert_equal false, KObjectStore.has_superuser_permissions?
+    end
+  end
+
+  # ------------------------------------------------------------------------
+
   def test_accounting
     restore_store_snapshot("min")
     KAccounting.setup_accounting

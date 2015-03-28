@@ -39,8 +39,7 @@ if test_filenames.empty?
   puts
   puts "-----------------------------------------------------------------------------------"
   puts " * These tests will take about 5 minutes to run."
-  puts " * A small number of tests will fail due to platform differences."
-  puts " * The long stack trace is expected as part of a test of plugin error reporting."
+  puts " * On some platforms, a small number of tests may fail."
   puts " * If lots of tests fail, you don't have enough memory."
   puts "-----------------------------------------------------------------------------------"
   puts

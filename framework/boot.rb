@@ -19,12 +19,11 @@ require 'drb'
 require 'erb'
 require 'benchmark'
 require 'logger'
+require 'json'
+require 'json/ext' # to make sure the Java version is loaded
 
 # Gems used by the framework
 require 'rubygems'
-
-gem 'json', '= 1.8.0'
-require 'json/ext'  # to make sure the Java version is loaded
 
 gem 'i18n', '= 0.5.0' # ActiveSupport dependency
 gem 'activesupport', '= 3.0.20'
@@ -48,7 +47,7 @@ require 'haml'
 gem 'tzinfo-data'
 require 'tzinfo'
 
-# PORT TODO: Work out why $" doesn't include the fully qualified name of the postgresql adaptor on Mac OS X, and fix it.
+# TODO: Work out why $" doesn't include the fully qualified name of the postgresql adaptor on recent JRubys, and fix it.
 # Avoid loading the pg adaptor file again when making the database connection, which breaks because the JDBC adaptor has messed with the internal at this point.
 if $".include?("active_record/connection_adapters/postgresql_adapter.rb")
   postgresql_adapter_file = "#{ENV['JRUBY_HOME']}/lib/ruby/gems/shared/gems/activerecord-3.0.20/lib/active_record/connection_adapters/postgresql_adapter.rb"

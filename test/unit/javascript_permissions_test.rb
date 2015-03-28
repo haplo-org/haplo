@@ -87,7 +87,8 @@ class JavascriptPermissionsTest < Test::Unit::TestCase
       # Testing that the javascript can create this group, so check it doesn't already exist
       assert User.where(:name => 'Test group').length == 0
 
-      run_javascript_test(:file, 'unit/javascript/javascript_permissions/test_setup_group.js')
+      run_javascript_test(:file, 'unit/javascript/javascript_permissions/test_setup_group_no_priv.js')
+      run_javascript_test(:file, 'unit/javascript/javascript_permissions/test_setup_group.js', nil, "grant_privileges_plugin")
 
       # Check group created properly
       groups = User.where(:name => 'Test group')

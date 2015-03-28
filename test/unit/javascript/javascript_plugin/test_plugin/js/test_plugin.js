@@ -6,6 +6,7 @@
 
 
 P.hook('hTestNullOperation1', function(response) {
+    $host._testCallback("hTestNullOperation1");
 });
 
 P.onInstallCallCount = 0;

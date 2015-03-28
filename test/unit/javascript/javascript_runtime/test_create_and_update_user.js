@@ -7,17 +7,6 @@
 
 TEST(function() {
 
-    TEST.assert_exceptions(function() {
-        O.setup.createUser({nameFirst:"x", nameLast:"y", email:"x@example.com"});
-    }, "Cannot call O.setup.createUser() without the pCreateUser privilege. Add it to privilegesRequired in plugin.json");
-
-    // And set ref on existing user
-    TEST.assert_exceptions(function() {
-       O.user(41).ref = O.ref(1244);
-    }, "Cannot set ref property without the pUserSetRef privilege. Add it to privilegesRequired in plugin.json");
-
-    $host.setLastUsedPluginName("grant_privileges_plugin");
-
     TEST.assert_exceptions(function() { O.setup.createUser(); },     "Must pass an object containing details to O.setup.createUser()");
     TEST.assert_exceptions(function() { O.setup.createUser(null); }, "Must pass an object containing details to O.setup.createUser()");
     TEST.assert_exceptions(function() { O.setup.createUser("x"); },  "Must pass an object containing details to O.setup.createUser()");
@@ -44,15 +33,6 @@ TEST(function() {
     TEST.assert_equal(user.id, user1.id);
     TEST.assert(user1.isActive);
 
-    // Check activation
-    $host.setLastUsedPluginName("not_this_one");
-
-    TEST.assert_exceptions(function() {
-       user1.setIsActive(false);
-    }, "Cannot call setIsActive() without the pUserActivation privilege. Add it to privilegesRequired in plugin.json");
-
-    $host.setLastUsedPluginName("grant_privileges_plugin");
-
     user1.setIsActive(false);
     TEST.assert_equal(false, user1.isActive);
     TEST.assert_equal(false, user1.isGroup);
@@ -77,16 +57,6 @@ TEST(function() {
     O.group(23).setIsActive(false);
 
     // Password recovery URLs
-    $host.setLastUsedPluginName("not_this_one");
-    TEST.assert_exceptions(function() {
-       user1.generatePasswordRecoveryURL();
-    }, "Cannot call generatePasswordRecoveryURL() without the pUserPasswordRecovery privilege. Add it to privilegesRequired in plugin.json");
-    TEST.assert_exceptions(function() {
-       user1.generateWelcomeURL();
-    }, "Cannot call generateWelcomeURL() without the pUserPasswordRecovery privilege. Add it to privilegesRequired in plugin.json");
-
-    $host.setLastUsedPluginName("grant_privileges_plugin");
-
     var recovery = user1.generatePasswordRecoveryURL();
     TEST.assert((new RegExp("^https?://.+?/do/authentication/r/"+user1.id+'-')).test(recovery));
     var welcome = user1.generateWelcomeURL();

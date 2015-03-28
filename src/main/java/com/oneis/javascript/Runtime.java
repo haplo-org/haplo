@@ -212,7 +212,7 @@ public class Runtime {
      * Check that a plugin with a given privilege is active, throwing a reportable exception otherwise
      */
     public static void privilegeRequired(String privilege, String attemptedAction) {
-        if(!(Runtime.currentRuntimeHost().getSupportRoot().lastUsedPluginHasPrivilege(privilege))) {
+        if(!(Runtime.currentRuntimeHost().getSupportRoot().currentlyExecutingPluginHasPrivilege(privilege))) {
             throw new OAPIException("Cannot "+attemptedAction+" without the "+privilege+" privilege. Add it to privilegesRequired in plugin.json");
         }
     }
@@ -525,7 +525,14 @@ public class Runtime {
         if(fn == null) {
             throw new OAPIException("Unexpected modification of JavaScript runtime");
         }
-        return fn.call(this.currentContext, this.runtimeScope, fn, args);
+        Object r = null;
+        try {
+            r = fn.call(this.currentContext, this.runtimeScope, fn, args);
+        } catch(StackOverflowError e) {
+            // JRuby 1.7.19 doesn't cartch StackOverflowError exceptions any more, so wrap it into a JS Exception
+            throw new org.mozilla.javascript.WrappedException(e);
+        }
+        return r;
     }
 
     public PluginTestingSupport getTestingSupport() throws java.io.IOException {
@@ -582,5 +589,22 @@ public class Runtime {
         ScriptableObject o = (ScriptableObject)sharedScope.get("O", sharedScope); // ConsString is checked
         Function converter = (Function)o.get("$convertIfLibraryDate", o);
         return converter.call(this.currentContext, o, o, new Object[]{value});
+    }
+
+    // Find plugin on stack
+    public static String findCurrentlyExecutingPluginFromStack() {
+        ScriptStackElement[] stack = (new JavaScriptException("a","b",-1)).getScriptStack();
+        for(ScriptStackElement e : stack) {
+            // Does the filename exist and start with p/ ?
+            String f = e.fileName;
+            if((f != null) && (f.length() > 3) && (f.charAt(0) == 'p') && (f.charAt(1) == '/')) {
+                // Find the plugin name from the pathname
+                int nextSlashIndex = f.indexOf('/', 2);
+                if(nextSlashIndex > 4) {
+                    return f.substring(2, nextSlashIndex);
+                }
+            }
+        }
+        return null;
     }
 }

@@ -7,8 +7,6 @@
 
 TEST(function() {
 
-    $host.setLastUsedPluginName("");
-
     // Load the generic template
     var genericTemplate = O.email.template();
     TEST.assert(genericTemplate !== null && genericTemplate !== undefined);
@@ -32,14 +30,6 @@ TEST(function() {
 
     // Make sure it's case sensitive
     TEST.assert(undefined === O.email.template("password recovery"));
-
-    // Call deliver, watch it fail
-    TEST.assert_exceptions(function() {
-        genericTemplate.deliver("test@example.com", "Test Person", "Random Subject", "<p>XXX-MESSAGE-FROM-JAVASCRIPT-XXX</p>");
-    });
-
-    // Set the permissions_plugin as the last used plugin to enable the privilege
-    $host.setLastUsedPluginName("grant_privileges_plugin");
 
     // Deliver a message, the result of which is tested in the ruby test
     genericTemplate.deliver("test@example.com", "Test Person", "Random Subject", "<p>XXX-MESSAGE-FROM-JAVASCRIPT-XXX</p>");

@@ -26,6 +26,8 @@ public class KSecurityDigest extends KScriptable {
 
     // --------------------------------------------------------------------------------------------------------------
     public static String jsStaticFunction_hexDigestOfString(String algorithm, String input) {
+        // Fix up algorithm name - upgrade to JRuby 1.7.19 causes SHA256 to be unrecognised
+        if(algorithm != null && algorithm.equals("SHA256")) { algorithm = "SHA-256"; }
         // Input converted to UTF-8 bytes
         byte[] digest = null;
         try {

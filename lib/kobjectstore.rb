@@ -186,6 +186,10 @@ class KObjectStore
     r
   end
 
+  def has_superuser_permissions?
+    !!(@_permissions && @_permissions.is_superuser?)
+  end
+
   # ----------------------------------------------------------------------------------------------------------
 
   class PermissionDenied < RuntimeError

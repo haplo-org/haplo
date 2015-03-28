@@ -11,7 +11,8 @@ class JavascriptMSExchangeAPITest < Test::Unit::TestCase
   def test_exchange
     install_grant_privileges_plugin_with_privileges('pRemoteCollaborationService')
     # Check error cases
-    run_javascript_test(:file, 'unit/javascript/javascript_collaboration_server/test_collaboration_server_basic_api.js')
+    run_javascript_test(:file, 'unit/javascript/javascript_collaboration_server/test_collaboration_server_basic_api_no_priv.js')
+    run_javascript_test(:file, 'unit/javascript/javascript_collaboration_server/test_collaboration_server_basic_api.js', nil, "grant_privileges_plugin")
   end
 
 end

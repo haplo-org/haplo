@@ -63,6 +63,8 @@ TEST(function() {
     TEST.assert(-1 !== obj.render().indexOf("Hello there"));
 
     // valuesEqual() is just a small wrapper around the Ruby implementation, so just check simple representative examples
+    TEST.assert_exceptions(function() { obj.valuesEqual(null); }, "Object passed to valuesEqual() may not be null or undefined");
+    TEST.assert_exceptions(function() { obj.valuesEqual(undefined); }, "Object passed to valuesEqual() may not be null or undefined");
     TEST.assert_exceptions(function() { obj.valuesEqual(1); }, "Object passed to valuesEqual() is not a StoreObject");
     TEST.assert_exceptions(function() { obj.valuesEqual(new Date()); }, "Object passed to valuesEqual() is not a StoreObject");
     TEST.assert_exceptions(function() { obj.valuesEqual(obj, undefined, 1238); }, "Descriptor required if qualifier is specified.");

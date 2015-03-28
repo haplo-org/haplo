@@ -174,6 +174,9 @@ public class KObject extends KScriptable {
     }
 
     public boolean jsFunction_valuesEqual(Scriptable object, boolean haveDesc, int desc, boolean haveQual, int qual) {
+        if(object == null) {
+            throw new OAPIException("Object passed to valuesEqual() may not be null or undefined");
+        }
         AppObject appobj = toRubyObjectFromWrapper(object);
         if(appobj == null) {
             throw new OAPIException("Object passed to valuesEqual() is not a StoreObject");

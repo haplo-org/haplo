@@ -8,12 +8,6 @@
 TEST(function() {
 
     TEST.assert_exceptions(function() {
-        O.remote.collaboration.connect(function() {});
-    }, "Cannot use a collaboration service without the pRemoteCollaborationService privilege. Add it to privilegesRequired in plugin.json");
-
-    $host.setLastUsedPluginName("grant_privileges_plugin");
-
-    TEST.assert_exceptions(function() {
         O.remote.collaboration.connect();
     }, "Callback function not passed to connect().");
 

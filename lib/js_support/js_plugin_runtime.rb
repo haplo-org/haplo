@@ -56,25 +56,11 @@ class KJSPluginRuntime
   end
 
   # Keep track of nested calls into the JavaScript runtime, using the notification buffer to track the depth
-  # Preserve the last_used_plugin_name over the call.
   # Returns the value of the yielded block.
   def using_runtime
-    previous_last_used_plugin_name = @support_root.last_used_plugin_name
-    value_from_block = nil
-    begin
-      @@invalidate_notification_buffer.while_buffering do
-        value_from_block = yield
-      end
+    @@invalidate_notification_buffer.while_buffering do
+      yield
     end
-    if @@invalidate_notification_buffer.buffering_depth > 0
-      # Note that if the runtime has been invalidated on exiting the buffering block, then @support_root will be nil
-      if previous_last_used_plugin_name != nil && @support_root != nil
-        # Only restore last_used_plugin_name if there wasn't an exception, to avoid lying about responsibility
-        @support_root.setLastUsedPluginName(previous_last_used_plugin_name)
-      end
-    end
-    # Return the value returned from the yield
-    value_from_block
   end
 
   # For plugin test scripts support
@@ -82,11 +68,8 @@ class KJSPluginRuntime
     @support_root
   end
 
-  def last_used_plugin_name
-    (@support_root == nil) ? nil : @support_root.last_used_plugin_name
-  end
-  def last_used_plugin_name=(plugin_name)
-    @support_root.setLastUsedPluginName(plugin_name) if @support_root != nil
+  def currently_executing_plugin_name
+    @support_root ? @support_root.getCurrentlyExecutingPluginName() : nil
   end
 
   def make_json_parser
@@ -141,7 +124,6 @@ class KJSPluginRuntime
                 @runtime.host.setNextPluginToBeRegistered(factory.name, database_namespace)
                 KJavaScriptPlugin.reporting_errors(factory.name) do
                   using_runtime do
-                    @support_root.setLastUsedPluginName(factory.name) # for blaming plugins
                     factory.javascript_load(@runtime)
                   end
                 end
@@ -210,7 +192,6 @@ class KJSPluginRuntime
 
   def call_request_handler(plugin_name, method, path)
     using_runtime do
-      @support_root.setLastUsedPluginName(plugin_name)
       @runtime.host.callRequestHandler(plugin_name, method, path)
     end
   end

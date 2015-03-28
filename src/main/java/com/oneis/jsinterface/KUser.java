@@ -147,7 +147,7 @@ public class KUser extends KScriptable {
         if((auditInfo == null) || !(auditInfo instanceof CharSequence)) {
             throw new OAPIException("Must pass an explanation of how the user was authenticated as a String to setAsLoggedInUser()");
         }
-        rubyInterface.setAsLoggedInUser(this.user, supportRoot.getLastUsedPluginName(), auditInfo.toString());
+        rubyInterface.setAsLoggedInUser(this.user, supportRoot.getCurrentlyExecutingPluginName(), auditInfo.toString());
     }
 
     // --------------------------------------------------------------------------------------------------------------

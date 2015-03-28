@@ -6,6 +6,7 @@
 
 
 P.hook('hTestNullOperation2', function(response) {
+    $host._testCallback("hTestNullOperation2");
 });
 
 P.hook('hChainTest1', function(response) {
@@ -40,5 +41,5 @@ P.db.table("employee", {
 
 // Simple service for calling from the other plugin
 P.implementService("test_service", function(arg1) {
-    return "service "+$host.getLastUsedPluginName()+" "+arg1;
+    return "service "+$host.getCurrentlyExecutingPluginName()+" "+arg1;
 });

@@ -7,33 +7,6 @@
 
 TEST(function() {
 
-    // Check permissions on existing user. refs, and objects as arguments
-    var user1 = O.user(41);
-    var user2 = O.user(42);
-    var object = O.object();
-    object.appendType(TYPE["std:type:book"]);
-    object.save();
-    TEST.assert(user2.canRead(object));
-    TEST.assert(! user2.canCreate(object));
-    TEST.assert(user1.canCreate(object));
-    TEST.assert(! user1.canRead(object));
-
-    // Set no privileges
-    $host.setLastUsedPluginName("");
-
-    // Check creating a group won't work if the privilege isn't set for the plugin
-    TEST.assert_exceptions(function() {
-        O.setup.createGroup("Test group");
-    });
-
-    // Check changing group memberships doesn't work without the privilege
-    TEST.assert_exceptions(function() {
-        existingGroup.changeGroupMemberships([21]);
-    });
-
-    // Set the grant_privileges_plugin as the last used plugin to enable the privilege
-    $host.setLastUsedPluginName("grant_privileges_plugin");
-
     // Check some bad calls
     TEST.assert_exceptions(function() { O.setup.createGroup(null); });
     TEST.assert_exceptions(function() { O.setup.createGroup(undefined); });

@@ -386,14 +386,24 @@ class JavascriptPluginTest < Test::Unit::TestCase
     assert ! test_plugin2.has_privilege?("pants")
     assert ! no_privileges_plugin.has_privilege?("pants")
     # Check Java side query in host object
+    ran_callback = 0
+    KJSPluginRuntime.current.runtime.host.setTestCallback(proc { |string|
+      ran_callback += 1
+      assert KJSPluginRuntime.current.runtime.getHost().currentlyExecutingPluginHasPrivilege("pTestPriv1");
+      assert KJSPluginRuntime.current.runtime.getHost().currentlyExecutingPluginHasPrivilege("pTestPriv2");
+      assert ! KJSPluginRuntime.current.runtime.getHost().currentlyExecutingPluginHasPrivilege("pants");
+    })
     call_hook(:hTestNullOperation1) { |hooks| hooks.run() } # responded to by test_plugin
-    assert KJSPluginRuntime.current.runtime.getHost().lastUsedPluginHasPrivilege("pTestPriv1");
-    assert KJSPluginRuntime.current.runtime.getHost().lastUsedPluginHasPrivilege("pTestPriv2");
-    assert ! KJSPluginRuntime.current.runtime.getHost().lastUsedPluginHasPrivilege("pants");
+
+    KJSPluginRuntime.current.runtime.host.setTestCallback(proc { |string|
+      ran_callback += 1
+      assert ! KJSPluginRuntime.current.runtime.getHost().currentlyExecutingPluginHasPrivilege("pTestPriv1");
+      assert ! KJSPluginRuntime.current.runtime.getHost().currentlyExecutingPluginHasPrivilege("pTestPriv2");
+      assert ! KJSPluginRuntime.current.runtime.getHost().currentlyExecutingPluginHasPrivilege("pants");
+    })
     call_hook(:hTestNullOperation2) { |hooks| hooks.run() } # responded to by test_plugin2
-    assert ! KJSPluginRuntime.current.runtime.getHost().lastUsedPluginHasPrivilege("pTestPriv1");
-    assert ! KJSPluginRuntime.current.runtime.getHost().lastUsedPluginHasPrivilege("pTestPriv2");
-    assert ! KJSPluginRuntime.current.runtime.getHost().lastUsedPluginHasPrivilege("pants");
+
+    assert_equal 2, ran_callback
   end
 
   # -------------------------------------------------------------------------------------------------------------

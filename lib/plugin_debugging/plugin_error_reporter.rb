@@ -101,7 +101,7 @@ module PluginDebugging
 <html>
 <head><title>Plugin error - #{info.plugin_name}</title></head>
 <body>
-  <h1>Plugin error in #{info.plugin_name}</h1>
+  <h1>Plugin error</h1>
   <h2>#{message}</h2>
   <hr>
   <h3>Error location</h3>

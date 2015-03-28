@@ -153,8 +153,8 @@ public class KONEISHost extends KScriptable {
         }
     }
 
-    public boolean lastUsedPluginHasPrivilege(String privilegeName) {
-        return this.supportRoot.lastUsedPluginHasPrivilege(privilegeName);
+    public boolean currentlyExecutingPluginHasPrivilege(String privilegeName) {
+        return this.supportRoot.currentlyExecutingPluginHasPrivilege(privilegeName);
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -217,7 +217,13 @@ public class KONEISHost extends KScriptable {
         }
         Runtime runtime = Runtime.getCurrentRuntime();
         Function handleRequest = findPluginFunction(plugin, pluginName, "handleRequest"); // exceptions if it can't be found
-        Object r = handleRequest.call(runtime.getContext(), runtime.getJavaScriptScope(), plugin, new Object[]{method, path}); // ConsString is checked
+        Object r = null;
+        try {
+            r = handleRequest.call(runtime.getContext(), runtime.getJavaScriptScope(), plugin, new Object[]{method, path}); // ConsString is checked
+        } catch(StackOverflowError e) {
+            // JRuby 1.7.19 doesn't cartch StackOverflowError exceptions any more, so wrap it into a JS Exception
+            throw new org.mozilla.javascript.WrappedException(e);
+        }
         if(r == null) {
             return null;
         }
@@ -257,17 +263,9 @@ public class KONEISHost extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public void jsFunction_setLastUsedPluginName(String pluginName) {
-        // Work around a little JavaScript interface oddity
-        if(pluginName != null && "undefined".equals(pluginName)) {
-            pluginName = null;
-        }
-        this.supportRoot.setLastUsedPluginName(pluginName);
-    }
-
-    public Object jsFunction_getLastUsedPluginName() {
+    public Object jsFunction_getCurrentlyExecutingPluginName() {
         // Return undefined if no plugin is currently in use
-        String name = this.supportRoot.getLastUsedPluginName();
+        String name = this.supportRoot.getCurrentlyExecutingPluginName();
         return (name == null) ? Context.getUndefinedValue() : name;
     }
 

@@ -37,7 +37,6 @@ class JSSupportRoot
 
   def initialize
     @controller = nil
-    @last_used_plugin_name = nil
   end
 
   def clear
@@ -70,19 +69,15 @@ class JSSupportRoot
   end
 
   # For working out which plugin is to blame for an error
-  def last_used_plugin_name
-    @last_used_plugin_name
-  end
-  def setLastUsedPluginName(plugin_name)
-    @last_used_plugin_name = plugin_name
-  end
-  def getLastUsedPluginName()
-    @last_used_plugin_name
+  def getCurrentlyExecutingPluginName()
+    com.oneis.javascript.Runtime.findCurrentlyExecutingPluginFromStack()
   end
 
   # Does the last used plugin have the requested privilege?
-  def lastUsedPluginHasPrivilege(privilegeName)
-    plugin = KPlugin.get(@last_used_plugin_name)
+  def currentlyExecutingPluginHasPrivilege(privilegeName)
+    found_name = com.oneis.javascript.Runtime.findCurrentlyExecutingPluginFromStack()
+    return false unless found_name != nil
+    plugin = KPlugin.get(found_name)
     return false unless plugin != nil
     plugin.has_privilege?(privilegeName)
   end
@@ -266,7 +261,7 @@ class JSSupportRoot
     # Log into application logs - but only a limited amount to stop plugins being able to fill up the log too much
     KApp.logger.add(l, "JS: #{(text.length > 128) ? text[0,128] : text}")
     # Notify everything else interested in the logs
-    KNotificationCentre.notify(:javascript_console_log, level.to_sym, text, @last_used_plugin_name)
+    KNotificationCentre.notify(:javascript_console_log, level.to_sym, text, getCurrentlyExecutingPluginName())
   end
 
   # -------------------------------------------------------------------------------------------------------

@@ -7,8 +7,6 @@
 
 TEST(function() {
 
-    $host.setLastUsedPluginName("grant_privileges_plugin");
-
     var BLANK_USERNAMES = ["", " ", "\n\t"];
 
     var makeTestCallback = function(info) {

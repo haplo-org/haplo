@@ -127,8 +127,8 @@ class DeveloperLoader
   # Send notifications to plugin tool
   begin
     # Listen for console.log() events
-    KNotificationCentre.when(:javascript_console_log) do |name, detail, text, last_used_plugin_name|
-      broadcast_notification('log ', "#{last_used_plugin_name}:#{detail}: #{text}")
+    KNotificationCentre.when(:javascript_console_log) do |name, detail, text, currently_executing_plugin_name|
+      broadcast_notification('log ', "#{currently_executing_plugin_name}:#{detail}: #{text}")
     end
     # Listen for audit trail entries being written
     KNotificationCentre.when(:audit_trail, :write) do |name, detail, entry|

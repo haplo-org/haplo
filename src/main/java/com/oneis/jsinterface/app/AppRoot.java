@@ -18,13 +18,10 @@ public interface AppRoot {
     // Runtime properties
     public boolean javascriptWarningsAreErrors();
 
-    // Blaming of the right plugin when an error occurs
-    public void setLastUsedPluginName(String pluginName);
-
-    public String getLastUsedPluginName();
+    public String getCurrentlyExecutingPluginName();
 
     // JavaScript plugin privileges
-    public boolean lastUsedPluginHasPrivilege(String privilegeName);
+    public boolean currentlyExecutingPluginHasPrivilege(String privilegeName);
 
     // Database access
     public String getPostgresSchemaName();

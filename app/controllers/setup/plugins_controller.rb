@@ -13,11 +13,11 @@ class Setup_PluginsController < ApplicationController
   JAVASCRIPT_LOG_MUTEX = Mutex.new
 
   # Store JavaScript console.log() output here for the diagnostics page
-  KNotificationCentre.when(:javascript_console_log) do |name, detail, text, last_used_plugin_name|
+  KNotificationCentre.when(:javascript_console_log) do |name, detail, text, currently_executing_plugin_name|
     text = text[0,2047] if text.length >= 2048 # Make sure the text isn't too long
     JAVASCRIPT_LOG_MUTEX.synchronize do
       log = JAVASCRIPT_LOG[KApp.current_application]
-      log << "#{Time.now.to_iso8601_s}\t#{detail}\t#{last_used_plugin_name || '?'}\t#{text}"
+      log << "#{Time.now.to_iso8601_s}\t#{detail}\t#{currently_executing_plugin_name || '?'}\t#{text}"
       log.shift if log.length > 16
     end
   end

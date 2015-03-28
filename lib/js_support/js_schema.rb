@@ -103,14 +103,6 @@ module KSchemaToJavaScript
         GROUP: GROUP
       });
     __E
-    # TODO: Make $StoreObject part of the shared runtime
-    js << <<-__E
-    var $StoreObject = function() {};
-    $StoreObject.prototype = new $StoreObjectBase();
-    var $StoreObjectMutable = function() {};
-    $StoreObjectMutable.prototype = new $StoreObject();
-    _.extend($StoreObjectMutable.prototype, O.$private.$StoreObjectMutableMethods);
-    __E
     js
   end
 

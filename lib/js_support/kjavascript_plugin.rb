@@ -68,7 +68,7 @@ class KJavaScriptPlugin < KPlugin
     rescue => e
       # If an exception is raised, mark it as something which should be reported as a plugin error
       runtime = KJSPluginRuntime.current_if_active
-      pname = (runtime != nil) ? runtime.last_used_plugin_name : nil
+      pname = (runtime != nil) ? runtime.currently_executing_plugin_name : nil
       KFramework.mark_exception_as_reportable(e, PluginErrorInfo.new(pname || plugin_name))
       raise
     end

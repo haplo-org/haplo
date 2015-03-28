@@ -200,12 +200,6 @@ class KFileTransformTest < Test::Unit::TestCase
     run_all_jobs :expected_job_count => 1
     KFileTransform.transform(img_stored_file, "image/png")
     assert_equal 1, FileCacheEntry.count # file cache entry not created
-    # Check TIFF support is available (requires JAI ImageIO)
-    d_tiff = get_dimensions_of(File.dirname(__FILE__) + '/../fixtures/files/example10.tiff', 'image/gif')
-    assert d_tiff != nil
-    assert_equal 200, d_tiff.width
-    assert_equal 111, d_tiff.height
-    assert_equal :px, d_tiff.units
   end
 
   def test_thumbnailing_and_misc_transforms

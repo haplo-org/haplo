@@ -8,12 +8,6 @@
 TEST(function() {
 
     TEST.assert_exceptions(function() {
-        O.remote.authentication.connect(function() {});
-    }, "Cannot use an authentication service without the pRemoteAuthenticationService privilege. Add it to privilegesRequired in plugin.json");
-
-    $host.setLastUsedPluginName("grant_privileges_plugin");
-
-    TEST.assert_exceptions(function() {
         O.remote.authentication.connect();
     }, "Callback function not passed to connect().");
 

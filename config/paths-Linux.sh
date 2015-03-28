@@ -8,7 +8,7 @@
 KHOST_OPERATING_SYSTEM=Linux
 export KHOST_OPERATING_SYSTEM
 
-JAVA_HOME=/usr/lib/jvm/java-7-openjdk-amd64
+JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 JAVA_EXECUTABLE=$JAVA_HOME/bin/java
 export JAVA_EXECUTABLE
 

@@ -67,7 +67,7 @@ class JavaScriptDebugReportingTest < IntegrationTest
       assert body =~ /<pre>\s*([^\n]+)/m
       first_line_in_backtrace = $1
       # Check against expected values
-      assert_equal syntax_error_plugin ? "Plugin error in syntax_error_plugin" : "Plugin error in badly_coded_plugin", title
+      assert_equal "Plugin error", title
       assert_equal error, message
       if path == '/do/test_error/stackoverflow'
         # Sometimes JRuby throws a Ruby SystemStackError instead, which doesn't have a backtrace

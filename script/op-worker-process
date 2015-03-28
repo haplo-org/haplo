@@ -10,12 +10,13 @@
 # Set environment variable DISABLE_IN_PROCESS_WORKERS=yes when running main app or test process
 # to disable the in-process runners.
 
+USES_JAVA_FONT_RENDERING=yes
 . config/paths-`uname`.sh
 
 # Default to 32 bits
 if [ X$KFRAMEWORK_BITS = X ]
 then
-    KFRAMEWORK_BITS=32
+    KFRAMEWORK_BITS=64
 fi
 
 WORKER_NUMBER=$1
