@@ -12,24 +12,29 @@ TEST(function() {
     TEST.assert(genericTemplate !== null && genericTemplate !== undefined);
     TEST.assert_equal(1, genericTemplate.id);
     TEST.assert_equal("Generic", genericTemplate.name);
+    TEST.assert_equal("std:email-template:generic", genericTemplate.code);
 
     // Load it by name
-    var genericTemplate2 = O.email.template("Generic");
+    var genericTemplate2 = O.email.template("std:email-template:generic");
     TEST.assert(genericTemplate2 !== null && genericTemplate2 !== undefined);
     TEST.assert_equal(1, genericTemplate2.id);
     TEST.assert_equal("Generic", genericTemplate2.name);
 
+    // Check fallback of loading via name
+    var genericTemplate3 = O.email.template("Password recovery");
+    TEST.assert_equal("std:email-template:password-recovery", genericTemplate3.code);
+
     // Check bad template request
-    var noSuchTemplate = O.email.template("No such template");
+    var noSuchTemplate = O.email.template("test:email-template:no-such-template");
     TEST.assert(undefined === noSuchTemplate);
 
     // Fetch another template
-    var passwordRecoveryTemplate = O.email.template("Password recovery");
+    var passwordRecoveryTemplate = O.email.template("std:email-template:password-recovery");
     TEST.assert_equal(2, passwordRecoveryTemplate.id);
     TEST.assert_equal("Password recovery", passwordRecoveryTemplate.name);
 
     // Make sure it's case sensitive
-    TEST.assert(undefined === O.email.template("password recovery"));
+    TEST.assert(undefined === O.email.template("std:email-template:Password-Recovery"));
 
     // Deliver a message, the result of which is tested in the ruby test
     genericTemplate.deliver("test@example.com", "Test Person", "Random Subject", "<p>XXX-MESSAGE-FROM-JAVASCRIPT-XXX</p>");

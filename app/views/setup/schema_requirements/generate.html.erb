@@ -1,0 +1,24 @@
+<%
+  @page_title = 'Generate requirements'
+%>
+<%= sys_mng_header %>
+
+<p>This tool generates schema definitions for your <tt>requirements.schema</tt> file based on one or more types you select below.</p>
+
+<% if @generated_requirements %>
+  <p><textarea style="width:90%;font-family:monospace" rows="80"><%= h(@generated_requirements_short) %><%= h(@generated_requirements) %></textarea></p>
+<% else %>
+  <form method="POST"><%= form_csrf_token %>
+    <p><label><input type="checkbox" name="short_std" value="1" checked="checked">Output short definitions for standard schema (recommended)</label></p>
+    <p><label><input type="checkbox" name="groups" value="1">Include definitions for all groups</label></p>
+    <p><label><input type="checkbox" name="objects" value="1">Include definitions for all objects with configured behaviours</label></p>
+    <p><label><input type="checkbox" name="email_templates" value="1">Include definitions for all email templates</label></p>
+    <p><label><input type="checkbox" name="features" value="1">Include definitions for special features</label></p>
+    <p><input type="submit" value="Generate requirements.schema"></p>
+    <p>Based on:<%
+      KObjectStore.schema.type_descs_sorted_by_printable_name.each do |type_desc|
+        %><br><label><input type="checkbox" name="types[<%= type_desc.objref.to_presentation %>]"><%= h(type_desc.printable_name.to_s) %></label><%
+      end
+    %></p>
+  </form>
+<% end %>

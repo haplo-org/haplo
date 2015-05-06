@@ -394,6 +394,8 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     KObjectStore.create(obj)
     # Text file
     test_stored_file = StoredFile.from_upload(fixture_file_upload('files/example8_utf8nobom.txt','text/plain'))
+    # Zero length file
+    StoredFile.from_upload(fixture_file_upload('files/zero_length_file.txt','text/plain'))
     # Run test
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_stored_files.js', {
       "OBJ_WITH_FILE" => obj.objref.to_presentation,

@@ -4,6 +4,6 @@
   "pluginVersion": 1000,
   "displayName": "Test auditing plugin",
   "displayDescription": "Changing optional auditing",
-  "apiVersion": 3,
+  "apiVersion": 4,
   "load": ["js/test_auditing_plugin.js"]
 }

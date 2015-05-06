@@ -48,6 +48,8 @@ class ApplicationNamespace
           "subset"         => [:controller, {}, Setup_SubsetController],
           "keychain"       => [:controller, {}, Setup_KeychainController],
           "plugins"        => [:controller, {}, Setup_PluginsController],
+          "schema-requirements" =>
+                              [:controller, {}, Setup_SchemaRequirementsController],
           "application"    => [:controller, {}, Setup_ApplicationController],
           "appearance"     => [:controller, {}, Setup_AppearanceController],
           "email_templates"=> [:controller, {}, Setup_EmailTemplatesController]
@@ -97,7 +99,7 @@ class ApplicationNamespace
           break if e == nil
           action = search[e]
           if action == nil
-            controller = KPlugin.get_plugins_for_current_app.controller_for(e, elements, annotations)
+            controller = KPlugin.controller_for(e, elements, annotations)
             if controller == nil
               elements.unshift e
             end

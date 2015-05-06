@@ -345,6 +345,10 @@ class User < ActiveRecord::Base
           :order => 'kind DESC,lower(name)')
   end
 
+  def direct_member_ids
+    KApp.get_pg_database.exec("SELECT user_id FROM user_memberships WHERE member_of=#{self.id.to_i} ORDER BY user_id").result.map { |n| n.first.to_i }
+  end
+
   def update_members!(uids)
     raise "Not a group" unless self.kind.to_i == KIND_GROUP
     sql = "BEGIN;DELETE FROM user_memberships WHERE member_of=#{self.id};"
@@ -420,6 +424,13 @@ class User < ActiveRecord::Base
     def store(user_object)
       raise "Bad user_object" unless user_object.kind_of?(User)
       @storage[user_object.id.to_i] = user_object
+    end
+    def group_code_to_id_lookup
+      @group_code_to_id_lookup ||= begin
+        lookup = {}
+        User.find(:all, :conditions => "kind=#{KIND_GROUP} AND code IS NOT NULL").each { |g| lookup[g.code] = g.id }
+        lookup
+      end
     end
   end
   # Don't use a :shared cache, because User objects have to be mutable for the cached info

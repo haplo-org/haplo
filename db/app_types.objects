@@ -408,7 +408,7 @@ obj [O_LABEL_STRUCTURE] O_TYPE_ORGANISATION
     A_RENDER_TYPE_NAME  'organisation'
     A_RENDER_ICON       'E20C,1,f'
     A_RENDER_CATEGORY   7
-    A_DISPLAY_ELEMENTS  %Q!4 right std:linked_objects {"title":"", "type":"20x0", "attr":"works-for"}\n4 bottom std:contact_notes!
+    A_DISPLAY_ELEMENTS  %Q!std:group:everyone right std:linked_objects {"title":"", "type":"20x0", "attr":"works-for"}\nstd:group:everyone bottom std:contact_notes!
     A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_COMMON
     A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
 
@@ -518,7 +518,7 @@ obj [O_LABEL_STRUCTURE] O_TYPE_PERSON
     A_RENDER_TYPE_NAME  'person'
     A_RENDER_ICON       'E20A,1,f'
     A_RENDER_CATEGORY   1
-    A_DISPLAY_ELEMENTS  %Q!4 right std:sidebar_object {"attr":"works-for"}\n4 bottom std:contact_notes!
+    A_DISPLAY_ELEMENTS  %Q!std:group:everyone right std:sidebar_object {"attr":"works-for"}\nstd:group:everyone bottom std:contact_notes!
     A_TYPE_CREATION_UI_POSITION  TYPEUIPOS_COMMON
     A_TYPE_APPLICABLE_LABEL O_LABEL_COMMON
 

@@ -246,7 +246,7 @@ class Setup_AttributeController < ApplicationController
       @obj.add_attr(params[:title], A_TITLE)
       ensure_obj_has_title(@obj)
       code_set_edited_value_in_object(@obj)
-      short_name_processed = fix_short_name(params[:short_name])
+      short_name_processed = KSchemaApp.to_short_name_for_attr(params[:short_name])
       @obj.add_attr(short_name_processed, A_ATTR_SHORT_NAME) if short_name_processed != nil
       # Aliases of special attributes only allow minimal editing
       unless @is_minimally_editable_alias
@@ -333,7 +333,7 @@ class Setup_AttributeController < ApplicationController
       @obj.add_attr(params[:title], A_TITLE)
       ensure_obj_has_title(@obj)
       code_set_edited_value_in_object(@obj)
-      short_name_processed = fix_short_name(params[:short_name])
+      short_name_processed = KSchemaApp.to_short_name_for_attr(params[:short_name])
       @obj.add_attr(short_name_processed, A_ATTR_SHORT_NAME) if short_name_processed != nil
 
       if params[:id] == 'new'
@@ -372,13 +372,9 @@ private
   def add_data_to_obj_in_order(obj, desc, data, are_short_names = false)
     data.keys.sort { |a,b| a.to_i <=> b.to_i } .each do |k|
       d = data[k]
-      d = fix_short_name(d) if are_short_names
+      d = KSchemaApp.to_short_name_for_attr(d) if are_short_names
       obj.add_attr(d, desc) if d != nil
     end
-  end
-
-  def fix_short_name(name)
-    name.downcase.gsub(/\s+/,'-').gsub(/[^a-z0-9-]/,'').gsub(/-+/,'-').gsub(/(^-+|-+$)/,'')
   end
 
   def ensure_obj_has_title(obj)

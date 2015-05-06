@@ -10,4 +10,6 @@ public interface AppEmailTemplate {
     public int id();
 
     public String name();
+
+    public String code();
 }

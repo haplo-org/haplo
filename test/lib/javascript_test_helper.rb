@@ -85,18 +85,18 @@ module JavaScriptTestHelper
 
   USER_FIXTURES = [:users, :user_memberships, :user_datas, :policies, :permission_rules, :latest_requests]
 
+  REGISTERED_GRANT_PRIVS_LOCK = Mutex.new
+  REGISTERED_GRANT_PRIVS = {}
+
   def install_grant_privileges_plugin_with_privileges(*privs)
+    # Create a new plugin object, then hack in the privileges required by the test
+    grant_privileges_plugin = KJavaScriptPlugin.new("#{File.dirname(__FILE__)}/javascript/test_plugins/grant_privileges_plugin")
+    grant_privileges_plugin.plugin_json["privilegesRequired"].clear.push(*(privs || []))
     # Register the plugin as a private plugin for the application under test to avoid a race conditions with multiple threads sharing the same one
-    unless KJavaScriptPlugin.plugin_registered?("grant_privileges_plugin")
-      KJavaScriptPlugin.register_private_javascript_plugin_in_current_app("#{File.dirname(__FILE__)}/javascript/test_plugins/grant_privileges_plugin")
-    end
-    # Install the plugin, then hack in the privileges required by the test
-    KPlugin.install_plugin("grant_privileges_plugin")
-    description = KPlugin.get("grant_privileges_plugin").factory.js_info.description
-    description["privilegesRequired"] = (privs || [])
+    KPlugin.register_plugin(grant_privileges_plugin, KApp.current_application)
     # Also install the no_privileges_plugin, which has a hook which is called at inoppourtune times
     # and makes sure that the last used plugin tracking works correctly.
-    KPlugin.install_plugin("no_privileges_plugin")
+    KPlugin.install_plugin(["grant_privileges_plugin", "no_privileges_plugin"])
   end
 
   def uninstall_grant_privileges_plugin

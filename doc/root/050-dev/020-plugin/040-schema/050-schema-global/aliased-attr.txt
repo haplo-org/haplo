@@ -8,3 +8,5 @@ For each aliased attribute defined in the application's schema, an entry with th
 For example, @ALIASED_ATTR["std:aliased-attribute:name"]@ is the descriptor of the 'Name' aliased attribute, used so that People objects use the Person's name data type.
 
 You must always use unaliased attributes when interacting with the API, as aliased attributes are only for display. These descriptors are provided for interacting with the client side object editor.
+
+To make your code easier to read, you should use [node:dev/plugin/schema/local-schema:plugin local schema dictionaries].

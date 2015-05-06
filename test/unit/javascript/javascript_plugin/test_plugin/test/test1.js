@@ -5,11 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
-T.test(function() {
+t.test(function() {
     // Check the setup script ran
-    T.assert(setup_script_run);
+    t.assert(P.setup_script_run);
     // Check P is set to the plugin name
-    T.assert(P && (P === test_plugin));
+    t.assert(P && (P === test_plugin));
     // This test passes
-    T.assert(true);
+    t.assert(true);
 });

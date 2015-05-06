@@ -38,8 +38,8 @@ public class KEmailTemplate extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public static Object jsStaticFunction_loadTemplate(String name, boolean haveName) {
-        AppEmailTemplate template = rubyInterface.loadTemplate(haveName ? name : null);
+    public static Object jsStaticFunction_loadTemplate(String code, boolean haveCode) {
+        AppEmailTemplate template = rubyInterface.loadTemplate(haveCode ? code : null);
         return (template != null) ? fromAppEmailTemplate(template) : Context.getUndefinedValue();
     }
 
@@ -52,6 +52,10 @@ public class KEmailTemplate extends KScriptable {
         return emailTemplate.name();
     }
 
+    public String jsGet_code() {
+        return emailTemplate.code();
+    }
+
     public void jsFunction_deliver(String toAddress, String toName, String subject, String messageText) {
         Runtime.privilegeRequired("pSendEmail", "call deliver() on an EmailTemplate object");
         rubyInterface.deliver(this.emailTemplate, toAddress, toName, subject, messageText);
@@ -60,7 +64,7 @@ public class KEmailTemplate extends KScriptable {
     // --------------------------------------------------------------------------------------------------------------
     // Interface to Ruby functions
     public interface Ruby {
-        public AppEmailTemplate loadTemplate(String name);
+        public AppEmailTemplate loadTemplate(String code);
 
         public void deliver(AppEmailTemplate template, String toAddress, String toName, String subject, String messageText);
     }

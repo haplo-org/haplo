@@ -48,6 +48,11 @@ private
     plugin = KPlugin.get(@plugin_name)
     raise "Plugin not installed" if plugin == nil
     plugin_path = plugin.plugin_path
+
+    # JavaScript file prefix and suffix
+    schema_for_js_runtime = SchemaRequirements::SchemaForJavaScriptRuntime.new()
+    prefix, suffix = plugin.javascript_file_wrappers(schema_for_js_runtime)
+
     # Get underlying Java runtime object
     @plugin_runtime = KJSPluginRuntime.current
     @runtime = @plugin_runtime.runtime
@@ -74,16 +79,16 @@ private
     KApp.logger.info("Running tests for plugin #{@plugin_name}")
 
     begin
-      run_test_script(setup_script, NAME_SETUP, true) if setup_script
+      run_test_script(setup_script, NAME_SETUP, prefix, suffix, true) if setup_script
 
       tests.each do |name, path|
         if @test_partial_name == nil || name.include?(@test_partial_name)
           @tests += 1
-          run_test_script(path, name)
+          run_test_script(path, name, prefix, suffix)
         end
       end
 
-      run_test_script(teardown_script, NAME_TEARDOWN, true) if teardown_script
+      run_test_script(teardown_script, NAME_TEARDOWN, prefix, suffix, true) if teardown_script
     ensure
       # Reset state after tests
       @runtime_testing_support.endTesting()
@@ -93,13 +98,13 @@ private
     end
   end
 
-  def run_test_script(pathname, name, hide_name = false)
+  def run_test_script(pathname, name, prefix, suffix, hide_name = false)
     @output << "** Running #{@plugin_name}/#{name} ...\n" unless hide_name
     success = false
     begin
       @plugin_runtime.using_runtime do
         # Run script with the plugin object as the P global
-        @runtime.loadScript(pathname, "p/#{@plugin_name}/#{name}", "var P=#{@plugin_name}; ", nil)
+        @runtime.loadScript(pathname, "p/#{@plugin_name}/#{name}", prefix, suffix)
       end
       success = true
     rescue => e

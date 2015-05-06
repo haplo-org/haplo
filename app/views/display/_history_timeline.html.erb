@@ -1,7 +1,8 @@
 <%
 
   versions = [
-      [0, @history.object, @history.object.objref.to_presentation, "Current"]
+      [0, @history.object, @history.object.objref.to_presentation,
+            "#{@history.object.obj_update_time.to_s(:date_and_time)} (current)"]
     ]
 
   @history.versions.reverse_each do |version|

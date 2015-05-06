@@ -9,7 +9,7 @@ unless PLUGIN_DEBUGGING_SUPPORT_LOADED
   raise "Developer Portal should only be loaded if plugin debugging support is explicitly required"
 end
 
-class StdDeveloperPortalPlugin < KPlugin
+class StdDeveloperPortalPlugin < KTrustedPlugin
   include ERB::Util
 
   _PluginName "Developer Portal"
@@ -24,6 +24,8 @@ class StdDeveloperPortalPlugin < KPlugin
   def hElementRender(result, name, path, object, style, options)
     return nil unless name == 'std_developer_portal:home'
     return nil unless KApp.global_bool(:app_is_developer_portal)
+
+    controller = KFramework.request_context.controller
 
     app_descriptions = JSON.parse(KApp.global(:std_developer_portal_descriptions) || '{}')
     edit_app_description = controller.params[:edit_app_description]

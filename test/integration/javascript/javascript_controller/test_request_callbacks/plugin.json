@@ -4,7 +4,7 @@
   "pluginVersion": 1000,
   "displayName": "Test Requests Callbacks Plugin",
   "displayDescription": "For testing",
-  "apiVersion": 3,
+  "apiVersion": 4,
   "load": ["js/test_request_callbacks.js"],
   "locals": {
       "exampleLocal": "EXAMPLELOCAL"

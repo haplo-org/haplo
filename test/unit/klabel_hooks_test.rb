@@ -42,7 +42,7 @@ class KLabelHooksTest < Test::Unit::TestCase
     end
   end
 
-  class LabelHooksTestPlugin < KPlugin
+  class LabelHooksTestPlugin < KTrustedPlugin
     _PluginName "Label Hooks Test Plugin"
     _PluginDescription "Test"
     def hLabelObject(response, object)

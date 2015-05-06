@@ -4,6 +4,6 @@
   "pluginVersion": 1000,
   "displayName": "Syntax Error Plugin",
   "displayDescription": "For testing syntax errors get reported neatly",
-  "apiVersion": 3,
+  "apiVersion": 4,
   "load": ["js/syntax_error_plugin.js"]
 }

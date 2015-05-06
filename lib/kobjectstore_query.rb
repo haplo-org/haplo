@@ -667,6 +667,10 @@ class KObjectStore
       @clauses << clause
       clause.is_valid_identifier_clause?
     end
+    def any_indentifier_of_type(identifier_type, desc = nil, qualifier = nil)
+      @clauses << AnyIdentifierOfTypeClause.new(self, identifier_type, desc, qualifier)
+      self
+    end
     # Constrain to objects created by a particular user id (NOT a User object, to avoid creating dependecies)
     def created_by_user_id(user_id)
       @clauses << CreatedByUserClause.new(self, user_id)
@@ -915,6 +919,17 @@ class KObjectStore
       sqc = sub_query_constraints
       # Use output of to_identifier_index_str() on identifier, to match the string which goes in the index
       "(SELECT id FROM os_index_identifier WHERE identifier_type=#{@identifier.k_typecode} AND value=#{PGconn.quote(@identifier_index_str)}#{sqc})"
+    end
+  end
+
+  class AnyIdentifierOfTypeClause < Clause
+    def initialize(parent, identifier_type, desc, qualifier)
+      super(parent, desc, qualifier)
+      @identifier_type = identifier_type.to_i
+    end
+    def generate_subquery(query, store)
+      sqc = sub_query_constraints
+      "(SELECT id FROM os_index_identifier WHERE identifier_type=#{@identifier_type}#{sqc})"
     end
   end
 

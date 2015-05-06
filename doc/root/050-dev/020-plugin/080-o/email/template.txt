@@ -5,9 +5,9 @@ link_as: keyword
 Constructs a new object implementing the [node:dev/plugin/interface/email-template] interface.
 
 
-h3(function). O.email.template(name)
+h3(function). O.email.template(code)
 
-Creates a new [node:dev/plugin/interface/email-template] object representing the template with the specified name. Matching is case sensitive.
+Creates a new [node:dev/plugin/interface/email-template] object representing the template with the specified API code.
 
 If no name is specified, the default 'Generic' email template will be returned.
 

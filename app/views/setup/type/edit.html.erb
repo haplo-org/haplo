@@ -221,33 +221,38 @@
 <% if @parent_type_desc == nil -%>
   <h2>Labelling</h2>  
 
-  <p>Base labels<br>
-  <%= label_edit_list('z__base_labels', @obj.all_attrs(KConstants::A_TYPE_BASE_LABEL)) %>
+  <div class="z__mng_edit_entry_container">
+    <div>Base labels</div>
+    <%= label_edit_list('z__base_labels', @obj.all_attrs(KConstants::A_TYPE_BASE_LABEL)) %>
+  </div>
 
-  <p>Applicable labels<br>
   <%
-    applicable_labels = []
-    applicable_labels_default = nil
-    @obj.each(KConstants::A_TYPE_APPLICABLE_LABEL) do |value,d,qual|
-      applicable_labels << value
-      applicable_labels_default = value.to_presentation if qual == KConstants::Q_TYPE_LABEL_DEFAULT
-    end
-    applicable_labels_default = applicable_labels.first unless applicable_labels_default || applicable_labels.empty?
+    applicable_labels = @obj.all_attrs(KConstants::A_TYPE_APPLICABLE_LABEL)
+    applicable_labels_default = @obj.first_attr(KConstants::A_TYPE_LABEL_DEFAULT) || applicable_labels.first
   %>
   <div id="z__applicable_labels_default" data-default="<%= h(applicable_labels_default) %>"></div>
-  <%= label_edit_list('z__applicable_labels', applicable_labels) %>
-  </p>
+  <div class="z__mng_edit_entry_container">
+    <div>Applicable labels</div>
+    <%= label_edit_list('z__applicable_labels', applicable_labels) %>
+  </div>
 
-  <p>Labelling attributes<br>
-  <%
-    labelling_attributes = @obj.all_attrs(KConstants::A_TYPE_LABELLING_ATTR).map { |v| v.to_desc }
-    @schema.each_attr_descriptor do |attr_desc|
-      if attr_desc.data_type == KConstants::T_OBJREF
-        %><label><input type="checkbox" name="labelling_attr[<%= attr_desc.desc %>]" value="1"<% if labelling_attributes.include?(attr_desc.desc) %> checked<% end %>><%= h(attr_desc.printable_name.to_s) %></label><br><%
+  <div class="z__mng_edit_entry_container" id="z__type_edit_labelling_attributes">
+    <div>Labelling attributes</div>
+    <%
+      labelling_attributes = @obj.all_attrs(KConstants::A_TYPE_LABELLING_ATTR).map { |v| v.to_desc }
+      have_any_labelling_attribute = false
+      @schema.each_attr_descriptor do |attr_desc|
+        if attr_desc.data_type == KConstants::T_OBJREF
+          checked = labelling_attributes.include?(attr_desc.desc)
+          have_any_labelling_attribute = true if checked
+          %><div class="z_type_edit_labelling_attr_entry"<% unless checked %> style="display:none"<% end %>>
+              <label><input type="checkbox" name="labelling_attr[<%= attr_desc.desc %>]" value="1"<% if checked %> checked<% end %>><%= h(attr_desc.printable_name.to_s) %></label>
+          </div><%
+        end
       end
-    end
-  %>
-  </p>
+    %>
+    <div>&nbsp; &nbsp; <a href="#" id="z__type_edit_labelling_attributes_show_all"><% if have_any_labelling_attribute %>Show all...<% else %>Edit...<% end %></a></div>
+  </div>
 <% end %>
 
 <p><input type="submit" value="<% if @is_new %>Create type<% else %>Save changes<% end %>">

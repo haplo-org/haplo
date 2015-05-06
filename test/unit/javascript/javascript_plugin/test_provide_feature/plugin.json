@@ -4,7 +4,7 @@
   "pluginVersion": 1000,
   "displayName": "Test Provide Feature",
   "displayDescription": "For testing",
-  "apiVersion": 3,
+  "apiVersion": 4,
   "loadPriority": 1000,
   "load": ["js/test_provide_feature.js"]
 }

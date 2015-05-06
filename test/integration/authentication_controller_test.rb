@@ -128,7 +128,7 @@ class AuthenticationControllerTest < IntegrationTest
     end
   end
 
-  class LoginUserInterfaceHookTestPlugin < KPlugin
+  class LoginUserInterfaceHookTestPlugin < KTrustedPlugin
     _PluginName "Authentication UI Hook Test Plugin"
     _PluginDescription "Test"
     def hLoginUserInterface(response, destination, auth)
@@ -157,8 +157,8 @@ class AuthenticationControllerTest < IntegrationTest
     get "/do/authentication/login"
 
     # Check it doesn't work if you're not logged in
-    post_302 "/do/authentication/change_password", {:old => 'pass1234', :pw1 => 'pants9872', :pw2 => 'pants9872'}
-    assert_redirected_to '/do/authentication/login?rdr=%2Fdo%2Fauthentication%2Fchange_password'
+    post_302 "/do/authentication/change-password", {:old => 'pass1234', :pw1 => 'pants9872', :pw2 => 'pants9872'}
+    assert_redirected_to '/do/authentication/login?rdr=%2Fdo%2Fauthentication%2Fchange-password'
     assert_no_more_audit_entries_written
 
     # Log in
@@ -167,28 +167,28 @@ class AuthenticationControllerTest < IntegrationTest
     about_to_create_an_audit_entry # ignore audit entry created
 
     # Refresh CSRF token by fetching the form again
-    get "/do/authentication/change_password"
+    get "/do/authentication/change-password"
 
     # Try a bad old password
-    post "/do/authentication/change_password", {:old => 'pass5323', :pw1 => 'pants9872', :pw2 => 'pants9872'}
+    post "/do/authentication/change-password", {:old => 'pass5323', :pw1 => 'pants9872', :pw2 => 'pants9872'}
     assert response.body =~ /Password not changed/
     assert response.body =~ /The old password entered was incorrect/
     assert_no_more_audit_entries_written
 
     # Try a password not matching
-    post "/do/authentication/change_password", {:old => 'pass1234', :pw1 => 'pants9872', :pw2 => 'pants9873'}
+    post "/do/authentication/change-password", {:old => 'pass1234', :pw1 => 'pants9872', :pw2 => 'pants9873'}
     assert response.body =~ /Password not changed/
     assert response.body =~ /The new passwords entered did not match/
     assert_no_more_audit_entries_written
 
     # Rubbish password
-    post "/do/authentication/change_password", {:old => 'pass1234', :pw1 => 'password', :pw2 => 'password'}
+    post "/do/authentication/change-password", {:old => 'pass1234', :pw1 => 'password', :pw2 => 'password'}
     assert response.body =~ /Password not changed/
     assert response.body =~ /The new password did not meet minimum security requirements/
     assert_no_more_audit_entries_written
 
     # Change password
-    post "/do/authentication/change_password", {:old => 'pass1234', :pw1 => 'pants9872', :pw2 => 'pants9872'}
+    post "/do/authentication/change-password", {:old => 'pass1234', :pw1 => 'pants9872', :pw2 => 'pants9872'}
     assert_select 'h1', 'Password changed'
     assert_audit_entry(:kind => 'USER-CHANGE-PASS', :user_id => @_users[_TEST_APP_ID].id, :entity_id => @_users[_TEST_APP_ID].id, :displayable => false)
 
@@ -204,7 +204,7 @@ class AuthenticationControllerTest < IntegrationTest
     assert_select('p.z__general_alert', 'Incorrect login, please try again.')
     post_302 "/do/authentication/login", {:email => 'authtest@example.com', :password => 'pants9872'}
     assert_redirected_to '/'
-    get "/do/authentication/change_password"
+    get "/do/authentication/change-password"
     assert_select 'h1', 'Change password'
 
     without_application { teardown_in_app(_TEST_APP_ID) }

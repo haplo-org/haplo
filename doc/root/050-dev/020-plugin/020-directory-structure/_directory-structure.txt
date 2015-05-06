@@ -9,6 +9,7 @@ Plugins are a collection of JavaScript code, templates, automated tests, and oth
       \- js
            \- example_plugin.js
            \- handle_requests.js
+      \- requirements.schema
       \- global.js
       \- static
            \- ui.js
@@ -45,6 +46,13 @@ If a @locals@ directive is used in the @plugin.json@ file, these are implemented
     // Contents of your JavaScript file go here
 })(example_plugin, example_plugin.exampleProperty);
 </pre>
+
+
+h2. requirements.schema
+
+The [node:dev/plugin/schema/requirements-schema] file describes the minimum requirements the plugin has of the [node:dev/plugin/schema:application schema].
+
+The Platform uses it to alter the application's schema when the plugin is installed or updated, and then make the various schema objects available to the plugin as readable names in the plugin's local schema dictionaries.
 
 
 h2. global.js

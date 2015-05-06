@@ -11,11 +11,11 @@ P.hook("hObjectDisplay", function(response, object) {
     // Menu items link to an object editor for a new object which links to the current object.
     // Only add a menu item if the user has permission to create the proposed object.
     var menuItems = [];
-    if((object.isKindOf(TYPE["std:type:organisation"]) || object.isKindOf(TYPE["std:type:person"])) &&
-            O.currentUser.canCreateObjectOfType(TYPE["std:type:contact-note"])) {
+    if((object.isKindOf(T.Organisation) || object.isKindOf(T.Person)) &&
+            O.currentUser.canCreateObjectOfType(T.ContactNote)) {
         menuItems.push(['/do/contacts/add-note/'+object.ref, 'Add Contact note']);
     }
-    if(object.isKindOf(TYPE["std:type:organisation"]) && O.currentUser.canCreateObjectOfType(TYPE["std:type:person"])) {
+    if(object.isKindOf(T.Organisation) && O.currentUser.canCreateObjectOfType(T.Person)) {
         menuItems.push(['/do/contacts/add-person/'+object.ref, 'Add Person']);
     }
     if(menuItems.length > 0) {
@@ -33,18 +33,18 @@ P.respond("GET", "/do/contacts/add-note", [
     var templateObject = O.object();
     // Set the type of the object, so the editor knows what fields to display
     // The append* functions are automatically generated from the schema created in the system management web interface.
-    templateObject.appendType(TYPE["std:type:contact-note"]);
+    templateObject.appendType(T.ContactNote);
     // Add a link to the original object in the participant field
-    templateObject.append(object, ATTR["std:attribute:participant"]);
+    templateObject.append(object, A.Participant);
     // Add today's date to the note
-    templateObject.append(new Date(), ATTR["dc:attribute:date"]);
+    templateObject.append(new Date(), A.Date);
     // If the user has a representative object, add them as a participant as well
     if(O.currentUser.ref !== null) {
-        templateObject.append(O.currentUser.ref, ATTR["std:attribute:participant"]);
+        templateObject.append(O.currentUser.ref, A.Participant);
     }
     // Copy the "works for" fields from the original object, so the organisation is linked from the contact note
-    object.every(ATTR["std:attribute:works-for"], function(value,desc,qualifier) {
-        templateObject.append(value, ATTR["std:attribute:participant"]);
+    object.every(A.WorksFor, function(value,desc,qualifier) {
+        templateObject.append(value, A.Participant);
     });
     // Render a standard template to show the editor for the new object
     E.render({
@@ -60,8 +60,8 @@ P.respond("GET", "/do/contacts/add-person", [
     {pathElement:0, as:"object"}
 ], function(E, object) {
     var templateObject = O.object();
-    templateObject.appendType(TYPE["std:type:person"]);
-    templateObject.append(object, ATTR["std:attribute:works-for"]);
+    templateObject.appendType(T.Person);
+    templateObject.append(object, A.WorksFor);
     E.render({
         templateObject:templateObject,
         pageTitle:'Add person to '+object.title,

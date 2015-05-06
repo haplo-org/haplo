@@ -205,12 +205,14 @@ class KTextDocument < KText
 
   class ToHTMLListener
     include REXML::StreamListener
-    OUTPUT_TAG_REGEX = /\Ap|h\d+|li\z/
+    OUTPUT_TAG_REGEX = /\A(p|h\d+|li|a|b|i)\z/
     LIST_ITEM = 'li'
+    ANCHOR_TAG = 'a'
     DOC = 'doc'
     attr_reader :output
     def initialize
       @output = ''
+      @tag_level = 0
     end
     def tag_start(name, attrs)
       @in_widget = true if name == 'widget'
@@ -221,15 +223,19 @@ class KTextDocument < KText
         else
           end_ul_maybe()
         end
-        @output << "<#{name}>"
-        @intag = true
+        if name == ANCHOR_TAG
+          @output << %Q!<a target="_blank" href="#{ERB::Util.h(attrs['href'] || '')}">!
+        else
+          @output << "<#{name}>"
+        end
+        @tag_level += 1
       end
     end
     def tag_end(name)
       @in_widget = nil if name == 'widget'
       if name =~ OUTPUT_TAG_REGEX
         @output << "</#{name}>"
-        @intag = false
+        @tag_level -= 1
       elsif name == DOC
         end_ul_maybe()
       end
@@ -239,7 +245,7 @@ class KTextDocument < KText
       @in_ul = false
     end
     def text(text)
-      @output << ERB::Util::h(text) if @intag && !@in_widget
+      @output << ERB::Util::h(text) if (@tag_level > 0) && !@in_widget
     end
   end
 
@@ -250,10 +256,10 @@ class KTextDocument < KText
     end
     def tag_start(name, attrs)
       super(name, attrs)
-      @last_name = name if @intag
+      @last_name = name if @tag_level > 0
     end
     def text(text)
-      return unless @intag && !@in_widget
+      return unless (@tag_level > 0) && !@in_widget
       l = text.length
       if l < @chars_left
         @output << text

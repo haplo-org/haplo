@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-class StdMobileNotesPlugin < KPlugin
+class StdMobileNotesPlugin < KTrustedPlugin
   include KConstants
   include Application_TextHelper
 
@@ -31,7 +31,7 @@ class StdMobileNotesPlugin < KPlugin
       html << %Q!Mobile note: <a href="#{note_urlpath}">#{ERB::Util.h(text_truncate(ERB::Util.h(notes), 64))}</a>!
       obj = ((work_unit.objref == nil) ? nil : KObjectStore.read(work_unit.objref))
       if obj != nil
-        html << %Q!<br>on <i><a href="#{controller.object_urlpath(obj)}">#{ERB::Util.h(obj.first_attr(A_TITLE).to_s)}</a></i>!
+        html << %Q!<br>on <i><a href="#{KFramework.request_context.controller.object_urlpath(obj)}">#{ERB::Util.h(obj.first_attr(A_TITLE).to_s)}</a></i>!
       end
     else
       html << %Q!<b><a href="#{note_urlpath}">Mobile note</a></b><br>#{text_simple_format(notes)}!

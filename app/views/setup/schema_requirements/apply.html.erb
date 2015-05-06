@@ -1,0 +1,22 @@
+<%
+  @page_title = 'Apply requirements'
+%>
+<%= sys_mng_header %>
+
+<p>This tool applies schema requirements. Paste the contents of a <tt>requirements.schema</tt> file into the box below.</p>
+
+<% if request.post? %>
+  <p><b>Requirements applied.</b></p>
+  <% if @errors.length > 0 %>
+  <p>Errors:</p>
+  <pre><%= h(@errors.join("\n")) %>
+  </pre>
+  <% end %>
+<% else %>
+  <p><b>WARNING:</b> The requirements will be applied directly. Requirements for installed plugins will be ignored.</p>
+<% end %>
+
+<form method="POST"><%= form_csrf_token %>
+  <p><textarea name="requirements" style="width:90%;font-family:monospace" rows="20"><%= h(@requirements) %></textarea></p>
+  <p><input type="submit" value="Apply schema requirements"></p>
+</form>

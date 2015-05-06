@@ -99,6 +99,13 @@
             // Find all the radio buttons, set control disabling, and set handlers to keep it up to date
             $('.z__type_edit_inherit_radio').click(j__inheritRadioClick).each(j__inheritRadioClick);
         }
+
+        // LABELLING ATTRIBUTES
+        $('#z__type_edit_labelling_attributes_show_all').on('click', function(evt) {
+            evt.preventDefault();
+            $('#z__type_edit_labelling_attributes div.z_type_edit_labelling_attr_entry').show();
+            $('#z__type_edit_labelling_attributes_show_all').parents('div').first().remove();
+        });
     };
 
     KApp.j__onPageLoad(j__start);

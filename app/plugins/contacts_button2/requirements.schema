@@ -1,0 +1,8 @@
+
+attribute dc:attribute:date as Date
+attribute std:attribute:participant as Participant
+attribute std:attribute:works-for as WorksFor
+
+type std:type:organisation as Organisation
+type std:type:person as Person
+type std:type:contact-note as ContactNote

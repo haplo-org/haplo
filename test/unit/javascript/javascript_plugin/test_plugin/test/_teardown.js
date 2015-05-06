@@ -5,4 +5,4 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
-var teardown_script_run = true;
+P.teardown_script_run = true;

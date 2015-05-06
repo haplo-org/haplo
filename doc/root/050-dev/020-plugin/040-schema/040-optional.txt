@@ -1,0 +1,40 @@
+title: Optional requirements
+--
+
+Schema object declaractions may be declared as optional using the @OPTIONAL@ keyword.
+
+This feature is intended to allow a plugin to implement a feature, then another plugin which defines customer specific customisations on top of it, without creating a hard dependency between the two plugins.
+
+For example, a plugin might add another attribute to a type, if and only if that type is defined by another plugin, with a requirement file like this:
+
+<pre>
+OPTIONAL type example:type:optional-type as OptionalType
+    attribute example:type:some-attribute
+</pre>
+
+If it wasn't optional, then the feature plugin would have to be installed before the customising plugin, otherwise an incomplete type would be created. This adds potential for creating bad schema objects in production systems, and tightly couples plugins in development.
+
+
+h3. Warning
+
+If you use @OPTIONAL@ schema declaractions, then be very careful to mark everything optional that should be optional.
+
+For example, if you declare an @OPTIONAL@ attribute, and use it in a type which isn't optional, then your type will refer to an attribute which doesn't exist.
+
+
+h3. Plugin local schema and optional declaractions
+
+Local names for optional types appear in the [node:dev/plugin/schema/local-schema:local schema] if and only if the types appear in the application schema.
+
+If you refer to an optional local name which doesn't actually exist, an exception is thrown. Check existence with the @in@ operator.
+
+For example, you might surround plugin code with a check like this:
+
+<pre>language=javascript
+if("OptionalType" in T) {
+    // More code using the optional type.
+    // Refer to the type as T.OptionalType as usual.
+}
+</pre>
+
+To avoid too many checks, if you're modifying functionality provided by another plugin, you could choose one representative schema object and assume that all other objects are present too. If the feature relies on a particular type, you could assume that if that type is in the application schema, all the other relevant schema objects will be present.

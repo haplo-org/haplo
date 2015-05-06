@@ -4,6 +4,6 @@
   "pluginVersion": 1000,
   "displayName": "File controller test plugin",
   "displayDescription": "For testing",
-  "apiVersion": 3,
+  "apiVersion": 4,
   "load": ["js/file_downloads_plugin.js"]
 }

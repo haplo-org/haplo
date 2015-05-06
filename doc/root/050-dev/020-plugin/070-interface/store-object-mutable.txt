@@ -30,7 +30,7 @@ Creates or updates the object in the store.
 
 h3(function). append(value, desc, qual)
 
-Append a value to the object, with the specified @desc@ from the schema [node:dev/plugin/schema/attr] constants. @qual@ can be omitted, or use @QUAL["std:qualifier:null"]@ to specify no qualifier.
+Append a value to the object, with the specified @desc@ from the schema [node:dev/plugin/schema/schema-global/attr] constants. @qual@ can be omitted, or use @QUAL["std:qualifier:null"]@ to specify no qualifier.
 
 The value can be:
 

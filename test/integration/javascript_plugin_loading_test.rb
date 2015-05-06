@@ -149,7 +149,7 @@ __E
           "pluginVersion": 1000,
           "displayName": "TEST #{plugin_name}",
           "displayDescription": "For testing",
-          "apiVersion": 3,
+          "apiVersion": 4,
           "load": ["js/#{plugin_name}.js"]
 __E
       f.write %Q!,"loadPriority": #{load_priority}\n! if load_priority
@@ -164,8 +164,8 @@ __E
       ORDER_TESTING_PLUGINS.each { |plugin_name,p| KPlugin.install_plugin(plugin_name) }
 
       # Check the factory has them in the right order
-      interesting_plugins_in_order = KPlugin.get_plugins_for_current_app.plugin_factories.
-          map { |factory| factory.name }.
+      interesting_plugins_in_order = KPlugin.get_plugins_for_current_app.
+          map { |plugin| plugin.name }.
           select { |name| name =~ /\A\w\w\w_plugin\d\z/ }
       assert interesting_plugins_in_order.length > 2  # not empty!
       assert_equal EXPECTED_PLUGIN_LOAD_ORDER, interesting_plugins_in_order

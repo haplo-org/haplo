@@ -23,7 +23,7 @@ h2. Examples
 <pre>language=javascript
 O.withoutPermissionEnforcement(function() {
     // Do privileged operation, for example...
-    var query = O.query().link(TYPE["std:type:person"], ATTR.Type);
+    var query = O.query().link(T.Person, A.Type);
     query.execute().each(function(object) {
        // ... do something with every single person object stored
     });

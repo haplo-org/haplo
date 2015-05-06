@@ -176,7 +176,9 @@ class WorkUnit < ActiveRecord::Base
     return unless info_json
     info = JSON.parse(info_json)
     # TODO: Better email template selection for work unit automatic notifications
-    template = info["template"] ? EmailTemplate.where(:name => info["template"]).first : nil
+    template = info["template"] ? EmailTemplate.where(:code => info["template"]).first : nil
+    # Backwards compatible fallback to checking name
+    template ||= info["template"] ? EmailTemplate.where(:name => info["template"]).first : nil
     template ||= EmailTemplate.find(EmailTemplate::ID_DEFAULT_TEMPLATE)
     return unless template
     template.deliver({

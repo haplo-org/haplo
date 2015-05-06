@@ -8,3 +8,5 @@ For each label defined in the application's schema, an entry will be defined in 
 The value of the constant is a [node:dev/plugin/interface/ref], although loading the object it refers to is unlikely to be useful.
 
 For example, @LABEL["std:label:deleted"]@ is the ref of the built-in @DELETED@ label.
+
+To make your code easier to read, you should use [node:dev/plugin/schema/local-schema:plugin local schema dictionaries].

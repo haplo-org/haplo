@@ -3,6 +3,8 @@
   <p>Name<br/>
   <%= form.text_field(:name) %></p>
   
+  <%= code_value_edit_ui(@email_template.code, 'email_template[code]') %>
+
   <p>Description<br/>
   <%= form.textarea(:description, :rows => 4, :class => 'z__full_width_form_element') %></p>
 

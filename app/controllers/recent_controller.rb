@@ -33,6 +33,7 @@ private
     permission_denied unless @request_user.permissions.something_allowed?(:read)
     # Get *displayable* entries from audit trail
     finder = AuditEntry.where_labels_permit(:read, @request_user.permissions).where({:displayable => true}).
+      where("user_id <> #{User::USER_SYSTEM}"). # don't include SYSTEM user because it's likely to be just automatic changes
       where("obj_id IS NOT NULL"). # for backwards compatibility with converted applications
       limit(number_of_items).
       order('id DESC');

@@ -68,8 +68,8 @@ Examples:
 
 <pre>language=javascript
 var q = O.query();
-q.link(TYPE["std:type:book"], ATTR.Type);           // search for objects of a given type
-q.link(clientObject, ATTR["std:attribute:client"]); // search for objects linked to a client
+q.link(T.Book, A.Type);         // search for objects of a given type
+q.link(clientObject, A.Client); // search for objects linked to a client
 </pre>
 
 
@@ -104,8 +104,8 @@ This example builds a query to find People objects with a given email address:
 <pre>language=javascript
 var email = O.text(O.T_IDENTIFIER_EMAIL_ADDRESS, "joe@example.com");
 var q = O.query();
-q.link(TYPE["std:type:person"], ATTR.Type);
-q.identifier(email, ATTR["std:attribute:email"]);
+q.link(T.Person, A.Type);
+q.identifier(email, A.Email);
 </pre>
 
 
@@ -120,14 +120,14 @@ This example shows both ways the sub-clause function can be used.
 <pre>language=javascript
 // Preferred style
 var q = O.query().or(function(subquery) {
-    subquery.link(TYPE["std:type:book"], ATTR.Type).
-             link(clientObject, ATTR["std:attribute:client"]);
+    subquery.link(T.Book, A.Type).
+             link(clientObject, A.Client);
 });
 // Alternative style
 var q = O.query();
 var orClause = q.or();
-orClause.link(TYPE["std:type:book"], ATTR.Type).
-         link(clientObject, ATTR["std:attribute:client"]);
+orClause.link(T.Book, A.Type).
+         link(clientObject, A.Client);
 // And in either case, execute the top level query
 var results = q.execute();
 </pre>
@@ -154,8 +154,8 @@ This example finds all books which do not have an author:
 
 <pre>language=javascript
 var anonymousBooks = O.query().not(function(subquery) {
-    subquery.link(TYPE["std:type:book"], ATTR.Type).
-             linkToAny(ATTR["dc:attribute:author"]);
+    subquery.link(T.Book, A.Type).
+             linkToAny(A.Author);
 }).execute();
 </pre>
 

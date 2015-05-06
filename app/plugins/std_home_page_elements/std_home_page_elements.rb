@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-class StdHomePageElementsPlugin < KPlugin
+class StdHomePageElementsPlugin < KTrustedPlugin
   include KConstants
   include ERB::Util
   include DisplayHelper # for user names in noticeboard entries
@@ -47,7 +47,7 @@ class StdHomePageElementsPlugin < KPlugin
     return nil if m == nil
     rc = KFramework.request_context
     return nil if rc == nil
-    self.send(m, controller, result, path, object, style, options)
+    self.send(m, rc.controller, result, path, object, style, options)
     result.stopChain if result.title != nil
   end
 
@@ -62,7 +62,7 @@ class StdHomePageElementsPlugin < KPlugin
     end
     return if got_one
     KApp.set_global(:home_page_elements,
-      "4 left std:browser_check\n4 left std:noticeboard\n4 right std:recent\n4 right std:quick_links\n#{elements}")
+      "std:group:everyone left std:browser_check\nstd:group:everyone left std:noticeboard\nstd:group:everyone right std:recent\nstd:group:everyone right std:quick_links\n#{elements}")
   end
 
   # -----------------------------------------------------------------------------------------------------------------

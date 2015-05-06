@@ -96,38 +96,41 @@ class KJSPluginRuntime
             unless 0 == @runtime.host.getNumberOfPluginsRegistered()
               raise "Runtime in bad state - already has plugins registered."
             end
-            # Go through each plugin factory, and ask it to load the JavaScript code
-            KPlugin.get_plugins_for_current_app.plugin_factories.each do |factory|
-              if factory.is_javascript_factory?
-                database_namespace = nil
-                # Does the plugin require a database?
-                if factory.js_info.uses_database
-                  # Yes - retrieve/generate a namespace name
-                  namespaces = KApp.global(:plugin_db_namespaces) || ''
-                  namespaces = YAML::load(namespaces) || {}
-                  database_namespace = namespaces[factory.name]
-                  if database_namespace == nil
-                    # Namespace not set yet - choose a random namespace name
-                    safety = 256
-                    while true
-                      safety -= 1
-                      raise "Couldn't allocate database namespace" if safety <= 0
-                      database_namespace = KRandom.random_hex(3)
-                      break unless namespaces.has_value?(database_namespace)
-                    end
-                    namespaces[factory.name] = database_namespace
-                    KApp.set_global(:plugin_db_namespaces, YAML::dump(namespaces))
+            # Load basic schema information into runtime
+            @runtime.evaluateString(KSchemaToJavaScript.schema_to_js(KObjectStore.schema), "<schema>")
+            # Parse the plugin schema requirements so it can be passed to the plugins when loading
+            schema_for_js_runtime = SchemaRequirements::SchemaForJavaScriptRuntime.new()
+            # Load database namespace information
+            db_namespaces = YAML::load(KApp.global(:plugin_db_namespaces) || '') || {}
+            # Go through each plugin, and ask it to load the JavaScript code
+            KPlugin.get_plugins_for_current_app.each do |plugin|
+              database_namespace = nil
+              # Does the plugin require a database?
+              if plugin.uses_database
+                # Yes - retrieve/generate a namespace name
+                database_namespace = db_namespaces[plugin.name]
+                if database_namespace == nil
+                  # Namespace not set yet - choose a random namespace name
+                  safety = 256
+                  while true
+                    safety -= 1
+                    raise "Couldn't allocate database namespace" if safety <= 0
+                    database_namespace = KRandom.random_hex(3)
+                    break unless db_namespaces.has_value?(database_namespace)
                   end
-                end
-                # Tell the host object to expect a plugin registration.
-                # This check prevents unexpected registrations by plugin code, and sets the database namespace for the plugin.
-                @runtime.host.setNextPluginToBeRegistered(factory.name, database_namespace)
-                KJavaScriptPlugin.reporting_errors(factory.name) do
-                  using_runtime do
-                    factory.javascript_load(@runtime)
-                  end
+                  db_namespaces[plugin.name] = database_namespace
+                  KApp.set_global(:plugin_db_namespaces, YAML::dump(db_namespaces))
                 end
               end
+              # Tell the host object to expect a plugin registration.
+              # This check prevents unexpected registrations by plugin code, and sets the database namespace for the plugin.
+              @runtime.host.setNextPluginToBeRegistered(plugin.name, database_namespace)
+              KJavaScriptPlugin.reporting_errors(plugin.name) do
+                using_runtime do
+                  plugin.javascript_load(@runtime, schema_for_js_runtime)
+                end
+              end
+              @runtime.host.setNextPluginToBeRegistered(nil, nil)
             end
             # Call the plugin's onLoad() functions
             using_runtime do

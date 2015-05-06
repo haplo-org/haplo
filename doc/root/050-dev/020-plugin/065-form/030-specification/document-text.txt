@@ -7,3 +7,4 @@ A simple rich text editor, supporting widgets which include items from the objec
 h2. Properties
 
 |@type@|@"document-text"@|
+|@allowWidgets@|Whether to allow the user to insert widgets into the document text. Defaults to @false@|

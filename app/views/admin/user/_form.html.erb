@@ -6,8 +6,8 @@
   <% unless @hide_main -%>
   <% if @user.kind.to_i != User::KIND_USER -%>
     <p>Name<br><%= f.text_field 'name' %></p>
-    <p>Notification email address <i>(optional)</i><br><%= f.text_field 'email', 'size="30"' %></p>
     <%= code_value_edit_ui(@user.code, 'user[code]') %>
+    <p>Notification email address <i>(optional)</i><br><%= f.text_field 'email', 'size="30"' %></p>
   <% else -%>
     <p>First name<br><%= f.text_field 'name_first', 'size="14"' %></p>
     <p>Last name<br><%= f.text_field 'name_last', 'size="14"' %></p>

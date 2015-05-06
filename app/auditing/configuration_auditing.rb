@@ -15,6 +15,8 @@ module KAuditing
     :installed_plugins,
     # Internal housekeeping
     :plugin_db_namespaces, :appearance_update_serial, :schema_version, :schema_user_version, :navigation_version,
+    # Plugin local schema
+    :js_plugin_schema_requirements,
     # Controlled externally
     :billing_page_html,
     # Don't store secrets in the audit trail

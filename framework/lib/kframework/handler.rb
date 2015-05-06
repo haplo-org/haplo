@@ -255,6 +255,7 @@ class KFramework
   end
 
   def self.clear_request_context
+    # NOTE: This method must raise an exception
     Thread.current[:_frm_request_context] = nil
   end
 

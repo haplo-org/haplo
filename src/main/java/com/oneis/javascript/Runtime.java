@@ -101,11 +101,6 @@ public class Runtime {
         if(!(reporter instanceof OErrorReporter)) {
             currentContext.setErrorReporter(new OErrorReporter(reporter, supportRoot.javascriptWarningsAreErrors()));
         }
-        // Evaluate generated JavaScript to make the schema easier to use?
-        if(!haveInitialisedSchema) {
-            currentContext.evaluateString(runtimeScope, supportRoot.generateSchemaJavaScript(), "<schema>", 1, null /* no security domain */);
-            haveInitialisedSchema = true;
-        }
     }
 
     /**

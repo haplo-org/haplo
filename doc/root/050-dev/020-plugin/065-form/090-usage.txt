@@ -11,7 +11,7 @@ This example defines a form with two form elements, and a request handler which 
 
 <pre>language=javascript
 // Define data source
-P.dataSource('person-list', 'object-lookup', [TYPE["std:type:person"], TYPE["std:type:organisation"]]);
+P.dataSource('person-list', 'object-lookup', [T.Person, T.Organisation]);
 
 // Define form
 var exampleForm = P.form({

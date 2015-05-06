@@ -1,7 +1,25 @@
 <%
-  @page_title = 'Error during plugin installation'
+  @page_title = 'Plugin installation'
 -%>
 
 <h1><%= @page_title %></h1>
 
-<p>An error occurred during plugin installation, or the plugin name is incorrect. Contact Support for help.</p>
+<% if @installation %>
+
+  <% if @installation.failure %>
+    <h2>Installation failure</h2>
+    <p>Installation of the plugin failed:</p>
+    <pre><%= h(@installation.failure) %></pre>
+  <% end %>
+
+  <% if @installation.warnings %>
+    <h2>Installation warnings</h2>
+    <pre><%= h(@installation.warnings)%></pre>
+  <% end %>
+
+<% else %>
+
+  <h2>Unknown plugin</h2>
+  <p>Plugin <b><%= h(params[:plugin]) %></b> not known.</p>
+
+<% end %>

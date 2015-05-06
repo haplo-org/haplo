@@ -125,6 +125,9 @@ test_filenames.each do |filename|
 end
 puts "Test files loaded: #{$khq_tests_loaded}"
 
+# Load any more trusted plugins which were defined in the tests
+KTrustedPlugin::TRUSTED_PLUGIN_REGISTER.call()
+
 # Fix up assert and assert_equal to avoid accidental dodgy usage
 # Only use it if the check_asserts option is used, as it fiddles around in the test infrastructure
 # and doesn't feel like something which should really be enabled all the time without a lot of

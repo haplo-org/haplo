@@ -102,7 +102,26 @@ class KFramework
 
     # Call when the block of operations are complete. Sends all buffered notifiations.
     def send_buffered_then_end_on_thread
-      @buffers.each { |buffer| buffer.finish_on_thread }
+      exceptions = []
+      @buffers.each { |buffer| buffer.finish_on_thread(exceptions) }
+      NotificationCentre.raise_collected_exceptions(exceptions) unless exceptions.empty?
+    end
+
+    class TooManyExceptionsException < RuntimeError
+    end
+
+    def self.raise_collected_exceptions(exceptions)
+      if exceptions.length == 1
+        raise exceptions.first
+      else
+        # Log all the exceptions, then throw a different exception
+        msg = "#{exceptions.length} exceptions thrown in notification centre"
+        exceptions.each do |exception|
+          KApp.logger.error(msg)
+          KApp.logger.log_exception(exception)
+        end
+        raise TooManyExceptionsException.new(msg)
+      end
     end
 
     # Dump out the targets for debugging
@@ -219,10 +238,21 @@ class KFramework
 
       # Send all the buffered notifications without changing the use count.
       def send_buffered
+        exceptions = []
+        send_buffered_collecting_exceptions(exceptions)
+        NotificationCentre.raise_collected_exceptions(exceptions) unless exceptions.empty?
+      end
+
+      def send_buffered_collecting_exceptions(exceptions)
         info = Thread.current[@thread_key]
         if info
           info.buffered.each do |args|
-            @object.__send__(@method, args)
+            begin
+              @object.__send__(@method, args)
+            rescue => e
+              # Exceptions are collected for the caller to handle
+              exceptions << e
+            end
           end
           info.buffered.clear
         end
@@ -230,9 +260,13 @@ class KFramework
       end
 
       # Internal call for the notification centre to send all remaining buffered notifications.
-      def finish_on_thread
-        send_buffered
-        Thread.current[@thread_key] = nil
+      def finish_on_thread(exceptions)
+        begin
+          send_buffered_collecting_exceptions(exceptions)
+        ensure
+          # Regardless of what happens, the thread local needs to be cleared to avoid breaking future requests
+          Thread.current[@thread_key] = nil
+        end
       end
 
     private

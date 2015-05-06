@@ -47,7 +47,7 @@ class KObject
 
   # Has the object been created in the object store?
   def is_stored?
-    ! @objref.nil?
+    @version != 0
   end
 
   # Get user IDs

@@ -99,10 +99,6 @@ class JSSupportRoot
     KApp.get_jdbc_database
   end
 
-  def generateSchemaJavaScript()
-    KSchemaToJavaScript.schema_to_js(KObjectStore.schema)
-  end
-
   def generateSchemaQueryFunction(queryName)
     KSchemaToJavaScript.generate_schema_query_function(KObjectStore.schema, queryName)
   end

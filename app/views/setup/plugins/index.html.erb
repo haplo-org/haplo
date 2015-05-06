@@ -5,8 +5,8 @@
 <h1>Installed plugins</h1>
 
 <ul>
-  <% @plugins.plugin_factories.each do |factory| -%>
-    <li><a href="/do/setup/plugins/show/<%= factory.name %>" target="workspace"><%= h(factory.plugin_name) %></a></li>
+  <% @plugins.each do |plugin| -%>
+    <li><a href="/do/setup/plugins/show/<%= plugin.name %>" target="workspace"><%= h(plugin.plugin_display_name) %></a></li>
   <% end -%>
 </ul>
 

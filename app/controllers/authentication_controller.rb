@@ -318,33 +318,30 @@ class AuthenticationController < ApplicationController
   _GetAndPost
   _PoliciesRequired :not_anonymous
   def handle_change_password
-    # Get user
-    user_record = User.cache[session[:uid]]
-
-    # Check it's not a super user
-    raise "Can't change super user password" if user_record.kind == User::KIND_SUPER_USER
+    if @request_user.kind == User::KIND_SUPER_USER
+      @change_msg = "Can't change super user password."
+      return render :action => 'change_password_disabled'
+    end
 
     # Is this enabled for this email address?
-    change_enabled, @change_msg = is_password_feature_enabled?(:change_password, user_record.email)
+    change_enabled, @change_msg = is_password_feature_enabled?(:change_password, @request_user.email)
     unless change_enabled
-      render :action => 'change_password_disabled'
-      return
+      return render :action => 'change_password_disabled'
     end
 
     if request.post? && session[:uid] != nil
-
       @failed_change = true
 
-      @bad_old = ! (user_record.password_check(params[:old]))
+      @bad_old = ! (@request_user.password_check(params[:old]))
       @not_match = (params[:pw1] != params[:pw2])
       @bad_new = ! (User.is_password_secure_enough?(params[:pw1]))
 
       @failed_change = false unless @bad_old || @not_match || @bad_new
 
       unless @failed_change
-        user_record.password = params[:pw1]
-        user_record.save!
-        render(:action => 'password_changed')
+        @request_user.password = params[:pw1]
+        @request_user.save!
+        render :action => 'password_changed'
       end
     end
   end

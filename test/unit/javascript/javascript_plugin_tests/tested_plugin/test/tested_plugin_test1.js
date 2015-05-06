@@ -5,29 +5,36 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
-T.test(function() {
+t.test(function() {
 
-    T.assert(!O.isHandlingRequest);
+    // Check that the locals are defined when the tests run
+    t.assert(Special === 444);
 
-    T.login("ANONYMOUS");
-    T.assert(O.currentUser.id === 2);
+    // Check the schema is available
+    t.assert(T.TestingPerson == O.ref('20x0'));
+    t.assert(Group.GroupOne === 21);
+
+    t.assert(!O.isHandlingRequest);
+
+    t.login("ANONYMOUS");
+    t.assert(O.currentUser.id === 2);
     O.session["tested_plugin:ping"] = 3;
-    T.assert(O.isHandlingRequest);
-    T.assert(O.session["tested_plugin:ping"] === 3);
+    t.assert(O.isHandlingRequest);
+    t.assert(O.session["tested_plugin:ping"] === 3);
 
-    T.login("user1@example.com");
-    T.assert(O.currentUser.id === O.user("user1@example.com").id);
-    T.assert(O.session["tested_plugin:ping"] === undefined);
-    T.assert(O.isHandlingRequest);
-    T.assert(O.tray.length === 0);
+    t.login("user1@example.com");
+    t.assert(O.currentUser.id === O.user("user1@example.com").id);
+    t.assert(O.session["tested_plugin:ping"] === undefined);
+    t.assert(O.isHandlingRequest);
+    t.assert(O.tray.length === 0);
 
-    T.loginAnonymous();
-    T.assert(O.currentUser.id === 2);
+    t.loginAnonymous();
+    t.assert(O.currentUser.id === 2);
 
-    T.logout();
-    T.assert(!O.isHandlingRequest);
+    t.logout();
+    t.assert(!O.isHandlingRequest);
 
     // LAST THING!
     // Leave logged in, so next test can check it isn't still logged in
-    T.login("user1@example.com");
+    t.login("user1@example.com");
 });

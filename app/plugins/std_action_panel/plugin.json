@@ -4,7 +4,7 @@
   "pluginVersion": 100,
   "displayName": "Action Panel",
   "displayDescription": "Standard Action Panel user interface for use by other plugins.",
-  "apiVersion": 3,
+  "apiVersion": 4,
   "loadPriority": 1000,
   "load": []
 }

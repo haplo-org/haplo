@@ -80,7 +80,9 @@ class KObjectStoreTest < Test::Unit::TestCase
     # Create an object, check ref & labels are set
     assert obj.objref == nil
     assert obj.labels == KLabelList.new([])
+    assert_equal false, obj.is_stored?
     KObjectStore.create(obj)
+    assert_equal true, obj.is_stored?
     assert obj.frozen?  # create freezes the object to prevent further modification
     assert obj.objref != nil
     assert_equal 1, obj.version
@@ -144,8 +146,10 @@ class KObjectStoreTest < Test::Unit::TestCase
     obj_pre_alloc_id = KObject.new([O_LABEL_UNLABELLED])
     obj_pre_alloc_id.add_attr("PREALLOC", 100)
     assert_equal nil, obj_pre_alloc_id.objref
+    assert_equal false, obj_pre_alloc_id.is_stored?
     KObjectStore.preallocate_objref(obj_pre_alloc_id)
     assert obj_pre_alloc_id.objref.kind_of? KObjRef
+    assert_equal false, obj_pre_alloc_id.is_stored?
     assert_equal nil, KObjectStore.read(obj_pre_alloc_id.objref)
     obj_pre_alloc_id_obj_id = obj_pre_alloc_id.objref.to_i
     assert obj_pre_alloc_id_obj_id > KObjectStore::MAX_RESERVED_OBJID
@@ -153,10 +157,14 @@ class KObjectStoreTest < Test::Unit::TestCase
     # Create another object
     obj_non_alloc = KObject.new([O_LABEL_UNLABELLED])
     obj_non_alloc.add_attr("NON_ALLOC", 100)
+    assert_equal false, obj_non_alloc.is_stored?
     KObjectStore.create(obj_non_alloc)
+    assert_equal true, obj_non_alloc.is_stored?
     assert obj_non_alloc.objref.obj_id != obj_pre_alloc_id_obj_id
     # Then create the pre-allocated object and check
+    assert_equal false, obj_pre_alloc_id.is_stored?
     KObjectStore.create(obj_pre_alloc_id)
+    assert_equal true, obj_pre_alloc_id.is_stored?
     assert_equal obj_pre_alloc_id_obj_id, obj_pre_alloc_id.objref.to_i
     obj_pre_alloc_id_r = KObjectStore.read(KObjRef.new(obj_pre_alloc_id_obj_id))
     assert_equal "PREALLOC", obj_pre_alloc_id_r.first_attr(100).to_s
@@ -540,7 +548,7 @@ class KObjectStoreTest < Test::Unit::TestCase
 
   # ---------------------------------------------------------------------------------------------------------------
 
-  class TestLabelObjectsPlugin < KPlugin
+  class TestLabelObjectsPlugin < KTrustedPlugin
     def hLabelObject(result, object)
       result.changes.add(777788)
     end
@@ -580,7 +588,7 @@ class KObjectStoreTest < Test::Unit::TestCase
 
   # ---------------------------------------------------------------------------------------------------------------
 
-  class ListenForObjectChangeHookPlugin < KPlugin
+  class ListenForObjectChangeHookPlugin < KTrustedPlugin
     Change = Struct.new(:object, :operation, :previous)
     def hPostObjectChange(result, object, operation, previous)
       Thread.current[:test_last_post_object_change] = Change.new(object, operation, previous)
@@ -2360,6 +2368,16 @@ _OBJS
     res3 = q3.execute(:all, :any)
     assert_equal 1, res3.length
     assert_equal 'Principles of data management', res3[0].first_attr(A_TITLE).text
+
+    # Check any identifer finds both the books
+    q4 = KObjectStore.query_and.any_indentifier_of_type(T_IDENTIFIER_ISBN, A_IDENTIFIER)
+    res4 = q4.execute(:all, :title)
+    assert_equal 2, res4.length
+    assert_equal ['book with ident','Principles of data management'], res4.map { |o| o.first_attr(A_TITLE).to_s }
+    # Check other any queries
+    assert_equal 0, KObjectStore.query_and.any_indentifier_of_type(T_IDENTIFIER_EMAIL_ADDRESS, A_IDENTIFIER).execute().length
+    assert_equal 0, KObjectStore.query_and.any_indentifier_of_type(T_IDENTIFIER_ISBN, A_NOTES).execute().length
+    assert_equal 2, KObjectStore.query_and.any_indentifier_of_type(T_IDENTIFIER_ISBN, A_IDENTIFIER).execute().length
 
     # Check that removing an identifier from an object stops it being found
     # (check for fixed bug in original introduction of identifiers in r507)

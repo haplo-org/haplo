@@ -21,7 +21,7 @@ class JavascriptPluginTest < Test::Unit::TestCase
 
   def setup
     # Register the second test plugin in the current application
-    KJavaScriptPlugin.register_private_javascript_plugin_in_current_app("#{File.dirname(__FILE__)}/javascript/javascript_plugin/test_plugin2")
+    KPlugin.register_plugin(KJavaScriptPlugin.new("#{File.dirname(__FILE__)}/javascript/javascript_plugin/test_plugin2"), KApp.current_application)
   end
 
   def teardown
@@ -121,8 +121,8 @@ class JavascriptPluginTest < Test::Unit::TestCase
     # Make sure the plugin isn't installed
     assert_equal(nil, KPlugin.get("test_plugin"))
     # Check the license key info can be obtained from the demand-loaded full plugin.json info
-    test_plugin_info = KJavaScriptPlugin.get_plugin_info("test_plugin")
-    assert_equal "ABC123", test_plugin_info.plugin_json["installSecret"]
+    test_plugin_object = KPlugin.get_plugin_without_installation("test_plugin")
+    assert_equal "ABC123", test_plugin_object.plugin_json["installSecret"]
     # Install the plugin
     assert_equal(true, KPlugin.install_plugin("test_plugin"))
     assert(nil != KPlugin.get("test_plugin"))
@@ -374,8 +374,8 @@ class JavascriptPluginTest < Test::Unit::TestCase
     test_plugin2 = KPlugin.get("test_plugin2")
     no_privileges_plugin = KPlugin.get("no_privileges_plugin")
     # Check the privilegesRequired entries are included as expected
-    assert test_plugin.factory.js_info.description.has_key?("privilegesRequired")
-    assert ! no_privileges_plugin.factory.js_info.description.has_key?("privilegesRequired")
+    assert test_plugin.plugin_json.has_key?("privilegesRequired")
+    assert ! no_privileges_plugin.plugin_json.has_key?("privilegesRequired")
     # Check basic privilege queries
     assert test_plugin.has_privilege?("pTestPriv1")
     assert ! test_plugin2.has_privilege?("pTestPriv1")
@@ -510,6 +510,7 @@ class JavascriptPluginTest < Test::Unit::TestCase
 ASSERT FAILED: test2 fail msg
   test_plugin/test/test2.js (line 5)
   test_plugin/test/test2.js (line 2)
+  test_plugin/test/test2.js (line 1)
 
 __E
     assert_equal expected_output, results[:output]

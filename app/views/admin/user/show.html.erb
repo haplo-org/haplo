@@ -56,8 +56,8 @@
   </td>
   <% end %>
   <% unless @is_user %>
-  <tr><th>Notification email</th><td><%= h(@user.email) %></td></tr>
   <%= code_show_in_table(@user.code) %>
+  <tr><th>Notification email</th><td><%= h(@user.email) %></td></tr>
   <tr><th>Group ID</th><td><%= h(@user.id) %></td></tr>
   <% end %>
 </table>

@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-class StdContactsButtonPlugin < KPlugin
+class StdContactsButtonPlugin < KTrustedPlugin
   include KConstants
 
   _PluginName "Contacts Button"

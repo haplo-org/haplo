@@ -20,7 +20,7 @@ This hook implementation pre-fills the date field in new File objects with the c
 
 <pre>language=javascript
 P.hook('hPreObjectEdit', function(response, object, isTemplate, isNew) {
-    if(isTemplate && object.isKindOf(TYPE["std:type:file"])) {
+    if(isTemplate && object.isKindOf(T.File)) {
         var r = response.replacementObject || object.mutableCopy();
         r.appendDate(new Date());
         response.replacementObject = r;

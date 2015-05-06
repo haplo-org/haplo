@@ -4,6 +4,6 @@
   "pluginVersion": 1000,
   "displayName": "Test Navigation Hooks Plugin",
   "displayDescription": "For testing",
-  "apiVersion": 3,
+  "apiVersion": 4,
   "load": ["js/test_navigation_hooks.js"]
 }

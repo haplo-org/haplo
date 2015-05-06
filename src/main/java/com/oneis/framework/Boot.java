@@ -98,10 +98,10 @@ public class Boot {
             return;
         }
 
-        System.out.println("=================================================================================");
-        System.out.println("                    Haplo Platform (c) ONEIS Ltd 2006 - 2015");
-        System.out.println("              Licensed under the Mozilla Public License Version 2.0");
-        System.out.println("=================================================================================");
+        System.out.println("===============================================================================");
+        System.out.println("                   Haplo Platform (c) ONEIS Ltd 2006 - 2015");
+        System.out.println("             Licensed under the Mozilla Public License Version 2.0");
+        System.out.println("===============================================================================");
         System.out.println("Starting framework in " + rootDir + " with environment " + envName);
 
         SSLContext publicSSLContext = loadSSLCerticates(envName, "server", null);

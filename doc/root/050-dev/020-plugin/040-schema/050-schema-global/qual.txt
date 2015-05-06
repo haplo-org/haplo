@@ -9,6 +9,8 @@ Unlike the [node:dev/xml-http], qualifiers are not defined with object reference
 
 For example, @QUAL["dc:qualifier:alternative"]@ is the built in Alternative qualifier.
 
+To make your code easier to read, you should use [node:dev/plugin/schema/local-schema:plugin local schema dictionaries].
+
 h3. Null qualifier
 
 @QUAL["std:qualifier:null"]@ is a special qualifier value, which means no qualifier applies to this value.

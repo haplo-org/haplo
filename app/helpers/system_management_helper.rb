@@ -29,8 +29,8 @@ module SystemManagementHelper
     %Q!<form method="get" action="?" class="z__sys_mng_edit_button"><input type="submit" value="Edit" disabled="true"></form>!
   end
 
-  def sys_mng_update_submenu(name,url,only_if_item_updated = true)
-    (!only_if_item_updated || params.has_key?(:update)) ? %Q!<div id="z__update_submenu_item" data-name="#{ERB::Util.h(name)}" data-url="#{ERB::Util.h(url)}"></div>! : ''
+  def sys_mng_update_submenu(name,url,only_if_item_updated = true, icon_description = nil)
+    (!only_if_item_updated || params.has_key?(:update)) ? %Q!<div id="z__update_submenu_item" data-name="#{ERB::Util.h(name)}" data-url="#{ERB::Util.h(url)}"#{icon_description ? %Q! data-icon="#{ERB::Util.h(html_for_icon(icon_description, :micro))}"! : ''}></div>! : ''
   end
 
   def sys_mng_update_submenu_under(name,url,under_url,only_if_item_updated = true)

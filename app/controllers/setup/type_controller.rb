@@ -72,6 +72,7 @@ class Setup_TypeController < ApplicationController
     if params[:id] == 'new'
       # Create a new object
       @obj = KObject.new([O_LABEL_STRUCTURE])
+      @obj.add_attr(O_TYPE_APP_VISIBLE, A_TYPE);
       if params.has_key?(:parent)
         @obj.add_attr(KObjRef.from_presentation(params[:parent]), A_PARENT)
       else
@@ -84,7 +85,7 @@ class Setup_TypeController < ApplicationController
           # Some systems don't use the COMMON label, so check it exists before adding it by default
           common_label = KObjectStore.read(O_LABEL_COMMON)
           if common_label && !(common_label.deleted?)
-            @obj.add_attr(O_LABEL_COMMON, A_TYPE_APPLICABLE_LABEL, Q_TYPE_LABEL_DEFAULT)
+            @obj.add_attr(O_LABEL_COMMON, A_TYPE_APPLICABLE_LABEL)
           end
         end
       end
@@ -114,11 +115,11 @@ class Setup_TypeController < ApplicationController
       # delete the old bits
       @obj.delete_attr_if do |value,desc,q|
         case desc
-        when A_TITLE, A_TYPE, A_TYPE_BEHAVIOUR, A_RELEVANT_ATTR, A_RELEVANT_ATTR_REMOVE,
+        when A_TITLE, A_TYPE_BEHAVIOUR, A_RELEVANT_ATTR, A_RELEVANT_ATTR_REMOVE,
              A_RENDER_TYPE_NAME, A_RENDER_ICON, A_RENDER_CATEGORY,
              A_ATTR_SHORT_NAME, A_RELEVANCY_WEIGHT, A_TERM_INCLUSION_SPEC,
              A_TYPE_CREATION_UI_POSITION, A_TYPE_CREATE_SHOW_SUBTYPE,
-             A_TYPE_BASE_LABEL, A_TYPE_APPLICABLE_LABEL, A_TYPE_LABELLING_ATTR,
+             A_TYPE_BASE_LABEL, A_TYPE_APPLICABLE_LABEL, A_TYPE_LABEL_DEFAULT, A_TYPE_LABELLING_ATTR,
              A_TYPE_CREATE_DEFAULT_SUBTYPE, A_ATTR_DESCRIPTIVE, A_DISPLAY_ELEMENTS
           true
         else
@@ -127,8 +128,6 @@ class Setup_TypeController < ApplicationController
       end
 
       # Add in the new bits
-
-      @obj.add_attr(O_TYPE_APP_VISIBLE, A_TYPE);
 
       # Type behaviours
       if params.has_key?(:behaviour)
@@ -148,8 +147,7 @@ class Setup_TypeController < ApplicationController
 
       # Short names (additive on inheritance)
       params[:short_type_names].split(/\s*\,\s*/).each do |s|
-        # TODO: Handle international names for short type names
-        n = s.strip.downcase.gsub(/[^a-z0-9]/,' ').gsub(/\s+/,' ')
+        n = KSchemaApp.to_short_name_for_type(s)
         @obj.add_attr(n, A_ATTR_SHORT_NAME) if n.length > 0
       end
 
@@ -238,11 +236,14 @@ class Setup_TypeController < ApplicationController
         end
         # Applicable labels
         applicable_labels = params[:applicable_labels].split(',').map { |r| KObjRef.from_presentation(r) } .compact
-        default_applicable_label = KObjRef.from_presentation(params[:default_applicable_label])
         applicable_labels.each do |label_ref|
-          @obj.add_attr(label_ref, A_TYPE_APPLICABLE_LABEL,
-            ((default_applicable_label != nil) && (default_applicable_label == label_ref)) ? Q_TYPE_LABEL_DEFAULT : nil)
+          @obj.add_attr(label_ref, A_TYPE_APPLICABLE_LABEL)
         end
+        default_applicable_label = KObjRef.from_presentation(params[:default_applicable_label])
+        if default_applicable_label
+          @obj.add_attr(default_applicable_label, A_TYPE_LABEL_DEFAULT)
+        end
+        
         # Labelling attributes
         if params.has_key?(:labelling_attr)
           params[:labelling_attr].each_key do |adesc|

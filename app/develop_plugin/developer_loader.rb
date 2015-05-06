@@ -42,15 +42,13 @@ class DeveloperLoader
         plugin_dir = File.dirname(loader_info_filename)
         begin
           loader_info = File.open(loader_info_filename) { |f| JSON.parse(f.read) }
-          plugin_name = nil # scoping
           # Attempt to register it
-          KApp.in_application(loader_info["applicationId"]) do
-            plugin_name = KJavaScriptPlugin.register_private_javascript_plugin_in_current_app(plugin_dir)
-            KApp.logger.info("DeveloperLoader: Re-registered #{plugin_name} from #{plugin_dir}")
-          end
+          plugin = KJavaScriptPlugin.new(plugin_dir)
+          KPlugin.register_plugin(plugin, loader_info["applicationId"])
+          KApp.logger.info("DeveloperLoader: Re-registered #{plugin.name} from #{plugin_dir}")
           # Store the name and ID for tracking
           LOADED_PLUGINS_MUTEX.synchronize do
-            LOADED_PLUGINS[loader_info["applicationId"]][plugin_name] = loader_info["id"]
+            LOADED_PLUGINS[loader_info["applicationId"]][plugin.name] = loader_info["id"]
           end
         rescue => e
           KApp.logger.error("DeveloperLoader: Failed to re-register plugin #{plugin_dir}\n#{e.inspect}")
@@ -143,6 +141,13 @@ class DeveloperLoader
       end
       broadcast_notification('audt', fields.to_json)
     end
+    # Listen for schema changes and output the list of changed codes on the plugin console
+    KNotificationCentre.when(:schema_requirements, :applied) do |name, details, applier|
+      unless applier.changes.empty?
+        changed_codes = applier.changes.map { |object_applier| object_applier.code }
+        broadcast_notification('log ', "requirments.schema:CHANGED: #{changed_codes.join(', ')}")
+      end
+    end
   end
 
   # Which fields should be sent to the plugin tool from audit entries
@@ -209,7 +214,7 @@ class DeveloperLoader
       info = {
         "name" => KApp.global(:system_name),
         "config" => JSON.parse(KApp.global(:javascript_config_data) || '{}'),
-        "installedPlugins" => KPlugin.get_plugins_for_current_app.plugin_factories.map { |f| f.name }
+        "installedPlugins" => KPlugin.get_plugins_for_current_app.map { |f| f.name }
       }
       render :text => JSON.generate(info), :kind => :json
     end
@@ -283,14 +288,14 @@ class DeveloperLoader
           message = nil
           begin
             parsed_new_plugin_json = JSON.parse(contents)
-            KJavaScriptPlugin.verify_plugin_description(parsed_new_plugin_json)
+            KJavaScriptPlugin.verify_plugin_json(parsed_new_plugin_json)
             # Check plugin name hasn't changed, as this would really mess things up
             if File.exist?(@pathname)
               unless parsed_new_plugin_json["pluginName"] == get_plugin_name()
                 message = "Changing pluginName in plugin.json is not allowed. Restart the plugin tool."
               end
             end
-          rescue KJavaScriptPlugin::PluginDescriptionError => e
+          rescue KJavaScriptPlugin::PluginJSONError => e
             message = e.message
           rescue => e
             message = "Could not parse plugin.json file - check syntax."
@@ -345,10 +350,11 @@ class DeveloperLoader
         missing_files = find_missing_plugin_js_files()
         if missing_files.empty?
           # (Re-)register the plugin, mark it for installation
-          plugin_name = KJavaScriptPlugin.register_private_javascript_plugin_in_current_app(@loaded_plugin_pathname)
-          apply_plugin_names << plugin_name
+          plugin = KJavaScriptPlugin.new(@loaded_plugin_pathname)
+          KPlugin.register_plugin(plugin, KApp.current_application)
+          apply_plugin_names << plugin.name
           # Store ID for update
-          name_to_id_update[plugin_name] = @loaded_plugin_id
+          name_to_id_update[plugin.name] = @loaded_plugin_id
         else
           KJSPluginRuntime.invalidate_all_runtimes  # Although we're going to avoid a broken install, the plugin should still break
           error_messages << "Some of the files required to be loaded in plugin.json are missing: #{missing_files.join(', ')}"
@@ -357,7 +363,10 @@ class DeveloperLoader
       # Install the plugins which passed the tests
       unless apply_plugin_names.empty?
         begin
-          KPlugin.install_plugin(apply_plugin_names, :developer_loader_apply) # reason avoids lots of audit entries
+          # :developer_loader_apply reason avoids lots of audit entries
+          installation = KPlugin.install_plugin_returning_checks(apply_plugin_names, :developer_loader_apply)
+          # Report failures and warnings
+          [installation.failure, installation.warnings].compact.each { |m| error_messages << m }
         rescue => e
           error_messages << (KFramework.reportable_exception_error_text(e, :text) || GENERIC_FAILURE_MESSAGE)
         end
@@ -424,12 +433,24 @@ class DeveloperLoader
     _PostOnly
     def handle_uninstall_api
       return unless setup_plugin_id_info
-      plugin_name = get_plugin_name()
-      KPlugin.uninstall_plugin(plugin_name)
-      if KPlugin.get(plugin_name) == nil
-        render :text => JSON.generate(:result => "success")
+      plugin_name = nil
+      begin
+        plugin_name = get_plugin_name()
+      rescue => e
+        # Fall back to trying the information about loaded plugins
+        DeveloperLoader::LOADED_PLUGINS_MUTEX.synchronize do
+          plugin_name = DeveloperLoader::LOADED_PLUGINS[KApp.current_application].key(params[:id])
+        end
+      end
+      if plugin_name == nil
+        render :text => JSON.generate(:result => "error", :message => "Couldn't find plugin name for uninstallation.")
       else
-        render :text => JSON.generate(:result => "error", :message => "Failed to uninstall plugin.")
+        KPlugin.uninstall_plugin(plugin_name)
+        if KPlugin.get(plugin_name) == nil
+          render :text => JSON.generate(:result => "success")
+        else
+          render :text => JSON.generate(:result => "error", :message => "Failed to uninstall plugin.")
+        end
       end
     end
 

@@ -399,7 +399,7 @@ class KObjectStore
 
   # Returns the label changes which would be applied if the object was created
   def label_changes_for_new_object(object)
-    @delegate.update_label_changes_for(self, :create, object, nil, KLabelChanges.new)
+    @delegate.update_label_changes_for(self, :create, object, nil, is_schema_obj?(object), KLabelChanges.new)
   end
 
   # Returns a frozen object with new labels
@@ -563,8 +563,9 @@ class KObjectStore
 
   # Use to prevent schema reloads when doing lots of modifications.
   # Code goes in block.
-  def delay_schema_reload_during
+  def delay_schema_reload_during(schema_action = nil)
     @schema_reload_delayed = true
+    @schema_reload_required = true if schema_action == :force_schema_reload
     begin
       yield
     ensure
@@ -724,7 +725,7 @@ private
       # Call the delegate; it may throw an exception to back out
       @delegate.pre_object_write(self, operation, obj, previous_version_of_obj)
       # Update labels - delegate will change the label_changes and/or return a different changes object
-      label_changes = @delegate.update_label_changes_for(self, operation, obj, previous_version_of_obj, label_changes)
+      label_changes = @delegate.update_label_changes_for(self, operation, obj, previous_version_of_obj, is_schema_obj?(obj), label_changes)
 
       # Determine next labels for object
       obj_labels = label_changes.change(create_operation ? obj.labels : previous_version_of_obj.labels)
@@ -962,7 +963,7 @@ private
       end
     end
 
-    @delegate.post_object_change(self, previous_obj, modified_obj, obj_is_schema_obj, operation)
+    @delegate.post_object_change(self, previous_obj, modified_obj, obj_is_schema_obj, @schema_reload_delayed, operation)
   end
 
   # Get rid of existing schema, so it's reloaded when it's next needed

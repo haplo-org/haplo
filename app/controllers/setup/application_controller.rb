@@ -33,6 +33,9 @@ class Setup_ApplicationController < ApplicationController
   def handle_search_config
   end
 
+  def handle_tools
+  end
+
   # -------------------------------------------------------------------------------------------
 
   # TODO: Nicer system status implementation, maybe expose flag to administrators properly?
@@ -360,7 +363,7 @@ class Setup_ApplicationController < ApplicationController
       redirect_to '/do/setup/application/home_page?show=1'
     end
     # Get a list of all the groups for reference
-    @groups = User.find(:all, :conditions => ['kind = ?', User::KIND_GROUP], :order => 'name')
+    @groups = User.find(:all, :conditions => "kind=#{User::KIND_GROUP} AND code IS NOT NULL", :order => 'name')
   end
 
   _GetAndPost

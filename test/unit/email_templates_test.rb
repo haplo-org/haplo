@@ -259,6 +259,7 @@ __E
   def create_template(params)
     t = EmailTemplate.new({
       :name => "t1",
+      :code => "test:email-template:t1",
       :description => "d1",
       :from_email_address => "bob@example.com",
       :from_name => "Bob",

@@ -5,4 +5,4 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
-var setup_script_run = true;
+P.setup_script_run = true;

@@ -86,7 +86,7 @@ function j__mngWorkspaceFrameLoad() {
     // See if any menu items need updating
     var menuItemUpdate = window.frames["workspace"].document.getElementById('z__update_submenu_item');
     if(menuItemUpdate) {
-        j__updateSubmenuItem(menuItemUpdate.getAttribute('data-name'), menuItemUpdate.getAttribute('data-url'), menuItemUpdate.getAttribute('data-under'));
+        j__updateSubmenuItem(menuItemUpdate.getAttribute('data-name'), menuItemUpdate.getAttribute('data-url'), menuItemUpdate.getAttribute('data-under'), menuItemUpdate.getAttribute('data-icon'));
     }
 }
 
@@ -143,14 +143,14 @@ function j__makeSubmenuItemUnder(name, link, other_link, is_temp_item) {
     return false;   // didn't create anything
 }
 
-function j__updateSubmenuItem(name, link, under_link) {
+function j__updateSubmenuItem(name, link, under_link, iconHTML) {
     // Is it already there?
     var frame = window.frames['submenu'];
     var links = frame.document.body.getElementsByTagName('a');
     for(var i = 0; i < links.length; ++i) {
         if(links[i].href.replace(/^https?:\/\/[^\/]+/i,'') == link) {
             // Just update the text and return
-            links[i].innerHTML = name;
+            links[i].innerHTML = (iconHTML ? iconHTML+' ' : '') + _.escape(name);
             return;
         }
     }
@@ -168,8 +168,6 @@ function j__updateSubmenuItem(name, link, under_link) {
         }
     }
 }
-// Put a reference to the function where the frame can find it (use a long name to avoid clashing)
-window.k__update_submenu_item = j__updateSubmenuItem;
 
 
 function j__tempActionUnder(name, other_link) {

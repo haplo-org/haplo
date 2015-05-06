@@ -21,8 +21,10 @@ module JSFileSupport
 
   def self.tryFindFile(digest, fileSizeMaybe)
     return nil unless digest.kind_of? String
-    return nil unless fileSizeMaybe == nil || fileSizeMaybe.to_i > 0
-    (fileSizeMaybe == nil) ? StoredFile.from_digest(digest) : StoredFile.from_digest_and_size(digest, fileSizeMaybe)
+    return nil unless fileSizeMaybe == nil || fileSizeMaybe.to_i >= 0
+    (fileSizeMaybe == nil) ?
+        StoredFile.from_digest(digest) :
+        StoredFile.from_digest_and_size(digest, fileSizeMaybe.to_i)
   end
 
   # ------------------------------------------------------------------------------------------------------------

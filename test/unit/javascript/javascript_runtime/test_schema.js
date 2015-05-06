@@ -22,6 +22,7 @@ TEST(function() {
     TEST.assert(!(o1.isKindOf(TYPE["std:type:book"])));
     TEST.assert(!(o1.isKindOf(TYPE["std:type:equipment"])));
     TEST.assert(!(o1.isKindOf(TYPE["std:type:equipment:computer"])));
+    o1.save(); // so it can be used as a parent object later on
 
     // Check bad use of isKindOf
     TEST.assert_equal(false, o1.isKindOf(null));
@@ -118,6 +119,7 @@ TEST(function() {
     var EXPECTED_TYPES = [TYPE["std:type:book"], TYPE["std:type:equipment"]];
     _.each(tobj2_types, function(e,i) { TEST.assert(EXPECTED_TYPES[i] == e); });
     // Parent isn't multi-value so doesn't have an everyParent() function
+    TEST.assert(o1.ref instanceof $Ref);
     tobj.appendParent(o1.ref);
     TEST.assert(tobj.first(ATTR["std:attribute:parent"]) == o1.ref);
     TEST.assert(tobj.firstParent() == o1.ref);

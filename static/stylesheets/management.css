@@ -123,6 +123,10 @@ em {
     margin-left: 4px;
 }
 
+#z__management_layout div.z__mng_edit_entry_container {
+    margin: 0 0 16px 4px;
+}
+
 body#z__management_layout .z__management_page {
     margin: 0;
     padding-bottom: 24px;
@@ -156,6 +160,21 @@ body#z__management_layout .z__management_page {
     margin-top: 16px; /* match z__sys_mng_edit_button margin-bottom */
 }
 
+#z__management_layout ul .z__icon,
+#z__management_layout ol .z__icon {
+    float: left;
+    display: block;
+    position: relative;
+    left: 2px;
+    top: 2px;
+    opacity: 0.4;
+    text-indent: 0;
+}
+#z__management_layout li:hover .z__icon,
+#z__management_layout .z__selected .z__icon {
+    opacity: 1;
+}
+
 #z__management_layout ul {
     width: 100%;
     margin: 1px 0 16px 0;
@@ -173,6 +192,9 @@ body#z__management_layout .z__management_page {
     text-indent: 10px;
     list-style-type: none;
     display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 #z__management_layout li a {

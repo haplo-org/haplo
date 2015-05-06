@@ -38,6 +38,8 @@ TEST(function() {
     TEST.assert_equal("Hello there", obj.title);
     TEST.assert_equal('Alt title', obj.firstTitle(QUAL["dc:qualifier:alternative"]).s());
     TEST.assert_equal(null, obj.firstTitle(QUAL["std:qualifier:mobile"]));
+    TEST.assert_equal(false, obj.has(null));
+    TEST.assert_equal(false, obj.has(undefined));
     TEST.assert_equal(true, obj.has("Hello there"));
     TEST.assert_equal(true, obj.has("Hello there", ATTR.Title));
     TEST.assert_equal(false, obj.has("Hello there", ATTR["dc:attribute:date"]));
@@ -164,6 +166,8 @@ TEST(function() {
     var m = obj.mutableCopy();
     TEST.assert_equal(true, m.isMutable());
     m.append("Hello!", ATTR["dc:attribute:author"]);
+    TEST.assert_exceptions(function() { m.append(null); }, "null and undefined cannot be appended to a StoreObject");
+    TEST.assert_exceptions(function() { m.append(undefined); }, "null and undefined cannot be appended to a StoreObject");
     m.save();
     TEST.assert_equal("Hello!", m.first(ATTR["dc:attribute:author"]).toString());
     TEST.assert_equal(null, obj.first(ATTR["dc:attribute:author"]));

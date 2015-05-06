@@ -6,9 +6,9 @@ Assertions are used to make statements about the expected behaviour of the plugi
 To pass, a test must run without throwing any exceptions and with all assertions passing.
 
 
-h3(function). T.assert(condition, message)
+h3(function). t.assert(condition, message)
 
-Call @T.assert()@ to make an assertion in your test.
+Call @t.assert()@ to make an assertion in your test.
 
 @condition@ must be true, otherwise the assertion has failed and the test will be aborted.
 
@@ -20,8 +20,8 @@ h2. Using assertions
 Assertions in your tests will look something like this:
 
 <pre>language=javascript
-T.assert(a === "Value");
-T.assert(b === 42, "Meaning of life");
+t.assert(a === "Value");
+t.assert(b === 42, "Meaning of life");
 </pre>
 
 The first makes a simple statement that a variable should have the correct value. The second is similar, but includes a @message@ to explain what is being tested to someone reading the test and in any failure message.

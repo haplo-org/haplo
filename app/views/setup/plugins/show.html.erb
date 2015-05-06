@@ -1,15 +1,15 @@
 <%
-  @page_title = h(@plugin_factory.plugin_name)
+  @page_title = h(@plugin.plugin_display_name)
 -%>
 
 <h1><%= @page_title %></h1>
 
-<p><%= h(@plugin_factory.plugin_description).gsub("\n","</p><p>") %></p>
+<p><%= h(@plugin.plugin_description).gsub("\n","</p><p>") %></p>
 
 <div class="z__management_extra_buttons_holder">
-  <form method="GET" action="/do/setup/plugins/uninstall/<%= @plugin_factory.name %>">
+  <form method="GET" action="/do/setup/plugins/uninstall/<%= @plugin.name %>">
     <input type="submit" value="Uninstall">
   </form>
 </div>
 
-<%= sys_mng_update_submenu(@page_title, "/do/setup/plugins/show/#{@plugin_factory.name}") %>
+<%= sys_mng_update_submenu(@page_title, "/do/setup/plugins/show/#{@plugin.name}") %>

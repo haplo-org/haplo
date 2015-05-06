@@ -77,7 +77,7 @@ h3(property). actionableBy
 
 Which user or group can action and close this work unit, read as a [node:dev/plugin/interface/security-principal].
 
-This property can be set with a numeric ID or a [node:dev/plugin/interface/security-principal] object. Use the schema [node:dev/plugin/schema/group] constants for specifying groups.
+This property can be set with a numeric ID or a [node:dev/plugin/interface/security-principal] object. Use the schema [node:dev/plugin/schema/schema-global/group] constants for specifying groups.
 
 
 h3(property). closedBy

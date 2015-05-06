@@ -4,7 +4,7 @@
   "pluginVersion": 1000,
   "displayName": "Test User Login Plugin",
   "displayDescription": "For testing",
-  "apiVersion": 3,
+  "apiVersion": 4,
   "privilegesRequired": ["pSetLoggedInUser"],
   "load": ["js/test_user_login.js"],
   "respond": ["/do/test-user-login"]

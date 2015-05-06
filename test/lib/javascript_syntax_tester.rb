@@ -147,6 +147,12 @@ class JavaScriptSyntaxTester
       elsif plugin_js
         g = @server_side_predefined_globals.dup
         g['P'] = false
+        g['T'] = false
+        g['A'] = false
+        g['AA'] = false
+        g['Q'] = false
+        g['Label'] = false
+        g['Group'] = false
         # Predefine the plugin name global?
         plugin_json = File.dirname(pathname).gsub(/\/js\z/,'') + '/plugin.json'
         pathname =~ /\/(js\/.+?)\z/

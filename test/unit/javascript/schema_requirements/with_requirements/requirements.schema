@@ -1,0 +1,23 @@
+
+# NOTE: Do not define any attributes here to check the A schema local is always defined for plugins.
+
+type with-requirements:type:created-type as CreatedType
+    title: Created by requirements
+    search-name: created
+    behaviour physical
+    attribute dc:attribute:title
+
+aliased-attribute vre:aliased-attribute:academic-year-dates as DateAlias
+    title: Date alias
+    search-name: date-alias
+    alias-of dc:attribute:date
+    ui-options d,n,y,n,n
+    on-data-type datetime
+
+OPTIONAL qualifier test:qualifier:optional1 as OptionalOne
+    title: Optional Qualifier
+
+OPTIONAL qualifier dc:qualifier:alternative as OptionalAlternative
+
+# No other groups present
+OPTIONAL group test:group:optional-group as OptionalGroup

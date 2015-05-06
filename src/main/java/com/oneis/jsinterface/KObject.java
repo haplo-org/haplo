@@ -170,7 +170,9 @@ public class KObject extends KScriptable {
     }
 
     public boolean jsFunction_has(Object value, boolean haveDesc, int desc, boolean haveQual, int qual) {
-        return this.appObject.has_attr(jsToAttr(value), haveDesc ? desc : null, haveQual ? qual : null);
+        Object jsValue = jsToAttr(value);
+        if(jsValue == null) { return false; }
+        return this.appObject.has_attr(jsValue, haveDesc ? desc : null, haveQual ? qual : null);
     }
 
     public boolean jsFunction_valuesEqual(Scriptable object, boolean haveDesc, int desc, boolean haveQual, int qual) {
@@ -201,7 +203,11 @@ public class KObject extends KScriptable {
     }
 
     public void jsFunction_append(Object value, int desc, int qual) {
-        this.appObject.add_attr(jsToAttr(value), desc, qual);
+        Object jsValue = jsToAttr(value);
+        if(jsValue == null) {
+            throw new OAPIException("null and undefined cannot be appended to a StoreObject");
+        }
+        this.appObject.add_attr(jsValue, desc, qual);
     }
 
     public void jsFunction_remove(Integer desc, Integer qual, boolean hasQual, Scriptable iterator) {
@@ -307,7 +313,7 @@ public class KObject extends KScriptable {
 
     static public Object jsToAttr(Object value) {
         AppObject obj = null;
-        if(value == null) {
+        if(value == null || value instanceof org.mozilla.javascript.Undefined) {
             return null;
         } else if(value instanceof KObjRef) {
             return ((KObjRef)value).toRubyObject();

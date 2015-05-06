@@ -14,9 +14,16 @@ Use the properties as constants to find the types, attributes, groups, and so on
     object.append(authorRef, ATTR["dc:attribute:author"]);
 </pre>
 
-In larger plugins, this scheme can become a little verbose and hard to read. In these cases, you should create your own schema objects based on the Platform's @SCHEMA@.
+To make your code easier to read, you should use [node:dev/plugin/schema/local-schema:plugin local schema dictionaries]. This could enable you to write:
 
-In addition, [node:dev/plugin/schema/query:schema query functions] are provided to retrieve details of the schema.
+<pre>language=javascript
+    var object = O.object();
+    object.appendType(T.Book);
+    object.appendTitle("Example");
+    object.append(authorRef, A.Author);
+</pre>
+
+As well as the schema objects, [node:dev/plugin/schema/schema-global/query:schema query functions] are provided to retrieve details of the schema.
 
 h2. Dictionaries
 

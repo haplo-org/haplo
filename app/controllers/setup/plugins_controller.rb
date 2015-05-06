@@ -31,16 +31,20 @@ class Setup_PluginsController < ApplicationController
   end
 
   def handle_show
-    @plugin_factory = KPlugin.get_plugins_for_current_app.plugin_factories.find { |factory| factory.name == params[:id] }
+    @plugin = KPlugin.get(params[:id])
   end
 
   _GetAndPost
   def handle_install
     if request.post?
       if params[:plugin].length > 0 && params[:plugin] =~ /\A[a-zA-Z0-9_]+\z/
+        # Get registered plugin
+        plugin = KPlugin.get_plugin_without_installation(params[:plugin])
+        if plugin == nil
+          return render :action => 'plugin_install_error'
+        end
         # Determine installation secret
-        plugin_info = KJavaScriptPlugin.get_plugin_info(params[:plugin])
-        install_secret = (plugin_info == nil) ? nil : plugin_info.plugin_json["installSecret"]
+        install_secret = plugin.plugin_install_secret
         # If there's an installation secret, make sure it matches
         if install_secret != nil
           license_key = HMAC::SHA1.sign(install_secret, "application:#{KApp.current_application}")
@@ -57,8 +61,8 @@ class Setup_PluginsController < ApplicationController
         # License key checked, install plugin?
         install_success = false
         begin
-          install_success = KPlugin.install_plugin(params[:plugin])
-          if install_success
+          @installation = KPlugin.install_plugin_returning_checks(params[:plugin])
+          if @installation.success?
             redirect_to "/do/setup/plugins/show/#{params[:plugin]}?update=1"
             return
           end
@@ -76,7 +80,7 @@ class Setup_PluginsController < ApplicationController
 
   _GetAndPost
   def handle_uninstall
-    @plugin_factory = KPlugin.get_plugins_for_current_app.plugin_factories.find { |factory| factory.name == params[:id] }
+    @plugin = KPlugin.get(params[:id])
     if request.post?
       if params[:uninstall] != 'confirm'
         @should_confirm = true

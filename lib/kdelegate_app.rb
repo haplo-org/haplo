@@ -58,14 +58,15 @@ class KObjectStoreApplicationDelegate
   end
 
   # Updating labels for an object, given a particular operation, returning a new label_changes object
-  def update_label_changes_for(store, operation, object, obj_previous_version, label_changes)
+  def update_label_changes_for(store, operation, object, obj_previous_version, is_schema_obj, label_changes)
     # For create/update operations, ask plugins if they'd like to modify the labels
     labelling_hook = case operation
       when :create; :hLabelObject
       when :update; :hLabelUpdatedObject
       else nil
     end
-    if labelling_hook
+    # Don't let plugins label schema objects
+    if !is_schema_obj && labelling_hook
       call_hook(labelling_hook) do |hooks|
         hooks.response.changes = label_changes # so the plugin can see the changes so far
         h = hooks.run(object)
@@ -79,12 +80,17 @@ class KObjectStoreApplicationDelegate
 
   # Called after :create, :update and :delete operations in the store.
   # is_schema is true if the object is a schema object, either considered by the store or by the delegate
-  def post_object_change(store, previous_obj, modified_obj, is_schema, operation)
+  def post_object_change(store, previous_obj, modified_obj, is_schema, schema_reload_delayed, operation)
     # Notify subsystems
     KNotificationCentre.notify(:os_object_change, operation, previous_obj, modified_obj, is_schema)
-    call_hook(:hPostObjectChange) do |hooks|
-      # Slightly odd argument ordering for backwards compatibility
-      hooks.run(modified_obj, operation, previous_obj)
+    # Call the hPostObjectChange hook only if it's a non-schema object, and not if during a schema reload delay.
+    #   is_schema - prevents plugins from seeing schema objects which cause a JS runtime reload anyway
+    #   schema_reload_delayed - prevent calling into runtimes in an indeterminate state during schema requirements changes
+    unless is_schema || schema_reload_delayed
+      call_hook(:hPostObjectChange) do |hooks|
+        # Slightly odd argument ordering for backwards compatibility
+        hooks.run(modified_obj, operation, previous_obj)
+      end
     end
   end
 

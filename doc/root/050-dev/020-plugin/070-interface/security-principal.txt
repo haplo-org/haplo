@@ -68,7 +68,7 @@ Note there are restrictions and limitations on the data which can be stored. See
 
 h3(function). isMemberOf(groupId)
 
-Returns @true@ if the principal is a member of the groups specified by @groupId@. Use schema [node:dev/plugin/schema/group] constants.
+Returns @true@ if the principal is a member of the groups specified by @groupId@. Use schema [node:dev/plugin/schema/schema-global/group] constants.
 
 This is useful for implementing authorisation in your plugin. Create user groups, then check for membership of the group to authorise the user.
 
@@ -97,7 +97,7 @@ A store object represents the user if it has been explicitly set in System Manag
 
 h3(function). canCreateObjectOfType(typeRef)
 
-Returns @true@ if the user has permission to create an object specified by the [node:dev/plugin/interface/ref] argument. Use the schema [node:dev/plugin/schema/type] constants.
+Returns @true@ if the user has permission to create an object specified by the [node:dev/plugin/interface/ref] argument. Use the schema [node:dev/plugin/schema/schema-global/type] constants.
 
 If @typeRef@ is @null@ or @undefined@, then @false@ will be returned.
 

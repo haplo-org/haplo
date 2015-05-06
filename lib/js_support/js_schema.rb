@@ -103,6 +103,8 @@ module KSchemaToJavaScript
         GROUP: GROUP
       });
     __E
+    # Plugin specific schema information from requirements files
+    js << "O.$private.preparePluginSchemaRequirements(#{KApp.global(:js_plugin_schema_requirements) || '{}'});\n"
     js
   end
 
@@ -121,7 +123,7 @@ module KSchemaToJavaScript
         info = {
           :name => type_desc.printable_name.to_s,
           :shortName => type_desc.short_names.first.to_s,
-          :rootType => type_desc.root_type.obj_id,
+          :rootType => (type_desc.root_type || type_desc.objref).obj_id,
           :attributes => attrs
         }
         info[:parentType] = type_desc.parent_type.obj_id if type_desc.parent_type

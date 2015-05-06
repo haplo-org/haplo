@@ -4,7 +4,7 @@
 	"pluginVersion": 1000,
 	"displayName": "Test Third Party Plugin",
 	"displayDescription": "For testing 3rd party plugin loading works",
-	"apiVersion": 3,
+	"apiVersion": 4,
 	"load": ["js/thirdparty_plugin.js"],
 	"respond": ["/do/thirdparty_plugin"],
 	"allowAnonymousRequests": true

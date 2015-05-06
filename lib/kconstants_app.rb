@@ -181,7 +181,7 @@ module KConstants
   A_TYPE_LABELLING_ATTR         = 2134      # Which attributes are labelling attributes for this type (root only)
   A_TYPE_BASE_LABEL             = 2135      # Which labels should be always be applied to objects of this type
   A_TYPE_APPLICABLE_LABEL       = 2136      # Set of labels, one of which will always be applied if non-empty
-  Q_TYPE_LABEL_DEFAULT          = 2137      # Qualifier for the default applicable label
+  A_TYPE_LABEL_DEFAULT          = 2137      # Default applicable label
 
   # Attributes
   A_ATTR_QUALIFIER              = 2110
@@ -227,6 +227,7 @@ module KConstants
 
   # Optional editable app category & labels
   O_LABEL_CATEGORY_SENSITIVITY  = KObjRef.new(BASE_APP_LABEL_DEFINITIONS + 41)
+  O_LABEL_CATEGORY_UNNAMED      = KObjRef.new(BASE_APP_LABEL_DEFINITIONS + 42) # created by schema requirements if it needs it
   O_LABEL_COMMON                = KObjRef.new(BASE_APP_LABEL_DEFINITIONS + 51)
   O_LABEL_CONFIDENTIAL          = KObjRef.new(BASE_APP_LABEL_DEFINITIONS + 52)
 
@@ -261,6 +262,7 @@ module KConstants
   O_TYPE_BEHAVIOUR_FORCE_LABEL_CHOICE  = KObjRef.new(BASE_APP_TYPE_DEFINITIONS + 44)
   O_TYPE_BEHAVIOUR_SELF_LABELLING = KObjRef.new(BASE_APP_TYPE_DEFINITIONS + 45)
   O_TYPE_BEHAVIOUR_HIDE_FROM_BROWSE = KObjRef.new(BASE_APP_TYPE_DEFINITIONS + 46)
+  # NOTE: When adding to this list, also update schema requirements
 
   # Class types
   # KObjRef.new(BASE_APP_TYPE_DEFINITIONS + 80) was O_TYPE_PHYSICAL_RESOURCE

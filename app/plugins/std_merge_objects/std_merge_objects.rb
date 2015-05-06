@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-class StdMergeObjectsPlugin < KPlugin
+class StdMergeObjectsPlugin < KTrustedPlugin
   include KConstants
 
   # TODO: Make the std_merge_objects plugin permission more flexible than the user having the :setup_system policy, then add more checks to make it safer

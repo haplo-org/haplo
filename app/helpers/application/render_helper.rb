@@ -128,6 +128,8 @@ module Application_RenderHelper
             @widget_attr = a.to_sym
           end
         end
+      when 'a'
+        @output << %Q!<a target="_blank" href="#{ERB::Util.h(attrs['href'] || '')}">!
       else
         # Just output this tag as is
         @output << "<#{name}>"

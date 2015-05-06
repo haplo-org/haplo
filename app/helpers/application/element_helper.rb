@@ -32,10 +32,11 @@ module Application_ElementHelper
   # Make an Elements renderer for the current user, given the list of elements
   def elements_make_renderer(list, path, object_maybe)
     elements = []
+    group_lookup = User.cache.group_code_to_id_lookup
     list.split(/[\r\n]+/).each do |line|
-      group_id_s, element_position, element_name, element_options = line.split(/\s+/, 4)
+      group_s, element_position, element_name, element_options = line.split(/\s+/, 4)
       if element_name != nil && element_name.length > 1
-        if @request_user.member_of?(group_id_s.to_i)
+        if @request_user.member_of?((group_lookup[group_s] || group_s).to_i)
           elements << [element_name, element_position, element_options]
         end
       end

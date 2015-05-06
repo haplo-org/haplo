@@ -67,6 +67,14 @@ class PluginJsonTest < Test::Unit::TestCase
     d_fails(d.merge("locals" => {"a" => "b.c", 4 => "x"}))
     d_fails(d.merge("locals" => {"a" => "b.c", "s" => 7}))
     d_fails(d.merge("locals" => {"a" => "b,c"}))
+    # Check locals which clash with schema names
+    ['T','A','AA','Q','Group','Label'].each do |key|
+      locals = {}
+      locals[key] = "x"
+      d_fails(d.merge("locals" => locals))
+      # But it's OK in API version 3
+      d_passes(d.merge("locals" => locals, "apiVersion" => 3))
+    end
 
     # usesDatabase was replaced by pDatabase
     d_fails(d.merge("usesDatabase" => "ping"))
@@ -79,13 +87,13 @@ class PluginJsonTest < Test::Unit::TestCase
   end
 
   def d_passes(d)
-    KJavaScriptPlugin.verify_plugin_description(d)
+    KJavaScriptPlugin.verify_plugin_json(d)
     assert true
   end
 
   def d_fails(d)
-    assert_raises KJavaScriptPlugin::PluginDescriptionError do
-      KJavaScriptPlugin.verify_plugin_description(d)
+    assert_raises KJavaScriptPlugin::PluginJSONError do
+      KJavaScriptPlugin.verify_plugin_json(d)
     end
   end
 

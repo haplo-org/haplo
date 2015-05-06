@@ -5,6 +5,8 @@ To ensure safe and efficient use of the Platform, and to avoid errors in one plu
 
 These requirements are enforced partially by the JavaScript runtime and API, and partially by a review process.
 
+The code examples in this documentation assume you are using a [node:dev/plugin/schema/requirements-schema] file which has readable names for the standard schema objects.
+
 
 h2. Coding style
 

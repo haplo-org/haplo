@@ -206,7 +206,7 @@ class AuditEntryTest < Test::Unit::TestCase
 
   FakeAPIKey = Struct.new(:id)
 
-  class AuditTestPlugin < KPlugin
+  class AuditTestPlugin < KTrustedPlugin
     _PluginName "Audit Test Plugin"
     _PluginDescription "Test"
     def hAuditEntryOptionalWrite(result, entry, defaultWrite)

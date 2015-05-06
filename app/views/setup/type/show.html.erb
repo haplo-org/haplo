@@ -26,7 +26,9 @@
   <tr><th>Attributes</th><td><%
     @type_desc.attributes.each do |adesc|
       attr_desc = @schema.attribute_descriptor(adesc) || @schema.aliased_attribute_descriptor(adesc)
-      %><%= h(attr_desc.printable_name) %><br><%
+      if attr_desc
+        %><%= h(attr_desc.printable_name) %><br><%
+      end
     end
   %></td></tr>
   <tr><th>Descriptive attribute</th><td><%
@@ -137,4 +139,4 @@
   </table>
 <% end -%>
 
-<%= sys_mng_update_submenu(h(@type_desc.printable_name), "/do/setup/type/show/#{@type_desc.objref.to_presentation}") %>
+<%= sys_mng_update_submenu(h(@type_desc.printable_name), "/do/setup/type/show/#{@type_desc.objref.to_presentation}", true, @type_desc.render_icon) %>

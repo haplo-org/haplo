@@ -10,7 +10,7 @@ module PluginDebugging
 
     SIMPLE_EXCEPTION_MAPPING_TYPES = [
       # A plugin had a dodgy plugin.json file
-      KJavaScriptPlugin::PluginDescriptionError,
+      KJavaScriptPlugin::PluginJSONError,
       # A plugin misused a JavaScript API (Ruby)
       JavaScriptAPIError,
       # A plugin misused a JavaScript API (Java)

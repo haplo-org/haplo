@@ -47,9 +47,9 @@ class ElementsTest < IntegrationTest
     get '/'
     check_element_titles(HOME_LEFT, 'Noticeboard')
     check_element_titles(HOME_RIGHT, 'Recent additions', 'Quick links')
-    # Change the order
+    # Change the order, use numeric group IDs and group codes
     KApp.set_global(:home_page_elements,
-      "4 right std:quick_links\n4 left std:noticeboard\n4 right std:recent\n")
+      "std:group:everyone right std:quick_links\nstd:group:everyone left std:noticeboard\n4 right std:recent\n")
     get '/'
     check_element_titles(HOME_LEFT, 'Noticeboard')
     check_element_titles(HOME_RIGHT, 'Quick links', 'Recent additions')

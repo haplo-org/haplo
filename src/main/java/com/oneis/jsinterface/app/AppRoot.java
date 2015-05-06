@@ -28,9 +28,6 @@ public interface AppRoot {
 
     public Connection getJdbcConnection();
 
-    // Generate some JavaScript to express the schema in this Runtime
-    public String generateSchemaJavaScript();
-
     public String generateSchemaQueryFunction(String queryName);
 
     // Permissions & request handling context

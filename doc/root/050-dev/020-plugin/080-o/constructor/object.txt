@@ -16,11 +16,10 @@ Objects should have at least a type and a title. For example, to create a new bo
 
 <pre>language=javascript
 var o = O.object();
-o.appendType(TYPE["std:type:book"]);
+o.appendType(T.Book);
 o.appendTitle("Animal Farm");
-o.appendTitle("Animal Farm: A Fairy Story",
-    QUAL["dc:qualifier:alternative"]);
-o.append(authorObjectRef, ATTR["dc:attribute:author"]);
+o.appendTitle("Animal Farm: A Fairy Story", Q.Alternative);
+o.append(authorObjectRef, A.Author);
 o.save();
 </pre>
 

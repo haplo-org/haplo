@@ -4,6 +4,6 @@
   "pluginVersion": 10,
   "displayName": "Test Elements",
   "displayDescription": "Test Elements",
-  "apiVersion": 3,
+  "apiVersion": 4,
   "load": ["js/test_elements.js"]
 }

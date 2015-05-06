@@ -104,16 +104,16 @@ h3(function). isKindOf(typeRef)
 
 Returns @true@ if this object is the type specified as @typeRef@, or one of it's sub-types.
 
-@typeRef@ is a [node:dev/plugin/interface/ref]. Use the schema [node:dev/plugin/schema/type] constants.
+@typeRef@ is a [node:dev/plugin/interface/ref]. Use the schema [node:dev/plugin/schema/schema-global/type] constants.
 
 If @typeRef@ is @null@ or @undefined@, then @false@ will be returned.
 
 
 h3(function). first(desc, qual)
 
-Returns the first value in the object described by @desc@ and @qual@. Use the schema [node:dev/plugin/schema/attr] constants.
+Returns the first value in the object described by @desc@ and @qual@. Use the schema [node:dev/plugin/schema/schema-global/attr] constants.
 
-@qual@ may be omitted. Use the schema [node:dev/plugin/schema/qual] constants.
+@qual@ may be omitted. Use the schema [node:dev/plugin/schema/schema-global/qual] constants.
 
 Remember that a core strength of the ONEIS data model is its universal support for multi-values. While it may be appropriate to use the @first()@ function (and schema specific @firstX()@ functions), you should really be using the @every()@ function and using all values. If you find yourself using @first()@, make sure you shouldn't really be using @every()@.
 

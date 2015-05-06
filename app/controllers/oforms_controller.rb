@@ -24,10 +24,10 @@ class OFormsController < ApplicationController
     form_id = $2
     # If there's a plugin which uses this path component, call the private hook to get the
     # response JavaScript from the plugin.
-    plugin = KPlugin.get_plugins_for_current_app.get_plugin_by_path_component(path_component)
+    plugin = KPlugin.get_by_path_component(path_component)
     if plugin
       call_hook(:hPlatformInternalOFormsBundle) do |hooks|
-        h = hooks.run(plugin.factory.name, form_id)
+        h = hooks.run(plugin.name, form_id)
         javascript = h.bundle
       end
     end

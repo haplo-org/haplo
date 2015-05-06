@@ -7,6 +7,7 @@
 class Setup_EmailTemplatesController < ApplicationController
   policies_required :setup_system, :not_anonymous
   include SystemManagementHelper
+  include Setup_CodeHelper
 
   def render_layout
     'management'

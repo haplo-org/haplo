@@ -46,7 +46,7 @@ Using this notation will create an *join* in the underlying database query, and 
 
 h3(function). whereMemberOfGroup(fieldName, groupId)
 
-For fields of @user@ type only. Call to select on users who are a member of a given group, specified by group ID. Use schema [node:dev/plugin/schema/group] constants.
+For fields of @user@ type only. Call to select on users who are a member of a given group, specified by group ID. Use schema [node:dev/plugin/schema/schema-global/group] constants.
 
 This works recursively where groups are members of the specified group.
 

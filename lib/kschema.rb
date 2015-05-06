@@ -398,10 +398,10 @@ private
     # Attributes
     attr_desc_objs.each do |o|
       descriptor = ad_class.new(o, self)
-      @attr_descs_by_short_name[descriptor.short_name.text] = descriptor # TODO: i18n for short name in lookup
+      @attr_descs_by_short_name[descriptor.short_name.to_s] = descriptor # TODO: i18n for short name in lookup
       a = descriptor.aliases
       if a != nil
-        a.each {|i| @attr_descs_by_short_name_aliases[i.text] = descriptor}
+        a.each {|i| @attr_descs_by_short_name_aliases[i.to_s] = descriptor}
       end
       @attr_descs_by_desc[descriptor.desc] = descriptor
     end
@@ -409,7 +409,7 @@ private
     # Qualifiers
     qual_desc_objs.each do |o|
       descriptor = qd_class.new(o, self)
-      @qual_descs_by_short_name[descriptor.short_name.text] = descriptor # TODO: i18n for short name in lookup
+      @qual_descs_by_short_name[descriptor.short_name.to_s] = descriptor # TODO: i18n for short name in lookup
       @qual_descs_by_desc[descriptor.desc] = descriptor
     end
   end

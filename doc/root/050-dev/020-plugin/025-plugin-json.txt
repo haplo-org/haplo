@@ -12,7 +12,7 @@ The @plugin.json@ file describes the plugin. It's a JSON file using the UTF-8 en
     "displayName": "Example plugin",
     "displayDescription": "An example plugin to demonstrate the JavaScript plugin API.",
     "installSecret": "abcdefghij0123456789",
-    "apiVersion": 3,
+    "apiVersion": 4,
     "privilegesRequired": ["pDatabase"],
     "load": ["js/example_plugin.js", "js/handle_requests.js"],
     "respond": ["/do/example", "/api/example"],

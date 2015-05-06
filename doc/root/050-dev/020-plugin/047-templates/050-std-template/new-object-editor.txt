@@ -13,7 +13,7 @@ h3(key). templateObject
 
 A template [node:dev/plugin/interface/store-object], created with [node:dev/plugin/o/constructor/object].
 
-This must contain at least a Type attribute, using the schema [node:dev/plugin/schema/type] constants.
+This must contain at least a Type attribute, using the schema [node:dev/plugin/schema/schema-global/type] constants.
 
 
 h3(key). successRedirect

@@ -4,7 +4,7 @@ class: DocNodeTextileWithTOC
 
 Constants which are used for the non-application specific API are made available in the @O@ global.
 
-See [node:dev/plugin/schema] for application specific constants.
+See [node:dev/plugin/schema/schema-global] for application specific constants.
 
 
 h2. Categories

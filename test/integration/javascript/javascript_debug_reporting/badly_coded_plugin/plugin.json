@@ -4,7 +4,7 @@
   "pluginVersion": 1000,
   "displayName": "Badly Coded Plugin",
   "displayDescription": "For testing each kind of error gets reported neatly",
-  "apiVersion": 3,
+  "apiVersion": 4,
   "load": ["js/badly_coded_plugin.js"],
   "respond": ["/do/test_error"]
 }

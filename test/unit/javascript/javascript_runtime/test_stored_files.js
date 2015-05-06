@@ -133,4 +133,9 @@ TEST(function() {
     var textFile = O.file(TEXT_STORED_FILE_DIGEST);
     TEST.assert_equal("\nThis is an example text file!\n\nSome chars: éôõù\n", textFile.readAsString("UTF-8"));
 
+    // Zero length files are OK
+    var zeroLengthFile = O.file('e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855', 0);
+    TEST.assert_equal("zero_length_file.txt", zeroLengthFile.filename);
+    TEST.assert_equal(0, zeroLengthFile.fileSize);
+
 });

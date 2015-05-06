@@ -5,33 +5,33 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
-T.test(function() {
+t.test(function() {
 
-    T.login("user1@example.com");
+    t.login("user1@example.com");
 
-    T.get("/do/tested_plugin/handler1/2445");
-    T.assert(T.last.body === "i=2445");
-    T.assert(T.last.view === undefined);
+    t.get("/do/tested_plugin/handler1/2445");
+    t.assert(t.last.body === "i=2445");
+    t.assert(t.last.view === undefined);
 
-    T.get("/do/tested_plugin/handler2", {z:"Ping"});
-    T.assert(T.last.method === "GET");
-    T.assert(T.last.body === "HANDLER2: Ping");
-    T.assert(T.last.templateName === "handler2");
-    T.assert(T.last.view.pageTitle === "Hello");
-    T.assert(T.last.view.str === "Ping");
+    t.get("/do/tested_plugin/handler2", {z:"Ping"});
+    t.assert(t.last.method === "GET");
+    t.assert(t.last.body === "HANDLER2: Ping");
+    t.assert(t.last.templateName === "handler2");
+    t.assert(t.last.view.pageTitle === "Hello");
+    t.assert(t.last.view.str === "Ping");
 
-    var postLast = T.post("/do/tested_plugin/posting/ping/pong", {x:"yes", y:"hello"}, {headers:{h1:"value1"}});
+    var postLast = t.post("/do/tested_plugin/posting/ping/pong", {x:"yes", y:"hello"}, {headers:{h1:"value1"}});
     var requestAsSeenByPlugin = tested_plugin.requestAsSeenByPlugin;
-    T.assert(requestAsSeenByPlugin.method === "POST");
-    T.assert(requestAsSeenByPlugin.path === "/do/tested_plugin/posting/ping/pong");
-    T.assert(requestAsSeenByPlugin.extraPathElements.join('!') === "ping!pong");
-    T.assert(requestAsSeenByPlugin.headers.h1 === "value1");
-    T.assert(requestAsSeenByPlugin.parameters.x === "yes");
-    T.assert(requestAsSeenByPlugin.parameters.y === "hello");
-    T.assert(requestAsSeenByPlugin.remote.protocol === "IPv4");
-    T.assert(requestAsSeenByPlugin.remote.address === "10.1.2.3");
-    T.assert(postLast.templateName === "posting_template");
-    T.assert(postLast.body === "POSTED");
-    T.assert(postLast.view.pageTitle === "Post");
+    t.assert(requestAsSeenByPlugin.method === "POST");
+    t.assert(requestAsSeenByPlugin.path === "/do/tested_plugin/posting/ping/pong");
+    t.assert(requestAsSeenByPlugin.extraPathElements.join('!') === "ping!pong");
+    t.assert(requestAsSeenByPlugin.headers.h1 === "value1");
+    t.assert(requestAsSeenByPlugin.parameters.x === "yes");
+    t.assert(requestAsSeenByPlugin.parameters.y === "hello");
+    t.assert(requestAsSeenByPlugin.remote.protocol === "IPv4");
+    t.assert(requestAsSeenByPlugin.remote.address === "10.1.2.3");
+    t.assert(postLast.templateName === "posting_template");
+    t.assert(postLast.body === "POSTED");
+    t.assert(postLast.view.pageTitle === "Post");
 
 });

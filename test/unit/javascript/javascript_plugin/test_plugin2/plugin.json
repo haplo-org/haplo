@@ -4,7 +4,7 @@
   "pluginVersion": 1000,
   "displayName": "Test Plugin 2",
   "displayDescription": "For testing",
-  "apiVersion": 3,
+  "apiVersion": 4,
   "privilegesRequired": ["pDatabase"],
   "load": ["js/test_plugin2.js"]
 }

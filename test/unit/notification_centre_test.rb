@@ -244,6 +244,37 @@ class NotificationCentreTest < Test::Unit::TestCase
 
   # --------------------------------------------------------------------------------------------------------------
 
+  def test_exceptions_with_buffers
+    # Exceptions in notification centres are gathered then re-thrown after buffer cleanup
+    centre = KFramework::NotificationCentre.new
+    buffer1 = centre.when(:a, nil, {:start_buffering => true, :deduplicate => true, :max_arguments => 0}) do
+      raise "Exception One"
+    end
+    buffer2 = centre.when(:a, :b, {:start_buffering => true, :deduplicate => true, :max_arguments => 0}) do
+      raise "Exception Two"
+    end
+    centre.finish_setup
+
+    # Throw one exception, and make sure the buffers are cleared even though an exception was thrown
+    centre.start_on_thread
+    centre.notify(:a, :not_b)
+    assert nil != Thread.current[buffer1.instance_variable_get(:@thread_key)]
+    assert_equal nil, Thread.current[buffer2.instance_variable_get(:@thread_key)]
+    assert_raises(RuntimeError) { centre.send_buffered_then_end_on_thread }
+    assert_equal nil, Thread.current[buffer1.instance_variable_get(:@thread_key)]
+
+    # Throw two exceptions, test it has a special exception thrown, again checking buffers
+    centre.start_on_thread
+    centre.notify(:a, :b)
+    assert nil != Thread.current[buffer1.instance_variable_get(:@thread_key)]
+    assert nil != Thread.current[buffer2.instance_variable_get(:@thread_key)]
+    assert_raises(KFramework::NotificationCentre::TooManyExceptionsException) { centre.send_buffered_then_end_on_thread }
+    assert_equal nil, Thread.current[buffer1.instance_variable_get(:@thread_key)]
+    assert_equal nil, Thread.current[buffer2.instance_variable_get(:@thread_key)]
+  end
+
+  # --------------------------------------------------------------------------------------------------------------
+
   def test_notification_centre_devmode
     # Initial setup, from three files
     centre = KFramework::NotificationCentreDevMode.new

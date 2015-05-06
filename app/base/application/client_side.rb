@@ -42,7 +42,7 @@ class ApplicationController
       filename
     else
       # Filename only, add path
-      "/~#{KApp.global(:appearance_update_serial)}/#{plugin.factory.path_component}/#{filename}"
+      "#{plugin.static_files_urlpath}/#{filename}"
     end
     entry = [kind, path]
     unless @client_side_resources_plugin.include?(entry)

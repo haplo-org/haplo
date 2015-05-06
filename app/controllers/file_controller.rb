@@ -93,6 +93,12 @@ class FileController < ApplicationController
     security_checks_for stored_file
     return if file_is_up_to_date_in_client_cache
 
+    # Check underlying file exists to prevent reportable exceptions when applications are copied without files
+    unless File.exist?(stored_file.disk_pathname)
+      render(:action => 'not_in_store', :status => 404, :layout => false)
+      return
+    end
+
     what = :not_found
     data = nil
     mime_type = nil

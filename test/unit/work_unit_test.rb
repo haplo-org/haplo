@@ -146,6 +146,7 @@ class WorkUnitTest < Test::Unit::TestCase
   def test_automatic_notifications
     email_template = EmailTemplate.new({
       :name => "Notify Template",
+      :code => "test:email-template:notify-template",
       :description => "d1",
       :from_email_address => "bob@example.com",
       :from_name => "Bob",
@@ -223,6 +224,7 @@ class WorkUnitTest < Test::Unit::TestCase
       wu.save!
       assert_equal (email_del_size+=1), EmailTemplate.test_deliveries.size
       assert_equal ["user2@example.com"], EmailTemplate.test_deliveries.last.header.to
+      assert EmailTemplate.test_deliveries.last.body.last.body.unpack("M*").first !~ /ALTERNATIVE TEMPLATE/ # default template
 
       # Save the work unit again, actionable not changed (with actual set and no set), no notification
       wu.actionable_by_id = 42
@@ -240,12 +242,17 @@ class WorkUnitTest < Test::Unit::TestCase
       assert_equal email_del_size, EmailTemplate.test_deliveries.size
 
       # Check email template selection
-      WorkUnit.new({:work_type => NOTIFY_TYPE, :opened_at => Time.now, :actionable_by_id => 41, :created_by_id => 41,
-        :data => {"notify"=>{"template" => "Notify Template"}}
-      }).save!
-      assert_equal (email_del_size+=1), EmailTemplate.test_deliveries.size
-      body = EmailTemplate.test_deliveries.last.body.last.body.unpack("M*").first
-      assert body.include?('ALTERNATIVE TEMPLATE')
+      [
+        "test:email-template:notify-template",
+        "Notify Template" # check backwards compatible fallback
+      ].each do |template_code|
+        WorkUnit.new({:work_type => NOTIFY_TYPE, :opened_at => Time.now, :actionable_by_id => 41, :created_by_id => 41,
+          :data => {"notify"=>{"template" => template_code}}
+        }).save!
+        assert_equal (email_del_size+=1), EmailTemplate.test_deliveries.size
+        body = EmailTemplate.test_deliveries.last.body.last.body.unpack("M*").first
+        assert body.include?('ALTERNATIVE TEMPLATE')
+      end
 
       # Unknown template names default to the default template
       WorkUnit.new({:work_type => NOTIFY_TYPE, :opened_at => Time.now, :actionable_by_id => 41, :created_by_id => 41,

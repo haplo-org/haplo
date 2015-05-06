@@ -38,7 +38,7 @@ class DisplayControllerTest < IntegrationTest
     end
   end
 
-  class DisplayControllerTestPlugin < KPlugin
+  class DisplayControllerTestPlugin < KTrustedPlugin
     _PluginName "Display Controller Test Plugin"
     _PluginDescription "Test"
     def hPreObjectDisplay(response, object)

@@ -93,6 +93,7 @@ require 'java_interfaces'   # misc interfaces to the java code
 require 'ktemp_data_store'
 require 'klogin_attempt_throttle'
 require 'kplugin'
+require 'ktrusted_plugin'
 require 'kplugin_schedule'
 require 'khooks'
 require 'kdatetime'
@@ -134,6 +135,8 @@ require 'kappinit_templates'
 require 'kdelete_app'
 require 'kappexporter'
 require 'kappimporter'
+require 'schema_requirements'
+require 'schema_requirements_app'
 require 'js_support/js_support_root'
 require 'oauth_client'
 
@@ -142,10 +145,6 @@ PLUGIN_DEBUGGING_SUPPORT_LOADED = (KInstallProperties.get(:plugin_debugging_supp
 if PLUGIN_DEBUGGING_SUPPORT_LOADED
   require 'lib/plugin_debugging/plugin_debugging'
 end
-
-# Load any JavaScript plugins
-KJavaScriptPlugin.register_built_in_javascript_plugins
-KJavaScriptPlugin.register_third_party_javascript_plugins
 
 # Load options
 require 'kdisplay_config'

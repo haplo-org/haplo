@@ -4,6 +4,6 @@
   "pluginVersion": 1000,
   "displayName": "No privileges for testing plugin",
   "displayDescription": "For testing",
-  "apiVersion": 3,
+  "apiVersion": 4,
   "load": ["js/no_privileges_plugin.js"]
 }

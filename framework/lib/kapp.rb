@@ -282,7 +282,6 @@ private
     attr_reader :app_id
     attr_reader :lock
     attr_reader :caches
-    attr_reader :private_js_plugins
     attr_accessor :globals  # lazily loaded
     def initialize(app_id)
       @lock = Mutex.new
@@ -293,8 +292,6 @@ private
       # Counters (for KAccounting)
       @counters_lock = Mutex.new
       @counters = Array.new
-      # Private JavaScript plugins - only available to this app
-      @private_js_plugins = Hash.new
     end
     # Access counters, via a lock
     def using_counters
@@ -353,23 +350,32 @@ private
   end
 
   def self.clear_app(db_action = :check_in_database)
-    app_id = KApp.current_application
+    # NOTE: Be very careful about modifying, order is important, thread locals must be cleaned up, and everything must happen
     # Finish with the notification centre
     KNotificationCentre.send_buffered_then_end_on_thread
-    if app_id != :no_app
-      # Clear authentication state if there was an app set
-      AuthContext.clear_state
-    else
-      raise "AuthContext state set for :no_app when clearing app" if AuthContext.has_state?
+  ensure
+    begin
+      if KApp.current_application != :no_app
+        AuthContext.clear_state
+      else
+        raise "AuthContext state set for :no_app when clearing app" if AuthContext.has_state?
+      end
+    ensure
+      begin
+        KObjectStore.select_store(nil)
+      ensure
+        begin
+          # Clear the request handling context BEFORE the caches are checked in, making sure
+          # that the lifetimes of requests vs caches are correct.
+          KFramework.clear_request_context # won't exception
+          KApp.cache_checkin_all_caches
+        ensure
+          Thread.current[:_frm_thread_context] = nil
+          # Must be after clearing thread context so an exception won't prevent it from being cleared
+          ActiveRecord::Base.clear_active_connections! unless db_action == :do_not_check_in_database
+        end
+      end
     end
-    # Deselect store
-    KObjectStore.select_store(nil)
-    # Clear the request handling context BEFORE the caches are checked in, making sure
-    # that the lifetimes of requests vs caches are correct.
-    KFramework.clear_request_context
-    KApp.cache_checkin_all_caches
-    Thread.current[:_frm_thread_context] = nil
-    ActiveRecord::Base.clear_active_connections! unless db_action == :do_not_check_in_database
   end
 
   # ----------------------------------------------------------------------------------------------------

@@ -5,9 +5,8 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# Trusted plugins live in app/plugins/<name>
-# Class for the example_stuff plugin is named as ExampleStuffPlugin
-# A new KPlugin derived object is created for every request which needs it.
+# There is a single KPlugin derived object shared between every application, and every thread.
+# Plugin objects are frozen to prevent accidentally using state.
 
 class KPlugin
 
@@ -16,40 +15,48 @@ class KPlugin
   DEFAULT_PLUGIN_LOAD_PRIORITY = 9999999
 
   # -----------------------------------------------------------------------------------------------------------------
-  # Plugin information via annotations
-
-  extend Ingredient::Annotations
-  class << self
-    def _PluginName(name)
-      annotate_class(:plugin_name, name)
-    end
-    def _PluginDescription(desc)
-      annotate_class(:plugin_description, desc)
-    end
-  end
-
-  def self.plugin_name
-    annotation_get_class(:plugin_name)
-  end
-  def self.plugin_description
-    annotation_get_class(:plugin_description)
-  end
-
-  # -----------------------------------------------------------------------------------------------------------------
   # Plugin implementation
 
-  # Initialized with a reference to the factory
-  def initialize(factory)
-    @_factory = factory
-  end
-
-  def factory
-    @_factory
+  def name
+    raise "Not implemented in base class"
   end
 
   # Find the path on disc where this plugin lives -- use for finding resources
   def plugin_path
-    "#{KFRAMEWORK_ROOT}/app/plugins/#{PLUGIN_CLASS_TO_NAME[self.class]}"
+    raise "Not implemented in base class"
+  end
+
+  def plugin_display_name
+    raise "Not implemented in base class"
+  end
+
+  def plugin_description
+    raise "Not implemented in base class"
+  end
+
+  def plugin_install_secret
+    nil
+  end
+
+  def plugin_load_priority
+    DEFAULT_PLUGIN_LOAD_PRIORITY
+  end
+
+  def uses_database
+    false
+  end
+
+  def parse_schema_requirements(parser)
+    requirements_pathname = "#{self.plugin_path}/requirements.schema"
+    if File.exist?(requirements_pathname)
+      File.open(requirements_pathname) do |io|
+        parser.parse(self.name, io)
+      end
+    end
+  end
+
+  def javascript_load(runtime, schema_for_js_runtime)
+    # Do nothing for non-JavaScript plugins
   end
 
   # Return a PluginController derived class if the plugin would like to handle this request.
@@ -58,18 +65,16 @@ class KPlugin
     nil
   end
 
-  alias implements_hook? respond_to?
+  def has_privilege?(privilege)
+    false # JavaScript runtime concept
+  end
 
-  def is_javascript_plugin?
+  def implements_hook?(hook)
     false
   end
 
-  # Get the current controller
-  def controller
-    @_controller ||= begin
-      rc = KFramework.request_context
-      (rc == nil) ? nil : rc.controller
-    end
+  def hook_needs_javascript_dispatch?(hook)
+    false
   end
 
   # -----------------------------------------------------------------------------------------------------------------
@@ -102,6 +107,7 @@ class KPlugin
   # MIME type is automatically generated from the file extension
   def get_plugin_file(filename)
     # Security check, to make sure it's a filename without any traversal attempts
+    # TODO: Allow subdirectories in static files
     # TODO: Test for plugin files security check to avoid traversal of filesystem (low risk as there's a filter on allowed filenames)
     return nil unless filename =~ PLUGIN_STATIC_FILENAME_ALLOWED_REGEX
     extension = $2
@@ -117,7 +123,9 @@ class KPlugin
 
   # The url path where the static files appear to the client
   def static_files_urlpath
-    "/~#{KApp.global(:appearance_update_serial)}/#{@_factory.path_component}"
+    # TODO: Move this somewhere else?
+    plugins_for_app = KApp.cache(PLUGINS_CACHE)
+    "/~#{KApp.global(:appearance_update_serial)}/#{plugins_for_app.get_path_component_by_name(self.name)}"
   end
 
   # Rewrite CSS
@@ -141,32 +149,23 @@ class KPlugin
   # Will yield the runner only if necessary. Do all data collection inside the block as most times it won't be called.
   module HookSite
     class HookRunner
-      def initialize(plugin_factories)
-        @plugin_factories = plugin_factories
+      def initialize(plugins, needs_javascript_dispatch)
+        @plugins = plugins
+        @needs_javascript_dispatch = needs_javascript_dispatch
         # Make a response object
         @response = self.class.instance_variable_get(:@_RESPONSE).new
       end
       attr_reader :response # so it can be modified before the hook is run in case a default can't be set sensibly
       def run2(args)
         hook_name = self.class.instance_variable_get(:@_NAME)
-        # Run through each plugin, calling the hook function
-        call_javascript = false
-        @plugin_factories.each do |factory|
-          plugin = factory.plugin_object
-          if plugin.is_javascript_plugin?
-            call_javascript = true
-          else
-            plugin.send(hook_name, @response, *args)
-            return @response if @response.stopChain     # a plugin can stop the chain
-          end
+        # Run through each directly implementing plugin, calling the hook function
+        @plugins.each do |plugin|
+          plugin.__send__(hook_name, @response, *args)
+          return @response if @response.stopChain     # a plugin can stop the chain
         end
-        if call_javascript
-          KJavaScriptPlugin.reporting_errors do
-            jsplugins = KJSPluginRuntime.current
-            jsresponse = jsplugins.make_response(@response, self)
-            jsplugins.call_all_hooks(jsargs(hook_name, jsresponse, args))
-            jsplugins.retrieve_response(@response, jsresponse, self)
-          end
+        # Special case JavaScript as runtime handles calling the individual plugins
+        if @needs_javascript_dispatch
+          KJavaScriptPlugin.call_javascript_hooks(hook_name, self, @response, args)
         end
         @response
       end
@@ -178,11 +177,11 @@ class KPlugin
     def call_hook(hook_name)
       runner_class = KHooks::HOOKS[hook_name]
       raise "Hook not defined: #{hook_name}" if runner_class == nil
-      responding_plugins = KPlugin.get_plugins_for_current_app.get_plugins_for_hook(hook_name)
+      responding_plugins, needs_javascript_dispatch = KApp.cache(PLUGINS_CACHE).get_plugins_for_hook(hook_name)
       # Optimise the most likely case where there aren't any plugins
-      return if responding_plugins.empty?
+      return if responding_plugins.empty? && !(needs_javascript_dispatch)
       # There are some plugins, so instantiate a runner
-      runner = runner_class.new(responding_plugins)
+      runner = runner_class.new(responding_plugins, needs_javascript_dispatch)
       # And yield so the caller can use the hooks
       yield runner
     end
@@ -191,142 +190,171 @@ class KPlugin
   # -----------------------------------------------------------------------------------------------------------------
 
   # Manages plugins, used as the object in the KApp cache
-  class PluginsForApp
+  class PluginList
     def initialize
-      @hooks_cache = Hash.new
+      @plugins = []
+      @plugins_by_name = Hash.new
     end
 
-    def plugin_factories
-      @plugin_factories ||= begin
-        # Load the list of plugins
-        factories = Array.new
-        ip = YAML::load(KApp.global(:installed_plugins) || '')
-        if ip.class == Array
-          ip.each do |installed_plugin|
-            # Load the plugin?
-            if installed_plugin[:state] == :active
-              plugin_factory = KPlugin.new_plugin_factory(installed_plugin[:name], installed_plugin[:path])
-              if plugin_factory != nil
-                factories << plugin_factory
-              else
-                KApp.logger.warn "Failed to load plugin factory #{installed_plugin[:name]}"
-              end
-            end
+    def with_plugins(plugin_names)
+      current_app = KApp.current_application
+      PLUGINS_LOCK.synchronize do
+        private_plugins = PRIVATE_PLUGINS[current_app]
+        plugin_names.each do |name|
+          plugin = private_plugins[name] || PLUGINS[name]
+          if plugin != nil
+            @plugins << plugin
+            @plugins_by_name[name] = plugin
+          else
+            KApp.logger.warn "Plugin #{name} is not registered"
           end
         end
-        # Sort by plugin factories by priority, then by name
-        factories.sort do |a,b|
-          pri_a = a.plugin_load_priority
-          pri_b = b.plugin_load_priority
-          (pri_a == pri_b) ? (a.name <=> b.name) : (pri_a <=> pri_b)
-        end
       end
+      # Sort by plugins by priority, then by name
+      @plugins.sort! do |a,b|
+        pri_a = a.plugin_load_priority
+        pri_b = b.plugin_load_priority
+        (pri_a == pri_b) ? (a.name <=> b.name) : (pri_a <=> pri_b)
+      end
+      @plugins.freeze
+      self
+    end
+
+    attr_reader :plugins
+
+    def have_loaded_plugins?
+      @plugins.frozen?
+    end
+
+    def get(name)
+      @plugins_by_name[name]
+    end
+  end
+
+  # -----------------------------------------------------------------------------------------------------------------
+
+  class PluginsForApp < PluginList
+    def initialize
+      super
+      @hooks_cache = Hash.new
+      @plugin_paths = Hash.new
+      @path_to_name = Hash.new
     end
 
     def kapp_cache_checkout
-      # Ask the factories to create the plugin objects
-      plugin_factories.each { |factory| factory.begin_request }
+      return if have_loaded_plugins?
+      # Can't read an app global in initialize, so delay loading plugin list until checkout
+      plugin_names = []
+      ip = YAML::load(KApp.global(:installed_plugins) || '')
+      if ip.class == Array
+        ip.each do |installed_plugin|
+          if installed_plugin[:state] == :active
+            name = installed_plugin[:name]
+            plugin_names << name
+            path = installed_plugin[:path]
+            @plugin_paths[name] = path
+            @path_to_name[path] = name
+          end
+        end
+      end
+      self.with_plugins(plugin_names)
     end
 
-    def kapp_cache_checkin
-      # Make sure any plugin objects are't kept around using memory after a request - especially if they have references to controller objects!
-      plugin_factories.each { |factory| factory.reset_plugin_object }
-    end
-    alias kapp_cache_invalidated kapp_cache_checkin
-
-    def get_plugin_by_name(name)
-      factory = plugin_factories.find { |factory| factory.name == name }
-      return nil if factory == nil
-      factory.plugin_object
+    def get_path_component_by_name(name)
+      @plugin_paths[name]
     end
 
     def get_plugin_by_path_component(path_component)
-      factory = plugin_factories.find { |factory| factory.path_component == path_component }
-      return nil if factory == nil
-      factory.plugin_object
+      self.get(@path_to_name[path_component])
     end
 
     def get_plugins_for_hook(hook_name)
-      @hooks_cache[hook_name] ||= plugin_factories.select { |factory| factory.plugin_object.implements_hook?(hook_name) }
+      @hooks_cache[hook_name] ||= begin
+        javascript_disatch = false
+        direct_implementation = @plugins.select do |plugin|
+          javascript_disatch = true if plugin.hook_needs_javascript_dispatch?(hook_name)
+          plugin.implements_hook?(hook_name)
+        end
+        [direct_implementation, javascript_disatch]
+      end
     end
 
     # Ask all the plugins if they'd like to handle this request, returning a controller class or nil
     def controller_for(path_element_name, other_path_elements, annotations)
-      controller = nil
-      plugin_factories.find do |factory|
-        controller = factory.plugin_object.controller_for(path_element_name, other_path_elements, annotations)
-        controller != nil
+      @plugins.each do |plugin|
+        controller = plugin.controller_for(path_element_name, other_path_elements, annotations)
+        return controller if controller
       end
-      controller
+      nil
     end
   end
 
-  # The PluginsForApp stores a list of PluginFactory objects. These:
-  #   * Create a plugin object on demand
-  #   * Discard any previous plugin object at the beginning of each request
-  #   * Keep track of the plugin files path component
-  # For the same plugin, each app will have it's own factory object for isolation.
-  class PluginFactory < Struct.new(:klass, :name, :path_component)
-    def is_javascript_factory?
-      false
-    end
-    def begin_request
-      raise "PluginFactory in wrong state" unless @plugin_object == nil
-      @plugin_object = self.klass.new(self)
-    end
-    def reset_plugin_object
-      @plugin_object = nil
-    end
-    attr_reader :plugin_object
-    def plugin_name
-      self.klass.plugin_name
-    end
-    def plugin_load_priority
-      DEFAULT_PLUGIN_LOAD_PRIORITY
-    end
-    def plugin_description
-      self.klass.plugin_description
-    end
-    def javascript_load(runtime)
-      # Do nothing for non-JavaScript plugins
-    end
+  # -----------------------------------------------------------------------------------------------------------------
+
+  def self.controller_for(path_element_name, other_path_elements, annotations)
+    KApp.cache(PLUGINS_CACHE).controller_for(path_element_name, other_path_elements, annotations)
   end
 
-  # Given a name, instantiate a plugin factory object
-  def self.new_plugin_factory(name, path_component)
-    klass = PLUGIN_NAME_TO_CLASS[name]
-    if klass != nil
-      PluginFactory.new(klass, name, path_component)
-    else
-      KJavaScriptPlugin.make_factory(name, path_component)
+  # -----------------------------------------------------------------------------------------------------------------
+
+  class InstallChecks
+    def initialize
+      @warnings = []
+    end
+    attr_accessor :failure
+    def success?
+      @warnings.empty? && @failure.nil?
+    end
+    def append_warnings(w)
+      @warnings << w
+    end
+    def warnings
+      @warnings.empty? ? nil : @warnings.join("\n\n")
     end
   end
 
   # Installs one or more plugins
   # Returns true on success, otherwise an exception will be raised
   def self.install_plugin(names, reason = :install)
-    success = true
+    nil == self.install_plugin_returning_checks(names, reason).failure
+  end
+  
+  def self.install_plugin_returning_checks(names, reason = :install)
+    install_check = InstallChecks.new
     names = [names] unless names.kind_of?(Enumerable)
-    installable_names = names.select do |name|
-      KJavaScriptPlugin.plugin_registered?(name) || PLUGIN_NAME_TO_CLASS.has_key?(name)
-    end
-    return false unless installable_names.length == names.length
-    self._add_plugins_to_installed_list(installable_names)
-    # Send notification about plugin changes (flushes lots of caches, including the JS runtime again)
-    KNotificationCentre.notify(:plugin, :install, installable_names, reason)
-    # Tell each plugin it was installed
-    installable_names.each do |name|
-      begin
-        AuthContext.with_system_user do
-          self.get(name).on_install
-        end
-      rescue => e
-        # Log the exception raised during installation, then raise it again to pass it on
-        KApp.logger.error("While running plugin installation for #{name}, got exception #{e}")
-        raise
+    # Generate a new list of plugins, checking that all requestred plugins can be installed
+    new_plugin_names = KApp.cache(PLUGINS_CACHE).plugins.map { |plugin| plugin.name }
+    new_plugin_names.concat(names).uniq!
+    new_plugin_list = PluginList.new.with_plugins(new_plugin_names)
+    names.each do |name|
+      unless new_plugin_list.get(name)
+        install_check.failure = "Plugin not registered: #{name}"
+        return install_check
       end
     end
-    true
+    # Check that it's OK to install these plugins
+    KNotificationCentre.notify(:plugin_pre_install, :check, names, new_plugin_list.plugins, install_check)
+    if install_check.failure != nil
+      KApp.logger.error("Plugin pre-installation checks failed: #{install_check.failure} for #{names.inspect}")
+      return install_check
+    end
+    # Update installed plugin list app global
+    self._add_plugins_to_installed_list(names)
+    # Send notification about plugin changes (flushes lots of caches, including the JS runtime again)
+    KNotificationCentre.notify(:plugin, :install, names, reason)
+    # Tell each plugin it was installed
+    AuthContext.with_system_user do
+      names.each do |name|
+        begin
+          self.get(name).on_install
+        rescue => e
+          # Log the exception raised during installation, then raise it again to pass it on
+          KApp.logger.error("While running plugin installation for #{name}, got exception #{e}")
+          raise
+        end
+      end
+    end
+    install_check
   end
 
   # This is in a seperate method for ease of testing
@@ -361,15 +389,38 @@ class KPlugin
 
   # -----------------------------------------------------------------------------------------------------------------
 
-  # Build the map of plugin name -> plugin class as the code is loaded
-  # Assumes all trusted plugin code is loaded the app server starts - not threadsafe otherwise
-  PLUGIN_NAME_TO_CLASS = Hash.new
-  PLUGIN_CLASS_TO_NAME = Hash.new
-  class << self
-    def inherited(plugin_class)
-      name = plugin_class.name.gsub(/Plugin\z/,'').underscore
-      PLUGIN_NAME_TO_CLASS[name] = plugin_class
-      PLUGIN_CLASS_TO_NAME[plugin_class] = name
+  REGISTER_KNOWN_PLUGINS = []
+  def self.register_known_plugins
+    REGISTER_KNOWN_PLUGINS.each { |p| p.call }
+  end
+
+  PLUGINS_LOCK = Mutex.new  # lock PLUGINS because registration can happen at any time
+  PLUGINS = Hash.new
+  PRIVATE_PLUGINS = Hash.new { |h,k| h[k] = {} }
+
+  def self.register_plugin(plugin, private_for_application = nil)
+    PLUGINS_LOCK.synchronize do
+      # If private registration
+      plugin_lookup = (private_for_application.nil? ? PLUGINS : PRIVATE_PLUGINS[private_for_application])
+      plugin_lookup[plugin.name] = plugin.freeze # freeze to prevent accidental storage of state within plugin objects
+    end
+  end
+
+  def self.get_plugin_without_installation(name)
+    current_app = KApp.current_application
+    PLUGINS_LOCK.synchronize do
+      PRIVATE_PLUGINS[current_app][name] || PLUGINS[name]
+    end
+  end
+
+  def self.plugin_registered?(name)
+    !!(self.get_plugin_without_installation(name))
+  end
+
+  # Doesn't yield private plugins
+  def self.each_registered_plugin
+    PLUGINS_LOCK.synchronize do
+      PLUGINS.each { |name,plugin| yield plugin }
     end
   end
 
@@ -378,11 +429,12 @@ class KPlugin
   # Get all the possible plugin file pathnames
   def self.get_all_plugin_file_pathnames
     pathnames = Java::ComOneisFramework::Application::PluginFilePathnames.new
-    get_plugins_for_current_app.plugin_factories.each do |plugin_factory|
-      plugin = plugin_factory.plugin_object
+    plugins_for_app = KApp.cache(PLUGINS_CACHE)
+    plugins_for_app.plugins.each do |plugin|
       allowed_pathnames = plugin.get_allowed_plugin_filenames
+      path_component = plugins_for_app.get_path_component_by_name(plugin.name)
       if allowed_pathnames != nil
-        allowed_pathnames.each { |n| pathnames.addAllowedPathname("#{plugin_factory.path_component}/#{n}") }
+        allowed_pathnames.each { |n| pathnames.addAllowedPathname("#{path_component}/#{n}") }
       end
     end
     pathnames
@@ -395,9 +447,8 @@ class KPlugin
     plugin_file_pathname = $2
     plugin_file_extension = $3
     # Find the plugin
-    plugin_factory = get_plugins_for_current_app.plugin_factories.find { |f| f.path_component == plugin_path_component }
-    return nil unless plugin_factory != nil
-    plugin = plugin_factory.plugin_object
+    plugin = KApp.cache(PLUGINS_CACHE).get_plugin_by_path_component(plugin_path_component)
+    return nil unless plugin
     # MIME type
     mime_type = (KFramework::STATIC_MIME_TYPES[plugin_file_extension] || 'application/octet-stream')
     # Get the file and generate a response
@@ -417,22 +468,21 @@ class KPlugin
 
   # Helper to get the list of plugins (cached)
   def self.get_plugins_for_current_app
-    KApp.cache(PLUGINS_CACHE)
+    KApp.cache(PLUGINS_CACHE).plugins
   end
 
   # Get the names of all plugins installed in the current app
   def self.get_plugin_names_for_current_app
-    self.get_plugins_for_current_app.plugin_factories.map { |factory| factory.name }
+    self.get_plugins_for_current_app.map { |plugin| plugin.name }
   end
 
   # Helper to get a specific plugin for the app, given a class for the plugin. Handy in plugin controllers.
   def self.get(name)
-    factory = if name.instance_of? Class
-      get_plugins_for_current_app.plugin_factories.find { |factory| factory.klass == name }
-    else
-      get_plugins_for_current_app.plugin_factories.find { |factory| factory.name == name }
-    end
-    (factory == nil) ? nil : factory.plugin_object
+    KApp.cache(PLUGINS_CACHE).get(name)
+  end
+
+  def self.get_by_path_component(path_component)
+    KApp.cache(PLUGINS_CACHE).get_plugin_by_path_component(path_component)
   end
 
   # Modify the list of installed plugins

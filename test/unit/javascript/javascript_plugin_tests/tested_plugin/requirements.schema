@@ -1,0 +1,4 @@
+
+type std:type:person as TestingPerson
+
+group test:group:group1 as GroupOne

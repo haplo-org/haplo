@@ -24,7 +24,7 @@
   section = sections[:account]
   # TODO: Replace :_temp_hide_account_details_menu_entry with a proper way of letting plugins manage the account info page
   section.push(['/do/account/info', 'Account details']) unless KApp.global_bool(:_temp_hide_account_details_menu_entry)
-  section.push(['/do/authentication/change_password', 'Change password'])
+  section.push(['/do/authentication/change-password', 'Change password'])
   if @request_user.policy.can_use_latest?
     section.push(['/do/latest/choose', h(KApp.global(:name_latest_requests).capitalize)])
   end

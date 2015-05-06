@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-class OneisUsageReportPlugin < KPlugin
+class OneisUsageReportPlugin < KTrustedPlugin
   include KConstants
 
   _PluginName "Usage Reports"

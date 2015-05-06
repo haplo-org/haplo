@@ -4,7 +4,7 @@
   "pluginVersion": 1000,
   "displayName": "Grant privileges for testing plugin",
   "displayDescription": "For testing",
-  "apiVersion": 3,
+  "apiVersion": 4,
   "load": [],
   "privilegesRequired": []
 }

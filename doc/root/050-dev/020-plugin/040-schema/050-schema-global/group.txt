@@ -7,3 +7,5 @@ For each active user group in the application, an entry will be defined in the @
 
 For example, @GROUP["std:group:administrators"]@ is the built-in Administrators group.
 
+To make your code easier to read, you should use [node:dev/plugin/schema/local-schema:plugin local schema dictionaries].
+

@@ -247,7 +247,7 @@ class UserTest < Test::Unit::TestCase
 
   # --------------------------------------------------------------------------------
 
-  class PluginUseStoreInsidePermHooksTestPlugin < KPlugin
+  class PluginUseStoreInsidePermHooksTestPlugin < KTrustedPlugin
     _PluginName "Plugin Use Store Inside Perm Hooks Test"
     _PluginDescription "Test"
     def check_states

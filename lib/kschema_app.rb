@@ -29,6 +29,15 @@ class KSchemaApp < KSchema
     'checkbox'  => true
   }
 
+  # Name mapping functions for short names
+  # TODO: Handle international names for short names
+  def self.to_short_name_for_type(name)
+    name.strip.downcase.gsub(/[^a-z0-9]/,' ').gsub(/\s+/,' ')
+  end
+  def self.to_short_name_for_attr(name)
+    name.downcase.gsub(/\s+/,'-').gsub(/[^a-z0-9-]/,'').gsub(/-+/,'-').gsub(/(^-+|-+$)/,'')
+  end
+
   # Add extra information to user visible type descriptor
   class TypeDescriptorApp < TypeDescriptor
     include KConstants
@@ -79,7 +88,7 @@ class KSchemaApp < KSchema
       end
       # Render category must be a number and if not, default to 0
       @render_category = obj.first_attr(A_RENDER_CATEGORY)
-      @render_category = nil if @render_category.class != Fixnum
+      @render_category = nil unless @render_category.kind_of?(Fixnum) && @render_category >= 0 && @render_category < 8
       # Display Elements
       @display_elements = obj.first_attr(A_DISPLAY_ELEMENTS)
       @display_elements = @display_elements.to_s if @display_elements != nil
@@ -88,17 +97,8 @@ class KSchemaApp < KSchema
         # Base labels
         @base_labels = obj.all_attrs(A_TYPE_BASE_LABEL)
         # Applicable labels
-        @applicable_labels = []
-        @default_applicable_label = nil
-        obj.each(A_TYPE_APPLICABLE_LABEL) do |value,d,qual|
-          @applicable_labels << value
-          if qual == Q_TYPE_LABEL_DEFAULT
-            @default_applicable_label = value
-          end
-        end
-        unless @applicable_labels.empty? || @default_applicable_label
-          @default_applicable_label = @applicable_labels.first
-        end
+        @applicable_labels = obj.all_attrs(A_TYPE_APPLICABLE_LABEL)
+        @default_applicable_label = obj.first_attr(A_TYPE_LABEL_DEFAULT) || @applicable_labels.first
         # Labelling attributes
         @labelling_attributes = []
         obj.each(A_TYPE_LABELLING_ATTR) { |value,d,q| @labelling_attributes << value.to_desc }
@@ -384,7 +384,7 @@ class KSchemaApp < KSchema
     @aliased_attr_descs_by_desc = Hash.new
     store.query_and.link(O_TYPE_ATTR_ALIAS_DESC, A_TYPE).add_label_constraints([O_LABEL_STRUCTURE]).execute(:all, :any).each do |aado|
       d = AliasedAttributeDescriptor.new(aado, self, store)
-      @aliased_attr_descs_by_short_name[d.short_name.text] = d
+      @aliased_attr_descs_by_short_name[d.short_name.to_s] = d
       @aliased_attr_descs_by_desc[d.desc] = d
     end
   end

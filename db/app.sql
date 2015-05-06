@@ -152,6 +152,7 @@ CREATE INDEX idx_audit_en_labels ON audit_entries using gin (labels gin__int_ops
 
 CREATE TABLE email_templates (
     id SERIAL PRIMARY KEY,
+    code TEXT,                          -- optional
     name TEXT NOT NULL,
     description TEXT NOT NULL,
     purpose TEXT NOT NULL DEFAULT('Generic'),

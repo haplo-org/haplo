@@ -1,6 +1,6 @@
 
-T.test(function() {
-    T.assert(42 == 42);
+t.test(function() {
+    t.assert(42 == 42);
     // This test fails
-    T.assert(false, "test2 fail msg");
+    t.assert(false, "test2 fail msg");
 });

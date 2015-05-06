@@ -6,7 +6,7 @@ A lot of the functionality of your plugin is exposed to the user through your pl
 The testing framework does not use the full HTTP handling stack to call request handlers under test, but you should not notice any difference between the test and live environments.
 
 
-h3(function). T.login(as)
+h3(function). t.login(as)
 
 Set up the [node:dev/plugin/o/request:request context] for the given user.
 
@@ -15,17 +15,17 @@ The @as@ argument specifies the user, which can be any value accepted by [node:d
 Alternatively, you can pass the string @"ANONYMOUS"@ to 'log in' as the anonymous user, which is the state before a real user has logged in. Usually your plugin will not handle requests for the anonymous user, but this can be overridden using [node:dev/plugin/plugin-json#allowAnonymousRequests] in [node:dev/plugin/plugin-json].
 
 
-h3(function). T.loginAnonymous()
+h3(function). t.loginAnonymous()
 
-Shortcut function which calls @T.login("ANONYMOUS")@.
+Shortcut function which calls @t.login("ANONYMOUS")@.
 
 
-h3(function). T.logout()
+h3(function). t.logout()
 
 Set the test state to be outside a [node:dev/plugin/o/request:request context].
 
 
-h3(function). T.request(method, path, parameters, options)
+h3(function). t.request(method, path, parameters, options)
 
 Call the [node:dev/plugin/request-handling:request handler] for the given @method@ and @path@.
 
@@ -33,27 +33,27 @@ Call the [node:dev/plugin/request-handling:request handler] for the given @metho
 
 The optional @options@ argument specifies any options for the request. See "Request options" below for details.
 
-Information about the request and the response are returned from the function, and made available in the @T.last@ property. See "Request response information" below for details.
+Information about the request and the response are returned from the function, and made available in the @t.last@ property. See "Request response information" below for details.
 
 
-h3(function). T.get(path, parameters, options)
+h3(function). t.get(path, parameters, options)
 
-Shortcut function which calls @T.request()@ with the @"GET"@ method.
-
-
-h3(function). T.post(path, parameters, options)
-
-Shortcut function which calls @T.request()@ with the @"POST"@ method.
+Shortcut function which calls @t.request()@ with the @"GET"@ method.
 
 
-h3(property). T.last
+h3(function). t.post(path, parameters, options)
 
-The @T.last@ property contains the last return value from the @T.request()@ function. You can use this to avoid needing to declare variables to store the return values, and make your tests read a bit better.
+Shortcut function which calls @t.request()@ with the @"POST"@ method.
+
+
+h3(property). t.last
+
+The @t.last@ property contains the last return value from the @t.request()@ function. You can use this to avoid needing to declare variables to store the return values, and make your tests read a bit better.
 
 
 h2. Request options
 
-The @T.request()@ function takes an optional @options@ argument. This has properties:
+The @t.request()@ function takes an optional @options@ argument. This has properties:
 
 h3(property). headers
 
@@ -62,7 +62,7 @@ h3(property). headers
 
 h2. Request response information
 
-The @T.request()@ function returns a JavaScript object with the following properties, and makes it available as the @T.last@ property.
+The @t.request()@ function returns a JavaScript object with the following properties, and makes it available as the @t.last@ property.
 
 h3(property). view
 

@@ -131,6 +131,7 @@ module KAppInit
       footer_html = '<div class="footer"><p class="link0"><a href="http://%%DEFAULT_HOSTNAME%%/">Sent from Haplo</a></p></div>'
       default_email_template = EmailTemplate.new(
         :name => 'Generic', :description => 'Generic template for sending emails when no other template is specified.',
+        :code => 'std:email-template:generic',
         :purpose => 'Generic',
         :from_name => 'Haplo',
         :from_email_address => email_from_address,
@@ -141,6 +142,7 @@ module KAppInit
       # --
       password_recovery_email_template = EmailTemplate.new(
         :name => 'Password recovery',
+        :code => 'std:email-template:password-recovery',
         :description => 'This template is used to send lost password emails. The interpolations are not valid for this email, and should not be used.',
         :purpose => 'Password recovery',
         :in_menu => false,
@@ -151,6 +153,7 @@ module KAppInit
       # --
       latest_updates_template = EmailTemplate.new(
         :name => 'Latest Updates', :description => 'Template for latest updates. Uses %%FEATURE_NAME%% to allow renaming. You can apply different templates to different groups of users, but this is the default if nothing is specified.',
+        :code => 'std:email-template:latest-updates',
         :purpose => 'Latest Updates',
         :from_name => 'Haplo',
         :from_email_address => email_from_address,
@@ -161,6 +164,7 @@ module KAppInit
       # --
       welcome_template = EmailTemplate.new(
         :name => 'New user welcome', :description => 'Template send to new users with their login and password.',
+        :code => 'std:email-template:new-user-welcome',
         :purpose => 'New user welcome',
         :from_name => 'Haplo',
         :from_email_address => email_from_address,

@@ -5,6 +5,6 @@ class: DocNodeTextileWithTOC
 
 The ONEIS JavaScript API is accessed through functions and properties of the global @O@ object. (Upper case letter.)
 
-The application schema is reflected in the JavaScript runtime through [node:dev/plugin/schema].
+The application schema is reflected in the JavaScript runtime through [node:dev/plugin/schema/schema-global].
 
 h2. Categories

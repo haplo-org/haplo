@@ -20,6 +20,9 @@ if PLUGIN_DEBUGGING_SUPPORT_LOADED
   require 'lib/js_support/testing/js_plugin_tests'
 end
 
+# Register trusted and JavaScript plugins
+KPlugin.register_known_plugins
+
 # Scheduled tasks
 Dir.glob("lib/scheduled_tasks/*.rb").sort.each { |f| require f }
 

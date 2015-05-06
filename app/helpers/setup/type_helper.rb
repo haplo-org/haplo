@@ -41,7 +41,7 @@ module Setup_TypeHelper
     r = '<ul>'
     type_descs.each do |t|
       ref = t.objref.to_presentation
-      r << %Q!<li><a href="#{path_base}/#{ref}" target="workspace"#{ref == @selected_type ? 'class="z__selected"' : ''}>#{h(t.printable_name)}</a></li>!
+      r << %Q!<li><a href="#{path_base}/#{ref}" target="workspace"#{ref == @selected_type ? 'class="z__selected"' : ''}>#{html_for_icon(t.render_icon, :micro)} #{h(t.printable_name)}</a></li>!
       r << type_menu_list(t.children_types, path_base, max_depth - 1)
     end
     r << '</ul>'

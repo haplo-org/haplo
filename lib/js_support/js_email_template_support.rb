@@ -9,11 +9,13 @@
 
 module JSEmailTemplateSupport
 
-  def self.loadTemplate(name)
-    if name == nil
+  def self.loadTemplate(code)
+    if code == nil
       EmailTemplate.find(EmailTemplate::ID_DEFAULT_TEMPLATE)
     else
-      EmailTemplate.where(:name => name).first
+      # Backwards compatible fallback to checking for an email template with the given name
+      # NOTE: There's also a similar fallback in work_unit.rb to select auto notify template
+      EmailTemplate.where(:code => code).first || EmailTemplate.where(:name => code).first
     end
   end
 

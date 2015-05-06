@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-class StdDisplayElementsPlugin < KPlugin
+class StdDisplayElementsPlugin < KTrustedPlugin
   include KConstants
   include ERB::Util
 
@@ -50,7 +50,7 @@ class StdDisplayElementsPlugin < KPlugin
     rc = KFramework.request_context
     return nil if rc == nil
     begin
-      self.send(m, controller, result, path, object, style, options)
+      self.send(m, rc.controller, result, path, object, style, options)
       result.stopChain if result.title != nil
     rescue KObjectStore::PermissionDenied => e
       # Ignore permission denied errors, just don't render anything

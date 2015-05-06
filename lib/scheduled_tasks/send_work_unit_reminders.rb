@@ -42,7 +42,7 @@ class WorkUnitRemindersSender
     application_send_start = Time.now
 
     # TODO: Email template selection for work unit reminders - should probably refactor the UI and system for latest updates to give more control
-    email_template = EmailTemplate.find(:first, :conditions => {:purpose => 'Task Reminder'})
+    email_template = EmailTemplate.find(:first, :conditions => {:code => 'std:email-template:task-reminder'})
     return unless email_template # Emails only sent if template exists
 
     js_runtime = KJSPluginRuntime.current
