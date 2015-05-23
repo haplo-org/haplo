@@ -241,10 +241,12 @@ CREATE TABLE work_units (
     closed_by_id INT REFERENCES users(id),               -- Users only
     -- Additional data
     obj_id INT,   -- if applicable to an object
+    tags HSTORE, -- string to string encoding
     data TEXT     -- JSON encoded data
 );
 CREATE INDEX idx_work_units_objref ON work_units(obj_id);
 CREATE INDEX idx_work_units_aid_times ON work_units(actionable_by_id,opened_at,closed_at);
+CREATE INDEX idx_work_units_tags ON work_units USING gin (tags);
 
 
 --------------------------------------------------------------------------------------

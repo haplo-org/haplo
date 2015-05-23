@@ -8,6 +8,7 @@ package com.oneis.jsinterface;
 
 import com.oneis.javascript.Runtime;
 import com.oneis.javascript.OAPIException;
+import com.oneis.jsinterface.util.WorkUnitTags;
 import org.mozilla.javascript.*;
 
 import com.oneis.jsinterface.app.*;
@@ -18,9 +19,12 @@ public class KWorkUnit extends KScriptable {
     private AppWorkUnit workUnit;
     private boolean gotData;    // whether this.data is valid (either by setting, or by loading it from the Ruby side)
     private Object data;        // JSON-encodable data
+    private boolean gotTags;
+    private WorkUnitTags tags;
 
     public KWorkUnit() {
         this.gotData = false;
+        this.gotTags = false;
     }
 
     public void setWorkUnit(AppWorkUnit workUnit) {
@@ -201,16 +205,7 @@ public class KWorkUnit extends KScriptable {
     // ---- data
     public Object jsGet_data() {
         if(!this.gotData) {
-            String jsonEncoded = this.workUnit.jsGetDataRaw();
-            if(jsonEncoded != null && jsonEncoded.length() > 0) {
-                try {
-                    this.data = Runtime.getCurrentRuntime().makeJsonParser().parseValue(jsonEncoded);
-                } catch(org.mozilla.javascript.json.JsonParser.ParseException e) {
-                    throw new OAPIException("Couldn't JSON decode work unit data", e);
-                }
-            } else {
-                this.data = Runtime.getCurrentRuntime().createHostObject("Object");
-            }
+            this.data = jsonEncodedValueToObject(this.workUnit.jsGetDataRaw(), "data");
             this.gotData = true;
         }
         return this.data;
@@ -220,6 +215,21 @@ public class KWorkUnit extends KScriptable {
         // Store for saving later
         this.data = data;
         this.gotData = true;
+    }
+
+    // ---- tags
+    public Object jsGet_tags() {
+        if(!this.gotTags) {
+            Object decodedTags = jsonEncodedValueToObject(this.workUnit.jsGetTagsAsJson(), "tags");
+            this.tags = WorkUnitTags.fromScriptable((Scriptable)decodedTags);
+            this.gotTags = true;
+        }
+        return this.tags;
+    }
+
+    public void jsSet_tags(Scriptable scriptable) {
+        this.tags = WorkUnitTags.fromScriptable(scriptable);
+        this.gotTags = true;
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -243,6 +253,15 @@ public class KWorkUnit extends KScriptable {
             } else {
                 Runtime runtime = Runtime.getCurrentRuntime();
                 this.workUnit.jsSetDataRaw(runtime.jsonStringify(this.data));
+            }
+        }
+        if(this.gotTags) {
+            // Tags need updating
+            if(this.tags == null) {
+                this.workUnit.jsSetTagsAsJson(null);
+            } else {
+                Runtime runtime = Runtime.getCurrentRuntime();
+                this.workUnit.jsSetTagsAsJson(runtime.jsonStringify(this.tags));
             }
         }
         if(!this.workUnit.save()) {
@@ -291,6 +310,18 @@ public class KWorkUnit extends KScriptable {
         return (date == null) ? null : (Date)date;
     }
 
+    private Object jsonEncodedValueToObject(String jsonEncoded, String kind) {
+        if(jsonEncoded != null && jsonEncoded.length() > 0) {
+            try {
+                return Runtime.getCurrentRuntime().makeJsonParser().parseValue(jsonEncoded);
+            } catch(org.mozilla.javascript.json.JsonParser.ParseException e) {
+                throw new OAPIException("Couldn't JSON decode work unit "+kind, e);
+            }
+        } else {
+            return Runtime.getCurrentRuntime().createHostObject("Object");
+        }
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     protected static KWorkUnit[] executeQuery(KWorkUnitQuery query, boolean firstResultOnly) {
         AppWorkUnit[] units = rubyInterface.executeQuery(query, firstResultOnly);
@@ -303,6 +334,14 @@ public class KWorkUnit extends KScriptable {
             results[i] = KWorkUnit.fromAppWorkUnit(units[i]);
         }
         return results;
+    }
+
+    protected static int executeCount(KWorkUnitQuery query) {
+        return rubyInterface.executeCount(query);
+    }
+
+    protected static String executeCountByTagsJSON(KWorkUnitQuery query, Object[] tags) {
+        return rubyInterface.executeCountByTagsJSON(query, tags);
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -331,6 +370,10 @@ public class KWorkUnit extends KScriptable {
         public AppWorkUnit loadWorkUnit(int id);
 
         public AppWorkUnit[] executeQuery(KWorkUnitQuery query, boolean firstResultOnly);
+
+        public int executeCount(KWorkUnitQuery query);
+
+        public String executeCountByTagsJSON(KWorkUnitQuery query, Object[] tags);
     }
     private static Ruby rubyInterface;
 

@@ -1,0 +1,10 @@
+<%
+  @page_title = 'New credential'
+%>
+<%= sys_mng_header %>
+
+<p>&nbsp;</p>
+
+<% KeychainCredential::MODELS.each do |model| %>
+  <p><a href="?kind=<%= ERB::Util.url_encode(model[:kind]) %>&instance_kind=<%= ERB::Util.url_encode(model[:instance_kind]) %>"><%= h(model[:kind]) %> / <%= h(model[:instance_kind]) %></a></p>
+<% end %>

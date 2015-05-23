@@ -64,6 +64,8 @@ TEST(function() {
     unit1.openedAt = new Date(2020, 11 - 1, 12);
     unit1.data["ping"] = [23,5,6];
     unit1.data["poing"] = "hello!";
+    unit1.tags["tag1"] = "value1";
+    unit1.tags["tag2"] = O.ref('8800z');
     unit1.save();
 
     // Load the object back
@@ -79,6 +81,8 @@ TEST(function() {
     TEST.assert(typeof(unit1b.data) == 'object');
     TEST.assert_equal("hello!", unit1b.data["poing"]);
     TEST.assert(_.isEqual([23,5,6], unit1b.data["ping"]));
+    TEST.assert_equal("value1", unit1b.tags.tag1);
+    TEST.assert_equal("8800z", unit1b.tags.tag2);   // ref got converted to String
 
     // Try closing it
     TEST.assert_equal(false, unit1.closed);
@@ -126,6 +130,7 @@ TEST(function() {
             TEST.assert_equal(true, i in all);
         }
         TEST.assert_equal(false, (all.length) in all);
+        TEST.assert_equal(expected.length, all.count());
     };
     TEST.assert_equal('z', O.work.query("plugin:loading").first().data.name);
     TEST.assert_equal(null, O.work.query("plugin:loading").isClosed().latest());

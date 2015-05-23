@@ -7,6 +7,36 @@
 
 class OAuthClient
 
+  KNotificationCentre.when(:server, :starting) do
+    KeychainCredential::MODELS.push({
+      :kind => 'OAuth Identity Provider',
+      :instance_kind => 'OAuth2',
+      :account => {
+        "auth_url" => "https://accounts.google.com/o/oauth2/auth",
+          # The URL to redirect the user to, to allow authentication
+        "token_url" => "https://accounts.google.com/o/oauth2/token",
+          # The URL that ONEIS should use to verify the authentication token against the provider.
+        "cert_url" => "https://www.googleapis.com/oauth2/v1/certs",
+          # In google-flavoured OAuth, the token response contains a JWT signed message,
+          # this URL should return a dictionary of PEM encoded keys used to sign the JWT.
+        "domain" => "example.com",
+          # The email domain to allow logins under
+        "issuer" => "accounts.google.com",
+          # Check that the identity token has been provided by this issuer
+        "client_id" => "XXXXXXXXXXX.apps.googleusercontent.com",
+          # This is provided by the authentication provider, and should be copied exactly
+        "max_auth_age" => "0",
+          # Ask the auth provider to require the user to re-enter their password if the last time
+          # they did this was more than X minutes ago.  (Note there is usually a minimum time of a
+          # few minutes enforced by the server).
+      },
+      :secret => {
+        "client_secret" => ""
+          # This is provided by the authentication provider
+      }
+    })
+  end
+
   # In google's case (and probably others?) the public key for signing the user info record
   # is rotated on the order of every day (from the docs) so cache the keys.
   PUBLIC_KEYS = KApp.cache_register(Hash, 'OAuth provider public signing keys')
@@ -68,7 +98,7 @@ class OAuthClient
       'redirect_uri' => @config['return_url'],
       'state' => encode_state(state_details),
       'hd' => @config['domain'],
-      'max_auth_age' => @config['max_auth_age']
+      'max_auth_age' => @config['max_auth_age'].to_i
     })
     "#{@config['auth_url']}?#{query}"
   end

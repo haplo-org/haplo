@@ -102,21 +102,25 @@ module JSRemoteAuthenticationServiceSupport
 
   # LDAP authentication requires a KeychainCredential with:
 
-  # {
-  #    :name => '(user visible name)',
-  #    :kind => 'Authentication Service',
-  #    :instance_kind => 'LDAP',
-  #    :account => {
-  #      "URL" => 'ldaps://HOSTNAME:PORT',
-  #      "Certificate" => "name1.tld : name2.tld", # ' : ' separated list of allowed certificate hostnames (separated as Path for consistency)
-  #      "Path" => "OU=Unit_1,DC=example,DC=com : OU=Unit_1,DC=example,DC=com", # ' : ' separated list of paths to search for user, entries may contain spaces
-  #      "Search" => "(& (sAMAccountName={0})(objectClass=user))", # search criteria, no spaces allowed, {0} is username. Could also query userPrincipalName as username@domain.tld
-  #      "Username" => "SERVICE_USERNAME"
-  #    },
-  #    :secret => {
-  #      'Password' => "SERVICE_PASSWORD"
-  #    }
-  #  }
+  KNotificationCentre.when(:server, :starting) do
+    KeychainCredential::MODELS.push({
+      :kind => 'Authentication Service',
+      :instance_kind => 'LDAP',
+      :account => {
+        "URL" => 'ldaps://HOSTNAME:PORT',
+        "Certificate" => "name1.example.com : name2.example.com",
+            # ' : ' separated list of allowed certificate hostnames (separated as Path for consistency)
+        "Path" => "OU=Unit1,DC=example,DC=com : OU=Unit1,DC=example,DC=com",
+            # ' : ' separated list of paths to search for user, entries may contain spaces
+        "Search" => "(& (sAMAccountName={0})(objectClass=user))",
+            # search criteria, no spaces allowed, {0} is username. Could also query userPrincipalName as username@domain.tld
+        "Username" => ""
+      },
+      :secret => {
+        "Password" => ""
+      }
+    })
+  end
 
   class LDAPAuthenticationService < ConnectionlessService
     EXTERNAL_TIMEOUT = 4000 # 4 seconds

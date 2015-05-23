@@ -130,7 +130,7 @@ class JavaScriptSyntaxTester
       # Client side?
       client_side = !!(pathname =~ /(static|app\/views)\//)  # also gets plugin client side
       # Plugin?
-      plugin_js = !!(pathname =~ /\Aapp\/plugins\//)
+      plugin_js = !!(pathname =~ /\Aapp\/plugins\//) && !(pathname =~ /\/shared\//)
 
       # Load file
       script = File.open(pathname) { |f| f.read }

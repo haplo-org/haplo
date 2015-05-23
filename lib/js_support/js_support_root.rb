@@ -134,6 +134,8 @@ class JSSupportRoot
       c.params.to_json
     when 'headersJSON'
       c.request.headers.all_headers.to_json
+    when 'body'
+      c.request.body
     when "remoteIPv4"
       c.request.remote_ip
     else

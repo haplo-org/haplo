@@ -87,6 +87,17 @@ Which user or group can action and closed this work unit, read as a [node:dev/pl
 This property can be set with a numeric ID or a [node:dev/plugin/interface/security-principal] object.
 
 
+h3(property). tags
+
+An @Object@-like dictionary of short @String@ to @String@ key value pairs. Use for values that you will use in work unit queries and reporting, and the @data@ property for all other information.
+
+@Ref@ objects will be automatically converted to a @String@, but otherwise, an exception will be raised if a non-@String@ object is assigned to a key.
+
+Work unit tags are indexed, and can be efficiently queried with a [node:dev/plugin/interface/work-unit-query] [node:dev/plugin/interface/work-unit-query#tag] function.
+
+Tags can be used for simple reporting, using the [node:dev/plugin/interface/work-unit-query#countByTags] function.
+
+
 h3(property). data
 
 JavaScript @Object@, which can only contain items which can be serialised to JSON. Use to store arbitrary data about the state of your workflow.

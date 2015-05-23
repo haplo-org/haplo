@@ -19,3 +19,7 @@
     end
   %>
 </table>
+
+<%= sys_mng_edit_button("/do/setup/keychain/edit/#{@credential.id}") %>
+
+<%= sys_mng_update_submenu(@credential.name, "/do/setup/keychain/info/#{@credential.id}") %>

@@ -39,6 +39,7 @@ For search results, plugin.renderSearchResult() and renderer object
 
 Action panels (using std:ui:panel)
 ----------------------------------
+O.ui.panel() builder
 std_action_panel plugin, used eg
   4 right std:action_panel {"panel":"X"}
 with optional options "title", "style", "highlight" and "buttonLink".

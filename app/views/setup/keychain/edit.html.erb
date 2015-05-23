@@ -1,0 +1,28 @@
+<%
+  @page_title = @credential.persisted? ? 'Edit '+@credential.name : 'New credential'
+%>
+<%= sys_mng_header %>
+
+<form method="POST"><%= form_csrf_token %>
+  <table>
+    <tr><td>Name</td><td><input type="text" name="name" value="<%= h(@credential.name) %>" size="60"></td></tr>
+    <%
+      @credential.account.each do |key,value|
+        value = value.to_s
+        %><tr><td><%= h(key) %></td><td><%
+        if value.length > 50 || value =~ /\n/
+          %><textarea cols="60" name="account[<%= h(key) %>]"><%= h(value) %></textarea><%
+        else
+          %><input type="text" name="account[<%= h(key) %>]" value="<%= h(value) %>" size="60"><%
+        end
+        %></td></tr><%
+      end
+    %>
+    <%
+      @credential.secret.each do |key,value|
+        %><tr><td><%= h(key) %></td><td><input type="password" autocomplete="off" name="secret[<%= h(key) %>]" value="<%= value.to_s.length == 0 ? '' : Setup_KeychainController::NOT_CHANGED %>" size="60"></td></tr><%
+      end
+    %>
+    <tr><td></td><td><input type="submit" value="Save"></td></tr>
+  </table>
+</form>

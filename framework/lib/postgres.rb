@@ -26,6 +26,8 @@ module PGconn
   end
 end
 
+# --------------------------------------------------------------------------------------------------------------------
+
 # Turn a JDBC raw connection into something approaching the old interface
 class PostgresConnWrapper
 
@@ -130,5 +132,66 @@ private
     end
   end
 
+end
+
+# --------------------------------------------------------------------------------------------------------------------
+
+# This is a very limited hstore parser and generator.
+#  * Only parses the format returned by postgresql.
+#  * Doesn't support NULL values.
+
+module PgHstore
+  INITIAL_QUOTE = /"/.freeze
+
+  QUOTED_STRING = /(\\"|[^"])*/
+  QUOTED_REPLACE = /\\(.)/
+  QUOTED_REPLACEMENT = '\1'.freeze
+
+  SEPARATE_KEY_VALUE = /"\s*=>\s*"/
+  NEXT_KEY_VALUE = /"(\s*,\s*")?/
+
+  def self.parse_hstore(string)
+    result = Hash.new
+    scanner = StringScanner.new(string)
+    bad_format unless scanner.skip(INITIAL_QUOTE)
+    key = nil
+    while !scanner.eos?
+      key = get_quoted(scanner)
+      bad_format unless scanner.skip(SEPARATE_KEY_VALUE)
+      value = get_quoted(scanner)
+      result[key] = value
+      bad_format unless scanner.skip(NEXT_KEY_VALUE)
+    end
+    result
+  end
+
+  def self.get_quoted(scanner)
+    s = scanner.scan(QUOTED_STRING)
+    raise bad_format unless s
+    s.gsub(QUOTED_REPLACE, QUOTED_REPLACEMENT)
+  end
+
+  def self.bad_format
+    raise "Badly formatted hstore string"
+  end
+
+  # -----------------------------------------------------------
+
+  GENERATE_JOIN = ','.freeze
+
+  QUOTE_REPLACE = /("|\\)/
+  QUOTE_REPLACEMNENT = '\\\\\1'.freeze
+
+  def self.generate_hstore(hash)
+    elements = []
+    hash.each do |key,value|
+      elements << %Q!"#{to_quotable(key)}"=>"#{to_quotable(value)}"!
+    end
+    elements.join(GENERATE_JOIN)
+  end
+
+  def self.to_quotable(value)
+    value.to_s.gsub(QUOTE_REPLACE, QUOTE_REPLACEMNENT)
+  end
 end
 

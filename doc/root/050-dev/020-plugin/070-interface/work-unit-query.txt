@@ -71,6 +71,11 @@ h3(function). ref(ref)
 Find work units referring to the [node:dev/plugin/interface/ref].
 
 
+h3(function). tag(key, value)
+
+Find work units which have the [node:dev/plugin/interface/work-unit#tags:tag] specified by the @key@ and @value@, which must both be a @String@.
+
+
 h3(function). isVisible()
 
 Find work units which are visible. (default)
@@ -101,3 +106,49 @@ Returns the work unit with the most recent @createdAt@ property, or @null@ if th
 h3(function). first()
 
 Alias of @latest()@
+
+
+h3(function). count()
+
+Efficiently count the work units matching this query, without loading them into memory.
+
+
+h3(function). countByTags(tag0, ...)
+
+Return a nested data structure containing the counts of all the values of the specified tags in the work units matching this query. Up to four tags may be specified as the arguments to this function.
+
+If a work unit does not have a value for this tag, the empty string will be used as the value.
+
+For example, consider the work units with the following tags:
+
+|_Tag_|@one@|@two@|
+|_Values_|@"a"@|@"b"@|
+||@"a"@|@"b"@|
+||@"a"@|@"c"@|
+||@"x"@|(no value for this tag)|
+||@"x"@|@""@|
+||@"x"@|@"42"@|
+
+Then @query.countByTags("one")@ would return:
+
+<pre>language=javascript
+{
+    "a": 3,
+    "x": 3
+}
+</pre>
+
+and @query.countByTags("one","two")@ would return:
+
+<pre>language=javascript
+{
+    "a": {
+        "b": 2,
+        "c": 1
+    },
+    "x": {
+        "": 2,
+        "42": 1
+    }
+}
+</pre>

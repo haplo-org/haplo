@@ -58,6 +58,10 @@ TEST(function() {
         department: { type:"link", nullable:true, indexedWith:["lastDepartment","salary"] },
         lastDepartment: { type:"link", nullable:true, linkedTable:"department" }, // table name doesn't match the field name
         caseInsensitiveValue: { type:"text", nullable:true, caseInsensitive:true, indexed:true }
+    }, function(rowPrototype) {
+        rowPrototype.__defineGetter__("testGetter", function() {
+            return "ID:"+this.id;
+        });
     });
 
     db.table("numbers", {
@@ -175,6 +179,10 @@ TEST(function() {
     fred.save();
     TEST.assert(fred.id > 0);
     TEST.assert(fred.department.id === engineering.id);
+
+    // Was the getter implemented by the row prototype initialiser?
+    TEST.assert_equal("ID:"+fred.id, fred.testGetter);
+    TEST.assert_equal(undefined, fred.fancyStuff);  // function not available
 
     // Check nullable checks
     TEST.assert_exceptions(function() { db.x1.create().save(); }, "number cannot be null");

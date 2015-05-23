@@ -64,6 +64,10 @@ public interface AppWorkUnit {
 
     public void jsSetDataRaw(String data);
 
+    public String jsGetTagsAsJson();
+
+    public void jsSetTagsAsJson(String tags);
+
     // Querying
     public boolean can_be_actioned_by(AppUser user);
 

@@ -4,3 +4,5 @@
 CREATE LANGUAGE plpgsql;
 
 CREATE EXTENSION intarray;
+
+CREATE EXTENSION hstore;

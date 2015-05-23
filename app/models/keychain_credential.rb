@@ -7,6 +7,8 @@
 
 class KeychainCredential < ActiveRecord::Base
 
+  MODELS = []
+
   def account
     JSON.parse(self.account_json)
   end

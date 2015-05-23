@@ -25,7 +25,7 @@ Names must start with a lowercase letter, and be formed of letters and numbers o
 h2. Interface
 
 
-h3(function). table(name, fields, methods)
+h3(function). table(name, fields, initialiserOrMethods)
 
 Declares a table with the given @name@ and the defined @fields@. See below for field definitions. There is an implicit numeric @id@ field in every table which is used as the primary key.
 
@@ -33,7 +33,7 @@ Note that by default, fields *do not* allow @null@ values, and you must specify 
 
 A property is added to this object to access the new [node:dev/plugin/interface/database-table] object.
 
-If the optional @methods@ argument is given, this should be a JavaScript @Object@ containing functions which will be added to the prototype of the database rows. This allows you to implement functions on your database row (model) objects.
+The optional @initialiserOrMethods@ argument allows you to extend the prototype of the row object to add additional methods and getters and setters. If it's a function, it'll be called with the prototype as a single argument. If it's a JavaScript @Object@, those properties will be added to the prototype.
 
 *This function can only be called when the plugin is loaded.* See the [node:dev/plugin/database:database overview] for details and an example.
 

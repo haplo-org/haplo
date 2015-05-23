@@ -142,10 +142,13 @@ module SchemaRequirements
     "label-base"        => StoreObjectRuleMulti.new(A_TYPE_BASE_LABEL, *mappers_for([O_TYPE_LABEL])),
     "label-applicable"  => StoreObjectRuleMulti.new(A_TYPE_APPLICABLE_LABEL, *mappers_for([O_TYPE_LABEL])),
     "label-default"     => StoreObjectRuleSingle.new(A_TYPE_LABEL_DEFAULT, *mappers_for([O_TYPE_LABEL])),
-    "label-attribute"   => StoreObjectRuleSingle.new(A_TYPE_LABEL_DEFAULT, *mappers_for([O_TYPE_ATTR_DESC])), # not aliased
+    "label-attribute"   => StoreObjectRuleMulti.new(A_TYPE_LABELLING_ATTR, *mappers_for([O_TYPE_ATTR_DESC])), # not aliased
     "element"           => StoreObjectRuleMultiString.new(A_DISPLAY_ELEMENTS),
     "term-inclusion"    => StoreObjectRuleMultiString.new(A_TERM_INCLUSION_SPEC),
     "default-subtype"   => StoreObjectRuleSingle.new(A_TYPE_CREATE_DEFAULT_SUBTYPE, *mappers_for([O_TYPE_APP_VISIBLE])),
+    "create-show-subtype" => StoreObjectRuleSingle.new(A_TYPE_CREATE_SHOW_SUBTYPE, 
+                              Proc.new { |v,context| (v == 'no') ? 0 : 1 },
+                              Proc.new { |v,context| v.nil? ? nil : ((v == 0) ? 'no' : 'yes') }),
     "create-position"   => StoreObjectRuleSingle.new(A_TYPE_CREATION_UI_POSITION,
                               Proc.new { |v,context| TYPE_UI_POSITION[v] },
                               Proc.new { |v,context| TYPE_UI_POSITION.key(v) })

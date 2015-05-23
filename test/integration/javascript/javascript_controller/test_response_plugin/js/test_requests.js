@@ -10,6 +10,17 @@
         E.response.body = "TEST RESPONSE ("+E.request.extraPathElements.join(',')+")";
     });
 
+    P.respond("POST", "/do/plugin_test/body", [], function(E) {
+        E.response.body = "!"+E.request.body+"!";
+        E.response.kind = "text";
+    });
+    P.respond("POST", "/do/plugin_test/body2", [
+        {body:"body", as:"string"}
+    ], function(E, body) {
+        E.response.body = "_"+body+"_";
+        E.response.kind = "text";
+    });
+
     P.respond("GET", "/do/plugin_test/with_layout", [], function(E) {
         E.response.body = "TEST PLUGIN";
         E.response.kind = "html";
@@ -65,8 +76,8 @@
     });
 
     var simpleArgValidationTester = function(path, args) {
-        P.respond("GET", path, args, function(E, ping) {
-            E.response.body = ""+ping;
+        P.respond("GET", path, args, function(E, value) {
+            E.response.body = JSON.stringify({"value":value});
             E.response.kind = 'text';
         });
     };
@@ -75,6 +86,7 @@
     simpleArgValidationTester("/do/plugin_test/arg_test2", [{pathElement:0, as:"int"}]);
     simpleArgValidationTester("/do/plugin_test/arg_test3", [{pathElement:0, as:"int", validate:function(v) { return v > 10 && v < 20; }}]);
     simpleArgValidationTester("/do/plugin_test/arg_test4", [{pathElement:0, as:"string"}]);
+    simpleArgValidationTester("/do/plugin_test/arg_test5", [{pathElement:0, as:"json"}]);
 
     P.respond("GET", "/do/plugin_test/arg_test", [
         {pathElement:1, as:"string", validate:/HELLO/},

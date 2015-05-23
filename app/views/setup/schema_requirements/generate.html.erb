@@ -1,5 +1,6 @@
 <%
   @page_title = 'Generate requirements'
+  client_side_controller_js('generate')
 %>
 <%= sys_mng_header %>
 
@@ -15,10 +16,13 @@
     <p><label><input type="checkbox" name="email_templates" value="1">Include definitions for all email templates</label></p>
     <p><label><input type="checkbox" name="features" value="1">Include definitions for special features</label></p>
     <p><input type="submit" value="Generate requirements.schema"></p>
-    <p>Based on:<%
-      KObjectStore.schema.type_descs_sorted_by_printable_name.each do |type_desc|
-        %><br><label><input type="checkbox" name="types[<%= type_desc.objref.to_presentation %>]"><%= h(type_desc.printable_name.to_s) %></label><%
-      end
-    %></p>
+    <div id="z__generate_schema_types">
+      <p>Based on:<%
+        KObjectStore.schema.type_descs_sorted_by_printable_name.each do |type_desc|
+          %><br><label><input type="checkbox" name="types[<%= type_desc.objref.to_presentation %>]"><%= h(type_desc.printable_name.to_s) %></label><%
+        end
+      %></p>
+    </div>
+    <p><a href="#" id="z__generate_select_all_types">Select all</a></p>
   </form>
 <% end %>

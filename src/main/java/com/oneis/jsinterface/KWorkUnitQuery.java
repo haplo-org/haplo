@@ -11,6 +11,7 @@ import com.oneis.javascript.OAPIException;
 import org.mozilla.javascript.*;
 
 import java.util.Date;
+import java.util.ArrayList;
 
 public class KWorkUnitQuery extends KScriptable {
     private String workType;
@@ -20,6 +21,7 @@ public class KWorkUnitQuery extends KScriptable {
     private Integer actionableById;
     private Integer closedById;
     private Integer objId;
+    private ArrayList<TagKeyValue> tagValues;
 
     private static final String DEFAULT_STATUS = "open";
     private static final String DEFAULT_VISIBILITY = "visible";
@@ -111,7 +113,43 @@ public class KWorkUnitQuery extends KScriptable {
         return this;
     }
 
+    public Scriptable jsFunction_tag(String key, String value) {
+        if(this.tagValues == null) {
+            this.tagValues = new ArrayList<TagKeyValue>();
+        }
+        TagKeyValue kv = new TagKeyValue();
+        kv.key = key;
+        kv.value = value;
+        this.tagValues.add(kv);
+        return this;
+    }
+
     // --------------------------------------------------------------------------------------------------------------
+    public int jsFunction_count() {
+        return KWorkUnit.executeCount(this);
+    }
+
+    // Rhino doesn't support variable arguments, and we don't want to allow too many tags anyway
+    public Object jsFunction_countByTags(Object tag0, Object tag1, Object tag2, Object tag3) {
+        Object[] tags = new Object[]{tag0, tag1, tag2, tag3};
+        for(int index = 0; index < tags.length; index++) {
+            Object tag = tags[index];
+            if(tag == null || tag instanceof org.mozilla.javascript.Undefined) {
+                tags[index] = null;
+            } else if(tag instanceof CharSequence) {
+                tags[index] = ((CharSequence)tag).toString();
+            } else {
+                tags[index] = null;
+            }
+        }
+        String json = KWorkUnit.executeCountByTagsJSON(this, tags);
+        try {
+            return (json == null) ? null : Runtime.getCurrentRuntime().makeJsonParser().parseValue(json);
+        } catch(org.mozilla.javascript.json.JsonParser.ParseException e) {
+            return null;
+        }
+    }
+
     public int jsGet_length() {
         executeQueryIfRequired(false);
         return this.results.length;
@@ -176,6 +214,13 @@ public class KWorkUnitQuery extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+
+    public static class TagKeyValue {
+        public String key;
+        public String value;
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
     public String getWorkType() {
         return this.workType;
     }
@@ -202,6 +247,11 @@ public class KWorkUnitQuery extends KScriptable {
 
     public Integer getObjId() {
         return this.objId;
+    }
+
+    public TagKeyValue[] getTagValues() {
+        if(this.tagValues == null) { return null; }
+        return this.tagValues.toArray(new TagKeyValue[this.tagValues.size()]);
     }
 
 }

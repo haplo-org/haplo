@@ -80,3 +80,9 @@ For example, within a request handler:
 |*Property path*|*Value*|
 |@E.request.remote.protocol@|@"IPv4"@|
 |@E.request.remote.address@|@"10.1.2.3"@|
+
+
+h3(property). body
+
+The raw request body, interpreted as a UTF-8 string.
+

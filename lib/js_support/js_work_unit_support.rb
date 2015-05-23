@@ -18,6 +18,47 @@ module JSWorkUnitSupport
   end
 
   def self.executeQuery(query, firstResultOnly)
+    units = build_ruby_query(query).order("created_at DESC,id DESC")
+    if firstResultOnly
+      first = units.first
+      (first == nil) ? [] : [first]
+    else
+      units.to_a
+    end
+  end
+
+  def self.executeCount(query)
+    build_ruby_query(query).count()
+  end
+
+  def self.executeCountByTagsJSON(query, tags)
+    tags = tags.to_a.compact
+    if tags.empty?
+      raise JavaScriptAPIError, "countByTags() requires at least one tag."
+    end
+    path_methods = COUNT_VALUE_METHODS[0..(tags.length-1)]
+    last_method = path_methods.pop
+    quoted_tags = tags.map { |tag| PGconn.quote(tag) }
+    tag_values = quoted_tags.map { |qtag| "tags -> #{qtag}" } .join(', ')
+    select = quoted_tags.each_with_index.map { |qtag, i| "tags -> #{qtag} as count_tag#{i}" } .join(', ')
+    select << ", COUNT(*) as count_total"
+    result = {}
+    build_ruby_query(query).group(tag_values).order(tag_values).select(select).each do |wu|
+      counts = result
+      path_methods.each do |method|
+        tag = wu.__send__(method) || ''
+        counts = (counts[tag] ||= {})
+      end
+      last_tag = wu.__send__(last_method) || ''
+      # Because NULL and "" are counted the same, add the total to any existing value, even though
+      # the database will have done all the summing in the query for all the other values.
+      counts[last_tag] = (counts[last_tag] || 0) + wu.count_total
+    end
+    return JSON.generate(result)
+  end
+  COUNT_VALUE_METHODS = [:count_tag0, :count_tag1, :count_tag2, :count_tag3]
+
+  def self.build_ruby_query(query)
     # Build query
     units = WorkUnit.where(:work_type => query.getWorkType())
 
@@ -54,14 +95,14 @@ module JSWorkUnitSupport
     obj_id = query.getObjId()
     units = units.where(:obj_id => obj_id) if obj_id != nil
 
-    # Execute query
-    units = units.order("created_at DESC,id DESC")
-    if firstResultOnly
-      first = units.first
-      (first == nil) ? [] : [first]
-    else
-      units.to_a
+    tagValues = query.getTagValues()
+    if tagValues != nil
+      tagValues.each do |kv|
+        units = units.where(WorkUnit::WHERE_TAG, kv.key, kv.value)
+      end
     end
+
+    units
   end
 
 end

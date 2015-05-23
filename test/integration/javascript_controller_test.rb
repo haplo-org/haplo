@@ -88,6 +88,12 @@ class JavaScriptControllerTest < IntegrationTest
     assert_response :success
     assert_equal 'carrots', response.body
 
+    # Access to raw body
+    post '/do/plugin_test/body', {"foo" => "bar"}
+    assert response.body =~ /\A\!foo=bar&__=.+?\!\z/
+    post '/do/plugin_test/body2', {"bar" => "foo"}
+    assert response.body =~ /\A_bar=foo&__=.+?_\z/
+
     # Can use id and action parameters (and Rails compatibility doesn't override them)
     get '/do/plugin_test/param_out/id?id=12345'
     assert_equal '12345', response.body
@@ -143,6 +149,8 @@ class JavaScriptControllerTest < IntegrationTest
       '/do/plugin_test/arg_test2/pants',
       '/do/plugin_test/arg_test3/345',
       '/do/plugin_test/arg_test4',
+      '/do/plugin_test/arg_test5/notjson',
+      '/do/plugin_test/arg_test5',
       '/do/plugin_test/arg_test/something/jjjj/aaa?a1=345'
     ].each do |url|
       get_400 url
@@ -150,11 +158,12 @@ class JavaScriptControllerTest < IntegrationTest
     end
     # Check passing validation
     [
-      ['/do/plugin_test/arg_test0/xHELLOx', 'xHELLOx'],
-      ['/do/plugin_test/arg_test0/HELLO', 'HELLO'],
-      ['/do/plugin_test/arg_test2/100', '100'],
-      ['/do/plugin_test/arg_test3/15', '15'],
-      ['/do/plugin_test/arg_test4/anything', 'anything']
+      ['/do/plugin_test/arg_test0/xHELLOx', '{"value":"xHELLOx"}'],
+      ['/do/plugin_test/arg_test0/HELLO', '{"value":"HELLO"}'],
+      ['/do/plugin_test/arg_test2/100', '{"value":100}'],
+      ['/do/plugin_test/arg_test3/15', '{"value":15}'],
+      ['/do/plugin_test/arg_test4/anything', '{"value":"anything"}'],
+      ['/do/plugin_test/arg_test5/{"a":[1,2,3]}', '{"value":{"a":[1,2,3]}}']
     ].each do |url, text|
       get url
       assert_equal text, response.body

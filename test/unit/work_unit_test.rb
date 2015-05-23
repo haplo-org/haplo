@@ -35,6 +35,46 @@ class WorkUnitTest < Test::Unit::TestCase
 
   # -------------------------------------------------------------------------------------------------------
 
+  def test_work_unit_tags
+    wus = [
+      {"a"=>"b","c"=>"d"},
+      {"a"=>"d","x"=>"y"},
+      {"x"=>"y"},
+      {"a"=>"4","x"=>"x"},
+      {"a"=>"4","x"=>"q","z"=>"'s'\""},
+    ].map do |tags|
+      # Tag creation uses string representation
+      wu = WorkUnit.new({
+        :work_type => 'test1',
+        :opened_at => Time.now,
+        :created_by_id  => 41,
+        :actionable_by_id => 42,
+        :tags => PgHstore.generate_hstore(tags)
+      })
+      wu.save!
+      wu2 = WorkUnit.find(wu.id)
+      assert wu2.tags.kind_of?(String)
+      assert_equal tags, PgHstore.parse_hstore(wu2.tags)
+      wu
+    end
+    # Check where clause generation
+    query1 = WorkUnit.where(WorkUnit::WHERE_TAG, 'a', 'b')
+    assert_equal 1, query1.length
+    assert_equal wus[0].id, query1[0].id
+    query2 = WorkUnit.where(WorkUnit::WHERE_TAG, 'x', 'y').order('id')
+    assert_equal 2, query2.length
+    assert_equal wus[1].id, query2[0].id
+    assert_equal wus[2].id, query2[1].id
+    # Count up the work units
+    r = {}
+    WorkUnit.group("tags -> 'a'").order("tags -> 'a'").select("tags -> 'a' as report_tag, COUNT(*) as report_count").each do |wu|
+      r[wu.report_tag] = wu.report_count
+    end
+    assert_equal({"4"=>2,"b"=>1,"d"=>1,nil=>1},r)
+  end
+
+  # -------------------------------------------------------------------------------------------------------
+
   def test_work_unit_auto_visible
     restore_store_snapshot("basic")
 

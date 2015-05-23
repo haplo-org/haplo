@@ -45,6 +45,12 @@ h3(key). parameter
 
 The argument value will be obtained from the request parameters, either from the @GET@ URL or the @POST@ body. The value is the name of the parameter as a string.
 
+h3(key). body: "body"
+
+The argument value will be obtained from the HTTP request body, treated as a UTF-8 string.
+
+The value of the property must be the string @"body"@.
+
 
 h3. Argument value
 
@@ -89,6 +95,13 @@ h3(value). as: "db"
 The value is passed to the handler as a [node:dev/plugin/interface/database-row]. The database table is specified with the @table@ key, which must be present.
 
 The source must be the string representation of a positive integer, referring to the row ID in the database table.
+
+
+h3(value). as: "json"
+
+The value is parsed as JSON and passed to the handler.
+
+Invalid JSON will cause the request to fail validation and your handler will not be called.
 
 
 h3(value). as: "file"

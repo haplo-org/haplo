@@ -12,6 +12,8 @@ class WorkUnit < ActiveRecord::Base
   belongs_to :actionable_by,  :class_name => 'User', :foreign_key => 'actionable_by_id'
   belongs_to :closed_by,      :class_name => 'User', :foreign_key => 'closed_by_id'
 
+  WHERE_TAG = '(tags -> ?) = ?'.freeze
+
   # Hide work units when the object becomes unreadable or deleted, if they're set for
   # automatic visibilty changes.
   KNotificationCentre.when_each([
@@ -145,6 +147,16 @@ class WorkUnit < ActiveRecord::Base
 
   def jsSetDataRaw(data)
     write_attribute('data', data)
+  end
+
+  # JavaScript tags API
+  def jsGetTagsAsJson()
+    hstore = read_attribute('tags')
+    hstore ? JSON.generate(PgHstore.parse_hstore(hstore)) : nil
+  end
+
+  def jsSetTagsAsJson(tags)
+    write_attribute('tags', tags ? PgHstore.generate_hstore(JSON.parse(tags)) : nil)
   end
 
   # TODO: Can jsSetOpenedAt and jsSetDeadline be done better? Workaround for change from JRuby 1.5.3 -> 1.6.0

@@ -139,4 +139,4 @@
   </table>
 <% end -%>
 
-<%= sys_mng_update_submenu(h(@type_desc.printable_name), "/do/setup/type/show/#{@type_desc.objref.to_presentation}", true, @type_desc.render_icon) %>
+<%= sys_mng_update_submenu(h(@type_desc.printable_name), "/do/setup/type/show/#{@type_desc.objref.to_presentation}", true, @type_desc.render_icon || Application_IconHelper::ICON_GENERIC) %>
