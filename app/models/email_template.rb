@@ -137,6 +137,13 @@ class EmailTemplate < ActiveRecord::Base
   #   Message generation and formatting
   # ------------------------------------------------------------------------------------------------------------
 
+  def checked_email_url(url)
+    # Don't change empty URLs, or URLs which begin with a scheme name
+    return url if !url || url =~ /\A[A-Za-z][A-Za-z0-9+\.-]*:/
+    KNotificationCentre.notify(:email, :bad_url, url)
+    %!#{KApp.url_base()}#{url =~ /\A\// ? '' : '/'}#{url}!
+  end
+
   def generate_email_html_body(m, for_plain_emails = false)
     branding_html = self.branding_html
     # Build HTML for message text
@@ -202,6 +209,7 @@ class EmailTemplate < ActiveRecord::Base
         when 'button'
           link_node = node.find_first_recursive { |n| n.node_type == :element && n.name == 'a' }
           if link_node
+            link_node.attributes['href'] = checked_email_url(link_node.attributes['href'])
             # Generate new HTML structure
             table = REXML::Element.new('table', nil, doc.context)
             table.attributes['class'] = 'action_button'
@@ -230,6 +238,7 @@ class EmailTemplate < ActiveRecord::Base
           return
         end
       when 'a'
+        node.attributes['href'] = checked_email_url(node.attributes['href'])
         if node.parent.name =~ /\Ah/
           node.attributes['style'] = 'color:#000000;text-decoration:none'
         end
@@ -404,7 +413,7 @@ class EmailTemplate < ActiveRecord::Base
     buffer << above_element
     buffer << word_wrap(text, PLAIN_TEXT_FORMAT_WIDTH, indent)
     if link_indent && link
-      buffer << "\n#{link_indent}#{link}"
+      buffer << "\n#{link_indent}#{checked_email_url(link)}"
     end
     # Do any underlining
     u_char = UNDERLINE_CHAR[el.name]

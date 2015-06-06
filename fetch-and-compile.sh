@@ -148,8 +148,8 @@ get_gem() {
 get_gem "RedCloth" "4.2.9-java" "698688bb64b73a0477855902aaf0844cb1b0dd2c"
 get_gem "activemodel" "3.0.20" "80c7d881ed64ed7a66f4d82b12c2b98b43f6fbde"
 get_gem "activerecord" "3.0.20" "d8fc6e02bf46f9b5f86c3a954932d67da211302b"
-get_gem "activerecord-jdbc-adapter" "1.2.7" "0937ed7d87f5d305a3a63f3b0abd3ae5297856e7"
-get_gem "activerecord-jdbcpostgresql-adapter" "1.2.7" "625179f518868f35b28b3dde14087a12e7e980ba"
+get_gem "activerecord-jdbc-adapter" "1.2.9.1" "6d99a31f82c77ca5858ed02fcfa7591e662d6adc"
+get_gem "activerecord-jdbcpostgresql-adapter" "1.2.9" "47ca944228ec52a32f0d032e34fcc13f99cd2015"
 get_gem "activeresource" "3.0.20" "e465e7d582c6d72c487d132e5fac3c3af4626353"
 get_gem "activesupport" "3.0.20" "5bc7b2f1ad70a2781c4a41a2f4eaa75b999750e4"
 get_gem "arel" "2.0.10" "758e4172108a517d91c526dcab90355a7d07c527"
@@ -233,7 +233,7 @@ g++ framework/support/oneis.cpp -O2 -o framework/oneis
 
 echo "Compiling Java sources with maven..."
 mvn package
-cp target/haplo-3.20150522.1712.adcec6a801.jar framework/oneis.jar
+cp target/haplo-3.20150606.1621.cca502436f.jar framework/oneis.jar
 
 mvn -Dmdep.outputFile=target/classpath.txt dependency:build-classpath
 

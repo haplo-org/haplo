@@ -27,12 +27,6 @@ class JavaScriptPluginController < ApplicationController
   end
 
   def perform_handle(exchange, path_elements, requested_method)
-    KJavaScriptPlugin.reporting_errors do
-      perform_handle2(exchange, path_elements, requested_method)
-    end
-  end
-
-  def perform_handle2(exchange, path_elements, requested_method)
     # Unless anonymous requests are allowed, check the user is not anonymous
     unless @factory.allow_anonymous
       permission_denied unless @request_user.policy.is_not_anonymous?

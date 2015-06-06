@@ -8,8 +8,9 @@ Constructs a new object implementing the [node:dev/plugin/interface/work-unit-qu
 
 h3(function). O.work.query(workType)
 
-Create a query object to find the given type of work unit.
+Create a work unit query object.
 
-If the @workType@ does not contain a @:@ character, an exception will be thrown.
+If the optional @workType@ is specified, the query will find the given type of work unit. If the @workType@ does not contain a @:@ character, an exception will be thrown.
 
+If it's not specified, then you must call the @ref()@ method to search for work units attached to a given object.
 

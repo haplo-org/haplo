@@ -14,6 +14,7 @@ import java.util.Date;
 import java.util.ArrayList;
 
 public class KWorkUnitQuery extends KScriptable {
+    private boolean isConstructed;
     private String workType;
     private String status;
     private String visibility;
@@ -34,17 +35,29 @@ public class KWorkUnitQuery extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public void jsConstructor(String workType) {
-        if(workType.indexOf(':') < 1) {
-            throw new OAPIException("Bad workType");
+    public void jsConstructor(Object workTypeObject) {
+        String workType = null;
+        if(workTypeObject != null) {
+            if(workTypeObject instanceof CharSequence) {
+                workType = workTypeObject.toString();
+                if(workType.indexOf(':') < 1) { throw new OAPIException("Bad workType"); }
+            } else {
+                throw new OAPIException("workType must be a string");
+            }
         }
         this.workType = workType;
         this.status = DEFAULT_STATUS;
         this.visibility = DEFAULT_VISIBILITY;
+        this.isConstructed = true;
     }
 
     public String getClassName() {
         return "$WorkUnitQuery";
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+    private boolean isPrototypeObject() {
+        return !(this.isConstructed);
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -157,12 +170,14 @@ public class KWorkUnitQuery extends KScriptable {
 
     @Override
     public boolean has(int index, Scriptable start) {
+        if(isPrototypeObject()) { return false; }   // because returning false will search prototype chain
         executeQueryIfRequired(false);
         return (index >= 0 && index < this.results.length);
     }
 
     @Override
     public Object get(int index, Scriptable start) {
+        if(isPrototypeObject()) { return Context.getUndefinedValue(); }
         executeQueryIfRequired(false);
         if(index < 0 || index >= this.results.length) {
             return Context.getUndefinedValue();
@@ -175,8 +190,7 @@ public class KWorkUnitQuery extends KScriptable {
         return (results.length < 1) ? null : results[0];
     }
 
-    public KWorkUnit jsFunction_first() // alias of JS latest()
-    {
+    public KWorkUnit jsFunction_first() { // alias of JS latest()
         return jsFunction_latest();
     }
 

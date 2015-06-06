@@ -43,12 +43,18 @@ module PluginDebugging
           return exception.details()
         end
       end
-      if exception.is_a? RuntimeError
-        return "Unknown error. Contact developer support for assistance."
+      # Ruby exception
+      if exception.is_a?(Exception)
+        return exception.message
       end
+      # Java exception
+      if exception.is_a?(java.lang.Throwable)
+        return exception.getMessage()
+      end
+      # Couldn't decode, log then just use inspect as message
       KApp.logger.error("Unknown exception type for javascript_message_from_exception() - #{exception.inspect}")
       KApp.logger.log_exception(exception)
-      return "Unknown error (code 2). Contact developer support for assistance."
+      return exception.inspect
     end
 
     def self.presentable_exception(exception)
@@ -76,6 +82,12 @@ module PluginDebugging
         end
       end
 
+      # In development mode, prefer the full stace trace rather than the truncated plugin version if it's not
+      # completely obvious that it came from a plugin.
+      if (KFRAMEWORK_ENV == 'development') && backtrace.empty?
+        return nil
+      end
+
       # Clean up filename in message?
       message.gsub!(/\(p\/([^\)]+\.js)\#([0-9-]+)\)\s*\z/i) do
         loc = "#{$1} (line #{$2})"
@@ -91,15 +103,16 @@ module PluginDebugging
 
     # -----------------------------------------------------------------------------------------------------
 
-    def call(exception, info, format)
+    def call(exception, format)
       message, backtrace = ErrorReporter.presentable_exception(exception)
+      return nil unless message
 
       # Return some HTML
       # TODO: Make reported error HTML a bit more pretty
       result = if format == :html
         <<__E
 <html>
-<head><title>Plugin error - #{info.plugin_name}</title></head>
+<head><title>Plugin error</title></head>
 <body>
   <h1>Plugin error</h1>
   <h2>#{message}</h2>
@@ -113,8 +126,6 @@ module PluginDebugging
 __E
       elsif format == :text
         <<__E
-Plugin: #{info.plugin_name}
-
 #{message}
 
 Location: #{backtrace.join("\n    ")}

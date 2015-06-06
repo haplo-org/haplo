@@ -14,7 +14,7 @@ module Application_RenderHelper
   # For reporting exceptions which are otherwise hidden in the logs
   RENDERING_HEALTH_EVENTS = KFramework::HealthEventReporter.new('RENDERING_ERROR')
 
-  LINK_HTML_FOR_UNAUTHORISED_READ = '<a href="/do/authentication/hidden_object" class="z__link_to_hidden_object">ACCESS DENIED</a>'.freeze
+  LINK_HTML_FOR_UNAUTHORISED_READ = '<a href="/do/authentication/hidden-object" class="z__link_to_hidden_object">ACCESS DENIED</a>'.freeze
   RENDER_OBJ_FOR_UNAUTHORISED_READ = "<div>#{LINK_HTML_FOR_UNAUTHORISED_READ}</div>".freeze
 
   # ========================================================================================================

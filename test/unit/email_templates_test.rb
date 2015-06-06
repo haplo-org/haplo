@@ -51,7 +51,7 @@ class EmailTemplatesTest < Test::Unit::TestCase
   end
 
   def basic_send(format = :html, msg_size = 128, template_spec = {}, &check_body_block)
-    message = ''
+    message = template_spec.delete(:message_start) || ''
     while(message.length < msg_size)
       # Message includes an HTML entity
       message << '<p>Message &nbsp; AfterNbsp Message Message Message Message Message Message Message Message</p>'
@@ -148,6 +148,40 @@ class EmailTemplatesTest < Test::Unit::TestCase
   end
 
   # ----------------------------------------------------------------------------------------------------------------
+  # Test URLs without a URL scheme name has the application URL added
+
+  def test_add_application_hostname_to_bad_urls
+    url_base = KApp.url_base()
+    assert url_base =~ /\Ahttps?:\/\/www\d+/
+    [
+      ['www.test.example.com', 'BASE/www.test.example.com'],
+      ['/path/to/something.txt', 'BASE/path/to/something.txt'],
+      ['path/to/something.txt', 'BASE/path/to/something.txt'],
+      ['https://www9999.example.com', 'https://www9999.example.com'],
+      ['http://www9999.example.com', 'http://www9999.example.com'],
+      ['https://www9999.example.com/', 'https://www9999.example.com/'],
+      ['https://www9999.example.com/path', 'https://www9999.example.com/path'],
+      ['ftp://www9999.example.com/path', 'ftp://www9999.example.com/path'],
+      ['mailto:test@example.com', 'mailto:test@example.com'],
+      ['-mailto:test@example.com', 'BASE/-mailto:test@example.com']
+    ].each do |url, expected_url|
+      expected_url = expected_url.gsub('BASE', url_base)
+      # Plain
+      html = %Q!<p class='link1'><a href="#{url}">Description of URL</a></p>!
+      check_html_to_plain(html, "  Description of URL\n    #{expected_url}\n")
+      # HTML
+      [
+        html, # normal links
+        %Q!<p class='button'><a href="#{url}">Description of URL</a></p>! # button has different code
+      ].each do |body_html|
+        basic_send(:html, 1, {:message_start => body_html}) do |kind, body|
+          assert body.include?(expected_url)
+        end
+      end
+    end
+  end
+
+  # ----------------------------------------------------------------------------------------------------------------
   # Test HTML email templates which use the branding HTML for the entire message
 
   def test_entire_html_branding
@@ -196,9 +230,9 @@ __E
 
     # link 1
     html = <<__E
-      <p class='link1'><a href="www.example.com">Description of URL</a></p>
+      <p class='link1'><a href="http://www.example.com">Description of URL</a></p>
 __E
-    check_html_to_plain(html, "  Description of URL\n    www.example.com\n")
+    check_html_to_plain(html, "  Description of URL\n    http://www.example.com\n")
 
     # link 2
     html = <<__E

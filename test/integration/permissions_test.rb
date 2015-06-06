@@ -105,7 +105,7 @@ class PermissionsTest < IntegrationTest
     joe.get obj_path(:o1)
     joe.assert_select '#z__page_name h1', obj_title(:o1)
     assert ! joe.response.body.include?('/test2/') # check hiding of linked object
-    assert joe.response.body.include?('/do/authentication/hidden_object')
+    assert joe.response.body.include?('/do/authentication/hidden-object')
     joe.get file_path(:o1)
     check_file_download(joe, :o1)
 
@@ -119,7 +119,7 @@ class PermissionsTest < IntegrationTest
     joan.get obj_path(:o2)
     joan.assert_select '#z__page_name h1', obj_title(:o2)
     assert ! joan.response.body.include?('/test1/') # check hiding of linked object
-    assert joan.response.body.include?('/do/authentication/hidden_object')
+    assert joan.response.body.include?('/do/authentication/hidden-object')
     joan.get file_path(:o2)
     check_file_download(joan, :o2)
     joan.get thumbnail_path(:o2)

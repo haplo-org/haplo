@@ -114,27 +114,30 @@ public class SSLCertificates {
         return sslContext;
     }
 
-    private static byte[] readPEMBytes(String filename) throws java.io.IOException {
-        FileReader fileReader = new FileReader(filename);
-        BufferedReader reader = new BufferedReader(fileReader);
+    private static byte[] readPEMBytes(Reader inputReader, String source) throws java.io.IOException {
+        BufferedReader reader = new BufferedReader(inputReader);
         String line = reader.readLine();
         if(line == null && !line.startsWith("-----BEGIN ")) {
-            throw new RuntimeException("Doesn't look like a PEM file: " + filename);
+            throw new RuntimeException("Doesn't look like a PEM file: " + source);
         }
         StringBuffer buffer = new StringBuffer();
         while((line = reader.readLine()) != null && !line.startsWith("-----END ")) {
             buffer.append(line.trim());
         }
         if(line == null) {
-            throw new RuntimeException("End marker not found in PEM file: " + filename);
+            throw new RuntimeException("End marker not found in PEM file: " + source);
         }
         reader.close();
-        fileReader.close();
+        inputReader.close();
         return Base64.decode(buffer.toString());
     }
 
+    public static ByteArrayInputStream readPEM(Reader reader, String source) throws java.io.IOException {
+        return new ByteArrayInputStream(readPEMBytes(reader, source));
+    }
+
     public static ByteArrayInputStream readPEM(String filename) throws java.io.IOException {
-        return new ByteArrayInputStream(readPEMBytes(filename));
+        return readPEM(new FileReader(filename), filename);
     }
 
     private static PrivateKey readPEMPrivateKey(String filename) throws java.io.IOException, java.security.GeneralSecurityException {

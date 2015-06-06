@@ -10,7 +10,7 @@ By default, only open and visible work units are returned.
 
 h2. Construction
 
-Use [node:dev/plugin/o/work-flow/query], specifying which type of work is to be found.
+Use [node:dev/plugin/o/work-flow/query]. You must either specify which type of work is to be found with the constructor, or call @ref()@ to restrict the search to work units attached to a specific object.
 
 
 h2. Usage

@@ -289,6 +289,9 @@ class SchemaRequirementsTest < Test::Unit::TestCase
           attribute dc:attribute:title
           attribute std:attribute:notes
           attribute std:attribute:related-term
+          attribute test:nonstd-aliased-attr:alias1
+          # This uses :aliased-attribute: in the string to trigger alias
+          attribute test:aliased-attribute:alias2
           render-type classification
           label-base std:label:concept
 
@@ -347,8 +350,13 @@ class SchemaRequirementsTest < Test::Unit::TestCase
       OPTIONAL qualifier test:qualifier:option2
         title: Option2
 
+      # Use a non-standard code for the aliased attribute so first condition is tested
+      aliased-attribute test:nonstd-aliased-attr:alias1
+        title: Aliased 1
+        alias-of std:attribute:works-for
+
     __E
-    applier = SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new)
+    applier = SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new(parser))
     applier.apply.commit
     # Some errors will be reported
     assert_equal ["Unknown requirement for feature unknown:feature"], applier.errors
@@ -374,6 +382,12 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     assert attr_desc != nil
     assert_equal 'Test Link', attr_desc.printable_name.to_s
     assert_equal 'test-link-search-name', attr_desc.short_name.to_s
+    # Check aliased attribute
+    aliased_attr_desc = KObjectStore.schema.all_aliased_attr_descriptor_objs.find { |a| a.code == 'test:nonstd-aliased-attr:alias1' }
+    assert aliased_attr_desc != nil
+    assert_equal 'Aliased 1', aliased_attr_desc.printable_name.to_s
+    # Check heuristic to create aliased attr given code alone
+    assert nil != KObjectStore.schema.all_aliased_attr_descriptor_objs.find { |a| a.code == 'test:aliased-attribute:alias2' }
     # Check type which was mentioned but there was no explicit requirement was created
     not_mentioned_type = KObjectStore.schema.type_descs_sorted_by_printable_name.find { |t| t.code == "test:type:not-mentioned-anywhere" }
     assert not_mentioned_type != nil
@@ -460,7 +474,7 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     # option2 wasn't created, because there was nothing else which wanted it
     assert_equal nil, KObjectStore.schema.all_qual_descs.map { |i| KObjectStore.schema.qualifier_descriptor(i) } .find { |t| t.code == "test:qualifier:option2" }
     # Quick test for schema requirement generation
-    context = SchemaRequirements::AppContext.new
+    context = SchemaRequirements::AppContext.new # no parser
     # KObjectStore.query_and.link(O_TYPE_APP_VISIBLE, A_TYPE).execute(:all,:any).each { |o| puts context.generate_requirements_definition(o) }
     assert_equal "type std:type:book as Book\n", context.generate_requirements_definition(KObjectStore.read(O_TYPE_BOOK), true)
     assert_equal <<__E, context.generate_requirements_definition(KObjectStore.read(O_TYPE_BOOK))

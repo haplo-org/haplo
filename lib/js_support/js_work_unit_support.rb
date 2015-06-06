@@ -59,8 +59,14 @@ module JSWorkUnitSupport
   COUNT_VALUE_METHODS = [:count_tag0, :count_tag1, :count_tag2, :count_tag3]
 
   def self.build_ruby_query(query)
-    # Build query
-    units = WorkUnit.where(:work_type => query.getWorkType())
+    # Build query, which must have at least one of work type and object reference
+    work_type = query.getWorkType()
+    obj_id = query.getObjId()
+    unless work_type || obj_id
+      raise JavaScriptAPIError, "Work unit queries must specify at least a work type or a ref"
+    end
+    units = work_type ? WorkUnit.where(:work_type => work_type) : nil
+    units = (units ? units : WorkUnit).where(:obj_id => obj_id) if obj_id
 
     status = query.getStatus();
     if status == "open"
@@ -91,9 +97,6 @@ module JSWorkUnitSupport
 
     closed_by_id = query.getClosedById()
     units = units.where(:closed_by_id => closed_by_id) if closed_by_id != nil
-
-    obj_id = query.getObjId()
-    units = units.where(:obj_id => obj_id) if obj_id != nil
 
     tagValues = query.getTagValues()
     if tagValues != nil

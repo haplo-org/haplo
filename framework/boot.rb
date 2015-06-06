@@ -35,8 +35,8 @@ require 'active_support/log_subscriber'
 ActiveSupport::JSON.backend = "JSONGem" # explicitly state that ActiveSupport should use the json gem
 
 gem 'activerecord', '= 3.0.20' # need to specify exact version because part of the implementation is overridden (ConnectionPool and logger)
-gem 'activerecord-jdbc-adapter', '= 1.2.7'
-gem 'activerecord-jdbcpostgresql-adapter', '= 1.2.7' # patched below
+gem 'activerecord-jdbc-adapter', '= 1.2.9.1'
+gem 'activerecord-jdbcpostgresql-adapter', '= 1.2.9' # patched below
 require 'active_record'
 require 'arjdbc'
 require 'lib/common/activerecord_jdbc_adapter_fix' # for thread safety

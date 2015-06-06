@@ -85,7 +85,7 @@ class JavaScriptDebugReportingTest < IntegrationTest
     # Uninstall the second plugin so it's not breaking everything
     KPlugin.uninstall_plugin("syntax_error_plugin")
 
-    # Make sure each error has the plugin failure message
+    # Make sure each error has the generic failure message
     TEST_CALLS.each do |path, error, location, syntax_error_plugin|
       if syntax_error_plugin
         assert_raise Java::OrgMozillaJavascript::EvaluatorException do
@@ -93,7 +93,7 @@ class JavaScriptDebugReportingTest < IntegrationTest
         end
       end
       get path, nil, {:expected_response_codes => [500]}
-      assert_equal "<html><h1>Plugin error</h1><p>An error has occurred with one of the installed plugins. If the problem persists, please contact support.</p></html>", response.body
+      assert_equal "<html><h1>Internal error</h1><p>An internal error has occurred. If the problem persists, please contact support.</p></html>", response.body
     end
   end
 

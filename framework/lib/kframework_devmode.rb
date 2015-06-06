@@ -121,9 +121,6 @@ __HTML
       KFramework::DataResponse.new(message, 'text/html; charset=utf-8', 500)
     end
 
-    # Use the same reporting for plugin errors
-    alias :make_plugin_error_response_for_live_installations :make_error_response
-
   end
 
 end

@@ -110,9 +110,11 @@ module JSRemoteAuthenticationServiceSupport
         "URL" => 'ldaps://HOSTNAME:PORT',
         "Certificate" => "name1.example.com : name2.example.com",
             # ' : ' separated list of allowed certificate hostnames (separated as Path for consistency)
+        "CA" => "\n",
+            # PEM encoded root CA certificate used for validating the server
         "Path" => "OU=Unit1,DC=example,DC=com : OU=Unit1,DC=example,DC=com",
             # ' : ' separated list of paths to search for user, entries may contain spaces
-        "Search" => "(& (sAMAccountName={0})(objectClass=user))",
+        "Search" => "(&(sAMAccountName={0})(objectClass=user))",
             # search criteria, no spaces allowed, {0} is username. Could also query userPrincipalName as username@domain.tld
         "Username" => ""
       },
@@ -124,7 +126,7 @@ module JSRemoteAuthenticationServiceSupport
 
   class LDAPAuthenticationService < ConnectionlessService
     EXTERNAL_TIMEOUT = 4000 # 4 seconds
-    TRUSTED_ROOTS_KEYSTORE = "#{java.lang.System.getProperty('java.home')}/lib/security/cacerts"
+    DEFAULT_TRUSTED_ROOTS_KEYSTORE = "#{java.lang.System.getProperty('java.home')}/lib/security/cacerts"
 
     # Which attributes should be extracted for the user info?
     ATTRS_SINGLE = ['distinguishedName', 'personalTitle', 'mail', 'uid', 'name', 'uidNumber', 'sn', 'cn', 'givenName', 'displayName', 'userPrincipalName', 'sAMAccountName']
@@ -146,19 +148,61 @@ module JSRemoteAuthenticationServiceSupport
       server = URI(@credential.account['URL'])
       raise "Protocol '#{server.scheme}' not supported" unless server.scheme == "ldaps"
 
+      # Explicitly configured CAs need to be written to a temporary keystore file on disk, and this file must exist
+      # throughout the remote authentication process because the Unbound SDK reads it at an unhelpful point in time.
+      # TODO: Rewrite LDAP SSL connections using raw Java APIs to have more control over lifetimes, and cache socket factories.
+      tempfile = nil
+      auth_info = nil
+      begin
+        # Determine the CA trust manager
+        trustCA = nil
+        configuredCA = @credential.account['CA']
+        unless configuredCA && configuredCA =~ /\S/
+          trustCA = Java::ComUnboundidUtilSsl::TrustStoreTrustManager.new(DEFAULT_TRUSTED_ROOTS_KEYSTORE)
+        else
+          begin
+            # Generate a keychain with a trusted certificate
+            cf = java.security.cert.CertificateFactory.getInstance("X.509")
+            cert = cf.generateCertificate(Java::ComOneisCommonUtils::SSLCertificates.readPEM(
+                java.io.StringReader.new(configuredCA), "CA root from LDAP credential"))
+            ks = java.security.KeyStore.getInstance("JKS", "SUN")
+            ks.load(nil, Java::char[0].new)
+            ks.setEntry("SERVER", java.security.KeyStore::TrustedCertificateEntry.new(cert), nil)
+            # Save the keystore in a temporary file
+            tempfile = Tempfile.new('ldapauthenticationservice-keystore')
+            tempfile.close
+            ks_file = java.io.FileOutputStream.new(tempfile.path)
+            ks.store(ks_file, Java::char[0].new)
+            ks_file.close()
+            # And now it's on disk, the Unbound SDK SSL utility can use it
+            trustCA = Java::ComUnboundidUtilSsl::TrustStoreTrustManager.new(tempfile.path)
+          rescue => e
+            KApp.logger.error("LDAPAuthenticationService: Failed to create keystore for CA certificate")
+            KApp.logger.log_exception(e)
+            return {"result" => "error", "errorInfo" => "Bad root CA in LDAP credential #{@credential.id}"}
+          end
+        end
+
+        # Allowed certificate names. (same separator as search paths for consistency)
+        certNames = @credential.account['Certificate'].split(/\s+:\s+/)
+
+        # Make socket keystore given rest of crendential
+        trustCertNames = Java::ComUnboundidUtilSsl::HostNameTrustManager.new(true, *certNames) # true for allow wildcards
+        sslUtil = Java::ComUnboundidUtilSsl::SSLUtil.new(Java::ComUnboundidUtilSsl::AggregateTrustManager.new(true, [trustCA, trustCertNames]))
+        socketFactory = sslUtil.createSSLSocketFactory()
+
+        # Rest of the authentication process
+        auth_info = do_authenticate_with_socket_factory(username, password, server, socketFactory)
+      ensure
+        tempfile.unlink if tempfile
+      end
+      auth_info
+    end
+
+    def do_authenticate_with_socket_factory(username, password, server, socketFactory)
       # Since this is using a Java interface, use a Java-ish style of coding.
       # Use the Java::... names inline, rather than making nice constants, so the code is only loaded
       # when it's actually used.
-
-      # Allowed certificate names. (same separator as search paths for consistency)
-      certNames = @credential.account['Certificate'].split(/\s+:\s+/)
-
-      # Build a socket factory for correctly configured SSL connections. Don't cache it, because different
-      # credentials accounts will have different allowed certificates
-      trustCA = Java::ComUnboundidUtilSsl::TrustStoreTrustManager.new(TRUSTED_ROOTS_KEYSTORE)
-      trustCertNames = Java::ComUnboundidUtilSsl::HostNameTrustManager.new(true, *certNames) # true for allow wildcards
-      sslUtil = Java::ComUnboundidUtilSsl::SSLUtil.new(Java::ComUnboundidUtilSsl::AggregateTrustManager.new(true, [trustCA, trustCertNames]))
-      socketFactory = sslUtil.createSSLSocketFactory()
 
       # Interpolate the username into the search filter
       # Don't use gsub as the \ back references confict with the escaping mechanism

@@ -125,10 +125,8 @@ class KJSPluginRuntime
               # Tell the host object to expect a plugin registration.
               # This check prevents unexpected registrations by plugin code, and sets the database namespace for the plugin.
               @runtime.host.setNextPluginToBeRegistered(plugin.name, database_namespace)
-              KJavaScriptPlugin.reporting_errors(plugin.name) do
-                using_runtime do
-                  plugin.javascript_load(@runtime, schema_for_js_runtime)
-                end
+              using_runtime do
+                plugin.javascript_load(@runtime, schema_for_js_runtime)
               end
               @runtime.host.setNextPluginToBeRegistered(nil, nil)
             end

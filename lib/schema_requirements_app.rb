@@ -25,10 +25,15 @@ module SchemaRequirements
     Proc.new { |v,context| v.nil? ? nil : v.to_s }
   ]
 
-  def self.mappers_for(types)
+  MAPPERS_ATTRIBUTE_OR_ALIAS = [
+    Proc.new { |v,context| context.map_code_for_attribute_or_alias(v) },
+    Proc.new { |v,context| context.unmap_code_for_attribute_or_alias(v) }
+  ]
+
+  def self.mappers_for(type)
     [
-      Proc.new { |v,context| context.map_code(v, types) },
-      Proc.new { |v,context| context.unmap_code(v, types) }
+      Proc.new { |v,context| context.map_code(v, type) },
+      Proc.new { |v,context| context.unmap_code(v, type) }
     ]
   end
 
@@ -50,8 +55,6 @@ module SchemaRequirements
   }
 
   # ---------------------------------------------------------------------------------------------------------------
-
-  ATTRIBUTE_TYPES = [O_TYPE_ATTR_DESC, O_TYPE_ATTR_ALIAS_DESC]
 
   ATTR_DATA_TYPE = {
     "link" => T_OBJREF,
@@ -77,14 +80,14 @@ module SchemaRequirements
   ATTRIBUTE_RULES = {
     "title"             => StoreObjectRuleSingle.new(A_TITLE),
     "search-name"       => StoreObjectRuleSingle.new(A_ATTR_SHORT_NAME, *MAPPERS_ATTR_SEARCH_NAME),
-    "qualifier"         => StoreObjectRuleMulti.new(A_ATTR_QUALIFIER, *mappers_for([O_TYPE_QUALIFIER_DESC])),
+    "qualifier"         => StoreObjectRuleMulti.new(A_ATTR_QUALIFIER, *mappers_for(O_TYPE_QUALIFIER_DESC)),
     "relevancy"         => StoreObjectRuleSingle.new(A_RELEVANCY_WEIGHT, *MAPPERS_RELEVANCY_WEIGHT),
     "data-type"         => StoreObjectRuleSingle.new(A_ATTR_DATA_TYPE,
                               Proc.new { |v,context| ATTR_DATA_TYPE[v] || T_TEXT },
                               Proc.new { |v,context| ATTR_DATA_TYPE.key(v) }),
     "ui-options"        => StoreObjectRuleSingle.new(A_ATTR_UI_OPTIONS),
     "data-type-options" => StoreObjectRuleSingle.new(A_ATTR_DATA_TYPE_OPTIONS),
-    "linked-type"       => StoreObjectRuleMulti.new(A_ATTR_CONTROL_BY_TYPE, *mappers_for([O_TYPE_APP_VISIBLE]))
+    "linked-type"       => StoreObjectRuleMulti.new(A_ATTR_CONTROL_BY_TYPE, *mappers_for(O_TYPE_APP_VISIBLE))
   }
 
   # ---------------------------------------------------------------------------------------------------------------
@@ -92,11 +95,11 @@ module SchemaRequirements
   ALIASED_ATTRIBUTE_RULES = {
     "title"             => StoreObjectRuleSingle.new(A_TITLE),
     "search-name"       => StoreObjectRuleSingle.new(A_ATTR_SHORT_NAME, *MAPPERS_ATTR_SEARCH_NAME),
-    "alias-of"          => StoreObjectRuleMulti.new(A_ATTR_ALIAS_OF, *mappers_for([O_TYPE_ATTR_DESC])),
-    "on-linked-type"    => StoreObjectRuleMulti.new(A_ATTR_CONTROL_BY_TYPE, *mappers_for([O_TYPE_APP_VISIBLE])),
+    "alias-of"          => StoreObjectRuleMulti.new(A_ATTR_ALIAS_OF, *mappers_for(O_TYPE_ATTR_DESC)),
+    "on-linked-type"    => StoreObjectRuleMulti.new(A_ATTR_CONTROL_BY_TYPE, *mappers_for(O_TYPE_APP_VISIBLE)),
     "ui-options"        => StoreObjectRuleSingle.new(A_ATTR_UI_OPTIONS),
     "data-type-options" => StoreObjectRuleSingle.new(A_ATTR_DATA_TYPE_OPTIONS),
-    "on-qualifier"      => StoreObjectRuleMulti.new(A_ATTR_QUALIFIER, *mappers_for([O_TYPE_QUALIFIER_DESC])),
+    "on-qualifier"      => StoreObjectRuleMulti.new(A_ATTR_QUALIFIER, *mappers_for(O_TYPE_QUALIFIER_DESC)),
     "on-data-type"      => StoreObjectRuleSingle.new(A_ATTR_DATA_TYPE,
                               Proc.new { |v,context| ATTR_DATA_TYPE[v] || T_TEXT },
                               Proc.new { |v,context| ATTR_DATA_TYPE.key(v) })
@@ -123,29 +126,29 @@ module SchemaRequirements
 
   TYPE_RULES = {
     "title"             => StoreObjectRuleSingle.new(A_TITLE),
-    "parent-type"       => StoreObjectRuleSingle.new(A_PARENT, *mappers_for([O_TYPE_APP_VISIBLE])),
+    "parent-type"       => StoreObjectRuleSingle.new(A_PARENT, *mappers_for(O_TYPE_APP_VISIBLE)),
     "search-name"       => StoreObjectRuleMultiIfNone.new(A_ATTR_SHORT_NAME,
                               Proc.new { |v,context| v.nil? ? nil : KText.new(KSchemaApp.to_short_name_for_type(v)) },
                               Proc.new { |v,context| v.nil? ? nil : v.to_s }),
     "behaviour"         => StoreObjectRuleMulti.new(A_TYPE_BEHAVIOUR,
                               Proc.new { |v,context| TYPE_BEHAVIOURS[v] },
                               Proc.new { |v,context| TYPE_BEHAVIOURS.key(v) }),
-    "attribute"         => StoreObjectRuleMulti.new(A_RELEVANT_ATTR, *mappers_for(ATTRIBUTE_TYPES)),
-    "attribute-hide"    => StoreObjectRuleMulti.new(A_RELEVANT_ATTR_REMOVE, *mappers_for(ATTRIBUTE_TYPES)),
-    "attribute-descriptive" => StoreObjectRuleSingle.new(A_ATTR_DESCRIPTIVE, *mappers_for([O_TYPE_ATTR_DESC])), # not aliased
+    "attribute"         => StoreObjectRuleMulti.new(A_RELEVANT_ATTR, *MAPPERS_ATTRIBUTE_OR_ALIAS),
+    "attribute-hide"    => StoreObjectRuleMulti.new(A_RELEVANT_ATTR_REMOVE, *MAPPERS_ATTRIBUTE_OR_ALIAS),
+    "attribute-descriptive" => StoreObjectRuleSingle.new(A_ATTR_DESCRIPTIVE, *mappers_for(O_TYPE_ATTR_DESC)), # not aliased
     "relevancy"         => StoreObjectRuleSingle.new(A_RELEVANCY_WEIGHT, *MAPPERS_RELEVANCY_WEIGHT),
     "render-type"       => StoreObjectRuleSingle.new(A_RENDER_TYPE_NAME),
     "render-icon"       => StoreObjectRuleSingle.new(A_RENDER_ICON),
     "render-category"   => StoreObjectRuleSingle.new(A_RENDER_CATEGORY,
                               Proc.new { |v,context| (v || 0).to_i },
                               Proc.new { |v,context| (v || 0).to_i.to_s }),
-    "label-base"        => StoreObjectRuleMulti.new(A_TYPE_BASE_LABEL, *mappers_for([O_TYPE_LABEL])),
-    "label-applicable"  => StoreObjectRuleMulti.new(A_TYPE_APPLICABLE_LABEL, *mappers_for([O_TYPE_LABEL])),
-    "label-default"     => StoreObjectRuleSingle.new(A_TYPE_LABEL_DEFAULT, *mappers_for([O_TYPE_LABEL])),
-    "label-attribute"   => StoreObjectRuleMulti.new(A_TYPE_LABELLING_ATTR, *mappers_for([O_TYPE_ATTR_DESC])), # not aliased
+    "label-base"        => StoreObjectRuleMulti.new(A_TYPE_BASE_LABEL, *mappers_for(O_TYPE_LABEL)),
+    "label-applicable"  => StoreObjectRuleMulti.new(A_TYPE_APPLICABLE_LABEL, *mappers_for(O_TYPE_LABEL)),
+    "label-default"     => StoreObjectRuleSingle.new(A_TYPE_LABEL_DEFAULT, *mappers_for(O_TYPE_LABEL)),
+    "label-attribute"   => StoreObjectRuleMulti.new(A_TYPE_LABELLING_ATTR, *mappers_for(O_TYPE_ATTR_DESC)), # not aliased
     "element"           => StoreObjectRuleMultiString.new(A_DISPLAY_ELEMENTS),
     "term-inclusion"    => StoreObjectRuleMultiString.new(A_TERM_INCLUSION_SPEC),
-    "default-subtype"   => StoreObjectRuleSingle.new(A_TYPE_CREATE_DEFAULT_SUBTYPE, *mappers_for([O_TYPE_APP_VISIBLE])),
+    "default-subtype"   => StoreObjectRuleSingle.new(A_TYPE_CREATE_DEFAULT_SUBTYPE, *mappers_for(O_TYPE_APP_VISIBLE)),
     "create-show-subtype" => StoreObjectRuleSingle.new(A_TYPE_CREATE_SHOW_SUBTYPE, 
                               Proc.new { |v,context| (v == 'no') ? 0 : 1 },
                               Proc.new { |v,context| v.nil? ? nil : ((v == 0) ? 'no' : 'yes') }),
@@ -158,7 +161,7 @@ module SchemaRequirements
 
   GENERIC_OBJECT_RULES = {
     "title"             => StoreObjectRuleSingle.new(A_TITLE),
-    "type"              => StoreObjectRuleSingle.new(A_TYPE, *mappers_for([O_TYPE_APP_VISIBLE])),
+    "type"              => StoreObjectRuleSingle.new(A_TYPE, *mappers_for(O_TYPE_APP_VISIBLE)),
     "parent"            => StoreObjectRuleSingle.new(A_PARENT,
                               Proc.new { |v,context| context.generic_object_for_code(v) },
                               Proc.new { |v,context| raise "Can't generate requirements for generic objects" }),
@@ -473,7 +476,8 @@ module SchemaRequirements
   class AppContext < Context
     include KConstants
 
-    def initialize
+    def initialize(parser = nil)
+      @parser = parser # needed to look up existence of requirements to resolve ambiguity
       KObjectStore.with_superuser_permissions do
         @new_objects = []
         @objects = {}
@@ -585,15 +589,11 @@ module SchemaRequirements
       applier_class.new(code, object, GENERIC_OBJECT_RULES)
     end
 
-    def map_code(code, type_refs)
-      type_refs.each do |type_ref|
-        object = @objects[type_ref][code]
-        return object.objref if object
-      end
-      object_for_code(code, type_refs.first).objref
+    def map_code(code, type_ref)
+      (@objects[type_ref][code] || object_for_code(code, type_ref)).objref
     end
 
-    def unmap_code(ref, type_refs)
+    def unmap_code(ref, type_ref)
       if @object_code_lookup.nil?
         @object_code_lookup = {}
         @objects.each do |type_ref,objects|
@@ -603,11 +603,21 @@ module SchemaRequirements
           end
         end
       end
-      type_refs.each do |type_ref|
-        code = @object_code_lookup[type_ref][ref]
-        return code if code
+      @object_code_lookup[type_ref][ref]
+    end
+
+    def map_code_for_attribute_or_alias(code)
+      object = @objects[O_TYPE_ATTR_DESC][code] || @objects[O_TYPE_ATTR_ALIAS_DESC][code] || begin
+        # Don't have an object for this code, but it could be an attribute or an aliased attribute.
+        # If it's a known aliased attribute or the code contains the conventional name, use alias type.
+        should_be_alias = (@parser && @parser.requirements['aliased-attribute'].has_key?(code)) || code.include?(':aliased-attribute:')
+        object_for_code(code, should_be_alias ? O_TYPE_ATTR_ALIAS_DESC : O_TYPE_ATTR_DESC)
       end
-      nil
+      object.objref
+    end
+
+    def unmap_code_for_attribute_or_alias(ref)
+      unmap_code(ref, O_TYPE_ATTR_DESC) || unmap_code(ref, O_TYPE_ATTR_ALIAS_DESC)
     end
 
     def label_category_to_ref(title)
@@ -708,13 +718,13 @@ module SchemaRequirements
     plugins.each do |plugin|
       plugin.parse_schema_requirements(parser)
     end
-    SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new)
+    SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new(parser))
   end
 
   def self.applier_for_requirements_file(requirements)
     parser = SchemaRequirements::Parser.new()
     parser.parse("file", StringIO.new(requirements))
-    SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new)
+    SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new(parser))
   end
 
   class SchemaForJavaScriptRuntime

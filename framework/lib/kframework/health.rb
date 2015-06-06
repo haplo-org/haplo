@@ -85,12 +85,9 @@ __E
           email << "NO EXCEPTION"
         end
         email << "\n\n\n\n"
-        if report_email_address == :disable || (PLUGIN_DEBUGGING_SUPPORT_LOADED && KFramework.is_exception_reportable?(exception))
-          # Either emailing of reports is disabled (eg development or production mode)
-          # or plugin debugging is active, and it's a reportable error. Log the message instead.
+        if report_email_address == :disable || PLUGIN_DEBUGGING_SUPPORT_LOADED
           KApp.logger.info("===== BEGIN ERROR REPORT =====\n#{email}\n===== END ERROR REPORT =====")
         else
-          # Otherwise it gets reported by email
           Net::SMTP.start('127.0.0.1', 25) do |smtp|
             smtp.send_message(email, report_email_address, report_email_address)
           end

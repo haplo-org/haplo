@@ -159,11 +159,24 @@ TEST(function() {
     TEST.assert_equal('z', O.work.query("plugin:loading").first().data.name); // alias of latest
     TEST.assert_equal(4, O.work.query("plugin:loading").isEitherOpenOrClosed().actionableBy(USER2_ID).length);
 
-    TEST.assert_exceptions(function() { O.work.query(); });
-    TEST.assert_exceptions(function() { O.work.query(null); });
-    TEST.assert_exceptions(function() { O.work.query(5); });
-    TEST.assert_exceptions(function() { O.work.query("ping"); });
-    TEST.assert_exceptions(function() { O.work.query(":ping"); });
+    // can construct without work type
+    O.work.query();
+    O.work.query(null);
+    O.work.query(undefined);
+    // But if not, then must be valid
+    TEST.assert_exceptions(function() { O.work.query(5); }, "Must pass work type as a string to O.work.query()");
+    TEST.assert_exceptions(function() { O.work.query("ping"); }, "Work unit work type names must start with the plugin name followed by a : to avoid collisions.");
+    TEST.assert_exceptions(function() { O.work.query(":ping"); }, "Work unit work type names must start with the plugin name followed by a : to avoid collisions.");
+    // Queries without work type or ref will exception when executed
+    TEST.assert_exceptions(function() { var x = O.work.query().length; }, "Work unit queries must specify at least a work type or a ref");
+    TEST.assert_exceptions(function() { var x = O.work.query(null).length; }, "Work unit queries must specify at least a work type or a ref");
+
+    // Query on ref only
+    var refQuery = O.work.query().ref(O.ref(70));
+    TEST.assert_equal(1, refQuery.length);
+    TEST.assert_equal(unit1.id, refQuery[0].id);
+    // And check work type too
+    TEST.assert_equal(0, O.work.query("x:y").ref(O.ref(70)).length);
 
     // Create a work unit, then delete it
     var dt1 = O.work.create({workType:"plugin:deltest", createdBy: USER2_ID, actionableBy: USER2_ID});

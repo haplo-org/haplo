@@ -55,13 +55,13 @@ class SecurityResponsesTest < IntegrationTest
     k.save!
 
     # GET to a GET only request
-    get '/do/authentication/hidden_object', nil, NO_AUTO_METHOD_CHECK
+    get '/do/authentication/hidden-object', nil, NO_AUTO_METHOD_CHECK
     assert_equal "200", response.code
     assert_select 'h1', 'Access denied'
 
     # POST to a GET only request
     get_a_page_to_refresh_csrf_token
-    post '/do/authentication/hidden_object', nil, NO_AUTO_METHOD_CHECK
+    post '/do/authentication/hidden-object', nil, NO_AUTO_METHOD_CHECK
     assert_equal "403", response.code
     assert response.body =~ /Request denied for security reasons/
     assert response.body =~ /Wrong HTTP method used, GET expected/

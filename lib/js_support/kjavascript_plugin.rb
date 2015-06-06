@@ -15,9 +15,7 @@ class KJavaScriptPlugin < KPlugin
     @plugin_path = plugin_path.dup.freeze    
     @plugin_json, @version = KJavaScriptPlugin.read_plugin_json_and_version(@plugin_path)
     # Verify the plugin_json is as expected
-    KJavaScriptPlugin.reporting_errors do
-      KJavaScriptPlugin.verify_plugin_json(@plugin_json)
-    end
+    KJavaScriptPlugin.verify_plugin_json(@plugin_json)
     @name = @plugin_json["pluginName"].freeze
     # Build controller factory info
     @controller_factories = []
@@ -155,12 +153,10 @@ class KJavaScriptPlugin < KPlugin
   end
 
   def self.call_javascript_hooks(hook_name, runner, response, args)
-    KJavaScriptPlugin.reporting_errors do
-      jsplugins = KJSPluginRuntime.current
-      jsresponse = jsplugins.make_response(response, runner)
-      jsplugins.call_all_hooks(runner.jsargs(hook_name, jsresponse, args))
-      jsplugins.retrieve_response(response, jsresponse, runner)
-    end
+    jsplugins = KJSPluginRuntime.current
+    jsresponse = jsplugins.make_response(response, runner)
+    jsplugins.call_all_hooks(runner.jsargs(hook_name, jsresponse, args))
+    jsplugins.retrieve_response(response, jsresponse, runner)
   end
 
   def controller_for(path_element_name, other_path_elements, annotations)
@@ -177,24 +173,6 @@ class KJavaScriptPlugin < KPlugin
     # name is now trusted, as it has been checked against the list of templates found when registering the plugin
     File.open("#{@plugin_path}/template/#{name}.#{kind}") do |f|
       [f.read.strip, kind]
-    end
-  end
-
-  # -----------------------------------------------------------------------------------------------------------------
-
-  # Helper function for wrapping and reporting errors nicely for plugin development
-  # Returns the result of the block
-  PluginErrorInfo = Struct.new(:plugin_name)
-  def self.reporting_errors(plugin_name = nil)
-    # Do the block, and wrap any exceptions it raises
-    begin
-      yield
-    rescue => e
-      # If an exception is raised, mark it as something which should be reported as a plugin error
-      runtime = KJSPluginRuntime.current_if_active
-      pname = (runtime != nil) ? runtime.currently_executing_plugin_name : nil
-      KFramework.mark_exception_as_reportable(e, PluginErrorInfo.new(pname || plugin_name))
-      raise
     end
   end
 

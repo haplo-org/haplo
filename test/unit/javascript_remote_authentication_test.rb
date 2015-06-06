@@ -24,6 +24,7 @@ class JavascriptRemoteAuthenticationTest < Test::Unit::TestCase
       credential.account = {
         "URL" => 'ldaps://127.0.0.1:1636',
         "Certificate" => "test.#{KHostname.hostname}",
+        "CA" => File.open(File.expand_path("~/haplo-dev-support/certificates/server.crt")) { |f| f.read }, # expect CA
         "Path" => "ou=Department Y,dc=example,dc=com : ou=Department X,dc=example,dc=com",
         "Search" => "uid={0}",
         "Username" => "cn=service_account"
@@ -49,23 +50,6 @@ class JavascriptRemoteAuthenticationTest < Test::Unit::TestCase
   def self.start_test_ldap_server
     # Run the startup process in a new thread, to avoid delaying startup any more than necessary
     Thread.new do
-      # Where will we store the generated keystore?
-      keystore_filename = "#{TEST_ENV_TEST_DATA}/ldap-remote-auth-test-keystore"
-
-      # Generate a keychain with a trusted certificate, save it to disk as a keystore
-      cf = java.security.cert.CertificateFactory.getInstance("X.509")
-      cert = cf.generateCertificate(Java::ComOneisCommonUtils::SSLCertificates.readPEM(File.expand_path("~/haplo-dev-support/certificates/server.crt")))
-      ks = java.security.KeyStore.getInstance("JKS", "SUN")
-      ks.load(nil, Java::char[0].new)
-      ks.setEntry("TEST-SERVER", java.security.KeyStore::TrustedCertificateEntry.new(cert), nil)
-      ks_file = java.io.FileOutputStream.new(keystore_filename)
-      ks.store(ks_file, Java::char[0].new)
-      ks_file.close()
-
-      # Set the LDAP interface to use the new keystore file
-      JSRemoteAuthenticationServiceSupport::LDAPAuthenticationService.__send__(:remove_const, :TRUSTED_ROOTS_KEYSTORE)
-      JSRemoteAuthenticationServiceSupport::LDAPAuthenticationService.const_set("TRUSTED_ROOTS_KEYSTORE", keystore_filename)
-
       # Create listening LDAP server using test SSL certificates
       config = Java::ComUnboundidLdapListener::InMemoryDirectoryServerConfig.new("dc=example,dc=com")
       config.addAdditionalBindCredentials("cn=service_account", "abcd9876")

@@ -423,6 +423,9 @@ class KSchemaApp < KSchema
   def all_aliased_attr_descs
     @aliased_attr_descs_by_desc.keys.sort
   end
+  def all_aliased_attr_descriptor_objs
+    @aliased_attr_descs_by_desc.values.sort { |a,b| a.printable_name.to_s <=> b.printable_name.to_s }
+  end
 
   # ========================= XML =========================
 

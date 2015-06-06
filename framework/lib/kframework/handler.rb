@@ -83,38 +83,15 @@ class KFramework
   class RequestPathNotFound < StandardError
   end
 
-  # Allow use of instance_variable_set on Java Exceptions, see http://wiki.jruby.org/Persistence
-  # TODO: Mark exceptions as reportable some other way than using instance_variable_set
-  Java::JavaLang::RuntimeException.__persistent__ = true
-  Java::OrgMozillaJavascript::JavaScriptException.__persistent__ = true
-  Java::OrgMozillaJavascript::EcmaError.__persistent__ = true
-  Java::OrgMozillaJavascript::WrappedException.__persistent__ = true
-  Java::JavaLang::StackOverflowError.__persistent__ = true
-  Java::OrgMozillaJavascript::EvaluatorException.__persistent__ = true
-  Java::JavaLang::NullPointerException.__persistent__ = true
-  Java::ComOneisJavascript::OAPIException.__persistent__ = true
-
   # Reportable error reporting
   @@reportable_error_reporter = nil
   def self.register_reportable_error_reporter(reporter)
     @@reportable_error_reporter = reporter
   end
-  def self.mark_exception_as_reportable(e, info)
-    raise "Reportable error info should not be nil" if info == nil
-    e.instance_variable_set(:@__reportable_error, info)
-  end
-  def self.exception_marked_as_reportable?(e)
-    !!(e.instance_variable_get(:@__reportable_error))
-  end
   # Returns nil if no reporter or the exception isn't reportable
   def self.reportable_exception_error_text(e, format)
-    reportable_info = e.instance_variable_get(:@__reportable_error)
-    return nil unless @@reportable_error_reporter != nil && reportable_info != nil
-    # Ask the reporter to generate the text response
-    @@reportable_error_reporter.call(e, reportable_info, format)
-  end
-  def self.is_exception_reportable?(e)
-    (e.instance_variable_get(:@__reportable_error) != nil)
+    return nil unless @@reportable_error_reporter
+    @@reportable_error_reporter.call(e, format)
   end
 
   def handle_from_java(servlet_request, application, body_as_bytes, is_ssl, file_uploads)
@@ -158,22 +135,13 @@ class KFramework
       reportable_error_text = KFramework.reportable_exception_error_text(e, :html)
       if reportable_error_text == nil
         # Not reportable or reportable errors disabled in production instance -- log error and set health event
-        # TODO: Handle plugin errors properly, alerting the right party according to the plugin.json file
-        # For now, errors get reported in the normal way for non-plugin debugging servers
         REQUEST_EXCEPTION_HEALTH_EVENTS.log_and_report_exception(e)
-        # Return an error response to the user
-        # If it was marked as reportable (but no text generated) use a message which blames a plugin.
-        exchange.response = if KFramework.exception_marked_as_reportable?(e)
-          make_plugin_error_response_for_live_installations(e, exchange)
-        else
-          make_error_response(e, exchange)
-        end
+        exchange.response = make_error_response(e, exchange)
       else
-        # Errors marked as reportable (from plugins), which may be reported to the user if it's a plugin debug instance
+        # Errors may be reported to the user if it's a plugin debug instance
         KApp.logger.error("Reportable error from #{exchange.request.path}")
         KApp.logger.log_exception(e)
         exchange.response = KFramework::DataResponse.new(reportable_error_text, 'text/html; charset=utf-8', 500)
-        # Mark it as being a reportable error
         exchange.response.headers["X-ONEIS-Reportable-Error"] = "yes"
       end
     end
@@ -262,12 +230,6 @@ class KFramework
   def make_error_response(exception, exchange)
     # TODO: Make the default error message prettier
     message = "<html><h1>Internal error</h1><p>An internal error has occurred. If the problem persists, please contact support.</p></html>"
-    KFramework::DataResponse.new(message, 'text/html; charset=utf-8', 500)
-  end
-
-  def make_plugin_error_response_for_live_installations(exception, exchange)
-    # TODO: Make the plugin error message prettier for live installations, and blame the plugin properly
-    message = "<html><h1>Plugin error</h1><p>An error has occurred with one of the installed plugins. If the problem persists, please contact support.</p></html>"
     KFramework::DataResponse.new(message, 'text/html; charset=utf-8', 500)
   end
 

@@ -28,6 +28,11 @@ class DeveloperEmailDelivery
     KNotificationCentre.notify(:javascript_console_log, :INFO, "#{delivery.to_address} (#{delivery.message.header.subject})", "EMAIL")
   end
 
+  KNotificationCentre.when(:email, :bad_url) do |name, operation, url|
+    # Tell user on plugin tool console that they messed up a link in an email
+    KNotificationCentre.notify(:javascript_console_log, :ERROR, "URL in email doesn't include http or https scheme: #{url}", "EMAIL")
+  end
+
   KNotificationCentre.when(:email, :html_to_plain_error) do |name, operation, error_message, html|
     simple_error = error_message.split(/[\r\n]+/,2).first
     # Send JS console notification so developers might notice the problem
@@ -171,6 +176,7 @@ class DeveloperEmailDelivery
             end
           end
           {
+            "time" => entry.time,
             "to" => entry.to_address.dup.force_encoding(Encoding::UTF_8),
             "subject" => entry.message.header.subject.dup.force_encoding(Encoding::UTF_8),
             "message" => parts.reverse

@@ -98,6 +98,7 @@ Misc
 O.session
 O.tray
 O.refdictHierarchical()
+setResponsiblePlugin() in Exchange objects
 
 Client side object editor plugins
 ---------------------------------

@@ -32,20 +32,20 @@ module Application_ElementHelper
   # Make an Elements renderer for the current user, given the list of elements
   def elements_make_renderer(list, path, object_maybe)
     elements = []
+    inactive_elements = []
     group_lookup = User.cache.group_code_to_id_lookup
     list.split(/[\r\n]+/).each do |line|
       group_s, element_position, element_name, element_options = line.split(/\s+/, 4)
       if element_name != nil && element_name.length > 1
-        if @request_user.member_of?((group_lookup[group_s] || group_s).to_i)
-          elements << [element_name, element_position, element_options]
-        end
+        displayed = @request_user.member_of?((group_lookup[group_s] || group_s).to_i)
+        (displayed ? elements : inactive_elements).push([element_name, element_position, element_options])
       end
     end
-    ElementsRenderer.new(elements, path, object_maybe)
+    ElementsRenderer.new(elements, inactive_elements, path, object_maybe)
   end
 
   def elements_make_renderer_for_single(position, element_name, element_options, path, object_maybe)
-    ElementsRenderer.new([[element_name, position, element_options]], path, object_maybe)
+    ElementsRenderer.new([[element_name, position, element_options]], [], path, object_maybe)
   end
 
   # Class to describe the HTML used to display the 'frame' around and title of an element
@@ -57,14 +57,16 @@ module Application_ElementHelper
   class ElementsRenderer
     include ERB::Util
     include KPlugin::HookSite
-    def initialize(elements, path, object_maybe)
+    def initialize(elements, inactive_elements, path, object_maybe)
       @elements = elements
+      @inactive_elements = inactive_elements
       @path = path
       @object_maybe = object_maybe
     end
     # Got an element?
     def has_element?(element_name)
-      !!(@elements.find { |x| x.first == element_name })
+      all_elements = @elements + @inactive_elements
+      !!(all_elements.find { |x| x.first == element_name })
     end
     # Insert element at given point
     def insert_element(index, position, name, options = nil)

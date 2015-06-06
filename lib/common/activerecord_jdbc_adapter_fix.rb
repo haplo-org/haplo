@@ -7,7 +7,7 @@
 
 # This patch fixes a thread safety issue with the postgresql adaptor
 
-unless Gem.loaded_specs['activerecord-jdbcpostgresql-adapter'].version.version == '1.2.7'
+unless Gem.loaded_specs['activerecord-jdbcpostgresql-adapter'].version.version == '1.2.9'
   raise "Unexpected version of activerecord-jdbcpostgresql-adapter gem, shouldn't monkey patch it"
 end
 unless ActiveRecord::ConnectionAdapters.const_defined? :PostgreSQLAdapter

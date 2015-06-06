@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.haplo</groupId>
   <artifactId>haplo</artifactId>
-  <version>3.20150522.1712.adcec6a801</version>
+  <version>3.20150606.1621.cca502436f</version>
   <packaging>jar</packaging>
 
   <dependencies>

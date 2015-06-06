@@ -27,7 +27,11 @@
         var messageElement = document.createElement('a');
         messageElement.href = '#';
         messageElement.setAttribute('data-message-id', ""+id);
-        var html = ['<span class="to">', escapeHTML(m.to), '</span> <span class="subject">', escapeHTML(m.subject), '</span>'];
+        var messageTime = new Date(m.time * 1000);  // uses timezone local to browser
+        var html = ['<span class="to">', escapeHTML(m.to), '</span> <span class="subject">', escapeHTML(m.subject),
+            '</span><span class="time">',
+            (messageTime.toLocaleTimeString() || '').split(/\s+/)[0],   // make assumptions about local formatting, OK as dev tool only
+            '</span>'];
         for(var p = 0; p < m.message.length; ++p) {
             var type = m.message[p][0];
             var caption = 'P'+p;
@@ -125,7 +129,12 @@
         iframe.contentWindow.document.open("text/html");
         var part = messages[id].message[partIndex];
         if(0 === part[0].indexOf("text/html")) {
-            iframe.contentWindow.document.write(part[1]);
+            var htmlBody = part[1];
+            // Attempt to add a base tag so that links don't work if they don't have a URL scheme.
+            // This is more reliable than attempting to rewrite them in the DOM because some browsers
+            // change the href property to the calculated link, not the one in the HTML.
+            htmlBody = htmlBody.replace(/<head>/i, '<head><base href="http://href-in-email-did-not-include-url-scheme.example.com">');
+            iframe.contentWindow.document.write(htmlBody);
         } else {
             iframe.contentWindow.document.write('<html><body><pre>'+escapeHTML(part[1])+'</pre></body></html>');
         }
