@@ -10,18 +10,6 @@
 module Ingredient
   module Templates
 
-    # Set up options for Haml templates
-    TEMPLATE_HAML_OPTIONS = {
-      :format => :html5,
-      :attr_wrapper => '"',
-      :escape_html => true, # safety by default for =
-      :ugly => true         # don't put in any extra whitespace to look pretty
-    }
-    # Derived version of options for buffer in templating
-    TEMPLATE_HAML_BUFFER_OPTIONS = Haml::Engine.new("", TEMPLATE_HAML_OPTIONS).send(:options_for_buffer)
-
-    # -------------------------------------------------------------------------------------------------------
-
     def self.load(templates_module, path, args, method_name)
       # If the templates have been pre-compiled, this is a no-op
       return templates_module if templates_module.const_defined?("FRM_#{method_name.to_s.upcase}_IS_PRECOMPILED")
@@ -35,10 +23,9 @@ module Ingredient
 
       # Create constants in the module
       templates_module.const_set(:KINDS, Hash.new)
-      templates_module.const_set(:TEMPLATE_HAML_BUFFER_OPTIONS, TEMPLATE_HAML_BUFFER_OPTIONS)
 
       # Find all templates
-      template_filenames = Dir.glob("#{path}/**/*.{erb,haml}").map { |n| n.slice(path.length + 1, n.length) }
+      template_filenames = Dir.glob("#{path}/**/*.erb").map { |n| n.slice(path.length + 1, n.length) }
 
       # Acceptable method names and mapping names
       acceptable_template_methods = Hash.new
@@ -79,7 +66,6 @@ module Ingredient
         [
           ["FRM__#{method_name.to_s.upcase}_METHODS", acceptable_template_methods],
           ["FRM__#{method_name.to_s.upcase}_MAP", name_to_method],
-          ["TEMPLATE_HAML_BUFFER_OPTIONS", TEMPLATE_HAML_BUFFER_OPTIONS],
           ["KINDS", templates_module.const_get(:KINDS)]
         ].each do |name,value|
           compiled_code << name + " = {\n" + (value.map { |k,v| "  #{k.inspect} => #{v.inspect}"} .join(",\n")) + "\n}"
@@ -98,10 +84,9 @@ module Ingredient
     # In a separate function so it can be called again by the development mode reloader
     def self.load_template(path, args, method_name, template_pathname, templates_module, acceptable_template_methods, name_to_method, compiled_code = nil)
       # Get the info from the template pathname
-      raise "Bad template filename #{template_pathname}" unless template_pathname =~ /\A(.+?)\.([^\.]+)\.(erb|haml)\z/
+      raise "Bad template filename #{template_pathname}" unless template_pathname =~ /\A(.+?)\.([^\.]+)\.erb\z/
       template_pathname_without_ext = $1
       template_content_kind = $2
-      template_template_kind = $3
       # Make a method name for the template
       template_name = template_pathname_without_ext.gsub(/\//,'_')
       template_method = "_#{method_name}_#{template_name}"
@@ -121,27 +106,8 @@ module Ingredient
         name_to_method[template_pathname_without_ext] = template_method.to_sym
       end
       # Compile the template and create the method
-      template_src = if template_template_kind == 'erb'
-        # ERB template
-        File.open("#{path}/#{template_pathname}") { |file| ERB.new(file.read, nil, '-') } .src # - is for newline omission after -%>
-      else
-        # Haml template
-        engine = Haml::Engine.new(File.open("#{path}/#{template_pathname}") { |f| f.read }, TEMPLATE_HAML_OPTIONS)
-        precompiled = engine.precompiled
-        # Always do the transforms because they're potentially dangerous, and we want to know about problems
-        # as soon as possible.
-        # 1) Remove unnecessary line endings
-        precompiled.gsub!(/\>(\\n)+\</,'><')
-        precompiled.gsub!(/\>(\\n)+"/,'>"')
-        precompiled.gsub!(/\>(\\n)+\#\{/,'>#{')
-        precompiled.gsub!(/\n}(\\n)+</m, "\n}<")
-        # 2) Remove quotes from attribute names where safe
-        precompiled.gsub!(/\<([a-zA-Z0-9="_ \.\/\\#-]+)?\>/) do
-          "<#{$1.gsub(/\=\\\"([a-zA-Z0-9_]+)\\\"(\s|\z)/,'=\\1\\2')}>"
-        end
-        # Make function code, copying from Haml code, but omitting some of the code which is unnecessary in this app
-        %Q!_hamlout = @haml_buffer = Haml::Buffer.new(@haml_buffer, TEMPLATE_HAML_BUFFER_OPTIONS);#{precompiled}\n_hamlout.buffer!
-      end
+      # '-' option is for newline omission after -%>
+      template_src = File.open("#{path}/#{template_pathname}") { |file| ERB.new(file.read, nil, '-') } .src
       method_def = "def #{template_method}(#{args})\n#{template_src}\nend"
       templates_module.module_eval(method_def, template_pathname, -1)
       compiled_code << method_def if compiled_code != nil

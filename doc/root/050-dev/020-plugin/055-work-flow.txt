@@ -2,7 +2,7 @@ title: Workflow
 long_title: Workflow support
 --
 
-The ONEIS Platform provides basic workflow support for guiding users through processes, but doesn't provide any implementation for the actual processes. The implementation is provided by plugins.
+The Haplo Platform provides basic workflow support for guiding users through processes, but doesn't provide any implementation for the actual processes. The implementation is provided by plugins.
 
 The facilities are:
 

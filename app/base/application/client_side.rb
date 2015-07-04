@@ -168,6 +168,8 @@ JAVASCRIPTS_IN_ORDER = [
     # Controller specific scripts
     :klatest, :klatestadm, :help_system,
     :mng_labels,
+    # Global UI support
+    :impersonate_ui,
     # Plugin adaptor (possibly temporary)
     :plugin_adaptor,
     # oForms client side support
@@ -278,6 +280,12 @@ CLIENT_SIDE_RESOURCES = {
   },
   :export_objects => {
     :javascript => [:export_objects]
+  },
+
+  # Global UI support
+  :impersonate_ui => {
+    :javascript => [:impersonate_ui],
+    :stylesheet => [:impersonate_ui]
   },
 
   # Plugin adaptor (possibly temporary)

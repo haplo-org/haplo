@@ -33,7 +33,7 @@ You must use the jQuery library through the @jQuery@ global, *not* @$@. To acces
 
 h2. Coding style
 
-The following coding style is recommended to encapsulate your client side scripting, and avoid clashing with the core ONEIS scripting and other plugins.
+The following coding style is recommended to encapsulate your client side scripting, and avoid clashing with the core Haplo scripting and other plugins.
 
 <pre>language=javascript
     (function($) {

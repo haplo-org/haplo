@@ -57,15 +57,19 @@ class Setup_SchemaRequirementsController < ApplicationController
         rescue => e
           # ignore exceptions reading objects
         end
-        obj_type = object.first_attr(A_TYPE)
-        if obj_type
-          schema_objects_by_type[obj_type] << object
-          # Find all the schema objects this object refers to, unless it's a short definition
-          unless is_short_defn.call(object.objref)
-            object.each do |v,d,q|
-              if v.kind_of?(KObjRef) && !(refs_done.has_key?(v))
-                refs_done[v] = true
-                next_refs_to_read << v
+        unless object
+          KApp.logger.warn("Failed to read object #{ref.to_presentation} when generating schema")
+        else
+          obj_type = object.first_attr(A_TYPE)
+          if obj_type
+            schema_objects_by_type[obj_type] << object
+            # Find all the schema objects this object refers to, unless it's a short definition
+            unless is_short_defn.call(object.objref)
+              object.each do |v,d,q|
+                if v.kind_of?(KObjRef) && !(refs_done.has_key?(v))
+                  refs_done[v] = true
+                  next_refs_to_read << v
+                end
               end
             end
           end

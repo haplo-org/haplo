@@ -33,6 +33,13 @@
       button_n += 1
     end
   end  
+
+  # Impersonate UI needs to be rendered before the client side resources are rendered
+  # as it will include some resources if it's triggered.
+  impersonate_ui_html = ''
+  if session[:impersonate_uid] != nil && !is_anonymous_user
+    impersonate_ui_html = render(:partial => 'layouts/impersonate_ui')
+  end
 -%>
 <html lang="en">
 <head>
@@ -60,7 +67,7 @@
       %><%= header%><%
     else
       # Surround the text in a reasonably interesting header
-      %><div id="z__header_oneis"><a href="/"><%= header %></a></div><%
+      %><div id="z__header_oneis" class="z__with_haplo_logo"><a href="/"><%= header %></a></div><%
     end
   end
 
@@ -69,15 +76,7 @@
   num_active_work_units = work_units_number_active_for_current_user()
 %>
 
-<%
-  if session[:impersonate_uid] != nil && !is_anonymous_user
-    unless KApp.global_bool(:_temp_hide_impersonate_top_ui)
-      %><div style="position:fixed; top:-10px; left:0; z-index:90009; width: 98%; text-align: center">
-        <form style="display: inline-block; box-shadow: -2px 2px 8px rgba(0,0,0,0.3); background:red; top:0; left:0; padding: 12px 12px 2px 12px; border-radius: 0 0 4px 4px" method="POST" action="/do/authentication/end_impersonation"><b>Impersonating <i id="z__impersonating_name"><%= h(@request_user.name) %></i></b> <%= form_csrf_token %><input type="submit" value="Finish"></form>
-      </div><%
-    end
-  end
-%>
+<%= impersonate_ui_html %>
 
 <div id="z__action_entry_points">
     <div id="z__aep_left">

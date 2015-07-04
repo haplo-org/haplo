@@ -3,7 +3,7 @@ title: Final checks
 
 h2. Check anonymous access
 
-ONEIS allows anonymous access to the system without a login, for when it is used for public access.
+Haplo allows anonymous access to the system without a login, for when it is used for public access.
 
 CLICK_PATH TOOLS > System management > Users > ANONYMOUS
 

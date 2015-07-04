@@ -3,7 +3,7 @@ title: Schema
 
 API_ENDPOINT /api/schema/data-model (GET only)
 
-Each ONEIS application has its own schema. There is a common schema, which is usually present, but the administrators of that system may have augmented it.
+Each Haplo application has its own schema. There is a common schema, which is usually present, but the administrators of that system may have augmented it.
 
 The returned schema has the format:
 

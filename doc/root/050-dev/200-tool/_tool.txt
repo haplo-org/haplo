@@ -3,4 +3,4 @@ title: Developer Tools
 
 The [node:dev/tool/plugin] enables you to edit a plugin on your computer and run it on a test server.
 
-We provide free [node:dev/tool/fossil:source control hosting] for ONEIS Platform developers.
+We provide free [node:dev/tool/fossil:source control hosting] for Haplo Platform developers.

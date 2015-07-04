@@ -15,6 +15,4 @@ Create new users by clicking 'New user', then entering:
 
 Person records, as displayed in the contacts directory, are not created automatically when creating a new user via System Management. Create these manually if required.
 
-If you create a Person record which has the same email address as a user account, ONEIS will link the two and assume that that object is the people directory entry for the user.
-
 Consider whether you need to use [node:setup/authentication-tokens:authentication tokens] for security.

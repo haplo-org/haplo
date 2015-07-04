@@ -58,8 +58,7 @@ class StringEncodingTest < Test::Unit::TestCase
     # Rendering templates
     renderer = TestTemplateRenderer.new
     [
-      "test/erb_template",
-      "test/haml_template"
+      "test/erb_template"
     ].each do |template_name|
       string = renderer.render(template_name, "ARGUMENT")
       assert string.kind_of? String

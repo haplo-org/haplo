@@ -16,7 +16,6 @@ uneval
 NaN
 Infinity
 undefined
-ConversionError
 EvalError
 RangeError
 ReferenceError

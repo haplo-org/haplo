@@ -1,7 +1,7 @@
 title: Working with databases
 --
 
-The ONEIS Platform provides a [node:dev/plugin/database:relational database] for plugins, with the tables defined in JavaScript.
+The Haplo Platform provides a [node:dev/plugin/database:relational database] for plugins, with the tables defined in JavaScript.
 
 Currently migration of database schemas is not available, so you need to reset the database whenever you change a table definition.
 

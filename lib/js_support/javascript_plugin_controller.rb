@@ -13,6 +13,7 @@ class JavaScriptPluginController < ApplicationController
   end
 
   JSGeneratedFile = Java::ComOneisJsinterfaceGenerate::JSGeneratedFile
+  KStoredFile = Java::ComOneisJsinterface::KStoredFile
 
   CONTENT_TYPES = Hash.new
   Ingredient::Rendering::RENDER_KIND_CONTENT_TYPES.each_key { |k| CONTENT_TYPES[k.to_s] = k}
@@ -63,8 +64,9 @@ class JavaScriptPluginController < ApplicationController
         response.headers[name] = value
       end
     end
-    # Shortcut response if it's a generated file
+    # If E.response.body was set to a stored or generated file, respond without any further response processing.
     return respond_with_generated_file(body) if body.kind_of?(JSGeneratedFile)
+    return respond_with_stored_file(body) if body.kind_of?(KStoredFile)
     # Handle response
     render_opts = Hash.new
     render_opts[:status] = status_code if status_code != nil
@@ -127,6 +129,14 @@ class JavaScriptPluginController < ApplicationController
     end
     exchange.response = r
     true
+  end
+
+  def respond_with_stored_file(java_stored_file)
+    stored_file = java_stored_file.toRubyObject()
+    raise "Didn't have expected Ruby stored file object" unless stored_file
+    render_send_file stored_file.disk_pathname, :type => stored_file.mime_type,
+      :filename => stored_file.upload_filename,
+      :disposition => 'attachment'
   end
 
 end

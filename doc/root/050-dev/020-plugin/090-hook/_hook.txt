@@ -2,7 +2,7 @@ title: Hooks
 class: DocNodeTextileWithTOC
 --
 
-Hooks allow plugins to change the behaviour of the ONEIS application.
+Hooks allow plugins to change the behaviour of the Haplo application.
 
 To respond to a hook, a function is registered with the plugin object using the [node:dev/plugin/interface/plugin/platform-interface#hook] function. The documentation for each hook gives you an example.
 

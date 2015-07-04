@@ -1,11 +1,9 @@
 title: Fossil Hosting
 --
 
-We provide free source code repositories for ONEIS Platform developers, using the "Fossil":http://fossil-scm.org open source version control system.
+Haplo Services provides free source code repositories for Haplo Platform developers who have a hosting contract, using the "Fossil":http://fossil-scm.org open source version control system.
 
 Fossil is a distributed version control system which avoids the complexity of similar systems. It also offers an integrated wiki and simple ticketing system.
-
-Our Fossil hosting is on the same infrastructure as ONEIS. We back up all repositories nightly to our secondary datacentre, and every month we store encrypted offline backups at a secure deposit service.
 
 You don't have to use Fossil. We're happy to work with other version control systems if you host the repositories.
 
@@ -16,7 +14,7 @@ h2. Terms and conditions
 
 The Fossil hosting is provided to developers under these conditions:
 
- * The repositories are only to be used for developing ONEIS plugins.
+ * The repositories are only to be used for developing Haplo plugins.
  * Large files should not be stored in the repositories -- this service is intended for source code and web-ready artwork.
  * You must not configure your repository to allow public access.
  * You must create individual Fossil accounts within your repository for each of your developers.

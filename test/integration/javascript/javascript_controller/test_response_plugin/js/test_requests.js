@@ -401,6 +401,12 @@
         E.response.body = JSON.stringify({filename:file.filename, mimeType:file.mimeType, digest:file.digest, fileSize:file.fileSize, ref:o.ref.toString()});
     });
 
+    P.respond("GET", "/do/plugin_test/get_stored_file_by_digest", [
+        {parameter:"digest", as:"string"}
+    ], function(E, digest) {
+        E.response.body = O.file(digest);
+    });
+
     P.respond("POST", "/do/plugin_test/file_upload_readasstring", [
         {parameter:"file", as:"file"}
     ], function(E, file) {

@@ -9,7 +9,7 @@ require 'bigdecimal'
 class BigDecimalSegfaultFixTest < Test::Unit::TestCase
 
   def test_fix
-    if RUBY_PLATFORM == 'java' && JRUBY_VERSION == '1.7.19'
+    if RUBY_PLATFORM == 'java' && JRUBY_VERSION == '1.7.20'
       # This test results in an infinite loop on this interpreter! But supposedly this version is safe.
       return
     elsif RUBY_PLATFORM == 'java'

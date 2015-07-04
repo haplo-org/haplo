@@ -43,7 +43,7 @@ Your information is stored on our servers, and we look after it, back it up, and
 
 However, for you to actually use it, you need to make a temporary copy on your computer. These copies include:
 
- * Web pages cached by your browser -- while ONEIS sets options to minimise the length of time its web pages are cached by your browser, it may remain accessible for a little while.
+ * Web pages cached by your browser -- while Haplo sets options to minimise the length of time its web pages are cached by your browser, it may remain accessible for a little while.
  * Your working files -- when you're working on a file, a copy is available on your computer until you delete it.
 
 

@@ -3,7 +3,7 @@ long_title: Plugin interface
 link_as: keyword
 --
 
-A JavaScript object implementing the @Plugin@ interface acts as a plugin to the ONEIS Platform.
+A JavaScript object implementing the @Plugin@ interface acts as a plugin to the Haplo Platform.
 
 
 h2. Construction

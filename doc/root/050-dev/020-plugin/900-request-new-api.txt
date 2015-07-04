@@ -24,4 +24,4 @@ We're working on exposing more of the abilities of the Platform in our JavaScrip
  * Custom rendering of objects implemented with plugins
  * Temporary data store
 
-If you'd like to use any of these, or want to get at other data in your ONEIS application, please send us an email. We can usually add these APIs pretty quickly.
+If you'd like to use any of these, or want to get at other data in your Haplo application, please send us an email. We can usually add these APIs pretty quickly.

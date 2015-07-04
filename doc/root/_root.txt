@@ -1,12 +1,12 @@
 title: Home
-long_title: ONEIS Technical Documentation
+long_title: Haplo Technical Documentation
 --
 
-The ONEIS Platform offers the ability to build powerful applications for managing "real world" information that doesn't fit into a conventional database.
+The Haplo Platform offers the ability to build powerful applications for managing "real world" information that doesn't fit into a conventional database.
 
-This is the technical documentation for ONEIS, describing how to [node:setup:set up and evolve] a ONEIS application, and how to [node:dev/plugin:develop plugins] and connect it to [node:dev/xml-http:external systems].
+This is the technical documentation for Haplo, describing how to [node:setup:set up and evolve] a Haplo application, and how to [node:dev/plugin:develop plugins] and connect it to [node:dev/xml-http:external systems].
 
-As you're probably dealing with confidential information in your ONEIS application, you must read our [node:security].
+As you're probably dealing with confidential information in your Haplo application, you must read our [node:security].
 
 
 h2. Getting help

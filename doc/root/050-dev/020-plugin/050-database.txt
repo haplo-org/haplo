@@ -2,7 +2,7 @@ title: Database
 long_title: Relational database
 --
 
-As well as the object store, the ONEIS Platform provides a relational style database. Each plugin has its own table namespace, providing isolation and allowing multiple plugins to have a table with the same name.
+As well as the object store, the Haplo Platform provides a relational style database. Each plugin has its own table namespace, providing isolation and allowing multiple plugins to have a table with the same name.
 
 
 h2. Declaring tables

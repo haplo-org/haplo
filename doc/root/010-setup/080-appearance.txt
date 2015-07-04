@@ -1,7 +1,7 @@
 title: Appearance
 --
 
-You can customise the appearance of ONEIS, adding a header and changing the colours of the main user interface. This enables you to change the appearance of the application to match your organisation's branding.
+You can customise the appearance of Haplo, adding a header and changing the colours of the main user interface. This enables you to change the appearance of the application to match your organisation's branding.
 
 CLICK_PATH TOOLS > System management > Configuration > Static files
 
@@ -11,11 +11,11 @@ This is intended for files which are used in the visual appearance of the system
 
 CLICK_PATH TOOLS > System management > Configuration > Appearance 
 
-Use this palette to define the colours for ONEIS and upload the logo and add the slogan displayed in the header.
+Use this palette to define the colours for Haplo and upload the logo and add the slogan displayed in the header.
 
 h2. Email templates
 
-Email templates enable you to customise the emails sent by ONEIS. You need knowledge of HTML and CSS to edit these templates, and it's recommended you seek the assistance of a designer for the best results.
+Email templates enable you to customise the emails sent by Haplo. You need knowledge of HTML and CSS to edit these templates, and it's recommended you seek the assistance of a designer for the best results.
 
 CLICK_PATH TOOLS > System management > Email templates
 

@@ -1,0 +1,25 @@
+<%
+  # TODO: Fix so that :_temp_hide_impersonate_top_ui doesn't break the impersonation detection in kapplication.js
+  unless KApp.global_bool(:_temp_hide_impersonate_top_ui)
+    client_side_resources(:impersonate_ui)
+    %><div id="z__impersonate_ui_top_container">
+      <form id="z__impersonate_ui_top_finish_form" method="POST" action="/do/authentication/end_impersonation"><b>Impersonating <i id="z__impersonating_name"><%= h(@request_user.name) %></i></b> <%= form_csrf_token %><input type="submit" value="Finish"></form>
+    </div><%
+    if PLUGIN_DEBUGGING_SUPPORT_LOADED
+      history = session[:impersonate_history] || []
+      unless history.empty?
+        %><div id="z__impersonate_ui_history">
+          <form id="z__impersonate_ui_history_form" method="POST" action="/do/authentication/impersonate">
+            <%= form_csrf_token %><input type="hidden" name="uid">
+          </form>
+        <%
+        history.each do |uid|
+          user = User.cache[uid]
+          short_name = "#{user.name_first[0]}#{user.name_last[0]}"
+          %><a href="#impersonate"<% if user.id == session[:impersonate_uid] %> class="z__impersonate_ui_history_current"<% end %> data-uid="<%= user.id %>"><span class="z__impersonate_ui_history_short_name"><%= h(short_name) %></span><span class="z__impersonate_ui_history_long_name"><%= h(user.name) %></span></a><%
+        end
+        %></div><%
+      end
+    end
+  end
+%>

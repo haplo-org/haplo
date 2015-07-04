@@ -84,7 +84,16 @@ module KAppInit
     class Minimal < Template
       def template(app, app_title, additional_info)
         load_dublincore_and_basic_app_objects(app)
-        app.load_objects('db/app_attrs.objects')
+        app.load_objects('db/app_attrs.objects') do |obj,obj_id|
+          # Replace use of Staff in attributes, as only the root person type is included in the minimal schema
+          extra_attributes = []
+          obj.delete_attr_if do |v,d,q|
+            is_staff = (v == O_TYPE_STAFF)
+            extra_attributes.push([O_TYPE_PERSON,d,q]) if is_staff
+            is_staff
+          end
+          extra_attributes.each { |x| obj.add_attr(*x) }
+        end
         app.load_objects('db/app_types.objects', :include, "types_include.txt") do |obj,obj_id|
           # Remove mentions of O_LABEL_CONFIDENTIAL, as we're not using it
           obj.delete_attr_if do |v,d,q|
@@ -157,8 +166,8 @@ module KAppInit
         # Create a contact so the contact directory isn't empty
         oneis_org = KObject.new([O_LABEL_COMMON])
         oneis_org.add_attr(O_TYPE_SUPPLIER, A_TYPE)
-        oneis_org.add_attr('ONEIS Ltd', A_TITLE)
-        oneis_org.add_attr(KIdentifierURL.new('http://www.oneis.co.uk'), A_URL)
+        oneis_org.add_attr('Haplo Services', A_TITLE)
+        oneis_org.add_attr(KIdentifierURL.new('http://www.haplo-services.com'), A_URL)
         KObjectStore.create(oneis_org)
 
         # Create a welcome news item -- LAST so it appears at the top of the RECENT listing

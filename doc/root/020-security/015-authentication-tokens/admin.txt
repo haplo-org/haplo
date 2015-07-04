@@ -18,7 +18,7 @@ It's important that tokens are issued to the right people. If you accidentally i
 
 You __must__ always verify the identity of someone when you issue them a token. This doesn't need to be particularly formal. If you work with that person and can recognise them, that's more than good enough.
 
-To issue a token, login into ONEIS, then click
+To issue a token, login into Haplo, then click
 
 CLICK_PATH TOOLS > Manage tokens
 

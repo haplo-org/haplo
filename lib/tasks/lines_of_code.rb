@@ -20,7 +20,6 @@ LANGUAGES = [
     Language.new('C', 'c', /\/\*.+?\*\//m, /\A\s*\/\//),
     Language.new('C++', 'cpp', /\/\*.+?\*\//m, /\A\s*\/\//),
     Language.new('ERB Views', 'erb', nil, /\A NO LINE COMMENTS/),
-    Language.new('HAML Views', 'haml', nil, /\A NO LINE COMMENTS/),
     Language.new('JavaScript', 'js', /\/\*.+?\*\//m, /\A\s*\/\//),
     Language.new('CSS', 'css', /\/\*.+?\*\//m, /\A NO LINE COMMENTS/)
   ]

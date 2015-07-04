@@ -17,7 +17,7 @@ P.respond("GET", "/do/example/hello", [
 });
 </pre>
 
-A plugin may need to implement one or more [node:dev/plugin/hook] to integrate into the ONEIS application user interface. Use the function template in each hooks documentation to start your implementation.
+A plugin may need to implement one or more [node:dev/plugin/hook] to integrate into the Haplo application user interface. Use the function template in each hooks documentation to start your implementation.
 
 To add to the home page or the object pages, use [node:dev/plugin/elements].
 

@@ -1,12 +1,12 @@
 title: Feeds and updates
 --
 
-ONEIS includes features to push information to people who need to be kept up to date. This is very useful, but you should evaluate the impact of copying information to other systems with different security models.
+Haplo includes features to push information to people who need to be kept up to date. This is very useful, but you should evaluate the impact of copying information to other systems with different security models.
 
 
 h2. Latest updates emails
 
-ONEIS can automatically email users with lists of new items in the system. This includes titles and an extract of text.
+Haplo can automatically email users with lists of new items in the system. This includes titles and an extract of text.
 
 p(recommendation). You __must__ ensure your organisation's email is secure.
 

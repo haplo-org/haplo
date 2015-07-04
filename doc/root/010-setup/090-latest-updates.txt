@@ -1,7 +1,7 @@
 title: Latest updates
 --
 
-Latest updates are automatic email bulletins sent by ONEIS to users showing recent items of interest added to the system. 
+Latest updates are automatic email bulletins sent by Haplo to users showing recent items of interest added to the system. 
 
 CLICK_PATH TOOLS > System management > Groups
 

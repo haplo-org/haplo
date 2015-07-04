@@ -268,8 +268,12 @@ class AuthenticationController < ApplicationController
   end
 
   _GetAndPost
-  _PoliciesRequired :not_anonymous, :impersonate_user
+  _PoliciesRequired :not_anonymous
   def handle_impersonate
+    # Allowed if the user has the impersonate policy, or the request is for a user which
+    # has been impersonated in this session (so the history UI can swap users).
+    permission_denied unless @request_user.policy.can_impersonate_user? ||
+        (session[:impersonate_history] || []).include?(params[:uid].to_i)
     raise "Impersonate not allowed for API keys" if @request_uses_api_key # TODO: Test to make sure impersonation isn't allowed for API keys
     if request.post?
       impersonate_uid = params[:uid].to_i
@@ -279,6 +283,8 @@ class AuthenticationController < ApplicationController
       else
         KNotificationCentre.notify(:authentication, :impersonate, @request_user, impersonate_uid)
         session[:impersonate_uid] = impersonate_uid
+        history = (session[:impersonate_history] ||= [])
+        history.push(impersonate_uid) unless history.include?(impersonate_uid)
         redirect_to '/'
       end
     else

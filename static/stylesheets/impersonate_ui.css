@@ -1,0 +1,69 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+#z__impersonate_ui_top_container {
+    position: fixed;
+    top: -10px;
+    left: 0;
+    z-index: 90009;
+    width: 98%;
+    text-align: center;
+}
+
+#z__impersonate_ui_top_finish_form {
+    display: inline-block;
+    box-shadow: -2px 2px 8px rgba(0,0,0,0.3);
+    background: red;
+    top: 0;
+    left: 0;
+    padding: 12px 12px 2px 12px;
+    border-radius: 0 0 4px 4px;
+}
+
+#z__impersonate_ui_history {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 90010;
+}
+
+#z__impersonate_ui_history a {
+    display: block;
+    line-height: 48px;
+    min-width: 48px;
+    max-width: 48px;
+    font-size: 20px;
+    font-weight: bold;
+    text-align: center;
+    border: 3px solid #666;
+    border-radius: 27px;
+    background: #fff;
+    margin: 2px;
+    white-space: nowrap;
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.15), -1px 1px 5px rgba(0,0,0,0.15);
+}
+#z__impersonate_ui_history a:hover {
+    text-decoration: none;
+    max-width: inherit;
+    padding: 0 16px;
+}
+#z__impersonate_ui_history a.z__impersonate_ui_history_current {
+    background: #ddd;
+}
+.z__webfonts_enabled #z__impersonate_ui_history {
+    font-family: $SPECIAL_FONT_FAMILY;
+}
+
+/* display long names on hover */
+#z__impersonate_ui_history a:hover span.z__impersonate_ui_history_short_name {
+    display: none;
+}
+span.z__impersonate_ui_history_long_name {
+    display: none;
+}
+#z__impersonate_ui_history a:hover span.z__impersonate_ui_history_long_name {
+    display: inline;
+}

@@ -1,7 +1,7 @@
 title: Attributes
 --
 
-Before setting up the different Types required, create the Attributes each type will use. List all the Types for your organisation, and their Attributes. Create new Attributes for any you require that are not in the default schema. ONEIS has a loose data model, and uses the same attribute in many Types so each attribute only has to be defined once. 
+Before setting up the different Types required, create the Attributes each type will use. List all the Types for your organisation, and their Attributes. Create new Attributes for any you require that are not in the default schema. Haplo has a loose data model, and uses the same attribute in many Types so each attribute only has to be defined once. 
 
 CLICK_PATH TOOLS > System management > Attributes
 
@@ -12,7 +12,7 @@ h2. Attribute details
  * *Attribute name*: give a brief descriptive name of one or two words for this attribute.
  * *Search name*: used in the search constraints ie title:Hamlet (here title is the search constraint). This should contain only lower case letters, numbers and hyphens. By convention it is the same as the attribute name in lower case and with spaces replaced by hyphens.
  * *Example*: give an example showing how data should be entered into this attribute's field. This is shown to the user when they tick Show examples when adding or editing an item.
- * *Relevancy weight*: state how important this attribute should be considered when compiling search results. 1.0 is normal weighting, 0.5 is half as relevant so would come lower down the search results, 2.0 is twice as relevant. The relevancy weighting range spans from 0.01 to infinity (though within ONEIS the range used tends to be between 0.25 and 100.) 
+ * *Relevancy weight*: state how important this attribute should be considered when compiling search results. 1.0 is normal weighting, 0.5 is half as relevant so would come lower down the search results, 2.0 is twice as relevant. The relevancy weighting range spans from 0.01 to infinity (though within Haplo the range used tends to be between 0.25 and 100.) 
 
 Setting the relevancy weight to 0 will exclude the attribute from indexing. Use this if you don't want any search to match this attribute. 
 

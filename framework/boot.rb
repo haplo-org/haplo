@@ -42,8 +42,6 @@ require 'arjdbc'
 require 'lib/common/activerecord_jdbc_adapter_fix' # for thread safety
 gem 'builder', '= 2.1.2'
 require 'builder'
-gem 'haml', '= 4.0.0'
-require 'haml'
 gem 'tzinfo-data'
 require 'tzinfo'
 

@@ -10,8 +10,8 @@ set -e
 
 DEV_SUPPORT_DIR=~/haplo-dev-support
 
-JRUBY_VERSION=1.7.19
-JRUBY_DIGEST=a3296d1ae9b9aa78825b8d65a0d2498b449eaa3d
+JRUBY_VERSION=1.7.20
+JRUBY_DIGEST=3c11f01d38b9297cef2c281342f8bb799772e481
 JRUBY_DOWNLOAD_URL=https://s3.amazonaws.com/jruby.org/downloads/${JRUBY_VERSION}/jruby-bin-${JRUBY_VERSION}.tar.gz
 
 XAPIAN_VERSION=1.2.15
@@ -154,7 +154,6 @@ get_gem "activeresource" "3.0.20" "e465e7d582c6d72c487d132e5fac3c3af4626353"
 get_gem "activesupport" "3.0.20" "5bc7b2f1ad70a2781c4a41a2f4eaa75b999750e4"
 get_gem "arel" "2.0.10" "758e4172108a517d91c526dcab90355a7d07c527"
 get_gem "builder" "2.1.2" "d0ea89ea793c75853abd636ab86a79b7b57d6993"
-get_gem "haml" "4.0.0" "dd35eda28a98d70d75f4a0c07cdb20f6920e5a2d"
 get_gem "hoe" "3.6.3" "7f2323e812efd292cdca7ebd0e44266c55814995"
 get_gem "i18n" "0.5.0" "74ec4aeb2c46d6d59864e5fceecd3cd496963a3f"
 get_gem "jdbc-postgres" "9.2.1002.1" "927e9e24f86d4d785ddb0fcf58bce3e89b3c87e4"
@@ -233,7 +232,7 @@ g++ framework/support/oneis.cpp -O2 -o framework/oneis
 
 echo "Compiling Java sources with maven..."
 mvn package
-cp target/haplo-3.20150606.1621.cca502436f.jar framework/oneis.jar
+cp target/haplo-3.20150704.1422.310c8365ae.jar framework/oneis.jar
 
 mvn -Dmdep.outputFile=target/classpath.txt dependency:build-classpath
 

@@ -51,10 +51,10 @@ h3(key). layout
 Optional. Possible values are:
 
 |@false@|No layout. Use for AJAX responses.|
-|@"std:standard"@|The standard layout, including all the normal ONEIS navigation.|
+|@"std:standard"@|The standard layout, including all the normal Haplo navigation.|
 |@null@, @undefined@|Use the @std:standard@ layout.|
-|@"std:wide"@|A version of the standard layout, including all the normal ONEIS navigation, with a wider content area.|
-|@"std:minimal"@|Minimal layout, using the ONEIS styles and client side resource handling, but without the main navigation.|
+|@"std:wide"@|A version of the standard layout, including all the normal Haplo navigation, with a wider content area.|
+|@"std:minimal"@|Minimal layout, using the Haplo styles and client side resource handling, but without the main navigation.|
 |Other string|The name of a template provided by the plugin.|
 
 If the template is not HTML, this property is ignored.

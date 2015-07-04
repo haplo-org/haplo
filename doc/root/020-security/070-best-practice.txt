@@ -3,7 +3,7 @@ title: Best practice
 
 h2. Sending information to others
 
-Where possible, use the sharing features of ONEIS to allow mediated access to information online.
+Where possible, use the sharing features of Haplo to allow mediated access to information online.
 
 p(recommendation). You __must never__ send, transfer or carry data unencrypted on a USB memory stick or CDROM/DVD.
 

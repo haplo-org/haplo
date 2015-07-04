@@ -2,7 +2,7 @@ title: Revoking access
 long_title: Revoking access for a lost device
 --
 
-When a computer, laptop, or mobile phone used to access ONEIS is lost, or you do not have control over it for any reason, you __must__ take action immediately.
+When a computer, laptop, or mobile phone used to access Haplo is lost, or you do not have control over it for any reason, you __must__ take action immediately.
 
 p(recommendation). When a device is lost, you __must__ revoke access immediately.
 
@@ -18,7 +18,7 @@ If you are in any doubt, block the user's account completely until you have made
 
 h2. Revoking access (devices)
 
-Devices using ONEIS Mobile store authentication tokens. These are revoked independently of passwords. Changing the user's password does not remove this device's ability to access information.
+Devices using Haplo Mobile store authentication tokens. These are revoked independently of passwords. Changing the user's password does not remove this device's ability to access information.
 
 When a device is lost:
 

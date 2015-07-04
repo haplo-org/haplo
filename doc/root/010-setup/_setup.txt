@@ -2,7 +2,7 @@ title: Setup Manual
 class: DocNodeTextileWithTOC
 --
 
-ONEIS is an information management system customised to accurately reflect the information within an organisation. 
+Haplo is an information management system customised to accurately reflect the information within an organisation. 
 
 The system is customised using:
 
@@ -17,18 +17,18 @@ The system is customised using:
 
 h2. Evolution
 
-Every organisation changes over time, and the information they need to store and use changes. ONEIS has been designed to support the evolving needs of an organisation. 
+Every organisation changes over time, and the information they need to store and use changes. Haplo has been designed to support the evolving needs of an organisation. 
 
 You can change your mind about any customisation decision you make. Old information will still work, with nothing lost, and new information will use your new choices.
 
 This allows you to work in small incremental steps, without worrying that you're making a decision you can't undo later.
 
-We recommend you start by customising and using ONEIS for one area of your work, then gradually use more of the functionality as you learn more about your requirements and what ONEIS can do for you.
+We recommend you start by customising and using Haplo for one area of your work, then gradually use more of the functionality as you learn more about your requirements and what Haplo can do for you.
 
 
 h2. Custom functionality
 
-You can extend ONEIS' functionality with custom [node:dev/plugin:plugins]. We recommend you start by configuring and using a basic system. You can develop and add additional plugins later once you're  clear about your organisation's requirements.
+You can extend Haplo's functionality with custom [node:dev/plugin:plugins]. We recommend you start by configuring and using a basic system. You can develop and add additional plugins later once you're  clear about your organisation's requirements.
 
 
 h2. Contents

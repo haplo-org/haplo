@@ -1,7 +1,7 @@
 title: Request handling
 --
 
-Plugins can implement request handlers to respond to requests for URLs. This allows them to implement their own user interface seamlessly within the main ONEIS application.
+Plugins can implement request handlers to respond to requests for URLs. This allows them to implement their own user interface seamlessly within the main Haplo application.
 
 The templating system allows plugins to use the same layout (header, footer, navigation, etc) as the main application, but plugins can respond with any data and header they require.
 
@@ -64,7 +64,7 @@ For HTML responses, you can use a 'layout' to provide a common header and footer
 
 Two standard layouts are provided, @"std:standard"@ and @"std:minimal"@, and the plugin can provide its own layouts as a normal templates.
 
-If no layout is specified in the view, the @"std:standard"@ layout is used. This includes the standard ONEIS user interface, as well as client side resource handling through templates like [node:dev/plugin/templates/std-template/plugin-static].
+If no layout is specified in the view, the @"std:standard"@ layout is used. This includes the standard Haplo user interface, as well as client side resource handling through templates like [node:dev/plugin/templates/std-template/plugin-static].
 
 If one of the plugin's templates is used as a layout:
 

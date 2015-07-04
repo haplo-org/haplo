@@ -2,12 +2,12 @@ title: Labels and Permissions
 class: DocNodeTextileWithTOC
 --
 
-ONEIS supports fine-grained access permissions enabling it to accurately reflect the permissions required by an organisation. 
+Haplo supports fine-grained access permissions enabling it to accurately reflect the permissions required by an organisation. 
 
 
 h2. Permissive labelling
 
-ONEIS uses "permissive labelling" to control access to information. This design fits in well with the overall philosophy of ONEIS: an object is described on creation, and this description controls how the object can be used.
+Haplo uses "permissive labelling" to control access to information. This design fits in well with the overall philosophy of Haplo: an object is described on creation, and this description controls how the object can be used.
 
 Each object has one or more *labels* which are applied at creation, but may change over the object's lifetime. An object may be *relabelled* at any time, as long as the user has permission to do so.
 
@@ -27,4 +27,4 @@ It is not, however, intended to cover the needs of larger applications. In this 
 This approach allows you complete flexibility in how you implement permissions in your application. Rather than being restricted by limited built-in tools, you can express whatever you need in a few lines of code.
 
 
-h2. ONEIS labelling
+h2. Haplo labelling

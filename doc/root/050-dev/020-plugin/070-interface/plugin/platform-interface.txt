@@ -2,7 +2,7 @@ title: Platform interface
 long_title: Plugin platform interface
 --
 
-These are the core APIs which allow your plugin to integrate into the ONEIS Platform.
+These are the core APIs which allow your plugin to integrate into the Haplo Platform.
 
 
 h2. Interface

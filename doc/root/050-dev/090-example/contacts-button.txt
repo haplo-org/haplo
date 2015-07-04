@@ -30,7 +30,7 @@ h2. plugin.json
 <pre>language=json
 {
 	"pluginName": "contacts_button",
-	"pluginAuthor": "ONEIS",
+	"pluginAuthor": "Haplo",
 	"pluginVersion": 100,
 	"displayName": "Contacts Button",
 	"displayDescription": "Add a Contacts button to People and Organisation objects for helping manage contacts.",

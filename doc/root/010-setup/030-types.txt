@@ -34,13 +34,13 @@ You cannot add any Attributes which aren't used by the root-type.
 
 h2. Search and retrieval
 
- * Relevancy weight: the normal, and default, relevancy weighting in searches is 1. Enter a different number if this type should be ranked higher or lower than average in searches. You can use two decimal places. 0.5 is half as relevant as the normal weighting of 1, so would come lower down the search results, 2.0 is twice as relevant. The relevancy weighting range spans from 0 to infinity (though within ONEIS the range used tends to be between 0 and 100.)
+ * Relevancy weight: the normal, and default, relevancy weighting in searches is 1. Enter a different number if this type should be ranked higher or lower than average in searches. You can use two decimal places. 0.5 is half as relevant as the normal weighting of 1, so would come lower down the search results, 2.0 is twice as relevant. The relevancy weighting range spans from 0 to infinity (though within Haplo the range used tends to be between 0 and 100.)
  * Term inclusion specification: controls how related objects are included in the search results. See Term inclusion specification below for details.
 
 h2. Display
 
  * Show linked objects under caption: tick to display at the bottom of this object, all other objects which are linked to this object. Specify the caption underneath which the objects will display.
- * Render type: rendering determines how objects display. Choose a render style for this type. If ONEIS does not have a special rendering for the specified type, the default generic type will be used.
+ * Render type: rendering determines how objects display. Choose a render style for this type. If Haplo does not have a special rendering for the specified type, the default generic type will be used.
  * Render icon: choose an icon to represent this type, used in search results and (usually) at the top of the object page.
  * Category: specify the background colour with which objects of this type will display in search results. The category colours are edited in the appearance menus (found in System Management under Configuration.)
 

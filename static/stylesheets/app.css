@@ -233,7 +233,7 @@ input[type=text], input[type=password], input[type=email], textarea {
 #z__header_oneis a:hover {
     text-decoration: none;
 }
-#z__header_oneis:before {
+#z__header_oneis.z__with_haplo_logo a:before {
     font-family: $SPECIAL_FONT_FAMILY;
     position: absolute;
     content: "HAPLO";

@@ -27,7 +27,7 @@ h3(property). body
 
 The body of the response. Set to a @String@.
 
-Alternatively, set this property to a [node:dev/plugin/o/generate:Generator] object. In this case, appropriate headers will be added for the @Content-Type@ and the download filename.
+Alternatively, set this property to [node:dev/plugin/o/generate:Generator] or [node:dev/plugin/interface/file] objects. In these cases, appropriate headers will be added for the @Content-Type@ and the download filename.
 
 
 h3(property). kind

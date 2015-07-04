@@ -12,13 +12,13 @@ module KProduct
   OBJECT_COST     = (64*1024)
 
   PRICE_PLANS = {
-    'oneis' => {
+    'haplo' => {
       :limit_users        => 500,
       :limit_objects      => 200000,
       :limit_storage      => 1024*16
     }
   }
-  PRICE_PLANS['haplo'] = PRICE_PLANS['oneis']
+  PRICE_PLANS['oneis'] = PRICE_PLANS['haplo']
 
   # ----------------------------------------------------------------------------------------------------------------------
 

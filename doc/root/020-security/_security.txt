@@ -2,7 +2,7 @@ title: Security Guidelines
 class: DocNodeTextileWithTOC
 --
 
-Having a secure online repository like ONEIS for all your information is just the first step to securing your information. You also need to make sure that you and your colleagues use ONEIS in a secure manner.
+Having a secure online repository like Haplo for all your information is just the first step to securing your information. You also need to make sure that you and your colleagues use Haplo in a secure manner.
 
 The only truly secure system is one which allows no one any access at all. Unfortunately, this would be impossible to use. Security is about striking the right balance between *usability* and *security*. You need to keep your information secure and enable people to do their work by providing users with appropriate access.
 
@@ -16,7 +16,7 @@ A system is only as secure as its weakest link, and users are often the weakest 
 
 h3. Trusting your users
 
-The ONEIS security model is designed to protect your information from outsiders. Within your organisation, we take the reasonable position that you should trust your staff. There are very few, if any, technical measures that can be taken to stop insiders from abusing their access -- they have a valid login to the system which legitimately gives them access to information.
+The Haplo security model is designed to protect your information from outsiders. Within your organisation, we take the reasonable position that you should trust your staff. There are very few, if any, technical measures that can be taken to stop insiders from abusing their access -- they have a valid login to the system which legitimately gives them access to information.
 
 You __should__ verify the actions of your users through the tools provided, such as the RECENT listing.
 

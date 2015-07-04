@@ -59,7 +59,7 @@ If this key is omitted, the plugin will be able to be installed without supplyin
 
 h3(key). apiVersion
 
-The minimum version of the ONEIS API required by this plugin.
+The minimum version of the Haplo API required by this plugin.
 
 
 h3(key). load

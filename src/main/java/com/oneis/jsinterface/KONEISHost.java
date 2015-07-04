@@ -251,11 +251,13 @@ public class KONEISHost extends KScriptable {
         if(info[RESPONSE_BODY_INDEX] == null) {
             // Perhaps it's a generated file?
             Object body = response.get("body", response); // ConsString is checked
-            if((body != null) && (body instanceof JSGeneratedFile)) {
+            if((body != null) &&
+                   ((body instanceof JSGeneratedFile) || (body instanceof KStoredFile))) {
                 // Send it to the Ruby side, which knows how to handle it
                 info[RESPONSE_BODY_INDEX] = body;
             } else if(body != UniqueTag.NOT_FOUND) {
-                throw new OAPIException("The response body (usually E.response.body) set by " + pluginName + " is not valid, must be a String or generator (O.generate) object. "
+                throw new OAPIException("The response body (usually E.response.body) set by " + pluginName
+                        + " is not valid, must be a String, StoredFile, or a generator (O.generate) object. "
                         + "JSON responses should be encoded using JSON.stringify by the request handler.");
             }
         }

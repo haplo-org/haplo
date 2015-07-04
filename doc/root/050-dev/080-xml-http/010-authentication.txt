@@ -4,7 +4,7 @@ title: Authentication
 
 Before the API can be used, an API key must be generated to authenticate each request. An API key is a random string of characters, and is equivalent to the user and password. The access granted is identical to the access for the user.
 
-To generate a key, log into ONEIS as an administrator. Click your user name in the top right, then _System Management_ in the pop up menu. Click _Users_ then the name of the user you wish to use for authentication. Scroll down, and click _New API key_. Create the key, then click _Reveal this API key_ to show the key.
+To generate a key, log into Haplo as an administrator. Click your user name in the top right, then _System Management_ in the pop up menu. Click _Users_ then the name of the user you wish to use for authentication. Scroll down, and click _New API key_. Create the key, then click _Reveal this API key_ to show the key.
 
 The remote system will act as if it is logged in as this user. You can use an existing user which has the permissions you want to grant, but management is easier if you create a special user for each system which will use the API.
 
@@ -14,7 +14,7 @@ The API key is sent in requests by, in order of checking:
 
  * As the @_ak@ request parameter (form submission field) [1] [2]
  * As the @_ak@ cookie
- * In the @X-ONEIS-Key@ HTTP request header
+ * In the @X-Haplo-Key@ HTTP request header
 
 [1] The @_ak@ request parameter cannot be used with a file upload @multipart/form-data@ request because the authentication takes place before the request body is parsed.
 

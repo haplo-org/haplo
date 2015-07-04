@@ -3,7 +3,7 @@ title: User groups
 
 Not everyone in the organisation may have the same access to information. You can organise users into groups and apply access permissions to each group. 
 
-Identify the groups of stakeholders inside and outside the organisation who will use ONEIS. Divide your list of stakeholders into groups by role or permission based on common access requirements. An individual can belong to more than one group.
+Identify the groups of stakeholders inside and outside the organisation who will use Haplo. Divide your list of stakeholders into groups by role or permission based on common access requirements. An individual can belong to more than one group.
 
 As an example, groups for a small organisation might be:
 

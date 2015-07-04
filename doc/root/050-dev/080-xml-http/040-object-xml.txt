@@ -93,7 +93,7 @@ The supported types and values of widgets are:
 
 h3. Datetime
 
-When formatting objects for reading by ONEIS, for convenience simple dates can be encoded as strings in the XML. The dates are encoded in ISO 8601 format, @YYYY-MM-DDThh:mm:ss@, as the _TEXT_ child of the @a@ element. Objects will never be encoded in this simplified format.
+When formatting objects for reading by Haplo, for convenience simple dates can be encoded as strings in the XML. The dates are encoded in ISO 8601 format, @YYYY-MM-DDThh:mm:ss@, as the _TEXT_ child of the @a@ element. Objects will never be encoded in this simplified format.
 
 Specified precision date ranges are encoded in XML as:
 
@@ -136,7 +136,7 @@ h3. Telephone numbers
  ** @extension@ ?
  *** _TEXT_ - extension number
 
-The above format is strict, and requires correct country codes for ONEIS to handle the data correctly. However, data is not always available in this form. When reading XML, ONEIS also supports this form:
+The above format is strict, and requires correct country codes for Haplo to handle the data correctly. However, data is not always available in this form. When reading XML, Haplo also supports this form:
 
  * @telephone_number@
  ** @guess_country@
@@ -148,7 +148,7 @@ The above format is strict, and requires correct country codes for ONEIS to hand
 
 Data will be converted on reading to a best guess for the country code and local number. @guess_country@ should be set to the country the data originated from. For example, even if the number is a US number, you should set @guess_country@ to @GB@ if the data was collected in England.
 
-If you find any inputs which give bad results, please send them to ONEIS Support so we can improve the guessing algorithm.
+If you find any inputs which give bad results, please send them to Haplo Support so we can improve the guessing algorithm.
 
 h3. Postal addresses
 

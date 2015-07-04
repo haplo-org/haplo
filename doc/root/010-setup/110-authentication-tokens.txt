@@ -3,12 +3,12 @@ title: Authentication tokens
 
 If you're storing particularly sensitive information, you should use [node:security/authentication-tokens:authentication tokens] to implement two-factor authentication for users.
 
-By default, ONEIS systems do not use authentication tokens. Enabling them is a multi-stage process.
+By default, Haplo systems do not use authentication tokens. Enabling them is a multi-stage process.
 
 
 h2. Order tokens
 
-First, you need to order your tokens from ONEIS. You don't need to issue everyone in your organisation with a token. If only some people have access to particularly sensitive information in your system, you may decide that only they need to use authentication tokens.
+First, you need to order your tokens from Haplo. You don't need to issue everyone in your organisation with a token. If only some people have access to particularly sensitive information in your system, you may decide that only they need to use authentication tokens.
 
 We recommend ordering a couple of spare tokens, in addition to one token for each user who should be using a token.
 

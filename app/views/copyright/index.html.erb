@@ -1,0 +1,19 @@
+<%
+  @page_title = 'Copyright Notice'
+
+# User copyright statement
+%><%= render_doc_as_html(KApp.global(:copyright_statement), KObjectStore.store) %>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<div class="z__document">
+  <h2>Software Copyright</h2>
+  <%
+    if KApp.global(:product_name) != 'Haplo'
+      %><p><%= h(KApp.global(:product_name)) %> is a product built on the Haplo Information Management Platform (Haplo Software).</p><%
+    end
+    # Use nofollow to make sure Google doesn't think deployment servers are a link farm and
+    # stop link:www.oneis.co.uk returning all the copyright pages.
+  %>
+  <p><small>The <a href="http://haplo.org" rel="nofollow">Haplo Software</a> is provided by <a href="http://www.haplo-services.com" rel="nofollow">ONEIS Ltd</a>, and is copyright &copy; ONEIS Ltd 2006 &mdash; <%= Time.new.year.to_s %>. All rights in the Haplo Software are expressly reserved. The Haplo Software, including graphics and code, may not be sold, licensed, transferred, copied, modified or reproduced in whole or in part without the prior written consent of ONEIS Ltd. ONEIS Ltd asserts its ownership of the design of Haplo.</small></p>
+</div>

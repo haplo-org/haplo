@@ -2,7 +2,7 @@ title: Preparation
 --
 
 
-ONEIS represents all of the elements in your organisation by creating a record for each one. You can then store and share details of things in your organisation, search and find them, and see how different things link together to understand how things interconnect within your organisation. To do this, you first need to create a map of your organisation, which will be used to form the schema for your system.
+Haplo represents all of the elements in your organisation by creating a record for each one. You can then store and share details of things in your organisation, search and find them, and see how different things link together to understand how things interconnect within your organisation. To do this, you first need to create a map of your organisation, which will be used to form the schema for your system.
 
 Begin by identifying the different elements, or Types, in your organisation. These could be files, people, organisations, events, news, projects, or whatever you need to represent in the system. 
 
@@ -12,7 +12,7 @@ Each Type of item, will be described using attributes to make it easier to find.
 
 Consider if any of these Attributes require qualifiers to enable their description to be more specific. For instance the attribute Telephone number, might have qualifiers for mobile, home, office.
 
-The rest of the setup manual will describe how to represent the elements of your organisation in ONEIS.
+The rest of the setup manual will describe how to represent the elements of your organisation in Haplo.
 
 h2. When to create a type
 
@@ -25,7 +25,7 @@ Sometimes it may not be straightforward to decide when something should be a Typ
 
 h2. Objects
 
-ONEIS' default attributes are based on "Dublin Core":http://dublincore.org/ with qualifiers. You can use a different schema by defining your own attributes. The only special attributes are Type and Title.
+Haplo's default attributes are based on "Dublin Core":http://dublincore.org/ with qualifiers. You can use a different schema by defining your own attributes. The only special attributes are Type and Title.
 
 An object must have at least one Type defined. This may or may not be exposed in the user interface.
 

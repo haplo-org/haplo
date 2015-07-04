@@ -189,7 +189,7 @@ system "rm #{css_process_order_filename}"
 # Find all other files which might have IDs in them
 puts "Searching other files for css ids and classes..."
 examine_for_ids = []
-['erb', 'js', 'rb', 'css', 'html', 'haml'].each do |ext|
+['erb', 'js', 'rb', 'css', 'html'].each do |ext|
   examine_for_ids.concat(`find #{export_dir} -name *.#{ext}`.split(/[\r\n]+/))
 end
 examine_for_ids.sort.reverse.each do |filename|
@@ -405,16 +405,6 @@ end
 # Rewrite the 404app file
 rewrite_file("#{export_dir}/static/special/404app.html") do |contents|
   change_static_image_names(contents)
-end
-
-puts "Process Haml templates..."
-haml_templates = Dir.glob("#{export_dir}/app/**/*.html.haml")
-puts " (#{haml_templates.length} files)"
-haml_templates.each do |haml_template|
-  # Rewrite CSS id and classes
-  rewrite_file(haml_template) do |contents|
-    change_css_ids_and_classes(contents, haml_template)
-  end
 end
 
 # -----------------------------------------------------------------------------------------------
@@ -773,7 +763,7 @@ puts "Renaming controller specific JavaScript files..."
 
 # Scan the templates for the directive, using it to move the files into place
 client_side_controller_js_done = {}
-client_side_controller_js_scan = Dir.glob("#{export_dir}/app/views/**/*.{erb,haml}")
+client_side_controller_js_scan = Dir.glob("#{export_dir}/app/views/**/*.erb")
 client_side_controller_js_scan += Dir.glob("#{export_dir}/app/helpers/**/*.rb")
 client_side_controller_js_scan.each do |filename|
   rewrite_file(filename) do |contents|
@@ -806,14 +796,6 @@ remove_marked_content_from("#{export_dir}/config/namespace.rb")
 
 # -----------------------------------------------------------------------------------------------
 puts "Pre-compile templates..."
-# Load the right version of Haml
-File.open("#{export_dir}/framework/boot.rb") do |boot|
-  raise "Can't find Haml version in boot.rb" unless boot.read =~ /gem 'haml', '= ([0-9\.]+)'/
-  haml_version = $1
-  puts "  Haml version: #{haml_version}"
-  gem 'haml', "= #{haml_version}"
-  require 'haml'
-end
 # Set up the environment
 KFRAMEWORK_ROOT = "#{export_dir}"
 module KConstants; end
@@ -830,7 +812,7 @@ Ingredient::Templates.write_compiled_templates(compiled_templates_dir)
 Ingredient::Templates.get_template_root_paths.each do |root_path|
   if root_path =~ /\/plugins\z/
     puts "Remove templates from #{root_path}..."
-    Dir.glob("#{root_path}/**/*.{erb,haml}").each { |f| File.unlink f }
+    Dir.glob("#{root_path}/**/*.erb").each { |f| File.unlink f }
   else
     puts "Delete #{root_path}..."
     FileUtils.rm_r(root_path)

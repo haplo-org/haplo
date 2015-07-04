@@ -23,8 +23,8 @@ puts "Docs revision: #{SOURCE_CONTROL_REVISION} on #{SOURCE_CONTROL_DATE}"
 
 
 DOCS_ROOT = 'doc/root'
-PUBLISH_DIR = 'docs.oneis.co.uk'
-SITE_URL_BASE = 'http://docs.oneis.co.uk'
+PUBLISH_DIR = 'docs.haplo.org'
+SITE_URL_BASE = 'http://docs.haplo.org'
 
 # Load all the documentation
 puts "Loading all files..."
@@ -80,25 +80,29 @@ when 'publish'
       end
     end
   end
+  FileUtils.mkdir(PUBLISH_DIR+'/presentation/font')
+  Dir.glob("static/images/ubuntu-{r,b}-small-webfont.*").each do |filename|
+    FileUtils.cp(filename, "#{PUBLISH_DIR}/presentation/font/#{filename.sub('static/images/','')}")
+  end
   puts "Writing files..."
   Documentation.publish_to(PUBLISH_DIR)
   puts "Compress files..."
   counter = 0
-  Dir.glob("#{PUBLISH_DIR}/**/*.{html,css,js,txt,xml,atom,rss}").each do |filename|
+  Dir.glob("#{PUBLISH_DIR}/**/*.{html,css,js,txt,xml,atom,rss,ttf,woff,eot}").each do |filename|
     system "cd #{File.dirname(filename)} ; cat #{File.basename(filename)} | gzip -9 > #{File.basename(filename)}.gz"
     counter += 1
     STDOUT.write('.'); STDOUT.flush
   end
   puts; puts "#{counter} files compressed"
   puts "Queue archive..."
-  queued_result = `onedeploy --archive-root=#{PUBLISH_DIR} --archive-name=webroot-docs --archive-comment="docs.oneis.co.uk #{PACKAGING_VERSION}" queue-archive .`
+  queued_result = `onedeploy --archive-root=#{PUBLISH_DIR} --archive-name=webroot-docs --archive-comment="docs.haplo.org #{PACKAGING_VERSION}" queue-archive .`
   queued_archive = JSON.parse(queued_result)
   puts "Queue manifest..."
   manifest = {
     "name" => "website-docs",
     "version" => PACKAGING_VERSION,
     "description" => "Developer documentation web site",
-    "install_path" => "/www/sites/docs.oneis.co.uk",
+    "install_path" => "/www/sites/docs.haplo.org",
     "archives" => [queued_archive["archive"]],
   }
   File.open("#{PUBLISH_DIR}/manifest.json", "w") { |f| f.write JSON.pretty_generate(manifest) }

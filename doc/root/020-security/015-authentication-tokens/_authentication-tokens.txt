@@ -3,7 +3,7 @@ title: Authentication tokens
 
 Authentication tokens are small devices which you can attach to your keyring.
 
-After you've entered your password into ONEIS, you press a button on the token to generate a short numeric code. This code changes every minute. By typing in this code into ONEIS, you show that you have possession of the token.
+After you've entered your password into Haplo, you press a button on the token to generate a short numeric code. This code changes every minute. By typing in this code into Haplo, you show that you have possession of the token.
 
 
 h2. Two-factor authentication
@@ -15,7 +15,7 @@ Even if someone manages to obtain your password though guesswork or malicious so
 
 h2. Physical security
 
-You should never write anything on your token, or modify in it any way. In particular, you should never write anything on it which might give clues to your name, your password, or the address of your ONEIS.
+You should never write anything on your token, or modify in it any way. In particular, you should never write anything on it which might give clues to your name, your password, or the address of your Haplo.
 
 This ensures that anyone who finds it cannot determine where it's used for authentication, and especially not the password to your account.
 

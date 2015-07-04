@@ -115,7 +115,7 @@ Returns the first value in the object described by @desc@ and @qual@. Use the sc
 
 @qual@ may be omitted. Use the schema [node:dev/plugin/schema/schema-global/qual] constants.
 
-Remember that a core strength of the ONEIS data model is its universal support for multi-values. While it may be appropriate to use the @first()@ function (and schema specific @firstX()@ functions), you should really be using the @every()@ function and using all values. If you find yourself using @first()@, make sure you shouldn't really be using @every()@.
+Remember that a core strength of the Haplo data model is its universal support for multi-values. While it may be appropriate to use the @first()@ function (and schema specific @firstX()@ functions), you should really be using the @every()@ function and using all values. If you find yourself using @first()@, make sure you shouldn't really be using @every()@.
 
 
 h3(function). firstType(qual)

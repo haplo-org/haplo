@@ -116,7 +116,7 @@ class JavaScriptControllerTest < IntegrationTest
 
     # Test invalid response
     get '/do/plugin_test/invalid_response', nil, {:expected_response_codes => [500]}
-    assert_select('h2', "The response body (usually E.response.body) set by test_response_plugin is not valid, must be a String or generator (O.generate) object. JSON responses should be encoded using JSON.stringify by the request handler.")
+    assert_select('h2', "The response body (usually E.response.body) set by test_response_plugin is not valid, must be a String, StoredFile, or a generator (O.generate) object. JSON responses should be encoded using JSON.stringify by the request handler.")
     # ... but make sure it's happy with nothing being returned.
     get '/do/plugin_test/no_response_at_all_was_called'
     assert_equal 'no', response.body
@@ -458,6 +458,11 @@ __E
     assert_equal 'application/x-iwork-pages-sffpages', fileinfo["mimeType"]
     assert_equal '2d7e68dc7ace5b2085e765a1e53d9438828767c19479b4458fbb81bd5ce1e1eb', fileinfo["digest"]
     assert_equal 106106, fileinfo["fileSize"]
+    # Stored file can be set as a response by a plugin
+    get "/do/plugin_test/get_stored_file_by_digest", {:digest => '2d7e68dc7ace5b2085e765a1e53d9438828767c19479b4458fbb81bd5ce1e1eb'}
+    assert_equal File.open("test/fixtures/files/example.pages", "rb") { |f| f.read }, response.body
+    assert_equal 'application/x-iwork-pages-sffpages', response['Content-Type']
+    assert_equal 'attachment; filename="example.pages"', response['Content-Disposition']
     # Load object
     fileupload_obj = KObjectStore.read(KObjRef.from_presentation(fileinfo["ref"])).dup
     assert_equal 'Test file', fileupload_obj.first_attr(KConstants::A_TITLE).to_s
