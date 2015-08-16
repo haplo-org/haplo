@@ -11,8 +11,9 @@ DEV_ENV_TEST_DATA = "#{ENV['HOME']}/haplo-dev-support/khq-dev"
 # Log file
 KFRAMEWORK_LOG_FILE = 'log/development.app.log'
 
-# Where to save files while they're being uploaded
+# Temporary directories which must share same FS as file store
 FILE_UPLOADS_TEMPORARY_DIR = DEV_ENV_TEST_DATA+'/tmp'
+GENERATED_FILE_DOWNLOADS_TEMPORARY_DIR = DEV_ENV_TEST_DATA+'/generated-downloads'
 
 # Object store
 KOBJECTSTORE_TEXTIDX_BASE = DEV_ENV_TEST_DATA+'/textidx'

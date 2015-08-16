@@ -41,6 +41,7 @@ module JSRubyTemplates
           [1, :string, false, true, nil], # options
           [2, :kobject, false, true, nil] # object
         ]],
+    "wait_for_download" => [:partial, "shared/wait_for_download", [[:identifier, :string, true], [:filename, :string, true]]],
     "document_text_control" => [:method, :control_document_text_edit, [[0, :string, true], [1, :string, true, true, '<doc></doc>']]],
     "document_text" => [:method, :stdtmpl_document_text_display, [[0, :string, true]]],
     "icon_type" =>        [:method, :stdtmpl_icon_type,         [[0, :kobjref, true], [1, :string, false, true, 'medium']]],
@@ -128,7 +129,7 @@ module JSRubyTemplateControllerSupport
   # ------------------------------------------------------------------------------------------
 
   def stdtmpl_document_text_display(document)
-    render_doc_as_html(document, KObjectStore.store)
+    render_doc_as_html(KTextDocument.new(document.to_s), KObjectStore.store)
   end
 
   # ------------------------------------------------------------------------------------------

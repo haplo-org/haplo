@@ -54,6 +54,11 @@ class KObjRefTest < Test::Unit::TestCase
     assert_equal nil, KObjRef.from_presentation('f1') # check that must be valid from beginning
     assert_equal nil, KObjRef.from_presentation('4f') # check that must be valid to end
 
+    # KObjRef shouldn't be equal to non-KObjRef things which have same integer value
+    assert !(KObjRef.new(1234) == 1234)
+    # And it should be OK to compare it against something which doesn't implement to_i
+    assert !(KObjRef.new(5678) == KText.new("5678"))
+
     # Test sorting and <=> operator
     assert_equal [KObjRef.new(2),KObjRef.new(8),KObjRef.new(22),KObjRef.new(27)],
       [KObjRef.new(27),KObjRef.new(2),KObjRef.new(22),KObjRef.new(8)].sort

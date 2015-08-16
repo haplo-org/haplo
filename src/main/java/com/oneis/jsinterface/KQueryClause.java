@@ -77,11 +77,11 @@ public class KQueryClause extends KScriptable {
         return KQueryClause.fromAppQueryClause(rubyInterface.queryFromQueryString(query), true /* root clause, can be executed */);
     }
 
-    public Scriptable jsFunction_executeQuery(boolean sparseResults, String sort, boolean deletedOnly) {
+    public Scriptable jsFunction_executeQuery(boolean sparseResults, String sort, boolean deletedOnly, boolean includeArchived) {
         if(!this.getCanExecuteClause()) {
             throw new OAPIException("Can only execute root object store queries");
         }
-        return KQueryResults.fromAppQueryResults(rubyInterface.executeQuery(this.toRubyObject(), sparseResults, sort, deletedOnly));
+        return KQueryResults.fromAppQueryResults(rubyInterface.executeQuery(this.toRubyObject(), sparseResults, sort, deletedOnly, includeArchived));
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -171,7 +171,7 @@ public class KQueryClause extends KScriptable {
 
         public AppQueryClause queryFromQueryString(String query);
 
-        public AppQueryResults executeQuery(AppQueryClause clause, boolean sparseResults, String sort, boolean deletedOnly);
+        public AppQueryResults executeQuery(AppQueryClause clause, boolean sparseResults, String sort, boolean deletedOnly, boolean includeArchived);
     }
     private static Ruby rubyInterface;
 

@@ -2,12 +2,6 @@
 -- Status of the app
 INSERT INTO app_globals(key,value_int,value_string) VALUES('status',0,NULL);            -- 0 means "in process of being set up"
 
--- Limitations on the application
-INSERT INTO app_globals(key,value_int,value_string) VALUES('limit_users',0,NULL);       -- how many active users are allowed, 0 = no limit
--- INSERT INTO app_globals(key,value_int,value_string) VALUES('limit_init_objects',0,NULL); -- how many objects were created on init
-INSERT INTO app_globals(key,value_int,value_string) VALUES('limit_objects',0,NULL);     -- how many non-structure objects, 0 = no limit
-INSERT INTO app_globals(key,value_int,value_string) VALUES('limit_storage',0,NULL);     -- how much storage in MB, 0 = no limit
-
 -- Billing info - just HTML which is output with a few values interpolated.
 INSERT INTO app_globals(key,value_int,value_string) VALUES('billing_page_html',NULL,'');
 

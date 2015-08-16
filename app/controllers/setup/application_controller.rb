@@ -381,6 +381,12 @@ class Setup_ApplicationController < ApplicationController
     end
   end
 
+  def handle_usage
+    @num_users = KProduct.count_users
+    @num_objects = KAccounting.get(:objects)
+    @used_storage = KAccounting.get(:storage)
+  end
+
 private
   def update_appglobal_strings(*syms)
     syms.each do |sym|

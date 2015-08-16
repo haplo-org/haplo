@@ -1,0 +1,99 @@
+title: Generation and transforms
+long_title: File generation, transforms and processing
+class: DocNodeTextileWithTOC
+--
+
+Files are generated, transformed and otherwise processed using [node:dev/plugin/interface/file-transform-pipeline:file transform pipelines]. These pipelines are formed of one or more transform steps which accept zero or more files as input, and output one or more files.
+
+A pipeline maintains a list of zero or more named files, for example, @"input"@ or @"output"@. Files may be a file in the file store, or the output from a previous transform step.
+
+Each transform step in the pipeline changes the list of named files. For example, a step might convert the @"input"@ file into a PDF, and store the result as the @"output"@ file.
+
+Each step is configured using JSON compatible data structures. The names of input and output files are always configurable, with sensible defaults to minimise the amount of code you need to write.
+
+After your plugin has set up the pipeline, it's executed in the background.
+
+If you want to keep the files by storing them in the file store, you use the [node:dev/plugin/interface/plugin/file-store:callback mechanism] to obtain a [node:dev/plugin/interface/file-transform-result], then copy the results to the file store as a [node:dev/plugin/interface/file].
+
+If you just want the user to download the file, but don't need to keep it, you can generate URLs and views before you execute the transforms. When fetched by the user, they will wait until the pipeline is complete, then download the file.
+
+Any files not downloaded or copied to the file store are automatically deleted.
+
+Since transforms can be resource intensive, you should be careful about allowing users to generate files without first checking that they're allowed to do so, and that the generation is actually necessary.
+
+Your plugin must have the @pFileTransformPipeline@ privilege to use file transforms pipelines.
+
+
+h2. Example file transform pipelines
+
+To convert a word file to a PDF, then render the first page as a 100 by 200 PNG file, you would configure a pipeline like this:
+
+<pre>language=javascript
+var wordFile = O.file(/* ... */); // obtain File object
+var pipeline = O.fileTransformPipeline(
+    "example_plugin:example",
+    {value:42});
+pipeline.file("input", wordFile);
+pipeline.transform("std:convert", {mimeType:"application/pdf"});
+pipeline.transformPreviousOutput("std:convert", {
+    mimeType: "image/png",
+    options: {width: 100, height: 200}
+});
+pipeline.execute();
+</pre>
+
+This would then generate the PNG in the background. To save this PNG file in the file store, you'd set a callback for your plugin.
+
+It would be nice to use per-pipeline anonymous functions for the callbacks. However, before the pipeline has executed, a new JavaScript runtime might have been created or the server restarted. Instead, the pipeline @name@ and @data@ is used to identify the pipeline.
+
+<pre>language=javascript
+P.fileTransformPipelineCallback("example_plugin:example", {
+    success: function(result) {
+        // Check this is the transform expected
+        if(result.data.value === 42) {
+            var png = result.file("output", "thumbnail.png");
+            // Do something with the png File object.
+        }
+    },
+    error: function(result) {
+        // Do something to recover from the error.
+    }
+});
+</pre>
+
+If you just want to let the user download the generated file, you don't need a callback.
+
+Here's how to generate a PDF file with some formatted text, and let the user download it.
+
+<pre>language=javascript
+P.respond("GET,POST", "/do/example-plugin/letter", [
+], function(E) {
+    if(E.request.method === "POST") {
+        var view = { /* ... */ };
+        var pipeline = O.fileTransformPipeline();
+        pipeline.transform("std:generate:formatted_text", {
+            html: P.template("letter").render(view)
+        });
+        var redirectURL =
+            pipeline.urlForOuputWaitThenDownload("output", "special-letter.pdf");
+        pipeline.execute();
+        E.response.redirect(redirectURL);
+    } else {
+        // Display form
+    }
+});
+</pre>
+
+After the form will be submitted, the user will be redirected to UI implemented by the platform which asks them to wait as the letter is being generated, shows a progress bar, then when it's ready, downloads the file.
+
+This implements the recommended "redirect after POST" pattern, which is especially important when triggering expensive file transform operations. Even if the user refreshes the page, it won't trigger a new pipeline operation, just wait for the existing pipeline to complete.
+
+
+h2. Reference
+
+To set up a pipeline and generate download URLs, see the [node:dev/plugin/interface/file-transform-pipeline] interface.
+
+To use the callback mechanism to use the files for other purposes, see the plugin [node:dev/plugin/interface/plugin/file-store:file store integration] and the [node:dev/plugin/interface/file-transform-result] interface.
+
+
+h2. Supported transform steps

@@ -1866,8 +1866,7 @@ span.z__plugin_ui_nav_arrow {
 /* ---------------------------------------------------------------------------- */
 /* File uploads UI */
 
-.z__file_target,
-.z__file_target_unsupported {
+.z__file_target {
     /* NOTE: If height of this element changes, .oforms-repeat-file-ui will need to be updated too. */
     position: relative;
     background: #eee;
@@ -1879,15 +1878,8 @@ span.z__plugin_ui_nav_arrow {
     line-height: 28px;
     color: #666;
 }
-.z__webfonts_enabled .z__file_target,
-.z__webfonts_enabled .z__file_target_unsupported {
+.z__webfonts_enabled .z__file_target {
     font-family: $SPECIAL_FONT_FAMILY;
-}
-.z__file_target_unsupported {
-    padding-left: 8px;
-    text-align: center;
-    font-size: 14px;
-    border-color: #e00;
 }
 .z__file_target {
     font-size: 16px;

@@ -291,6 +291,9 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     # Deleted objects
     tqg_query(queries, KObjectStore.query_and.free_text("a").include_deleted_objects(:deleted_only))
 
+    # Archived objects
+    tqg_query(queries, KObjectStore.query_and.free_text("b").include_archived_objects(:include_archived))
+
     # Make sure all the queries from the JavaScript have been used
     assert queries.isEmpty()
   end

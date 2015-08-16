@@ -1,0 +1,17 @@
+<%
+  unless @info
+    @page_title = 'File not available'
+    %><div class="z__general_alert">This file is no longer available.</div><%
+  else
+    view = @info['view'] || {} # untrusted
+    @page_title = h(view['pageTitle'] || 'Download file...')
+    back_link = view['backLink']
+    if back_link
+      @breadcrumbs = [[h(back_link), (view['backLinkText'] || 'Cancel')]]
+    end
+    %><%= render :partial => 'shared/wait_for_download', :data_for_template => {
+      :identifier => @info['identifier'],
+      :filename => @info['filename']
+    } %><%
+  end
+%>

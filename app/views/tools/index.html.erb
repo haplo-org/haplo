@@ -78,9 +78,6 @@
   if session[:impersonate_uid]
     section.push(['/do/authentication/end_impersonation', 'Finish impersonation'])
   end
-  if @request_user.policy.can_setup_system?
-    section.push(['/do/admin/billing', 'Billing and usage'])
-  end
   if @request_user.policy.can_manage_users? || @request_user.policy.can_view_audit? || @request_user.policy.can_setup_system?
     section.push(['/do/system/management', 'System management'])
   end

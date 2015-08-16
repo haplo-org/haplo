@@ -9,7 +9,7 @@ module KAppInit
 
   include KConstants
 
-  def self.create(product_name_or_limits, hostnames_all, app_title, template_name, app_id, additional_info = nil)
+  def self.create(product_name, hostnames_all, app_title, template_name, app_id, additional_info = nil)
     app_id = app_id.to_i
     raise "Bad app id" if app_id == 0
     hostnames = hostnames_all.downcase.split(',')
@@ -19,12 +19,10 @@ module KAppInit
     application_template = ApplicationTemplates.make(template_name)
     raise "Bad template name given to app init" unless application_template
     # Check product name or limits
-    if product_name_or_limits.class == String
-      raise "Bad product name given to app init" unless KProduct.product_exists?(product_name_or_limits)
-    elsif product_name_or_limits.class == Hash
-      raise "Bad product limits given to app init" unless nil != KProduct.check_and_symbolize_limits(product_name_or_limits)
+    if product_name.class == String
+      raise "Bad product name given to app init" unless KProduct.product_exists?(product_name)
     else
-      raise "Must give a name or limits hash"
+      raise "Must give a product name"
     end
     additional_info ||= Hash.new
 
@@ -188,13 +186,6 @@ module KAppInit
 
       # Set the number of objects created in app initialisation so they're not counted against the user
       KApp.set_global(:limit_init_objects, KObjectStore.count_objects_stored([KConstants::O_LABEL_STRUCTURE]))
-
-      # Set the limits for the desired product
-      if product_name_or_limits.class == String
-        KProduct.set_to_product(product_name_or_limits, false)
-      elsif product_name_or_limits.class == Hash
-        KProduct.set_limits(product_name_or_limits, false)
-      end
 
       StoredFile.init_store_on_disc_for_app(app_id)
 

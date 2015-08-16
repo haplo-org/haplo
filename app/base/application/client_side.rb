@@ -163,6 +163,7 @@ JAVASCRIPTS_IN_ORDER = [
     # Components
     :file_upload, :ktray, :ksearch,
     :audio_player, :latest_settings_form, :export_objects,
+    :wait_for_download,
     # Object editor
     :keditor,
     # Controller specific scripts
@@ -231,6 +232,10 @@ CLIENT_SIDE_RESOURCES = {
   :ctrl_obj_insert_menu => {
     :resource => [:controls, :tray],
     :send_tray => true
+  },
+  :wait_for_download => {
+    :javascript => [:wait_for_download],
+    :stylesheet => [:wait_for_download]
   },
 
   # Editor

@@ -25,11 +25,13 @@ module JSKQueryClauseSupport
     "date" => :date, "date_asc" => :date_asc, "relevance" => :relevance,
     "any" => :any, "title" => :title, "title_desc" => :title_desc
   }
-  def self.executeQuery(query, sparseResults, sort, deletedOnly)
+  def self.executeQuery(query, sparseResults, sort, deletedOnly, includeArchived)
     # Only allow access to things in the store
     query.add_exclude_labels([KConstants::O_LABEL_STRUCTURE])
     # Set inclusion of deleted objects
     query.include_deleted_objects(deletedOnly ? :deleted_only : :exclude_deleted)
+    # Set inclusion of archived objects
+    query.include_archived_objects(includeArchived ? :include_archived : :exclude_archived)
     # Check sort option is valid
     sort_symbol = ALLOWED_EXECUTE_QUERY_SORT_BY[sort]
     raise JavaScriptAPIError, "Bad sort option for JSSupportRoot#executeQuery" if sort_symbol == nil

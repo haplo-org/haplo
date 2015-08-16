@@ -31,9 +31,9 @@ class ApplicationNamespace
         "file-version"   => [:controller, {}, FileVersionController],
         "system"         => [:controller, {}, SystemController],
         "c"              => [:controller, {}, CopyrightController],
+        "generated"      => [:controller, {}, GeneratedFileController],
         "admin"          => [:sub, {}, {
           "audit"          => [:controller, {}, Admin_AuditController],
-          "billing"        => [:controller, {}, Admin_BillingController],
           "latest"         => [:controller, {}, Admin_LatestController],
           "otp"            => [:controller, {}, Admin_OtpController],
           "user"           => [:controller, {}, Admin_UserController]
@@ -69,6 +69,7 @@ class ApplicationNamespace
         "tray"           => [:controller, {}, TrayController],
         "recent"         => [:controller, {}, RecentController],
         "oforms"         => [:controller, {}, OFormsController],
+        "generated"      => [:controller, {}, GeneratedFileController],
         "test"           => [:controller, {}, TestController],
         "admin"          => [:sub, {}, {
           "user"           => [:controller, {}, Admin_UserController]

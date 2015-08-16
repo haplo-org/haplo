@@ -186,6 +186,14 @@ class ApplicationController
     # Clear any response generated
     render_clear_response
 
+    # JavaScript & Ruby interpreters may have wrapped the underlying exception
+    if exception.kind_of?(org.mozilla.javascript.WrappedException)
+      exception = exception.getWrappedException()
+    end
+    if exception.kind_of?(org.jruby.exceptions.RaiseException)
+      exception = exception.getException()
+    end
+
     case exception
     when KNoPermissionException, KObjectStore::PermissionDenied
       respond_to_unauthorised_request()

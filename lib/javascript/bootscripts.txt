@@ -29,6 +29,7 @@ lib/javascript/lib/plugin_workunit.js
 lib/javascript/lib/plugin_element.js
 lib/javascript/lib/plugin_job.js
 lib/javascript/lib/plugin_search_result_render.js
+lib/javascript/lib/file_transform_pipeline.js
 lib/javascript/lib/setup_system.js
 lib/javascript/lib/client_side_support.js
 lib/javascript/lib/plugin_forms.js

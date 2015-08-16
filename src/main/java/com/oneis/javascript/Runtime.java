@@ -401,6 +401,7 @@ public class Runtime {
             defineSealedHostClass(scope, KUploadedFile.class);
             defineSealedHostClass(scope, KStoredFile.class);
             defineSealedHostClass(scope, KJob.class);
+            defineSealedHostClass(scope, KFilePipelineResult.class);
             defineSealedHostClass(scope, KSessionStore.class);
 
             defineSealedHostClass(scope, KSecurityRandom.class);

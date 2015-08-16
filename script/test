@@ -40,6 +40,7 @@ else
     # Clean up old files and make new directory structure
     rm -rf $HOME/haplo-dev-support/khq-test
     mkdir -p $HOME/haplo-dev-support/khq-test/tmp
+    mkdir -p $HOME/haplo-dev-support/khq-test/generated-downloads
     mkdir -p $HOME/haplo-dev-support/khq-test/files
     mkdir -p $HOME/haplo-dev-support/khq-test/textidx
     mkdir -p $HOME/haplo-dev-support/khq-test/textweighting

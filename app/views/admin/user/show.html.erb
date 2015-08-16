@@ -65,7 +65,7 @@
   <%
     change_state_buttons.each do |state,label|
       if @user.kind != state
-        %><form method="post" action="/do/admin/user/change_state/<%= @user.id %>?state=<%= state %>"<% unless state == User::KIND_USER && KProduct::limit_users_exceeded? %> target="submenu"<% end %>><%= form_csrf_token %>
+        %><form method="post" action="/do/admin/user/change_state/<%= @user.id %>?state=<%= state %>" target="submenu"><%= form_csrf_token %>
           <input type="submit" value="<%= label %>">
         </form><%
       end

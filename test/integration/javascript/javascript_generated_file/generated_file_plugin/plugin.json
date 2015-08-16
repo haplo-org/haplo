@@ -1,0 +1,12 @@
+{
+  "pluginName": "generated_file_plugin",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test Generated Files",
+  "displayDescription": "For testing generated file handling",
+  "apiVersion": 4,
+  "privilegesRequired": ["pFileTransformPipeline"],
+  "load": ["js/generated_file_plugin.js"],
+  "respond": ["/do/test-generated-file"],
+  "allowAnonymousRequests": true
+}

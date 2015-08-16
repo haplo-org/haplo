@@ -271,10 +271,15 @@ module KEditor
       a.keditor_values
     end,
     T_OBJREF => proc do |a|
-      obj = KObjectStore.read(a)
-      title = (obj == nil) ? nil : obj.first_attr(KConstants::A_TITLE)
-      if title != nil
-        title = (title.kind_of? KText) ? title.text : title.to_s
+      title = nil
+      begin
+        obj = KObjectStore.read(a)
+        title = (obj == nil) ? nil : obj.first_attr(KConstants::A_TITLE)
+        if title != nil
+          title = (title.kind_of? KText) ? title.text : title.to_s
+        end
+      rescue KObjectStore::PermissionDenied => e
+        title = '[ACCESS DENIED]'
       end
       title ||= '????'
       [a.to_presentation, title.to_s]
@@ -303,6 +308,8 @@ module KEditor
   #   :attrs_present -> Array to fill with descs used
   #
   def self.apply_tokenised_to_obj(tokenised, obj, opts = nil)
+    unedited_object = obj.dup
+
     # Need schema for aliased attributes
     schema = obj.store.schema
 
@@ -361,7 +368,7 @@ module KEditor
         reader = TEXT_READER if reader == nil && type >= T_TEXT__MIN
         ok = false
         if reader != nil
-          inc, val = reader.call(tokens, i+KE_V__DATA)
+          inc, val = reader.call(tokens, i+KE_V__DATA, unedited_object)
           if inc != nil
             i += inc + KE_V__DATA
             # Add the attribute
@@ -455,28 +462,41 @@ module KEditor
   #  Decode tokens for types
   # ------------------------------------------------------------------------------
   # Read data sent back by the javascript
-  TEXT_READER = proc do |tokens, i|
+  TEXT_READER = proc do |tokens, i, unedited_object|
     [1, KText.new_by_typecode(tokens[i-KE_V__DATA+KE_V_TYPE], tokens[i])]
   end
   ReadValue = {
-    T_INTEGER => proc do |tokens, i|
+    T_INTEGER => proc do |tokens, i, unedited_object|
       return nil unless /\A-?\d+/.match(tokens[i])
       [1, tokens[i].to_i]
     end,
-    T_DATETIME => proc do |tokens, i|
+    T_DATETIME => proc do |tokens, i, unedited_object|
       return nil unless tokens[i] =~ /\A([\d ]+)\~([\d ]*)\~(\w)\~([A-Za-z0-9_\/\+-]*)\z/
       startDateTime = $1; endDateTime = $2; precision = $3; timeZone = $4
       endDateTime = nil if endDateTime.length == 0
       timeZone = nil if timeZone.length == 0
       [1, KDateTime.new(startDateTime, endDateTime, precision, timeZone)]
     end,
-    T_OBJREF => proc do |tokens, i|
-      [1, KObjRef.from_presentation(tokens[i])]
+    T_OBJREF => proc do |tokens, i, unedited_object|
+      objref = KObjRef.from_presentation(tokens[i])
+      # Check user has permission to read this value by reading it
+      begin
+        KObjectStore.read(objref)
+      rescue KObjectStore::PermissionDenied => e
+        if unedited_object.has_attr?(objref)
+          # OK to put the objref in the object, as it was in the original
+          KApp.logger.info("When saving new object, allowed use of ref even though user has no permission to read object because it was in the original object: #{objref.to_presentation}")
+        else
+          # Can't use this to *add* an object to an object you can't read
+          raise
+        end
+      end
+      [1, objref]
     end,
-    T_IDENTIFIER_FILE => proc do |tokens, i|
+    T_IDENTIFIER_FILE => proc do |tokens, i, unedited_object|
       [1, KIdentifierFile.from_json(tokens[i])]
     end,
-    T_TEXT_PLUGIN_DEFINED => proc do |tokens, i|
+    T_TEXT_PLUGIN_DEFINED => proc do |tokens, i, unedited_object|
       type, value = tokens[i].split("\x1f",2)
       [1, KTextPluginDefined.new({:type => type, :value => value})]
     end

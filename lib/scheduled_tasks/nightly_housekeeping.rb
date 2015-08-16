@@ -38,7 +38,7 @@ module KScheduledTasks
 
         # Get counters of usage
         counters = KAccounting::COUNTER_NAMES.map { |e| KAccounting.get(e) }
-        counters[objects_counter_index] -= KApp.global(:limit_init_objects)   # Don't include the free objects
+        counters[objects_counter_index] -= KApp.global(:limit_init_objects)   # Don't include the objects created during app init
         counters[storage_counter_index] /= (1024*1024)                        # Convert to MB, rounding down
         # prepend the user count and current time
         counters.unshift KProduct.count_users()

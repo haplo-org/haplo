@@ -1,0 +1,15 @@
+title: O.fileTransformPipeline()
+link_as: keyword
+--
+
+Constructs a object implementing the [node:dev/plugin/interface/file-transform-pipeline] interface, used to set up a [node:dev/plugin/files/transform:file transform pipeline].
+
+
+h3(function). O.fileTransformPipeline(name, data)
+
+Both arguments are optional.
+
+Pass in a @name@, prefixed with the name of your plugin, if you need to receive a completion callback.
+
+Pass in JSON compatible @data@ to pass additional information to your completion callback in the @data@ property of the [node:dev/plugin/interface/file-transform-result:result] object.
+

@@ -1,3 +1,5 @@
+/*global KApp */
+
 /* Haplo Platform                                     http://haplo.org
  * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -6,10 +8,11 @@
 
 
 // This code is written in a way which can be used with a plugin which just includes jQuery.
+// The fallback code uses the KApp object to provide the iframe container for the fallback upload UI.
 
 var KFileUpload = (function($) {
 
-    var TEXT_UPGRADE_MESSAGE = 'Your browser is too old to support file uploads. Please upgrade.';
+    var TEXT_UPGRADE_MESSAGE = 'Your browser is too old to support to support all features. Please upgrade.';
 
     // Requires: File and JSON objects, and drag and drop events.
     var browserSupportsFileUpload = (function() {
@@ -194,8 +197,7 @@ var KFileUpload = (function($) {
         }
         var target, scan = element;
         while(scan) {
-            // Native indexOf() only supported in IE9 and above, but IE8 doesn't support the file uploads and this won't be called.
-            if(scan.className && (-1 !== scan.className.split(/\s+/g).indexOf('z__file_target'))) {
+            if(scan.className && (-1 !== _.indexOf(scan.className.split(/\s+/g), 'z__file_target'))) {
                 target = scan;
                 break;
             }
@@ -287,14 +289,29 @@ var KFileUpload = (function($) {
             // Unhighlight any file target
             updateFileTargetHover(undefined, false);
         });
+    } else {
+        // Fallback implementation
+        $(document).on('click', '.z__file_target a', function(evt) {
+            evt.preventDefault();
+            var target = targets[getTargetIndex(targetForElement(this))];
+            window.k__fileUploadFallbackFile = function(json, icon) {
+                var uploadId = nextUploadId++;
+                KApp.j__closeCovering();
+                var infoParsed = $.parseJSON(json); // may not have JSON interface on legacy browsers
+                var fakeFile = {name:infoParsed.filename};
+                target.q__delegate.j__onStart(uploadId, fakeFile, icon, undefined);
+                target.q__delegate.j__onFinish(uploadId, fakeFile, json, undefined);
+            };
+            KApp.j__openCovering('/do/edit/fallback_file_upload', 'Cancel', 400, 700);
+        });
     }
 
     // ------------------------------------------------------------------------------------------------------------------------
 
     // Main API object
     var FileUploadAPI = {
-        p__haveBrowserSupport: browserSupportsFileUpload,
-        j__browserSupportCheckWithAlert: function() {
+        p__haveFullBrowserSupport: browserSupportsFileUpload,
+        j__browserFullSupportCheckWithAlert: function() {
             if(!browserSupportsFileUpload) { window.alert(TEXT_UPGRADE_MESSAGE); }
             return browserSupportsFileUpload;
         },
@@ -304,10 +321,10 @@ var KFileUpload = (function($) {
                 q__uploadCount: 0,
                 q__delegate: delegate,
                 j__generateHTML: function() {
-                    if(!browserSupportsFileUpload) {
-                        return '<div class="z__file_target_unsupported">'+TEXT_UPGRADE_MESSAGE+'</div>';
-                    }
                     var html = '<div data-target="'+this.q__index+'" class="z__file_target">';
+                    if(!browserSupportsFileUpload) {
+                        return html + '<a href="#">Upload file...</a></div>';
+                    }
                     html += this.q__delegate.p__singleFileOnly ? 'Drag a file here ' : 'Drag files here ';
                     if(delegate.p__targetTitle) {
                         html += _.escape(delegate.p__targetTitle)+' ';
@@ -343,7 +360,7 @@ var KFileUpload = (function($) {
             if(!chars) { return versionNumber+'2'; } // reasonable?
             var incs = match[2].split('');
             for(var i = incs.length - 1; i >= 0; --i) {
-                var n = chars.indexOf(incs[i]);
+                var n = _.indexOf(chars, incs[i]);
                 if(n === (chars.length - 1)) {
                     // At end of the set of chars, so start at the beginning and let the previous char be incremented too
                     incs[i] = chars[0];
@@ -449,6 +466,20 @@ var KFileUpload = (function($) {
             oFormsTarget.j__uploadFiles([file], callbacks);
         }
     };
+
+    // Disable the oForms UI for uploading individual files:
+    //  * show an error when the user clicks the 'Upload file...' link.
+    //  * remove the remove file X so that the user can't delete files and then get a non-functional upload link.
+    // File targets for file repeating sections work.
+    if(!browserSupportsFileUpload) {
+        $('<style type="text/css">.oforms-file-prompt input, .oforms-file-remove { display:none !important } </style>').appendTo('head');
+        $(document).ready(function() {
+            $('.oform').on('click', '.oforms-file-prompt a', function(evt) {
+                evt.preventDefault();
+                FileUploadAPI.j__browserFullSupportCheckWithAlert();
+            });
+        });
+    }
 
     // ------------------------------------------------------------------------------------------------------------------------
 

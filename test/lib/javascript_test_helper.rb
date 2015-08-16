@@ -66,6 +66,31 @@ module JavaScriptTestHelper
     runtime
   end
 
+  def run_javascript_test_with_file_pipeline_callback(*args)
+    run_javascript_test(*args) do |runtime|
+      runtime.host.setTestCallback(proc { |string|
+        if string == "Check temp files exist"
+          assert have_file_pipeline_temp_files?
+        else
+          # Implement just enough of the job runner to run the pipeline jobs in this thread and runtime
+          pg = KApp.get_pg_database
+          jobs = pg.exec("SELECT id,object FROM jobs WHERE queue=#{KJob::QUEUE_FILE_TRANSFORM_PIPELINE} AND application_id=#{_TEST_APP_ID}").result
+          assert_equal string.to_i, jobs.length
+          jobs.each do |id,serialised|
+            job = Marshal.load(PGconn.unescape_bytea(serialised))
+            context = KJob::Context.new
+            job.run(context)
+            pg.exec("DELETE FROM jobs WHERE id=#{id}")
+          end
+        end
+      })
+    end
+  end
+
+  def have_file_pipeline_temp_files?
+    Dir.glob("#{FILE_UPLOADS_TEMPORARY_DIR}/tmp.pipeline.#{Thread.current.object_id}.*").length > 0
+  end
+
   def drop_all_javascript_db_tables
     db = KApp.get_pg_database
     sql = "SELECT table_schema,table_name FROM information_schema.tables WHERE table_schema='a#{KApp.current_application}' AND table_name LIKE 'j_%' ORDER BY table_name"

@@ -95,6 +95,14 @@ class KObjectStore
       self
     end
 
+    VALID_ARCHIVED_OBJECT_INCLUSIONS = [:exclude_archived, :include_archived]
+    def include_archived_objects(inclusion)
+      raise "include_archived_objects already set for this query" unless @archived_objects == nil
+      raise "Bad include_archived_objects() value #{inclusion}" unless VALID_ARCHIVED_OBJECT_INCLUSIONS.include?(inclusion)
+      @archived_objects = inclusion
+      self
+    end
+
     # ----------------------------------------------------------------------------------------------------
     #   QUERY EXECUTION
     # ----------------------------------------------------------------------------------------------------
@@ -112,6 +120,10 @@ class KObjectStore
         add_label_constraints([KConstants::O_LABEL_DELETED])
       else
         # Don't do anything
+      end
+      # Archived objects are excluded by default from all searches
+      if @archived_objects != :include_archived
+        add_exclude_labels([KConstants::O_LABEL_ARCHIVED])
       end
 
       # Make sure that if a type filter is specified, then type counts are requested (assumption made by rest of code)

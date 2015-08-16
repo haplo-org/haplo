@@ -1,0 +1,10 @@
+{
+  "pluginName": "permissions_test_plugin",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Permissions plugin test",
+  "displayDescription": "For testing JS permissions handling",
+  "apiVersion": 4,
+  "load": ["js/permissions_test_plugin.js"],
+  "respond": ["/do/permissions-test-plugin"]
+}

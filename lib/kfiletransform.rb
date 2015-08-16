@@ -128,7 +128,7 @@ class KFileTransform
       if @transformer
         @transform_id = KRandom.random_api_key(33) # used for disk filenames to avoid collisions - thread ID not good enough
         @temp_disk_pathname = "#{FILE_UPLOADS_TEMPORARY_DIR}/temptransform_#{Thread.current.object_id}.#{@transform_id}.tmp"
-        @operation = @transformer.make_op(self, input_disk_pathname, @temp_disk_pathname, input_mime_type, output_mime_type, output_options)
+        @operation = @transformer.make_op(input_disk_pathname, @temp_disk_pathname, input_mime_type, output_mime_type, output_options)
       end
     end
   end
@@ -145,7 +145,7 @@ class KFileTransform
   end
 
   def operation_performed
-    success = @transformer.complete_op(self, @operation)
+    success = @transformer.complete_op(@operation)
     entry = nil
     begin
       raise "KFileTransform conversion failed" unless File.exists?(@temp_disk_pathname) && success
@@ -200,7 +200,7 @@ class KFileTransform
   end
 
   class TransformImage
-    def self.make_op(file_transform, input_disk_pathname, output_disk_pathname, input_mime_type, output_mime_type, output_options)
+    def self.make_op(input_disk_pathname, output_disk_pathname, input_mime_type, output_mime_type, output_options)
       raise "Can only resize into another image" unless output_mime_type =~ /\Aimage\/(\w+)/
       transformer = ImageTransform.new(input_disk_pathname, output_disk_pathname, $1)
       # Width, height, quality
@@ -213,7 +213,7 @@ class KFileTransform
       end
       transformer
     end
-    def self.complete_op(file_transform, op)
+    def self.complete_op(op)
       op.getSuccess()
     end
     def self.clean_up
@@ -223,11 +223,11 @@ class KFileTransform
   class TransformHTMLToText
     def initialize
     end
-    def make_op(file_transform, input_disk_pathname, output_disk_pathname, input_mime_type, output_mime_type, output_options)
+    def make_op(input_disk_pathname, output_disk_pathname, input_mime_type, output_mime_type, output_options)
       @output_disk_pathname = output_disk_pathname
       HTMLToText.new(input_disk_pathname, output_disk_pathname)
     end
-    def complete_op(file_transform, op)
+    def complete_op(op)
       File.exist?(@output_disk_pathname)
     end
     def clean_up

@@ -82,7 +82,10 @@ module Application_RenderHelper
     o = '<div class="z__document">'
     # Convert the XML document text into HTML
     begin
-      x = REXML::Document.parse_stream(document.to_s, RenderDocListener.new(self, o, store, render_options, recursion_limit))
+      o << document.render_with_widgets(proc do |type, spec|
+        w_method = WIDGET_RENDER_METHODS[type]
+        w_method ? self.send(w_method, spec, store, render_options, recursion_limit - 1) : ''
+      end)
     rescue => e
       RENDERING_HEALTH_EVENTS.log_and_report_exception(e, "#*#*  Rendering document text, caught exception") # so the error is noticed!
       # But otherwise ignore errors
@@ -91,104 +94,9 @@ module Application_RenderHelper
     o
   end
 
-  class RenderDocListener
-    include REXML::StreamListener
-    def initialize(rendering_obj, output, store, render_options, recursion_limit)
-      @rendering_obj = rendering_obj
-      @output = output
-      @store = store
-      @render_options = render_options
-      @recursion_limit = recursion_limit
-    end
-    def tag_start(name, attrs)
-      if name == 'li'
-        @output << "<ul>" unless @in_ul
-        @in_ul = true
-      elsif @in_ul
-        @output << "</ul>"
-        @in_ul = false
-      end
-      case name
-      when 'doc'
-        # Top level container, ignore
-      when 'sidebar', 'box', 'quoteleft', 'quoteright'
-        # Valid containers
-        @output << %Q!<div class="doc_#{name}">!
-      when 'li'
-        @output << "<ul>" unless @in_ul
-        @output << "<li>"
-      when 'widget'
-        @widget_type = attrs['type']
-        @widget_spec = Hash.new
-        @widget_attr = nil
-      when 'v'
-        if @widget_type != nil
-          a = attrs['name']
-          if a != nil && a.length < 8
-            @widget_attr = a.to_sym
-          end
-        end
-      when 'a'
-        @output << %Q!<a target="_blank" href="#{ERB::Util.h(attrs['href'] || '')}">!
-      else
-        # Just output this tag as is
-        @output << "<#{name}>"
-      end
-    end
-    def tag_end(name)
-      case name
-      when 'doc', 'v'
-        # Ignore
-      when 'sidebar', 'box', 'quoteleft', 'quoteright'
-        @output << '</div>'
-      when 'widget'
-        if @widget_type != nil
-          # Render widget
-          # Output widget
-          w_method = WIDGET_RENDER_METHODS[@widget_type]
-          if w_method != nil
-            begin
-              wo = nil
-              if w_method.class == Symbol
-                # Symbols refer to methods in this module
-                wo = @rendering_obj.send(w_method, @widget_spec, @store, @render_options, @recursion_limit - 1)
-              else
-                # Strings are partial names
-                wo = @rendering_obj.render(:partial => w_method, :object => @widget_spec)
-              end
-              @output << wo if wo != nil
-            rescue => e
-              RENDERING_HEALTH_EVENTS.log_and_report_exception(e, "#*#*  Rendering widget, caught exception") # so the error is noticed!
-              # But otherwise ignore errors
-            end
-          end
-
-          # Reset state
-          @widget_type = nil
-          @widget_spec = nil
-          @widget_attr = nil
-        end
-      else
-        @output << "</#{name}>"
-      end
-    end
-    def text(text)
-      if @widget_type != nil
-        # In a widget declaration
-        if @widget_attr != nil
-          @widget_spec[@widget_attr] = text
-          @widget_attr = nil
-        end
-      else
-        @output << KTextUtils.auto_link_urls(ERB::Util.h(text))
-      end
-    end
-  end
-
   # ========================================================================================================
   # Widget rendering
   # Symbols refer to methods in this module
-  # Strings refer to partial templates
   WIDGET_RENDER_METHODS = {
     'OBJ' => :render_widget_obj,
     'SEARCH' => :render_widget_search,
@@ -422,7 +330,7 @@ module Application_RenderHelper
 
   def render_value_document(value, obj, render_options, attr_desc)
     render_options = render_options.merge(:source_obj => obj) if obj != nil
-    render_doc_as_html(value.to_s, KObjectStore.store, render_options)
+    render_doc_as_html(value, KObjectStore.store, render_options)
   end
 
   def render_value_identifier_file(value, obj, render_options, attr_desc)

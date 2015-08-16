@@ -2,7 +2,7 @@
   @page_title = 'Copyright Notice'
 
 # User copyright statement
-%><%= render_doc_as_html(KApp.global(:copyright_statement), KObjectStore.store) %>
+%><%= render_doc_as_html(KTextDocument.new(KApp.global(:copyright_statement) || '<doc></doc>'), KObjectStore.store) %>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 

@@ -26,7 +26,7 @@ class JavascriptUserPermissionsHookTest < Test::Unit::TestCase
   def test_hook_presence_doesnt_affect_permissions
     make_user "unchanged" do |user|
       rule = PermissionRule.new_rule! :allow, user, O_LABEL_COMMON, *KPermissionRegistry.lookup.keys
-      assert_equal [O_LABEL_COMMON], user.permissions._internal_states[0][:create]
+      assert_equal [O_LABEL_COMMON], get_mapped_internal_states(user.permissions)[0][:create]
       rules = PermissionRule.find :all
       assert_equal 1, rules.length
       assert_equal rule.attributes, rules[0].attributes
@@ -39,7 +39,7 @@ class JavascriptUserPermissionsHookTest < Test::Unit::TestCase
       assert_equal 1, rules.length
       plugin_name, label, rule_type, bitmask = rules[0]
       assert_equal "test_user_permissions_plugin", plugin_name
-      assert_equal O_LABEL_COMMON, label
+      assert_equal O_LABEL_COMMON.obj_id, label
       assert_equal PermissionRule::DENY, rule_type
       assert_equal bitmask, KPermissionRegistry.to_bitmask(*KPermissionRegistry.lookup.keys)
     end
@@ -50,8 +50,8 @@ class JavascriptUserPermissionsHookTest < Test::Unit::TestCase
       rules = (call_hook(:hUserPermissionRules) { |hooks| hooks.run(user); }).rules["rules"]
       assert_equal 2, rules.length
       assert_equal([
-        ["test_user_permissions_plugin", O_LABEL_COMMON, PermissionRule::ALLOW, KPermissionRegistry.to_bitmask(:read) ],
-        ["test_user_permissions_plugin", O_TYPE_BOOK, PermissionRule::ALLOW, KPermissionRegistry.to_bitmask(:create, :update)  ],
+        ["test_user_permissions_plugin", O_LABEL_COMMON.obj_id, PermissionRule::ALLOW, KPermissionRegistry.to_bitmask(:read) ],
+        ["test_user_permissions_plugin", O_TYPE_BOOK.obj_id, PermissionRule::ALLOW, KPermissionRegistry.to_bitmask(:create, :update) ],
         ], rules)
     end
   end
@@ -178,13 +178,24 @@ class JavascriptUserPermissionsHookTest < Test::Unit::TestCase
     Hash[KPermissionRegistry.lookup.keys.map {|op| [op, labels.clone]}]
   end
 
+  # Statements internal state uses integers not KObjRef objects
+  def get_mapped_internal_states(permissions)
+    permissions._internal_states.map do |lookup|
+      mapped = Hash.new
+      lookup.each do |key,value|
+        mapped[key] = value.map { |label| KObjRef.new(label) } .to_a
+      end
+      mapped
+    end
+  end
+
   def assert_permissions(opts)
     clean_user = User.cache[opts[:user].id]
     allows = all_operations
     denies = all_operations
     (opts[:allow] || {}).each_pair { |op, labels| allows[op] += labels }
     (opts[:deny] || {}).each_pair { |op, labels| denies[op] += labels }
-    assert_equal [allows, denies], clean_user.permissions._internal_states
+    assert_equal [allows, denies], get_mapped_internal_states(clean_user.permissions)
   end
 
 end

@@ -687,11 +687,10 @@ class KObjectStoreTest < Test::Unit::TestCase
     assert KPlugin.uninstall_plugin("k_object_store_test/listen_for_object_change_hook")
   end
 
-  def test_query_for_deleted_objects
-    restore_store_snapshot("basic")
+  # ---------------------------------------------------------------------------------------------------------------
 
-    # Make two book objects
-    book_a, book_b = KObjectStore.with_superuser_permissions do
+  def make_two_book_objects
+    books = KObjectStore.with_superuser_permissions do
       ["a", "b"].map do |name|
         ob = KObject.new
         ob.add_attr O_TYPE_BOOK, A_TYPE
@@ -699,30 +698,36 @@ class KObjectStoreTest < Test::Unit::TestCase
         KObjectStore.create ob
         ob
       end
-    end.sort_by { |x| x.objref }
-
-    def results_to_a(results)
-      out = []
-      results.each {|result| out << result.objref }
-      out.sort
     end
+    run_outstanding_text_indexing
+    books
+  end
+
+  def results_to_titles(results)
+    results.map { |object| object.first_attr(A_TITLE).to_s } .sort
+  end
+
+  def test_query_for_deleted_objects
+    restore_store_snapshot("basic")
+
+    book_a, book_b = make_two_book_objects
 
     results = KObjectStore.query_and.link(KObjRef.new(O_TYPE_BOOK), A_TYPE).execute
-    assert_equal [book_a.objref, book_b.objref], results_to_a(results)
+    assert_equal ["a", "b"], results_to_titles(results)
 
     KObjectStore.delete book_a
     results = KObjectStore.query_and.link(KObjRef.new(O_TYPE_BOOK), A_TYPE).execute
-    assert_equal [book_b.objref], results_to_a(results)
+    assert_equal ["b"], results_to_titles(results)
     results = KObjectStore.query_and.link(KObjRef.new(O_TYPE_BOOK), A_TYPE).include_deleted_objects(:exclude_deleted).execute # :exclude_deleted is default
-    assert_equal [book_b.objref], results_to_a(results)
+    assert_equal ["b"], results_to_titles(results)
     results = KObjectStore.query_and.link(KObjRef.new(O_TYPE_BOOK), A_TYPE).include_deleted_objects(:deleted_only).execute
-    assert_equal [book_a.objref], results_to_a(results)
+    assert_equal ["a"], results_to_titles(results)
     results = KObjectStore.query_and.link(KObjRef.new(O_TYPE_BOOK), A_TYPE).include_deleted_objects(:ignore_deletion_label).execute
-    assert_equal [book_a.objref, book_b.objref], results_to_a(results)
+    assert_equal ["a", "b"], results_to_titles(results)
 
     KObjectStore.undelete book_a
     results = KObjectStore.query_and.link(KObjRef.new(O_TYPE_BOOK), A_TYPE).execute
-    assert_equal [book_a.objref, book_b.objref], results_to_a(results)
+    assert_equal ["a", "b"], results_to_titles(results)
   end
 
   def test_deleting_object
@@ -744,6 +749,39 @@ class KObjectStoreTest < Test::Unit::TestCase
     object_copy = KObjectStore.read object.objref
     assert !object_copy.deleted?
   end
+
+  # ---------------------------------------------------------------------------------------------------------------
+
+  def test_query_for_archived_objects
+    restore_store_snapshot("basic")
+
+    book_a, book_b = make_two_book_objects
+
+    results = KObjectStore.query_and.link(KObjRef.new(O_TYPE_BOOK), A_TYPE).execute
+    assert_equal ["a", "b"], results_to_titles(results)
+
+    KObjectStore.relabel(book_a, KLabelChanges.new([O_LABEL_ARCHIVED],[]))
+
+    results = KObjectStore.query_and.link(KObjRef.new(O_TYPE_BOOK), A_TYPE).execute
+    assert_equal ["b"], results_to_titles(results)
+    results = KObjectStore.query_and.link(KObjRef.new(O_TYPE_BOOK), A_TYPE).include_archived_objects(:exclude_archived).execute # :exclude_archived is default
+    assert_equal ["b"], results_to_titles(results)
+    results = KObjectStore.query_and.link(KObjRef.new(O_TYPE_BOOK), A_TYPE).include_archived_objects(:include_archived).execute
+    assert_equal ["a", "b"], results_to_titles(results)
+
+    # Interaction with deletions
+    KObjectStore.delete book_a
+    results = KObjectStore.query_and.link(KObjRef.new(O_TYPE_BOOK), A_TYPE).include_archived_objects(:include_archived).execute
+    assert_equal ["b"], results_to_titles(results)
+    KObjectStore.undelete book_a
+    results = KObjectStore.query_and.link(KObjRef.new(O_TYPE_BOOK), A_TYPE).include_archived_objects(:include_archived).execute
+    assert_equal ["a", "b"], results_to_titles(results)
+
+    KObjectStore.relabel(book_a, KLabelChanges.new([],[O_LABEL_ARCHIVED]))
+    results = KObjectStore.query_and.link(KObjRef.new(O_TYPE_BOOK), A_TYPE).execute
+    assert_equal ["a", "b"], results_to_titles(results)
+  end
+  # ---------------------------------------------------------------------------------------------------------------
 
   def test_attribute_updating_links
     object = KObject.new
@@ -1810,6 +1848,9 @@ _OBJS
   # ---------------------
 
   def test_term_inclusion_and_search_constraints
+    FileCacheEntry.destroy_all
+    StoredFile.destroy_all
+
     # Get the app's schema loaded
     restore_store_snapshot("basic")
     schema = KObjectStore.schema

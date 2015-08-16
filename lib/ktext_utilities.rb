@@ -12,9 +12,11 @@ module KTextUtils
     end
   end
 
+  TRUNCATION_INDICATOR = '...'.freeze
+
   def self.truncate(string, max_length)
     if string.length > max_length
-      string[0, max_length] + '...'
+      string[0, max_length] + TRUNCATION_INDICATOR
     else
       # Return the string untruncated
       string

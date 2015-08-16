@@ -617,15 +617,17 @@ class KQuery
 
   FLAGS = {
     'A' => :include_concept_objects,
+    'R' => :include_archived_objects,
     'D' => :deleted_objects_only,
     'S' => :include_structure_objects,
   } # IMPORTANT: Update FLAGS_REGEXP & FLAGS_REVERSE below if you add/remove flags
   FLAGS_REVERSE = {
     :include_concept_objects => 'A',
+    :include_archived_objects => 'R',
     :deleted_objects_only => 'D',
     :include_structure_objects => 'S'
   }
-  FLAGS_REGEXP = /\s*\~([ADS])\s*\z/
+  FLAGS_REGEXP = /\s*\~([ARDS])\s*\z/
 
   OPERATIONS = {
     'and' => :and, '+' => :and,

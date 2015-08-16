@@ -60,10 +60,10 @@ class KObjRef
 
   # Standard operators
   def ==(other)
-    other != nil && @obj_id == other.to_i
+    other.kind_of?(KObjRef) && other != nil && @obj_id == other.to_i
   end
   def eql?(other)
-    other != nil && @obj_id == other.to_i
+    other.kind_of?(KObjRef) && other != nil && @obj_id == other.to_i
   end
   def hash
     @obj_id.hash

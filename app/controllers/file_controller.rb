@@ -551,10 +551,7 @@ public
     error_message = nil
     # Check basics
     if !(@request_user.permissions.something_allowed?(:create) || @request_user.permissions.something_allowed?(:update))
-      # Return error
       error_message = 'No permission'
-    elsif KProduct.limit_storage_exceeded?
-      error_message = 'Storage limit exceeded'
     elsif ! request.post?
       error_message = 'Must POST file'
     else

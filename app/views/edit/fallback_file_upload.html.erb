@@ -1,0 +1,25 @@
+<html>
+<head>
+  <% client_side_controller_js("fallback_file_upload") %>
+  <%= render(:partial => 'shared/client_side_resources') -%>
+  <style type="text/css">
+  p.warn { background:#eee; border:1px solid #ddd; padding:4px 8px; width:95% }
+  div.file_form { margin:64px 32px }
+  #upload_msg { margin:0 32px }
+  </style>
+</head>
+<body>
+  <p class="warn"><b>You are using an old web browser.</b><br>To enable drag and drop file uploads, please upgrade to a modern web browser.</p>
+  <% if @identifier_json %>
+    <div id="z__fallback_file_upload" data-file="<%= h(@identifier_json) %>" style="display:none"><%= @icon %></div>
+  <% else %>
+    <div class="file_form">
+      <form method="POST" enctype="multipart/form-data"><%= form_csrf_token %>
+        <p><input name="file" type="file"></p>
+        <p><input type="submit" value="Upload file"></p>
+      </form>
+    </div>
+    <p id="upload_msg" style="display:none">Please wait, uploading file...</p>
+  <% end %>
+</body>
+</html>

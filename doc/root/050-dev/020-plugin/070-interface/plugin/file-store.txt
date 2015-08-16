@@ -1,0 +1,31 @@
+title: File store
+long_title: Plugin file store integration
+--
+
+These APIs allow your plugin to integrated with the file store.
+
+
+h2. Interface
+
+h3(function). fileTransformPipelineCallback(name, callbacks)
+
+Call this function to register @callbacks@ to handle completion of [node:dev/plugin/interface/file-transform-pipeline:file transform pipelines] with the given @name@.
+
+@name@ should include the plugin name to avoid clashes.
+
+@callbacks@ contains one or both of @success@ and @error@ functions, which are called with a [node:dev/plugin/interface/file-transform-result] object as their single argument.
+
+For example,
+
+<pre>language=javascript
+P.fileTransformPipelineCallback("example_plugin:example", {
+    success: function(result) {
+        // Do something when the pipeline completes successfully.
+    },
+    error: function(result) {
+        // Do something to recover from the error.
+    }
+});
+</pre>
+
+If you do not need to store the result of the pipeline in the file store, it may be easier to just use the [node:dev/plugin/interface/file-transform-pipeline#Interface_download_of_results:functions for generating URLs and views] instead.

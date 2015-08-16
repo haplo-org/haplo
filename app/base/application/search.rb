@@ -269,6 +269,10 @@ class ApplicationController
         unless flags.has_key?(:include_concept_objects)
           store_query.add_exclude_labels([O_LABEL_CONCEPT])
         end
+        # Include ARCHIVED objects?
+        if flags.has_key?(:include_archived_objects)
+          store_query.include_archived_objects(:include_archived)
+        end
         # Search for DELETED objects only?
         if flags.has_key?(:deleted_objects_only)
           store_query.include_deleted_objects(:deleted_only)

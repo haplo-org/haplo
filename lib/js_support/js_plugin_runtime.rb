@@ -214,5 +214,11 @@ class KJSPluginRuntime
     end
   end
 
+  def call_file_transform_pipeline_callback(pipeline_result)
+    using_runtime do
+      Java::ComOneisJsinterface::KFilePipelineResult.callback(pipeline_result)
+    end
+  end
+
 end
 

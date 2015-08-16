@@ -6,19 +6,9 @@ If you need an API to do something which might be useful to others who're writin
 
 We're working on exposing more of the abilities of the Platform in our JavaScript API. Features not currently available to JavaScript plugins include:
 
- * File management and storage, including multiple versions
- * File transformation
- ** PDF rendering
- ** image resizing
- ** conversion of documents to HTML
- ** text extraction
- ** and more...
  * Usage accounting (storage etc)
  * Background task queuing and management
  * Mobile support
- * Detailed access to application schema
- ** Types, attributes, etc
- ** Detailed permission information
  * HTTP and HTTPS requests to external services
  * XML generation and manipulation
  * Custom rendering of objects implemented with plugins

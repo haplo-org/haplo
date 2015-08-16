@@ -267,7 +267,7 @@ class AuthenticationControllerTest < IntegrationTest
         # Check a bad token
         get urlpath + 'a'
         assert response.body.include?(if swap_for_welcome then
-            'password. However, this link as expired'
+            'password. However, this link has expired'
           else
             'The link you clicked was not a valid link to set a new password'
           end)

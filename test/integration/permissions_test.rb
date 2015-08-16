@@ -11,6 +11,8 @@ class PermissionsTest < IntegrationTest
 
   ALL_PERMS = KPermissionRegistry.entries.map { |e| e.symbol }
 
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/permissions/permissions_test_plugin")
+
   def setup
     restore_store_snapshot("basic")
     db_reset_test_data
@@ -124,6 +126,15 @@ class PermissionsTest < IntegrationTest
     check_file_download(joan, :o2)
     joan.get thumbnail_path(:o2)
     assert joan.response.body =~ /IHDR/ # PNG header
+
+    # Check JavaScript plugins report permission denied properly
+    begin
+      KPlugin.install_plugin('permissions_test_plugin')
+      joe.get_403 "/do/permissions-test-plugin/object-title/#{@objs[:o2].objref.to_presentation}"
+      assert joe.response.body.include?("Unauthorised")
+    ensure
+      KPlugin.uninstall_plugin('permissions_test_plugin')
+    end
 
     # Generate a signature to download a file, overriding the permissions system
     joe.get_403 file_path(:o2)

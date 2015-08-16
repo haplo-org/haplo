@@ -99,6 +99,9 @@ TEST(function() {
     // Deleted objects
     qpush( O.query().freeText("a").queryDeletedObjects() );
 
+    // Archived objects
+    qpush( O.query().freeText("b").includeArchivedObjects() );
+
     // Test error messages on bad queries
     var badQuery = O.query();
     TEST.assert_exceptions(function() { badQuery.freeText(); }, "Must pass a non-empty String to query freeText() function.");
@@ -208,5 +211,8 @@ TEST(function() {
     TEST.assert_exceptions(function() {
         O.query().and().queryDeletedObjects();
     }, "queryDeletedObjects() can only be called on the top level query");
+    TEST.assert_exceptions(function() {
+        O.query().and().includeArchivedObjects();
+    }, "includeArchivedObjects() can only be called on the top level query");
 
 });

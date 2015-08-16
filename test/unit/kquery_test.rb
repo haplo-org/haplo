@@ -148,6 +148,7 @@ class KQueryTest < Test::Unit::TestCase
     assert_equal [:terms, ["x:x", "y:y"]], get_parse_tree("x y ~S", [:include_structure_objects])
     assert_equal [:terms, ["x:x", "y:y", "x:x"]], get_parse_tree("x y ~X ~A ~S", [:include_concept_objects, :include_structure_objects])
     assert_equal [:terms, ["x:x", "y:y", "x:x"]], get_parse_tree("x y ~X ~D", [:deleted_objects_only])
+    assert_equal [:terms, ["x:x", "y:y"]], get_parse_tree("x y ~R", [:include_archived_objects])
     # Check that unknown flag stops any further processing of flags (~X here) (note processing starts at the right)
     assert_equal [:terms, ["x:x", "y:y", "s:s", "d:d", "x:x"]], get_parse_tree("x y ~S ~D ~X ~A", [:include_concept_objects])
     # Check flag for CONCEPT/classification label for searches

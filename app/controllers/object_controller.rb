@@ -51,10 +51,6 @@ class ObjectController < ApplicationController
     end
     return error('Too many operations') if count > MAXIMUM_OPERATIONS_IN_BATCH
 
-    if have_create
-      return error('Object limit exceeded') if KProduct.limit_objects_exceeded?
-    end
-
     schema = KObjectStore.schema
 
     xml_response do |builder|

@@ -47,6 +47,13 @@ Set the query to return deleted objects which match the query. Only objects whic
 Returns itself, making the function suitable for chaining.
 
 
+h3(function). includeArchivedObjects()
+
+Set the query to include objects which are labelled with the ARCHIVED label in the search results. By default, these objects are omitted from query results.
+
+Returns itself, making the function suitable for chaining.
+
+
 h3(function). freeText(text, desc, qual)
 
 Find objects which match the given free text. @text@ must be a non-empty String. The search will use the usual rules, including case insensitivity and stemming of the terms.

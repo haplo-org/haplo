@@ -62,11 +62,19 @@ class StoredFile < ActiveRecord::Base
   # Create new object from an upload; may return nil, otherwise object will have been saved
   def self.from_upload(upload, options = nil)
     return nil if upload == nil || upload.is_a?(String) || !(upload.wasUploaded())
+    move_file_into_store(
+      upload.getSavedPathname(),
+      upload.getFilename(),
+      upload.getMIMEType(),
+      upload.getDigest(),
+      options
+    )
+  end
 
-    # Get basic info and check
-    upload_pathname = upload.getSavedPathname()
-    file_digest = upload.getDigest()
-    file_size = File.size(upload_pathname)
+  # Create a new object given a file. The store will then own the file, moving the file on disk into the store.
+  def self.move_file_into_store(file_pathname, given_filename, mime_type, file_digest = nil, options = nil)
+    file_size = File.size(file_pathname)
+    file_digest = Digest::SHA256.file(file_pathname).hexdigest if file_digest == nil
     raise "Didn't get digest" unless file_digest.length > 10
     raise "Bad digest" unless file_digest =~ FILE_DIGEST_HEX_VALIDATE_REGEXP
 
@@ -92,17 +100,15 @@ class StoredFile < ActiveRecord::Base
         KApp.logger.info("User uploaded file duplicating existing store file with digest #{file_digest} and size #{file_size}")
       else
         file = StoredFile.new
-        given_filename = upload.getFilename()
         file.upload_filename = given_filename
-        file.mime_type = KMIMETypes.correct_mime_type(upload.getMIMEType(), given_filename)
+        file.mime_type = KMIMETypes.correct_mime_type(mime_type, given_filename)
         file.size = file_size
         file.digest = file_digest
 
         # Move the file into place
         file.ensure_directory_exists
-        File.chmod(0640, upload_pathname) # change permission for the backup user
-        pathname = file.disk_pathname
-        FileUtils.mv(upload_pathname, pathname)
+        File.chmod(0640, file_pathname) # change permission for the backup user
+        FileUtils.mv(file_pathname, file.disk_pathname)
 
         file.save!
       end

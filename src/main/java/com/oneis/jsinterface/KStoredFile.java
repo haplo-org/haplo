@@ -166,6 +166,14 @@ public class KStoredFile extends KScriptable {
         return rubyInterface.oFormsFileHTML(this.storedFile, where);
     }
 
+    public static void jsStaticFunction__verifyFileTransformPipelineTransform(String name, String json) {
+        rubyInterface.verifyFileTransformPipelineTransform(name, json);
+    }
+    public static void jsStaticFunction__executeFileTransformPipeline(String json) {
+        Runtime.privilegeRequired("pFileTransformPipeline", "execute a file transform pipeline");
+        rubyInterface.executeFileTransformPipeline(json);
+    }
+
     // For implementing a backwards compatible (but undocumented) API in KText
     public String jsFunction_fileThumbnailHTML(Object options) {
         FileRenderOptions fro = parseFileRenderOptions(options);
@@ -185,6 +193,9 @@ public class KStoredFile extends KScriptable {
         public String fileIdentifierMakePathOrHTML(AppStoredFile storedFile, FileRenderOptions options, boolean html);
 
         public String oFormsFileHTML(AppStoredFile storedFile, String where);
+
+        public void verifyFileTransformPipelineTransform(String name, String json);
+        public void executeFileTransformPipeline(String json);
     }
     private static Ruby rubyInterface;
 

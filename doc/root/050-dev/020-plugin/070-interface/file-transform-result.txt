@@ -1,0 +1,43 @@
+title: FileTransformResult
+long_title: FileTransformResult interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @FileTransformResult@ interface is passed to the [node:dev/plugin/interface/plugin/file-store:callback functions] registered to handle completion of [node:dev/plugin/interface/file-transform-pipeline:file transform pipelines].
+
+h2. Construction
+
+@FileTransformResult@ objects are constructed by the platform on completion of file transform pipelines.
+
+
+h2. Interface
+
+h3(property). data
+
+Arbitrary JSON compatible data, passed to [node:dev/plugin/o/constructor/file-transform-pipeline]. Use this to identify why the pipeline was executed in your callbacks.
+
+
+h3(function). file(name, filename)
+
+Permanently store a pipeline result in the file store, and return a [node:dev/plugin/interface/file] object representing it.
+
+@name@ is the name of the file in the pipeline's file list, usually @"output"@.
+
+@filename@ is the user visible name of the file which will be used by default when downloading the file at a later date. Remember to include an extension.
+
+
+
+h3(property). name
+
+Name of the pipeline, as passed to [node:dev/plugin/o/constructor/file-transform-pipeline] and registered with the [node:dev/plugin/interface/plugin/file-store:callback functions].
+
+
+h3(property). success
+
+Boolean value, indicating successful completion of the pipeline.
+
+
+h3(property). errorMessage
+
+A human readable string indicating the error, used for debugging. It should not be presented to the user in your UI.
+

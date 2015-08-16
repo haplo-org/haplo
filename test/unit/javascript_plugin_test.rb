@@ -541,7 +541,7 @@ __E
     assert_equal [O_LABEL_COMMON], new_ob.labels.to_a
 
     new_ob = thlh_new_book "invalid_labels"
-    assert_equal [O_LABEL_COMMON, 9999], new_ob.labels.to_a
+    assert_equal [O_LABEL_COMMON, KObjRef.new(9999)], new_ob.labels.to_a
 
     # And the update version of the hook
     updating_ob = thlh_new_book "something"

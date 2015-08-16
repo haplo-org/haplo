@@ -146,13 +146,15 @@ class SchemaController < ApplicationController
 
     user_policy = @request_user.policy
     @user_attr_create_new_allowed = []
-    schema.each_attr_descriptor do |attr_desc|
+    detect_attributes_with_createable_linked_types = Proc.new do |attr_desc|
       if attr_desc.data_type == T_OBJREF
         if attr_desc.control_by_types.detect { |objref| user_policy.can_create_object_of_type?(objref) }
           @user_attr_create_new_allowed << attr_desc.desc
         end
       end
     end
+    schema.each_attr_descriptor(&detect_attributes_with_createable_linked_types)
+    schema.each_aliased_attr_descriptor(&detect_attributes_with_createable_linked_types)
 
     # --- SEARCH SUBSETS -------------------------------------------------------
     @subsets = []

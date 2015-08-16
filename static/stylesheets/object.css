@@ -337,45 +337,6 @@ a.z__file_extra_action_link:before {
 }
 
 /* ---------------------------------------------------------------------- */
-
-div.doc_sidebar {
-    /* no prefix */
-    position: absolute;
-    width: 215px;
-    margin: 0px 0 0px 104%;
-    z-index: 1000;
-}
-
-div.doc_box {
-    /* no prefix */
-    margin: 15px 0 20px 0;
-    padding: 10px;
-    width: auto;
-}
-
-
-div.doc_quoteleft {
-    /* no prefix */
-    clear: left;
-    float: left;
-    width: 20%;
-    margin: 5px 10px 5px 0;
-    padding: 10px;
-}
-
-
-div.doc_quoteright {
-    /* no prefix */
-    clear: right;
-    float: right;
-    width: 20%;
-    margin: 5px 0px 5px 10px;
-    padding: 10px;
-}
-
-
-
-/* ---------------------------------------------------------------------- */
 /* Search result widget */
 
 .z__search_widget_no_results {

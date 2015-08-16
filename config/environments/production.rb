@@ -8,8 +8,9 @@
 # Log file
 KFRAMEWORK_LOG_FILE = '/oneis/log/app.log'
 
-# Where to save files while they're being uploaded (same fs as the main storage)
+# Temporary directories which must share same FS as file store
 FILE_UPLOADS_TEMPORARY_DIR = '/oneis/files/tmp'
+GENERATED_FILE_DOWNLOADS_TEMPORARY_DIR = '/oneis/files/generated-downloads'
 
 # Object store
 KOBJECTSTORE_TEXTIDX_BASE = '/oneis/textidx'

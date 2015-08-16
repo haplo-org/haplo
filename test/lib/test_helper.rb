@@ -156,5 +156,12 @@ class Test::Unit::TestCase
       pg.perform("DELETE FROM #{fixture_name}")
     end
   end
+
+  def self.disable_test_unless_file_conversion_supported(method, from_mime_type, to_mime_type)
+    unless KFileTransform.can_transform?(from_mime_type, to_mime_type)
+      define_method(method) { }
+      puts "Disabling test #{method} because conversion from #{from_mime_type} to #{to_mime_type} is not supported"
+    end
+  end
 end
 

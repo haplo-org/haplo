@@ -32,7 +32,6 @@ class EditController < ApplicationController
   end
 
   def handle_new
-    return unless check_objects_limit()
     @extra_html = nil
     call_hook(:hNewObjectPage) do |hooks|
       @extra_html = hooks.run().htmlAfter
@@ -41,7 +40,9 @@ class EditController < ApplicationController
 
   # Used for choosing a style in popups
   def handle_pop_type
-    attr_desc = KObjectStore.schema.attribute_descriptor(params[:desc].to_i)
+    schema = KObjectStore.schema
+    desc = params[:desc].to_i
+    attr_desc = schema.attribute_descriptor(desc) || schema.aliased_attribute_descriptor(desc)
     @types = ((attr_desc == nil) ? [] : attr_desc.control_by_types)
     @types.select! { |t| @request_user.policy.can_create_object_of_type?(t) }
     render(:layout => 'minimal')
@@ -52,7 +53,6 @@ class EditController < ApplicationController
   def handle_index
     # Is it a new object?
     if params.has_key?(:new)
-      return unless check_objects_limit()
       @is_new_object = true
     end
 
@@ -118,14 +118,9 @@ class EditController < ApplicationController
     builder.response(:status => 'success') do |r|
       r.limits do |limits|
         # NOTE - need to cope with KAccounting returning nil
-        obj_usage = KAccounting.get(:objects)
-        if obj_usage != nil
-          obj_usage -= KApp.global(:limit_init_objects)
-        else
-          obj_usage = 0
-        end
-        limits.objects(:usage => obj_usage, :limit => KApp.global(:limit_objects))
-        limits.storage(:usage => (KAccounting.get(:storage) || 0) + (obj_usage * KProduct::OBJECT_COST), :limit => (KApp.global(:limit_storage) * 1048576))
+        obj_usage = KAccounting.get(:objects) || 0
+        limits.objects(:usage => obj_usage, :limit => 0)
+        limits.storage(:usage => (KAccounting.get(:storage) || 0), :limit => 0)
       end
     end
     render :text => builder.target!, :content_type => "text/xml; charset=utf-8"
@@ -177,6 +172,26 @@ class EditController < ApplicationController
       stored_file = StoredFile.from_upload(uploads.getFile("file"))
       render :text => KIdentifierFile.new(stored_file).to_json, :kind => :json
     end
+  end
+
+  # Fallback file upload UI for older browsers
+  _GetAndPost
+  def handle_fallback_file_upload
+    if request.post?
+      uploads = exchange.annotations[:uploads]
+      if uploads.getInstructionsRequired()
+        uploads.addFileInstruction("file", FILE_UPLOADS_TEMPORARY_DIR, StoredFile::FILE_DIGEST_ALGORITHM, nil)
+        return render :text => ''
+      else
+        uploaded_file = uploads.getFile("file")
+        if uploaded_file.wasUploaded()
+          stored_file = StoredFile.from_upload(uploaded_file)
+          @identifier_json = KIdentifierFile.new(stored_file).to_json
+          @icon = img_tag_for_mime_type(KMIMETypes.correct_mime_type(uploaded_file.getMIMEType(), uploaded_file.getFilename()))
+        end
+      end
+    end
+    render :layout => false
   end
 
   # -----------------------------------------------------------------------------------------------------------
@@ -532,16 +547,6 @@ private
 
     # Add the attribute with the adjusted values
     return obj.add_attr(value, descriptor.alias_of, qualifier)
-  end
-
-  # Returns true if it's OK to create new objects
-  def check_objects_limit
-    if KProduct.limit_objects_exceeded?
-      render :action => 'objects_limit_exceeded'
-      false
-    else
-      true
-    end
   end
 
 end

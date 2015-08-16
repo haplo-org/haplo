@@ -11,8 +11,6 @@
 
     KApp.j__onPageLoad(function() {
 
-        if(!KFileUpload.p__haveBrowserSupport) { return; }
-
         var formEnabled = false;
 
         // Don't allow early form submission

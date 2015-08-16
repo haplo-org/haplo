@@ -85,24 +85,15 @@ class Admin_UserController < ApplicationController
   alias handle_group handle_show
 
   def handle_new
-    return if (params[:kind].to_i != User::KIND_GROUP) && user_limit_exceeded?
     @user = User.new
     @user.kind = (params[:kind] || User::KIND_USER).to_i
     @is_new_user = true
   end
 
-  def handle_exceeded
-  end
-
   _PostOnly
   def handle_create
     user_kind = (params[:kind] || User::KIND_USER).to_i
-    case user_kind
-    when User::KIND_USER
-      return if user_limit_exceeded?
-    when User::KIND_GROUP
-      # No limit on number of groups
-    else
+    unless user_kind == User::KIND_USER || user_kind == User::KIND_GROUP
       raise "Bad kind of user requested in user creation"
     end
     @user = User.new(params[:user])
@@ -194,10 +185,6 @@ class Admin_UserController < ApplicationController
     unless state_group.include?(state) && user.id > User::USER_ID_MAX_PROTECTED
       permission_denied
     else
-      # Would this state change mean the user would exceed the number allowed on their account?
-      if state == User::KIND_USER
-        return if user_limit_exceeded?
-      end
       # Change the state
       user.kind = state
       user.save!
@@ -477,15 +464,6 @@ private
       'group'
     else
       'show'
-    end
-  end
-
-  def user_limit_exceeded?
-    if KProduct::limit_users_exceeded?
-      redirect_to "/do/admin/user/exceeded"
-      true
-    else
-      false
     end
   end
 

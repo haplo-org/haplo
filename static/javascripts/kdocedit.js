@@ -884,11 +884,19 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
 
     j__cleanUpDom: function() {
         // Function to detect nodes with element children, ie not normal text nodes
-        var nodeHasElementChildren = function(node) {
+        var WELCOME_ELEMENT_NODE_TYPES = ['a', 'b', 'i'];
+        var nodeHasUnwelcomeElementChildren = function(node, safety) {
+            if(safety < 0) { return false; }    // stack depth too deep for comfort
             var scan = node.firstChild;
             while(scan !== undefined && scan !== null) {
                 if(scan.nodeType == NODE__ELEMENT_NODE) {
-                    return true;
+                    if(_.indexOf(WELCOME_ELEMENT_NODE_TYPES, scan.nodeName.toLowerCase()) === -1) {
+                        return true;
+                    } else {
+                        if(nodeHasUnwelcomeElementChildren(scan, safety - 1)) {
+                            return true;
+                        }
+                    }
                 }
                 scan = scan.nextSibling;
             }
@@ -909,7 +917,7 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
             if(scan.nodeType == NODE__ELEMENT_NODE) {
                 var nodename = scan.nodeName.toLowerCase();
                 if(nodename == 'p') {
-                    if(nodeHasElementChildren(scan)) {
+                    if(nodeHasUnwelcomeElementChildren(scan, 32)) {
                         // Might be an ending paragraph or a blank paragraph, though
                         var contents = scan.innerHTML.toLowerCase();
                         if(contents == '<br>' || contents == '<br/>') {
@@ -1106,7 +1114,7 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
     j__domObjsToDoc: function(r) {
         var documentComponents = ['<doc>'];
         var appendTextToDocument = function(text) {
-            if(text && text.length > 0 && /\S/.test(text)) {
+            if(text && text.length > 0) {
                 // XML spec says valid chars are:
                 //   Char ::= #x9 | #xA | #xD | [#x20-#xD7FF] | [#xE000-#xFFFD] | [#x10000-#x10FFFF]
                 // Allow all the 16 bit characters, but omit the last range which is not represented in 16 bits.
@@ -1117,11 +1125,7 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
         };
         var s = r.firstChild;
         while(s) {
-            if(s.nodeType == NODE__TEXT_NODE) {
-                documentComponents.push('<p>');
-                appendTextToDocument(s.nodeValue);
-                documentComponents.push('</p>');
-            } else if(s.nodeType == NODE__ELEMENT_NODE) {
+            if(s.nodeType == NODE__ELEMENT_NODE) {
                 var n = s.nodeName.toLowerCase();
                 if(n == 'div' && s.className == 'z__widget_container') {
                     documentComponents.push(this.j__widgetContainerToDoc(s));

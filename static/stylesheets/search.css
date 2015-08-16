@@ -120,6 +120,9 @@
 #z__search_form_advanced_container .z__editor_objref_lookup_text input {
     width: 422px;
 }
+#z__search_form_advanced_container .z__keyvalue_col2 .z__editor_objref_lookup_text input {
+    width: 304px;
+}
 #z__search_form_advanced_container .z__editor_link_control {
     width: 445px;
 }

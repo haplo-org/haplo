@@ -1,0 +1,9 @@
+<%
+  client_side_resources :wait_for_download
+%>
+<div class="z__wait_for_download" data-identifier="<%= h(data_for_template[:identifier]) %>">
+  <div class="z__wait_for_download_inner">
+    <b>Preparing <span><%= h(data_for_template[:filename]) %></span> &mdash; </b> download will start automatically.
+  </div>
+  <div class="z__wait_for_download_progress"><div class="z__wait_for_download_progress_indicator"></div></div>
+</div>

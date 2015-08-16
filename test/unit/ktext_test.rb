@@ -114,12 +114,6 @@ __E
 
     assert_equal "title:titl name:name ", KText.new("Title name").to_terms
 
-    # Check to_html
-    assert_equal "<p>Text</p><p>abc</p>", KTextDocument.new(%Q!<doc><p>Text</p><sidebar><p>abc</p></sidebar><quoteleft></quoteleft></doc>!).to_html
-    assert_equal "<h1>Pants</h1><p>Text</p>", KTextDocument.new(%Q!<doc><h1>Pants</h1><widget type="W"><v name="attr">val</v></widget><p>Text</p></doc>!).to_html
-    assert_equal %Q!<p>Text <a target="_blank" href="http://www.example.com">link <b>bold</b> <i>italic</i></a></p>!,
-      KTextDocument.new(%Q!<doc><p>Text <a href="http://www.example.com">link <b>bold</b> <i>italic</i></a></p></doc>!).to_html
-
     # Check long terms get truncated
     assert_equal "0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456:0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456 ", KText.new("012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345670123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456701234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567").to_terms
   end
@@ -127,6 +121,14 @@ __E
   def test_doc_html
     assert_equal "<ul><li>Item 1</li><li>Item 2</li></ul>", KTextDocument.new('<doc><li>Item 1</li><li>Item 2</li></doc>').to_html
     assert_equal "<h1>Heading</h1><ul><li>Item 1</li><li>Item 2</li></ul><p>Hello</p>", KTextDocument.new('<doc><h1>Heading</h1><li>Item 1</li><li>Item 2</li><p>Hello</p></doc>').to_html
+    assert_equal "<p>Text</p><p>abc</p>", KTextDocument.new(%Q!<doc><p>Text</p><p>abc</p></doc>!).to_html
+    assert_equal "<h1>Pants</h1><p>Text</p>", KTextDocument.new(%Q!<doc><h1>Pants</h1><widget type="W"><v name="attr">val</v></widget><p>Text</p></doc>!).to_html
+    assert_equal %Q!<p>Text <a target="_blank" href="http://www.example.com">link <b>bold</b> <i>italic</i></a></p>!,
+      KTextDocument.new(%Q!<doc><p>Text <a href="http://www.example.com">link <b>bold</b> <i>italic</i></a></p></doc>!).to_html
+    assert_equal '<ul><li><b>bold</b></li></ul>', KTextDocument.new('<doc><li><b>bold</b></li></doc>').to_html
+    # Auto-link URL in text elements, except if it's inside an <a> tag
+    assert_equal '<ul><li><b>bold <a href="http://www.example.com">http://www.example.com</a></b></li></ul>', KTextDocument.new('<doc><li><b>bold http://www.example.com</b></li></doc>').to_html
+    assert_equal '<ul><li><b>bold <a target="_blank" href="http://www.example.com">http://www.example.com</a></b></li></ul>', KTextDocument.new('<doc><li><b>bold <a href="http://www.example.com">http://www.example.com</a></b></li></doc>').to_html
   end
 
   # ------------------------------------------------------------------------------------
@@ -203,6 +205,8 @@ __E
     assert_equal "<p>ABC</p><p>DEF</p><p>X...</p>", KTextParagraph.new("ABC\n\nDEF\n\nXYZ\n\nPPP").to_truncated_html(11)
     assert_equal "ABC<br>DEF<br>X...", KTextMultiline.new("ABC\nDEF\nXYZ\nPPP").to_truncated_html(9)
     assert_equal "<h1>ABC</h1><p>DEF</p><p>X...</p>", KTextDocument.new("<doc><h1>ABC</h1><p>DEF</p><p>XYZ</p><p>PPP</p></doc>").to_truncated_html(7)
+    assert_equal "<h1>ABC</h1><p>DEF</p><p><b>X...</b></p>", KTextDocument.new("<doc><h1>ABC</h1><p>DEF</p><p><b>XY</b>Z</p><p>PPP</p></doc>").to_truncated_html(7)
+    assert_equal "<h1>ABC</h1><p>DEF</p><p>X...</p>", KTextDocument.new("<doc><h1>ABC</h1><p>DEF</p><p>X<b>YZ</b></p><p>PPP</p></doc>").to_truncated_html(7)
     # Text classes which don't implement it just don't truncate
     assert_equal "Henry", KTextPersonName.new(:first => 'Henry').to_html
     assert_equal "Henry", KTextPersonName.new(:first => 'Henry').to_truncated_html(2)

@@ -10,6 +10,7 @@
 # Clean up old files and make new directory structure
 rm -rf $HOME/haplo-dev-support/khq-dev
 mkdir -p $HOME/haplo-dev-support/khq-dev/tmp
+mkdir -p $HOME/haplo-dev-support/khq-dev/generated-downloads
 mkdir -p $HOME/haplo-dev-support/khq-dev/files
 mkdir -p $HOME/haplo-dev-support/khq-dev/textidx
 mkdir -p $HOME/haplo-dev-support/khq-dev/textweighting

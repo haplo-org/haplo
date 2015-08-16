@@ -1,0 +1,26 @@
+title: std:file:rename
+long_title: std:file:rename transform step
+link_as: keyword
+--
+
+This file transform step does not perform any file processing, just renames files in the file transform pipeline's file list.
+
+You should probably use [node:dev/plugin/interface/file-transform-pipeline#rename] and [node:dev/plugin/interface/file-transform-pipeline#transformPreviousOutput] instead.
+
+
+h2. Transform specification
+
+h3(property). rename
+
+An array of ["from", "to"] arrays specifying the renames.
+
+Renames are performed in a single atomic step, so this specification will swap @file-a@ and @file-b@.
+
+<pre>language=json
+{
+    rename: [
+        ["file-a", "file-b"],
+        ["file-b", "file-a"]
+    ]
+}
+</pre>

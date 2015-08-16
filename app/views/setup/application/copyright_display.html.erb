@@ -1,2 +1,2 @@
 <% @minimal_layout_no_cancel = true %>
-<%= render_doc_as_html(KApp.global(:copyright_statement), KObjectStore.store) %>
+<%= render_doc_as_html(KTextDocument.new(KApp.global(:copyright_statement) || '<doc></doc>'), KObjectStore.store) %>

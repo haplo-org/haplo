@@ -1,0 +1,35 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+.z__wait_for_download .z__wait_for_download_inner {
+    background: #eee;
+    border: 1px solid #ddd;
+    border-radius: 2px 2px 0 0;
+    padding: 10px 10px 2px 18px;
+}
+
+.z__wait_for_download .z__wait_for_download_progress,
+.z__wait_for_download .z__wait_for_download_progress_indicator {
+    border-radius: 0 0 2px 2px;
+    background: #e8e8e8;
+    height: 6px;
+}
+
+.z__wait_for_download .z__wait_for_download_progress .z__wait_for_download_progress_indicator {
+    background: COLOUR[:highlight];
+    width: 0px;
+    border-radius: 2px;
+}
+
+.z__wait_for_download.z__wait_for_download_done .z__wait_for_download_inner {
+    padding-bottom: 8px;
+    border-radius: 2px;
+}
+
+.z__wait_for_download.z__wait_for_download_done .z__wait_for_download_progress {
+    display: none;
+}

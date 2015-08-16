@@ -1433,7 +1433,7 @@ _.extend(KEdFile.prototype, {
                 escapeHTML(this.q__uploadingFile ? this.q__uploadingFile.name : this.p__fileInfo.filename),
             '</a></span> &nbsp; <span class="z__editor_attached_file_version">(<a href="#" data-edit="version">',
                 escapeHTML(this.q__uploadingFile ? FILE_FIRST_VERSION_STRING : this.p__fileInfo.version),
-            '</a>)</div>');
+            '</a>)</span></div>');
         return html.join('');
     },
     j__attach2: function(i) {
@@ -1447,7 +1447,8 @@ _.extend(KEdFile.prototype, {
                 var editName = this.getAttribute('data-edit');
                 var edit = FILE_COMPONENT_EDIT[editName];
                 if(edit) {
-                    var newValue = window.prompt.apply(window, edit.j__prompt(value));
+                    var args = edit.j__prompt(value);
+                    var newValue = window.prompt(args[0], args[1]); // can't use apply() on window.prompt in old IEs
                     if(newValue && newValue.length > 0) {
                         value.p__fileInfo[editName] = edit.j__adjustText(value, newValue);
                         value.p__encodedFileJson = JSON.stringify(value.p__fileInfo);
@@ -1458,7 +1459,7 @@ _.extend(KEdFile.prototype, {
         });
         var fileInput = $('#'+this.q__domId+' input[type=file]').on('change', function(evt) {
             evt.preventDefault();
-            if(KFileUpload.j__browserSupportCheckWithAlert()) {
+            if(KFileUpload.j__browserFullSupportCheckWithAlert()) {
                 if(this.files.length === 1) {
                     value.p__keditorValueControl.p__parentContainer.q__fileUploadTarget.j__uploadFiles(this.files, value);
                     $('#'+value.q__domId+' .z__editor_attached_file_version_holder').hide();
@@ -1469,10 +1470,10 @@ _.extend(KEdFile.prototype, {
             }
             this.value = '';    // remove file for later
         });
-        if(!KFileUpload.p__haveBrowserSupport) {
+        if(!KFileUpload.p__haveFullBrowserSupport) {
             fileInput.on('click', function(evt) {
                 evt.preventDefault();
-                KFileUpload.j__browserSupportCheckWithAlert();
+                KFileUpload.j__browserFullSupportCheckWithAlert();
             });
         }
     },
@@ -2322,6 +2323,7 @@ var EDITOR_OK_FOR_NAV_AWAY_CLICKS = {
     z__help_tab: true,
     z__heading_back_nav: true,  // cancel button
     z__spawn_close: true,       // spawn close button
+    z__covering_close_button: true, // covering close button (fallback file uploads)
     z__dropdown_menu: true,     // widgets with drop down menus
     z__ktree_search_results_dropdown: true, // tree browser find
     z__spawn_fade_dialogue: true,   // during pop up for "create new"

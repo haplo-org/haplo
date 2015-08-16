@@ -8,6 +8,8 @@ Files are represented by the [node:dev/plugin/interface/file] interface, and the
 
 Files are addressed by their SHA256 cryptographic digest and file size. As the chance of a digest collision is minimal, digest based addressing allows unambiguous references to files throughout the API along with built in assurances of file integrity.
 
+Files can be generated and transformed using the [node:dev/plugin/files/transform:file transform pipeline] API.
+
 
 h2. API integration
 

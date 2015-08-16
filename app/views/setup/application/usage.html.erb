@@ -1,0 +1,11 @@
+<% @page_title = 'Usage' -%>
+<%= sys_mng_header %>
+
+<h2>Active users</h2>
+<p><%= @num_users %></p>
+
+<h2>Objects in object store</h2>
+<p><%= @num_objects %></p>
+
+<h2>File storage</h2>
+<p><%= sprintf("%.3f GB", (@used_storage.to_f) / 1073741824.0) %></p>

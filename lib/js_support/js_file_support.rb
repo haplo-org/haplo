@@ -145,6 +145,17 @@ module JSFileSupport
     html
   end
 
+  # ------------------------------------------------------------------------------------------------------------
+
+  def self.verifyFileTransformPipelineTransform(name, json)
+    KJSFileTransformPipeline.verify_transform(name, json)
+  end
+  def self.executeFileTransformPipeline(json)
+    pipeline = KJSFileTransformPipeline.new(json)
+    pipeline.prepare
+    pipeline.submit
+  end
+
 end
 
 Java::ComOneisJsinterface::KStoredFile.setRubyInterface(JSFileSupport)

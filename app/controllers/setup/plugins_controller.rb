@@ -91,7 +91,7 @@ class Setup_PluginsController < ApplicationController
     end
   end
 
-  def handle_diagnostics
+  def handle_console
     # Make a copy of the current log to avoid concurrency problems
     JAVASCRIPT_LOG_MUTEX.synchronize do
       @log = JAVASCRIPT_LOG[KApp.current_application].dup

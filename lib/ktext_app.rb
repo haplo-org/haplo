@@ -147,12 +147,18 @@ class KTextDocument < KText
     listener.output
   end
 
+  def render_with_widgets(widget_renderer)
+    listener = ToHTMLListener.new(nil, widget_renderer)
+    REXML::Document.parse_stream(@text, listener)
+    listener.output
+  end
+
   def to_truncated_html(max_length)
-    listener = ToHTMLTruncatedListener.new(max_length)
+    listener = ToHTMLListener.new(max_length)
     begin
       REXML::Document.parse_stream(@text, listener)
     rescue
-      # Ignore errors, which may include a "truncated" exception to stop parsing early
+      # Ignore errors
     end
     listener.output
   end
@@ -203,72 +209,157 @@ class KTextDocument < KText
     end
   end
 
+  # Rendering listener, supports:
+  #   * truncation of output to number of characters of text
+  #   * external widget renderers
+  #   * auto-links things which look like URLs
   class ToHTMLListener
     include REXML::StreamListener
-    OUTPUT_TAG_REGEX = /\A(p|h\d+|li|a|b|i)\z/
-    LIST_ITEM = 'li'
-    ANCHOR_TAG = 'a'
-    DOC = 'doc'
-    attr_reader :output
-    def initialize
-      @output = ''
+    TOP_LEVEL_TAG_REGEX = /\A(p|h\d+|li)\z/
+    def initialize(max_chars = nil, widget_renderer = nil)
+      @output = []
       @tag_level = 0
+      @block_element = 0
+      @chars_left = max_chars # for truncation
+      @widget_renderer = widget_renderer
     end
     def tag_start(name, attrs)
-      @in_widget = true if name == 'widget'
-      if name =~ OUTPUT_TAG_REGEX
-        if name == LIST_ITEM
-          @output << "<ul>" unless @in_ul
-          @in_ul = true
-        else
-          end_ul_maybe()
+      # level 0 is 'doc', level 1 is top level elements
+      if @tag_level > 1
+        @block_element.tag_start(name, attrs) if @block_element
+      elsif @tag_level == 1
+        # Only start a new block element if char count is low enough
+        if @chars_left == nil || @chars_left > 0
+          if name =~ TOP_LEVEL_TAG_REGEX
+            @block_element = TopLevelBlockElement.new(name, @chars_left)
+          elsif name == 'widget'
+            @block_element = WidgetElement.new(attrs['type'], @widget_renderer)
+          else
+            raise "Unexpected tag in document"
+          end
+          @output << @block_element
         end
-        if name == ANCHOR_TAG
-          @output << %Q!<a target="_blank" href="#{ERB::Util.h(attrs['href'] || '')}">!
-        else
-          @output << "<#{name}>"
-        end
-        @tag_level += 1
       end
+      @tag_level += 1
     end
     def tag_end(name)
-      @in_widget = nil if name == 'widget'
-      if name =~ OUTPUT_TAG_REGEX
-        @output << "</#{name}>"
-        @tag_level -= 1
-      elsif name == DOC
-        end_ul_maybe()
+      @tag_level -= 1
+      if @tag_level > 1
+        @block_element.tag_end(name) if @block_element
+      elsif @tag_level == 1
+        if @chars_left != nil && @block_element
+          new_chars_left = @block_element.chars_left
+          @chars_left = new_chars_left unless new_chars_left == nil
+        end
+        @block_element = nil
       end
     end
-    def end_ul_maybe
-      @output << "</ul>" if @in_ul
-      @in_ul = false
-    end
     def text(text)
-      @output << ERB::Util::h(text) if (@tag_level > 0) && !@in_widget
+      @block_element.text(text) if @block_element
     end
-  end
+    def output
+      html = ''
+      current_enclosing_tag = nil
+      @output.each do |block_element|
+        et = block_element.enclosing_tag
+        if et != current_enclosing_tag
+          html << "</#{current_enclosing_tag}>" if current_enclosing_tag
+          html << "<#{et}>" if et
+          current_enclosing_tag = et
+        end
+        html << block_element.output
+      end
+      html << "</#{current_enclosing_tag}>" if current_enclosing_tag
+      html
+    end
 
-  class ToHTMLTruncatedListener < ToHTMLListener
-    def initialize(max_length)
-      super()
-      @chars_left = max_length
+    # Base class for top level elements
+    class Block
+      attr_reader :enclosing_tag
+      attr_reader :chars_left
     end
-    def tag_start(name, attrs)
-      super(name, attrs)
-      @last_name = name if @tag_level > 0
+
+    # Paragraph text with embedded character styles
+    class TopLevelBlockElement < Block
+      OUTPUT_TAG_REGEX = /\A(a|b|i)\z/
+      LIST_ITEM = 'li'
+      ANCHOR_TAG = 'a'
+      def initialize(name, chars_left)
+        @chars_left = chars_left
+        @name = name
+        @output = "<#{name}>"
+        @enclosing_tag = (name == LIST_ITEM) ? 'ul' : nil
+        @closing_tags = ["</#{name}>"]
+      end
+      def tag_start(name, attrs)
+        return if @chars_left != nil && @chars_left <= 0
+        if name =~ OUTPUT_TAG_REGEX
+          if name == ANCHOR_TAG
+            @output << %Q!<a target="_blank" href="#{ERB::Util.h(attrs['href'] || '')}">!
+            @in_anchor_tag = true
+          else
+            @output << "<#{name}>"
+          end
+          @closing_tags << "</#{name}>"
+        end
+      end
+      def tag_end(name)
+        return if @chars_left != nil && @chars_left <= 0
+        if name =~ OUTPUT_TAG_REGEX
+          @output << (@closing_tags.pop)
+          @in_anchor_tag = nil if name == ANCHOR_TAG
+        end
+      end
+      def text(text)
+        if @chars_left == nil
+          if @in_anchor_tag
+            @output << ERB::Util.h(text)
+          else
+            @output << KTextUtils.auto_link_urls(ERB::Util.h(text))
+          end
+        else
+          return if @chars_left <= 0
+          trunc_text = KTextUtils.truncate(text, @chars_left)
+          # Only do auto-linking when not truncating, as truncating a URL would be unhelpful
+          @output << ERB::Util.h(trunc_text)
+          @chars_left -= text.length # will probably make it < 0, but avoids counting the ... on truncated text
+        end
+      end
+      def output
+        if @chars_left != nil && @chars_left <= 0
+          # Make sure it ends in ... if it was truncated
+          @output << KTextUtils::TRUNCATION_INDICATOR unless @output.end_with?(KTextUtils::TRUNCATION_INDICATOR)
+        end
+        "#{@output}#{@closing_tags.reverse.join()}"
+      end
     end
-    def text(text)
-      return unless (@tag_level > 0) && !@in_widget
-      l = text.length
-      if l < @chars_left
-        @output << text
-        @chars_left -= l
-      else
-        @output << KTextUtils.truncate(text, @chars_left)
-        @output << "</#{@last_name}>"
-        # Abort now
-        raise "ToHTMLTruncatedListener - truncated"
+
+    # Widget top level element, externally rendered, ignored by default
+    class WidgetElement < Block
+      ALLOWED_NAMES = ["q", "sort", "style", "paged", "subset", "limit", "within", "html", "ref", "title", "name", "img", "caption", "size", "pos", "link"]
+      def initialize(type, widget_renderer)
+        @type = type
+        @spec = {}
+        @widget_renderer = widget_renderer
+      end
+      def tag_start(name, attrs)
+        if name == 'v'
+          a = attrs['name']
+          @attr = a.to_sym if ALLOWED_NAMES.include?(a)
+        end
+      end
+      def tag_end(name)
+      end
+      def text(text)
+        @spec[@attr] = text if @attr
+        @attr = nil
+      end
+      def output
+        if @widget_renderer
+          @widget_renderer.call(@type, @spec)
+        else
+          ''
+        end
       end
     end
   end

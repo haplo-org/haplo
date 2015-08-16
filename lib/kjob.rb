@@ -8,11 +8,13 @@
 class KJob
   QUEUE_DEFAULT   = 0
   QUEUE_PLUGINS   = 1
-  QUEUE__COUNT    = 2
+  QUEUE_FILE_TRANSFORM_PIPELINE = 2
+  QUEUE__COUNT    = 3
 
   # How many worker threads to start
   BACKGROUND_TASK_COUNTS = {
     QUEUE_DEFAULT => 3,
+    QUEUE_FILE_TRANSFORM_PIPELINE => 2,
     QUEUE_PLUGINS => 1 # DO NOT CHANGE THIS
     # Plugins need some way to be able to control concurrency of their jobs, and
     # by default, not run any concurrently. Setting only one background task for
