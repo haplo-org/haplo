@@ -7,6 +7,18 @@
 
 class UserPolicy
 
+  def has_permission?(operation, object)
+    allow = @user.permissions.allow?(operation, object.labels)
+    # Hooks can allow read operations which were denied by labels, but this should be used very carefully
+    # as those exceptions are not applied to queries. Queries implement permissions by labels only.
+    unless allow
+      call_hook(:hOperationAllowOnObject) do |hooks|
+        allow = hooks.run(@user, object, operation).allow
+      end
+    end
+    allow
+  end
+
   def allowed_applicable_labels_for_type(type, type_desc = nil)
     type_desc ||= KObjectStore.schema.type_descriptor(type)
     type_desc ? type_desc.applicable_labels.select { |l| @user.permissions.label_is_allowed?(:create, l) } : nil
@@ -26,7 +38,7 @@ class UserPolicy
 
   def can_view_history_of?(object)
     # Only show history if user can update, as access to history may not be desirable otherwise
-    @user.has_permission?(:update, object)
+    self.has_permission?(:update, object)
   end
 
   def should_show_top_level_add_ui?

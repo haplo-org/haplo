@@ -68,7 +68,7 @@ module KEditor
         # allows that to be created, tell the editor that it can't be labelled now, so it tells the user.
         # This avoids waiting until they've entered lots of data.
         changes = KObjectStore.label_changes_for_new_object(@object)
-        unless @user.permissions.allow?(:create, changes.change(@object.labels))
+        unless @user.policy.has_permission?(:create, @object.dup_with_new_labels(changes.change(@object.labels)))
           @labelling_impossible = true
           return
         end
@@ -119,7 +119,7 @@ module KEditor
       end
 
       @attributes_which_should_not_be_changed = []
-      if @operation == :update && !(@user.permissions.allow?(:relabel, @object.labels))
+      if @operation == :update && !(@user.policy.has_permission?(:relabel, @object))
         # If the user can't relabel, don't allow the labelling attributes to change
         type_desc = KObjectStore.schema.type_descriptor(type)
         if type_desc
@@ -130,7 +130,7 @@ module KEditor
 
     def should_display_labelling_ui?
       # Don't display any UI if the user is updating an object but can't relabel it
-      return false if @operation == :update && !(@user.permissions.allow?(:relabel, @object.labels))
+      return false if @operation == :update && !(@user.policy.has_permission?(:relabel, @object))
       # Otherwise, is there anything which could be chosen?
       (@allowed_applicable_labels.length > 1) || !(@plugin_simple_label_ui.empty?)
     end

@@ -58,10 +58,28 @@ public class JdNamespace extends KScriptable {
     // --------------------------------------------------------------------------------------------------------------
     public void jsFunction_table(String name, Scriptable fields, Scriptable methods) {
         JdNamespace.checkNameIsAllowed(name);
+        if(this.has(name, this)) {
+            throw new OAPIException("Database table '"+name+"' has already been declared.");
+        }
         JdTable table = (JdTable)Runtime.createHostObjectInCurrentRuntime("$DbTable", name, fields, methods);
         table.setNamespace(this);
         this.tables.add(table);
         this.put(name, this, table);
+    }
+
+    // Experimental API for tables which have fields defined at runtime, rather than statically defined
+    // when the plugin is written.
+    public Scriptable jsFunction__dynamicTable(String name, Scriptable fields, Scriptable methods) {
+        Runtime.privilegeRequired("pDatabaseDynamicTable", "use database dynamic tables");
+        JdNamespace.checkNameIsAllowed(name);
+        JdDynamicTable table = (JdDynamicTable)Runtime.createHostObjectInCurrentRuntime("$DbDynamicTable", name, fields, methods);
+        table.setNamespace(this);
+        try {
+            table.setupStorage(Runtime.currentRuntimeHost().getSupportRoot().getJdbcConnection());
+        } catch(java.sql.SQLException e) {
+            throw new OAPIException("Couldn't setup SQL storage: " + e.getMessage(), e);
+        }
+        return table;
     }
 
     public void setupStorage() {

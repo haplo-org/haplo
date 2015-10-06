@@ -1,0 +1,13 @@
+title: O.interRuntimeSignal()
+link_as: keyword
+--
+
+Constructs a object implementing the [node:dev/plugin/interface/inter-runtime-signal] interface.
+
+
+h3(function). O.interRuntimeSignal(name, signalFunction)
+
+Create a [node:dev/plugin/interface/inter-runtime-signal] with the given name, and function to call when signalled.
+
+@name@ should include the plugin's name to avoid clashes with other plugins, for example, @"example_plugin:invalidate_cache"@.
+

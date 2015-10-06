@@ -269,7 +269,7 @@ private
         @object_to_edit = @object_previous_version.dup
         # IMPORTANT: Check permissions now to avoid revealing information which might have been removed by a plugin
         # for display, but not in the editor because it didn't think the user would be able to edit it.
-        permission_denied unless @request_user.has_permission?(:update, @object_to_edit)
+        permission_denied unless @request_user.policy.has_permission?(:update, @object_to_edit)
       end
     end
     if @object_to_edit == nil
@@ -409,7 +409,7 @@ public
     @objref = KObjRef.from_presentation(params[:id])
     @obj = KObjectStore.read(@objref)
 
-    permission_denied unless @request_user.permissions.allow?(:delete, @obj.labels)
+    permission_denied unless @request_user.policy.has_permission?(:delete, @obj)
 
     # Make sure the object was deleted (eg if user deletes then clicks the back button)
     if @obj == nil || @obj.deleted?
@@ -443,7 +443,7 @@ public
       deleted_object = KObjectStore.delete @obj
       # The user might not be able to read the object any more, so only send them to the deleted
       # page (including an undelete) button if they can read it.
-      if @request_user.permissions.allow?(:read, deleted_object.labels)
+      if @request_user.policy.has_permission?(:read, deleted_object)
         redirect_to object_urlpath @obj
       else
         redirect_to "/do/edit/deleted/#{@objref.to_presentation}"
@@ -465,7 +465,7 @@ public
   def handle_undelete
     @objref = KObjRef.from_presentation(params[:id])
     @obj = KObjectStore.read(@objref)
-    permission_denied unless @request_user.permissions.allow?(:delete, @obj.labels)
+    permission_denied unless @request_user.policy.has_permission?(:delete, @obj)
     if request.post?
       restored_object = KObjectStore.undelete @obj
       redirect_to object_urlpath restored_object

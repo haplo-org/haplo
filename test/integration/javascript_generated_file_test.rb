@@ -24,7 +24,7 @@ class JavaScriptGeneratedFileTest < IntegrationTest
     run_all_jobs({})
     get_302 "/do/test-generated-file/convert-to-pdf/#{word_file.digest}"
     redirected_to = response['location']
-    assert redirected_to =~ /\Ahttps?:\/\/[^\/]+(\/do\/generated\/file\/[a-zA-Z0-9_-]{32,}\/converted\.pdf)/
+    assert redirected_to =~ /\Ahttps?:\/\/[^\/]+(\/do\/generated\/file\/[a-zA-Z0-9_-]{32,}\/converted)/
     redirect_path = $1
     availability_path = redirect_path.sub("do/generated/file", "api/generated/availability")
     # Check availability

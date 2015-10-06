@@ -29,6 +29,7 @@ require 'js_support/js_uploaded_file_support'
 require 'js_support/js_job_support'
 require 'js_support/js_remote_collaboration_service_support'
 require 'js_support/js_remote_authentication_service_support'
+require 'js_support/js_inter_runtime_signal_support'
 
 
 # Root class for interacting with a JavaScript runtime.
@@ -50,6 +51,10 @@ class JSSupportRoot
   end
 
   # Application information
+  def currentApplicationId
+    KApp.current_application || -1
+  end
+
   def getApplicationInformation(item)
     case item
     when "id"
@@ -261,6 +266,17 @@ class JSSupportRoot
     KApp.logger.add(l, "JS: #{(text.length > 128) ? text[0,128] : text}")
     # Notify everything else interested in the logs
     KNotificationCentre.notify(:javascript_console_log, level.to_sym, text, getCurrentlyExecutingPluginName())
+  end
+
+  # -------------------------------------------------------------------------------------------------------
+
+  PLUGIN_REPORTED_HEALTH_EVENTS = KFramework::HealthEventReporter.new('PLUGIN_REPORT')
+
+  def reportHealthEvent(pluginEventTitle, pluginEventText)
+    event_title = "Plugin reported health event: #{pluginEventTitle || '????'}"
+    event_text = "#{pluginEventText}\n\n\n"
+    caller.each { |line| event_text << "  #{line}\n"}
+    PLUGIN_REPORTED_HEALTH_EVENTS.log_and_report_event(event_title, event_text)
   end
 
   # -------------------------------------------------------------------------------------------------------

@@ -60,10 +60,14 @@ Generate a URL to a user interface, implemented by the platform, which shows a p
 
 @view@ contains extra information for rendering the UI, with keys @pageTitle@, @backLink@ and @backLinkText@ with definitions as in [node:dev/plugin/interface/exchange#render].
 
+If the @filename@ has no extension, or the wrong extension, an appropriate file extension will be added.
+
 
 h3(function). viewToWaitForOutput(name, filename)
 
 Returns a view for use with the [node:dev/plugin/templates/std-template/wait-for-download] template to show a progress bar then download the file.
+
+If the @filename@ has no extension, or the wrong extension, an appropriate file extension will be added.
 
 
 h3(function). urlForOutput(name, filename)
@@ -71,6 +75,8 @@ h3(function). urlForOutput(name, filename)
 Returns a URL, which can be fetched immediately. It will wait without sending any data until the pipeline is complete, then respond with the generated file.
 
 Only use this for building APIs to work with other software. Use @urlForOuputWaitThenDownload()@ when building UI to ensure a good user experience.
+
+If the @filename@ has no extension, or the wrong extension, an appropriate file extension will be added.
 
 
 h2. Interface (execute pipeline)

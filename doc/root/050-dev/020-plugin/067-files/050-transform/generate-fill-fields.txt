@@ -1,0 +1,40 @@
+title: std:generate:fill_fields
+long_title: std:generate:fill_fields transform step
+link_as: keyword
+--
+
+This file transform step fills in fields in PDF and word processing documents.
+
+*NOTE:* This transform is implemented by an optional platform component, and may not be available in your installation.
+
+
+h2. Creating input documents
+
+Text form fields are filled in when filling a PDF file.
+
+@MERGEFIELD@ fields are filled in when filling a word processing document. A definition should look like @"MERGEFIELD FieldName"@ where @FieldName@ is the name which should be used in the @fields@ property.
+
+
+h2. Transform specification
+
+h3(property). input
+
+Name of the input file. Optional, defaults to @"input"@.
+
+
+h3(property). output
+
+Name of the output file. Optional, defaults to @"output"@.
+
+
+h3(property). mimeType
+
+MIME type of the output file. Optional, defaults to the MIME type of the @input@ file.
+
+This transform step can convert between different formats of word processing documents, and word processing documents to PDF.
+
+
+h3(property). fields
+
+A dictionary of field name to field value, both of which must be strings.
+

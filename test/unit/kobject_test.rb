@@ -115,5 +115,16 @@ class KObjectTest < Test::Unit::TestCase
 
   end
 
+  # --------------------------------------------------------------------------------------------------------
+
+  def test_dup_with_new_labels
+    obj1 = KObject.new(KLabelList.new([1,2,3]))
+    obj1.add_attr("a", 1)
+    obj2 = obj1.dup_with_new_labels(KLabelList.new([5,6]))
+    assert obj1.values_equal?(obj2)
+    assert_equal [1,2,3], obj1.labels._to_internal.sort
+    assert_equal [5,6], obj2.labels._to_internal.sort
+  end
+
 end
 

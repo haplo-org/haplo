@@ -16,6 +16,8 @@ class FileVersionController < ApplicationController
   def handle_of
     action_name, objref_s, @tracking_id = exchange.annotations[:request_path]
     @objref = KObjRef.from_presentation(objref_s)
+    @obj = KObjectStore.read(@objref)
+    permission_denied unless @request_user.policy.can_view_history_of?(@obj)
     @file_history, @object, @attr_desc = read_file_version_history(@objref, @tracking_id)
   end
 

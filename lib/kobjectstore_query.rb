@@ -296,7 +296,10 @@ class KObjectStore
         # Permissions and filter by labels
         label_filter_sql = ''
         # Wrap the exclusions up in the permissions SQL clause
-        label_filter_sql = " AND #{KObjectStore.active_permissions._sql_condition(:read, "labels", @exclude_labels)}"
+        user_permissions = KObjectStore.user_permissions
+        if user_permissions
+          label_filter_sql = " AND #{user_permissions.sql_for_read_query_filter("labels", @exclude_labels)}"
+        end
         if @label_constraints
           # Use @> not && because must match *all* of them
           label_filter_sql << " AND (labels @> '{#{@label_constraints.map { |l| l.to_i } .join(',')}}'::int[])"

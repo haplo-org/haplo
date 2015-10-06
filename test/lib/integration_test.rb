@@ -314,7 +314,11 @@ class IntegrationTest < Test::Unit::TestCase
 
     def session_cookie_value_set(value)
       @_cookies ||= {}
-      @_cookies['s'] = value
+      if value.nil?
+        @_cookies.delete('s')
+      else
+        @_cookies['s'] = value
+      end
       @_csrf_token = nil  # because session info has been reset
     end
 

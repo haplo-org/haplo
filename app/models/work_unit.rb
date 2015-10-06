@@ -29,7 +29,7 @@ class WorkUnit < ActiveRecord::Base
           if !user || !(user.is_active) || user.is_group
             true # if a group (which don't have calculated permissions), or not an active user, keep it visible
           else
-            user.permissions.allow?(:read, modified_obj.labels)
+            user.policy.has_permission?(:read, modified_obj)
           end
         end
         if work_unit.visible != required_visibility

@@ -232,7 +232,7 @@ g++ framework/support/oneis.cpp -O2 -o framework/oneis
 
 echo "Compiling Java sources with maven..."
 mvn package
-cp target/haplo-3.20150816.0754.0c805fb703.jar framework/oneis.jar
+cp target/haplo-3.20151006.1020.36969d8b13.jar framework/oneis.jar
 
 mvn -Dmdep.outputFile=target/classpath.txt dependency:build-classpath
 

@@ -48,6 +48,11 @@ class PermissionsTest < IntegrationTest
     PermissionRule.new_rule! :allow, @user_joan, project1.objref, :update
     PermissionRule.new_rule! :allow, @user_joan, project2.objref, *KPermissionRegistry.lookup.keys
 
+    # Check file policy
+    assert_equal false, @user_joe.policy.can_read_any_stored_file?
+    assert_equal false, @user_joan.policy.can_read_any_stored_file?
+    assert_equal true, User.find(User::USER_SUPPORT).policy.can_read_any_stored_file?
+
     # Create some objects
     @objs = Hash.new
     @files = Hash.new
@@ -78,6 +83,18 @@ class PermissionsTest < IntegrationTest
     end
     run_outstanding_text_indexing :expected_work => true
     run_all_jobs({}) # for the new files
+
+    # ANONYMOUS user
+    get_302 obj_path(:o1)
+    assert response['location'].include?('do/authentication/login')
+    get_302 file_path(:o1)
+    assert response['location'].include?('do/authentication/login')
+    # SUPPORT user can fetch file
+    get_a_page_to_refresh_csrf_token # to create a session
+    session[:uid] = User::USER_SUPPORT
+    get file_path(:o1)
+    session_cookie_value_set(nil)
+    get_302 file_path(:o1)
 
     # Now let's login!
     joe = login(@user_joe)
@@ -223,7 +240,7 @@ class PermissionsTest < IntegrationTest
 
     # Give the ANONYMOUS user access to something, check home page doesn't redirect
     PermissionRule.new_rule! :allow, User::USER_ANONYMOUS, project1.objref, :read
-    assert session == "No session" || session[:uid] == nil
+    assert session == "No session"
     get '/'
     assert response.kind_of? Net::HTTPOK # not redirected
 

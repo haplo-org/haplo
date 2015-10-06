@@ -1,0 +1,59 @@
+title: InterRuntimeSignal
+long_title: InterRuntimeSignal interface
+link_as: keyword
+--
+
+A JavaScript object implementing the @InterRuntimeSignal@ interface represents a named signal which can be delivered to all current JavaScript runtimes. It is intended for invalidating small caches implemented by runtimes.
+
+If the cache is likely to be invalidated very infrequently, you could use [node:dev/plugin/o/invalidation#O_reloadJavaScriptRuntimes] instead.
+
+
+h2. Construction
+
+Use [node:dev/plugin/o/constructor/inter-runtime-signal], passing in a name and a "signal function" which will be called when @check()@ is called on a signalled object.
+
+
+h2. Usage
+
+To implement a simple cache which can be invalidated by any active JavaScript runtime, use code like:
+
+<pre>language=javascript
+    // Functions implementing interface to cache object
+    var getCache, invalidateCache;
+
+    // Prevent cache being directly accessed using anon function
+    (function() {
+        // Cache object and signal to invalidate
+        var cache = {};
+        var invalidate = O.interRuntimeSignal("invalidate_test_cache",
+            function() {
+                cache = {};
+            }
+        );
+
+        // Expose function to get the cache object, checking that
+        // it hasn't been invalidated by another runtime.
+        getCache = function(name) {
+            invalidate.check();
+            return cache;
+        };
+
+        // Expose function to invalidate cache
+        invalidateCache = function() {
+            invalidate.signal();
+            // cache will be empty, as signal function has been called
+        };
+    })();
+</pre>
+
+
+h2. Interface
+
+h3(function). signal()
+
+Send the named signal to all other current JavaScript plugins. The signal function will be called in this runtime before the @signal()@ function returns, and in all other runtimes the next time @check()@ function is called.
+
+
+h3(function). check()
+
+Efficiently check whether this signal object is signalled, and if so, call the signal function then set this object to the unsignalled state.

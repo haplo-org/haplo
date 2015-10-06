@@ -34,6 +34,18 @@ class KObject
     super; @attrs = @attrs.clone
   end
 
+  def dup_with_new_labels(new_labels)
+    obj = self.dup
+    obj._set_labels(new_labels)
+    obj
+  end
+
+  # Should only be called by object store internals, use dup_with_new_labels() if you need a
+  # version of the object with different labels.
+  def _set_labels(new_labels)
+    @labels = new_labels
+  end
+
   def freeze
     @attrs.freeze
     super

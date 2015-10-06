@@ -49,6 +49,11 @@ TEST(function() {
         fancyStuff: function(ping) { return ping + " pong"; }
     });
 
+    // Can't declare a table twice
+    TEST.assert_exceptions(function() {
+        db.table("department", {});
+    }, "Database table 'department' has already been declared.");
+
     db.table("employee", {
         name: { type:"text" },
         user: { type:"user", nullable:true },
@@ -96,8 +101,15 @@ TEST(function() {
         attachedFile2: { type:"file", nullable:true }
     });
 
+    db.table("forMigration", {
+        number1: { type:"int" }
+    });
+
     // Set up the storage
     $host._testCallback("");
+
+    TEST.assert_equal(undefined, db.x1.wasCreated);
+    TEST.assert_equal(undefined, db.x1.databaseSchemaChanged);
 
     // Create an object
     var engineering = db.department.create({name:"Engineering'"});  // add ' to make sure SQL is escaped
@@ -718,5 +730,105 @@ TEST(function() {
     filenullable_select3[0].attachedFile2 = null;
     filenullable_select3[0].save();
     TEST.assert_equal(0, db.files2.select().where("attachedFile2","<>",null).length);
+
+    // =====================================================================================
+    // Very simple migration test
+    db.forMigration.create({number1:2}).save();
+    db.forMigration.create({number1:4}).save();
+    var migrated_select0 = db.forMigration.select().where("number1","=",4);
+    TEST.assert_equal(1, migrated_select0.length);
+    TEST.assert_equal(undefined, migrated_select0[0].text1);
+    // Do actual migration
+    delete db.forMigration;   // to avoid redeclaration warning
+    db.table("forMigration", {
+        number1: { type:"int" },
+        text1: { type:"text", nullable:true }
+    });
+    $host._testCallback("");
+    // Check existing data is still there, and new field works
+    var migrated_select1 = db.forMigration.select().where("number1","=",4);
+    TEST.assert_equal(1, migrated_select1.length);
+    TEST.assert_equal(null, migrated_select1[0].text1);
+    migrated_select1[0].text1 = "Hello";
+    migrated_select1[0].save();
+    var migrated_select2 = db.forMigration.select().where("number1","=",4);
+    TEST.assert_equal(1, migrated_select2.length);
+    TEST.assert_equal("Hello", migrated_select2[0].text1);
+
+    // =====================================================================================
+    // Dynamic tables
+    var dyn1 = db._dynamicTable("dyn1", {
+        name: {type:"text", indexed:true},
+        number: {type:"int"}
+    });
+    TEST.assert_equal(true, dyn1.wasCreated);
+    TEST.assert_equal(true, dyn1.databaseSchemaChanged);
+    // can be used immediately without setting up storage
+    dyn1.create({name:"Ping", number:76}).save();
+    dyn1.create({name:"Pong", number:87}).save();
+    var dyn1_select1 = dyn1.select().where("name","=","Ping");
+    TEST.assert_equal(1, dyn1_select1.length);
+    TEST.assert_equal(76, dyn1_select1[0].number);
+    // Redefined with automigrate of new nullable columns
+    dyn1 = db._dynamicTable("dyn1", {
+        name: {type:"text"},
+        number: {type:"int"},
+        add1: {type:"text", nullable:true, indexed:true},   // and indicies work
+        add2: {type:"smallint", nullable:true}
+    });
+    TEST.assert_equal(false, dyn1.wasCreated);
+    TEST.assert_equal(true, dyn1.databaseSchemaChanged);
+    var dyn1_select2 = dyn1.select().where("name","=","Pong");
+    TEST.assert_equal(1, dyn1_select2.length);
+    TEST.assert_equal(87, dyn1_select2[0].number);
+    // Can use the additional fields
+    var dyn1row = dyn1_select2[0];
+    dyn1row.add1 = "additional one";
+    dyn1row.add2 = 48;
+    dyn1row.save();
+    var dyn1row_reload = dyn1.select().where("name","=","Pong")[0];
+    TEST.assert_equal(87, dyn1row_reload.number);
+    TEST.assert_equal("additional one", dyn1row_reload.add1);
+    TEST.assert_equal(48, dyn1row_reload.add2);
+    // Can redefine, losing one of the additional fields
+    dyn1 = db._dynamicTable("dyn1", {
+        name: {type:"text", indexed:true},
+        number: {type:"int"},
+        add2: {type:"smallint", nullable:true}
+    });
+    TEST.assert_equal(false, dyn1.wasCreated);
+    TEST.assert_equal(false, dyn1.databaseSchemaChanged);
+    var dyn1row_lost1 = dyn1.select().where("name","=","Pong")[0];
+    TEST.assert_equal(87, dyn1row_lost1.number);
+    TEST.assert_equal(undefined, dyn1row_lost1.add1);
+    TEST.assert_equal(48, dyn1row_lost1.add2);
+    // But it'll appear again if it appears in a new redefinition
+    dyn1 = db._dynamicTable("dyn1", {
+        name: {type:"text", indexed:true},
+        number: {type:"int"},
+        add1: {type:"text", nullable:true},
+        add2: {type:"smallint", nullable:true}
+    });
+    TEST.assert_equal(false, dyn1.wasCreated);
+    TEST.assert_equal(false, dyn1.databaseSchemaChanged);
+    var dyn1row_reappear1 = dyn1.select().where("name","=","Pong")[0];
+    TEST.assert_equal(87, dyn1row_reappear1.number);
+    TEST.assert_equal("additional one", dyn1row_reappear1.add1);
+    TEST.assert_equal(48, dyn1row_reappear1.add2);
+    // Can't redefine with non-nullable columns
+    TEST.assert_exceptions(function() {
+        var dyn1 = db._dynamicTable("dyn1", {
+            name: {type:"text"},
+            number: {type:"int"},
+            nonnullable: {type:"text"}
+        });
+    }, "Cannot automatically migrate table definition: field nonnullable is not nullable");
+    // Redefine back to the basics, the Ruby test checks that all the expected fields are there.
+    dyn1 = db._dynamicTable("dyn1", {
+        name: {type:"text"},
+        number: {type:"int"}
+    });
+    TEST.assert_equal(false, dyn1.wasCreated);
+    TEST.assert_equal(false, dyn1.databaseSchemaChanged);
 
 });

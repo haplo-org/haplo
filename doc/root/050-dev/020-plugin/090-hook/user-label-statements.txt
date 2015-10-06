@@ -4,4 +4,6 @@ class: HookNode
 
 Allows a plugin to augment or completely rewrite the label statements which represent the permissions of a user.
 
-Called with the SYSTEM user active, so the plugin will have a consistent view of the store and full permissions. Do not call @O.impersontate()@ when responding to this hook.
+Called with the SYSTEM user active, so the plugin will have a consistent view of the store and full permissions. Do not call @O.impersonate()@ when responding to this hook.
+
+When implementing custom permissions, you *must* call [node:dev/plugin/o/invalidation#O_reloadUserPermissions] whenever the underlying information changes.

@@ -25,6 +25,7 @@ Permanently store a pipeline result in the file store, and return a [node:dev/pl
 
 @filename@ is the user visible name of the file which will be used by default when downloading the file at a later date. Remember to include an extension.
 
+If the @filename@ has no extension, or the wrong extension, an appropriate file extension will be added.
 
 
 h3(property). name

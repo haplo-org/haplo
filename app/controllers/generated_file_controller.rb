@@ -139,7 +139,7 @@ class GeneratedFileController < ApplicationController
     info = JSON.parse(File.open(info_pathname) { |f| f.read })
     render_send_file file_pathname,
       :type => info['mimeType'],
-      :filename => info['filename'],
+      :filename => KMIMETypes.correct_filename_extension(info['mimeType'], info['filename']),
       :disposition => 'attachment'
   end
 

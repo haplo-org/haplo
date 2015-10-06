@@ -33,7 +33,7 @@ class KObjectStorePermissionsTest < Test::Unit::TestCase
     @perms.statement(:update, KLabelList.new([ALLOW_UPDATE1,ALLOW_UPDATE2]), KLabelList.new([DENY_UPDATE1,DENY_UPDATE2]))
     @perms.statement(:relabel, KLabelList.new([ALLOW_RELABEL1,ALLOW_RELABEL2]), KLabelList.new([DENY_RELABEL1,DENY_RELABEL2]))
     @perms.statement(:delete, KLabelList.new([ALLOW_DELETE1,ALLOW_DELETE2]), KLabelList.new([DENY_DELETE1,DENY_DELETE2]))
-    KObjectStore.set_user(make_fake_user(10, @perms))
+    set_mock_objectstore_user(10, @perms)
   end
 
   # -----------------------------------------------------------------------------------------------------
@@ -47,13 +47,6 @@ class KObjectStorePermissionsTest < Test::Unit::TestCase
       assert_raises(KObjectStore::PermissionDenied) { KObjectStore.delete(obj) }
       assert_raises(KObjectStore::PermissionDenied) { KObjectStore.relabel(obj, KLabelChanges.new([ALLOW_CREATE1], [])) }
     end
-  end
-
-  def test_user_label_statement_type_checking
-    s = KObjectStore.store
-    assert_raises(RuntimeError) { s.set_user(make_fake_user(12, "pants")); s.active_permissions } # not KLabelStatements
-    assert_raises(RuntimeError) { s.set_user(FakeUser.new(12, KLabelStatementsOps.new)); s.active_permissions } # not frozen
-    assert_raises(RuntimeError) { s.set_user(make_fake_user("UIDString")); s.active_permissions } # not int UID
   end
 
   def test_create_permissions
@@ -224,7 +217,7 @@ class KObjectStorePermissionsTest < Test::Unit::TestCase
     # Check that history can't be read if user can't read latest version
     no_read_perms = KLabelStatementsOps.new
     no_read_perms.statement(:read, KLabelList.new([ALLOW_READ1,ALLOW_READ2]), KLabelList.new([DENY_READ1,DENY_READ2,999]))
-    KObjectStore.set_user(make_fake_user(10, no_read_perms))
+    set_mock_objectstore_user(10, no_read_perms)
     assert_raises(KObjectStore::PermissionDenied) { KObjectStore.read(obj.objref) }
     assert_raises(KObjectStore::PermissionDenied) { KObjectStore.history(obj.objref) }
     assert_raises(KObjectStore::PermissionDenied) { KObjectStore.read_version(obj.objref, 1) }
@@ -241,14 +234,6 @@ class KObjectStorePermissionsTest < Test::Unit::TestCase
     # And index them
     run_outstanding_text_indexing
 
-    # Proc to run a search and check the answer
-    def check_search(expected, alter_query)
-      query = KObjectStore.query_and.free_text('xyz')
-      alter_query.call(query)
-      results = query.execute(:all, :title).map { |o| o.first_attr(A_X_ATTR).to_s } .sort
-      assert_equal expected, results
-    end
-
     # Check all looks good without permissions
     check_search(["a","b","c","d","e"], Proc.new {})
     check_search([    "b","c","d","e"], Proc.new { |query| query.add_exclude_labels([100]) })
@@ -257,7 +242,7 @@ class KObjectStorePermissionsTest < Test::Unit::TestCase
     # Apply permissions
     @perms = KLabelStatementsOps.new
     @perms.statement(:read, KLabelList.new([200,300]), KLabelList.new([400]))
-    KObjectStore.set_user(make_fake_user(19, @perms))
+    set_mock_objectstore_user(19, @perms)
 
     # And again with the permissions applied - finds a few less
     check_search(["a","b","d"], Proc.new {})
@@ -265,10 +250,82 @@ class KObjectStorePermissionsTest < Test::Unit::TestCase
     # And add an additional label filter
     check_search(["b","d"], Proc.new { |query| query.add_exclude_labels([100]) })
 
-    # Check permissions override in set user
-    KObjectStore.set_user(make_fake_user(19, @perms), KLabelStatements.super_user)
+    # Check superuser permissions
+    set_mock_objectstore_user(19, KLabelStatements.super_user)
     check_search(["a","b","c","d","e"], Proc.new {})
     assert_equal 19, KObjectStore.external_user_id
+  end
+
+  # -----------------------------------------------------------------------------------------------------
+
+  def test_plugin_permissions_hook
+    Thread.current[:test_plugin_permissions_hook__hook_calls] = []
+    AuthContext.with_system_user do # to prevent delegate trying to update the mock object
+      assert KPlugin.install_plugin("k_object_store_permissions_test/permissions_hook")
+    end
+    begin
+      # Default permissions will allow all these operations, so the plugin hook won't be called
+      obj1 = make_obj_with_labels([ALLOW_READ1,ALLOW_CREATE2,ALLOW_UPDATE1], "a")
+      assert_permhook_was_not_called
+
+      KObjectStore.read(obj1.objref)
+      assert_permhook_was_not_called
+
+      KObjectStore.update(obj1.dup)
+      assert_permhook_was_not_called
+
+      # Try something with a deny
+      obj2 = make_obj_with_labels([DENY_READ1,ALLOW_CREATE1,DENY_UPDATE1,DENY_DELETE1], "b")
+
+      assert_raises(KObjectStore::PermissionDenied) { KObjectStore.read(obj2.objref) }
+      hook_user, hook_object, hook_operation = permhook_pop_args
+      assert_equal 10, hook_user.id
+      assert_equal :read, hook_operation
+      assert_equal obj2.objref, hook_object.objref
+
+      assert_raises(KObjectStore::PermissionDenied) { KObjectStore.update(obj2.dup) }
+      hook_user, hook_object, hook_operation = permhook_pop_args
+      assert_equal :update, hook_operation
+
+      assert_raises(KObjectStore::PermissionDenied) { make_obj_with_labels([DENY_CREATE1], "c") }
+      hook_user, hook_object, hook_operation = permhook_pop_args
+      assert_equal :create, hook_operation
+
+      permhook_with_allow do
+        make_obj_with_labels([DENY_CREATE1], "c")
+        hook_user, hook_object, hook_operation = permhook_pop_args
+        assert_equal :create, hook_operation
+      end
+
+    ensure
+      Thread.current[:test_plugin_permissions_hook__hook_calls] = nil
+      AuthContext.with_system_user { KPlugin.uninstall_plugin("k_object_store_permissions_test/permissions_hook") }
+    end
+  end
+
+  class PermissionsHookPlugin < KTrustedPlugin
+    _PluginName "Permissions Hook Test Plugin"
+    _PluginDescription "Test"
+    def hOperationAllowOnObject(response, user, object, operation)
+      Thread.current[:test_plugin_permissions_hook__hook_calls].push([user, object, operation])
+      if Thread.current[:test_plugin_permissions_hook__should_allow]
+        response.allow = true
+      end
+    end
+  end
+
+  # Test helper functions
+  def permhook_with_allow
+    begin; Thread.current[:test_plugin_permissions_hook__should_allow] = true
+      yield
+    ensure; Thread.current[:test_plugin_permissions_hook__should_allow] = nil; end
+  end
+  def permhook_pop_args
+    assert_equal 1, Thread.current[:test_plugin_permissions_hook__hook_calls].length
+    Thread.current[:test_plugin_permissions_hook__hook_calls].pop
+  end
+  def assert_permhook_was_not_called
+    assert_equal 0, Thread.current[:test_plugin_permissions_hook__hook_calls].length
   end
 
   # -----------------------------------------------------------------------------------------------------
@@ -287,9 +344,11 @@ class KObjectStorePermissionsTest < Test::Unit::TestCase
     KObjectStore.with_superuser_permissions { KObjectStore.erase(obj.objref) }
   end
 
-  FakeUser = Struct.new(:id, :permissions)
-  def make_fake_user(id, permissions = nil)
-    FakeUser.new(id, (permissions || KLabelStatements.super_user).freeze)
+  def check_search(expected, alter_query)
+    query = KObjectStore.query_and.free_text('xyz')
+    alter_query.call(query)
+    results = query.execute(:all, :title).map { |o| o.first_attr(A_X_ATTR).to_s } .sort
+    assert_equal expected, results
   end
 
 end

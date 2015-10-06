@@ -16,7 +16,7 @@ class UserPolicy
     results = query.execute(:all, :title)
     if write_permission
       results = results.select do |obj|
-        @user.has_permission?(:update, obj)
+        @user.policy.has_permission?(:update, obj)
       end
     end
     results

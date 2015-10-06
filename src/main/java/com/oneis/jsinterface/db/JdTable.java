@@ -12,6 +12,7 @@ import com.oneis.javascript.JsGet;
 import com.oneis.jsinterface.KScriptable;
 import org.mozilla.javascript.*;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayList;
 import java.util.Date;
@@ -317,31 +318,68 @@ public class JdTable extends KScriptable {
     // --------------------------------------------------------------------------------------------------------------
     public void setupStorage(Connection db) throws java.sql.SQLException {
         String postgresSchema = this.namespace.getPostgresSchemaName();
+        String databaseTableName = this.getDatabaseTableName();
 
         // Does this table exist?
         boolean tableExists = false;
-        String checkSql = "SELECT table_name FROM information_schema.tables WHERE table_schema='" + postgresSchema + "' AND table_name='" + this.getDatabaseTableName() + "'";
-        // OK to generate the SQL like this - schema name is internally generated, and table name is checked
+        int indexIndex = 0;
+        HashMap<String,String> existingFields = new HashMap<String,String>();
         Statement checkStatement = db.createStatement();
         try {
-            ResultSet results = checkStatement.executeQuery(checkSql);
-            if(results.next()) {
-                tableExists = true;
+            // Check existence of the table by getting the list of columns and their types
+            // OK to generate the SQL like this - schema name is internally generated, and table name is checked
+            String getColumnsSql = "SELECT column_name,data_type FROM information_schema.columns WHERE table_schema='" +
+                    postgresSchema +"' AND table_name='" + databaseTableName + "'";
+            ResultSet columnResults = checkStatement.executeQuery(getColumnsSql);
+            while(columnResults.next()) {
+                existingFields.put(columnResults.getString(1).toLowerCase(), columnResults.getString(2));
             }
-            results.close();
+            tableExists = !(existingFields.isEmpty());
+            columnResults.close();
+            // If the table exists work out the maximum indexIndex currently defined
+            if(tableExists) {
+                String getIndexIndexSql = "SELECT COALESCE(MAX(substring(indexname from '[0-9]+$')::int),-1)+1 FROM pg_catalog.pg_indexes WHERE schemaname='" +
+                        postgresSchema + "' AND tablename='" + databaseTableName + "' AND indexname ~ '_i[0-9]+$'";
+                ResultSet indexIndexResults = checkStatement.executeQuery(getIndexIndexSql);
+                if(indexIndexResults.next()) {
+                    indexIndex = indexIndexResults.getInt(1);
+                }
+                indexIndexResults.close();
+            }
         } finally {
             checkStatement.close();
         }
 
-        // TODO: JavaScript tables should check and migrate a table definition + index definitions if it already exists
-        // Create the table?
-        if(!tableExists) {
+        ArrayList<String> sqlStatements = new ArrayList<String>(16);
+
+        if(tableExists) {
+            // Support limited migration by generating SQL for new columns
+            StringBuilder alter = new StringBuilder("ALTER TABLE ");
+            alter.append(postgresSchema);
+            alter.append(".");
+            alter.append(databaseTableName);
+            boolean firstColumn = true;
+            boolean needsAlter = false;
+            for(Field field : fields) {
+                if(!existingFields.containsKey(field.getDbNameForExistenceTest())) {
+                    if(!field.isNullable()) {
+                        throw new OAPIException("Cannot automatically migrate table definition: field "+field.getJsName()+" is not nullable");
+                    }
+                    if(firstColumn) { firstColumn = false; } else { alter.append(","); }
+                    alter.append("\nADD COLUMN ");
+                    alter.append(field.generateSqlDefinition(this));
+                    needsAlter = true;
+                }
+            }
+            if(needsAlter) {
+                sqlStatements.add(alter.toString());
+            }
+        } else {
             // Generate the SQL for the table and indicies
-            ArrayList<String> sqlStatements = new ArrayList<String>(16);
             StringBuilder create = new StringBuilder("CREATE TABLE ");
             create.append(postgresSchema);
             create.append('.');
-            create.append(this.getDatabaseTableName());
+            create.append(databaseTableName);
             create.append(" (\nid SERIAL PRIMARY KEY");
             for(Field field : fields) {
                 create.append(",\n");
@@ -349,26 +387,36 @@ public class JdTable extends KScriptable {
             }
             create.append("\n);");
             sqlStatements.add(create.toString());
+        }
 
-            // Generate the index creation SQL
-            int indexIndex = 0;
-            for(Field field : fields) {
+        // Generate the index creation SQL for fields which haven't yet been defined
+        for(Field field : fields) {
+            if(!existingFields.containsKey(field.getDbNameForExistenceTest())) {
                 String indexSql = field.generateIndexSqlDefinition(this, indexIndex++);
                 if(indexSql != null) {
                     sqlStatements.add(indexSql);
                 }
             }
+        }
 
-            // Run the SQL to create the table
+        // Run the creation/migration SQL in a transaction
+        if(sqlStatements.size() > 0) {
             Statement createStatement = db.createStatement();
             try {
+                createStatement.executeUpdate("BEGIN");
                 for(String sql : sqlStatements) {
                     createStatement.executeUpdate(sql);
                 }
+                createStatement.executeUpdate("COMMIT");
             } finally {
                 createStatement.close();
             }
         }
+
+        this.postSetupStorage(!tableExists, sqlStatements.size() > 0);
+    }
+
+    protected void postSetupStorage(boolean didCreate, boolean didChangeDatabase) {
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -651,9 +699,17 @@ public class JdTable extends KScriptable {
             return dbName;
         }
 
+        public String getDbNameForExistenceTest() {
+            return this.getDbName();
+        }
+
         public abstract String sqlDataType();
 
         public abstract int jdbcDataType();
+
+        public boolean isNullable() {
+            return nullable;
+        }
 
         public abstract boolean jsNonNullObjectIsCompatible(Object object);
 
@@ -862,7 +918,7 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public String getDbName() {
+        public String generateIndexSqlDefinitionFields() {
             return this.isCaseInsensitive ? "lower(" + super.getDbName() + ")" : super.getDbName();
         }
 
@@ -1472,6 +1528,11 @@ public class JdTable extends KScriptable {
     private static class FileField extends Field {
         public FileField(String name, Scriptable defn) {
             super(name, defn);
+        }
+
+        @Override
+        public String getDbNameForExistenceTest() {
+            return this.getDbName()+"_d";   // just check the digest column exists
         }
 
         @Override

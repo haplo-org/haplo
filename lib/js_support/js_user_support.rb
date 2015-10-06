@@ -106,11 +106,17 @@ module JSUserSupport
     User.find(:all, :conditions => conditions, :order => 'lower(name)')
   end
 
-  def self.operationPermittedOnObjectOrLabelList(user, operation, objId, labelList)
-    # If checking an object, get the labels from the store
-    labelList = KObjectStore.labels_for_ref(KObjRef.new(objId)) if objId
-    # operation is checked to be an allowed operation by the Java layer, so safe to to_sym() it
+  # operation is checked to be an allowed operation by the Java layer, so safe to to_sym() it
+  def self.operationPermittedGivenLabelList(user, operation, labelList)
     user.permissions.allow?(operation.to_sym, labelList)
+  end
+  def self.operationPermittedOnObject(user, operation, object)
+    user.policy.has_permission?(operation.to_sym, object)
+  end
+  def self.operationPermittedOnObjectByRef(user, operation, objId)
+    # Need to load the object first, so it can be properly checked through the user policy
+    object = KObjectStore.with_superuser_permissions { KObjectStore.read(KObjRef.new(objId)) }
+    user.policy.has_permission?(operation.to_sym, object)
   end
 
   def self.labelCheck(user, operation, objId, allow)

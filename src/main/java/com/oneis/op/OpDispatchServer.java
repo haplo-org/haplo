@@ -22,7 +22,7 @@ public class OpDispatchServer extends Thread {
 
     // How long to give a worker process to respond to a message -- as it's on the local machine it should be
     // able to respond very quickly if it's healthy.
-    static final public int MAX_TIME_TO_ACKNOWLEDGE_OPERATION = 200;
+    static final public int MAX_TIME_TO_ACKNOWLEDGE_OPERATION = 500;
 
     // How long to wait for an operation to execute on the remote worker process.
     static final public int MAX_TIME_TO_WAIT_FOR_OPERATION = 60 * 1000;

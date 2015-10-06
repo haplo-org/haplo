@@ -148,6 +148,10 @@ class DeveloperLoader
         broadcast_notification('log ', "requirments.schema:CHANGED: #{changed_codes.join(', ')}")
       end
     end
+    # Send pipeline results to the console so developers can see error messages without having to write their own code
+    KNotificationCentre.when(:jsfiletransformpipeline, :pipeline_result) do |name, details, result|
+      broadcast_notification('log ', "FILE-PIPELINE:#{result.name}:#{result.success ? 'SUCCESS' : 'ERROR'}:#{result.error_message}")
+    end
   end
 
   # Which fields should be sent to the plugin tool from audit entries

@@ -83,11 +83,9 @@ module JSAuditEntrySupport
   end
 
   def self.constructQuery(query)
-    entries = AuditEntry.where(nil)
-    permissions = KObjectStore.active_permissions
-    unless permissions.nil?
-      entries = entries.where(permissions._sql_condition(:read, "labels"))
-    end
+    entries = AuditEntry.where(
+      KObjectStore.user_permissions.sql_for_read_query_filter("labels")
+    )
 
     types = query.getAuditEntryTypes()
     unless types.nil? or types.length == 0

@@ -12,6 +12,7 @@
 #
 
 class UserPolicy
+  include KPlugin::HookSite
 
   def initialize(user)
     @user = user
@@ -35,6 +36,12 @@ class UserPolicy
   # Check policy given a bitmask
   def check_policy_bitmask(bitmask)
     (@policy_bitmask & bitmask) == bitmask
+  end
+
+  # ----------------------------------------------------------------------------------------------
+
+  def can_read_any_stored_file?
+    (@user.id == User::USER_SUPPORT)
   end
 
 end

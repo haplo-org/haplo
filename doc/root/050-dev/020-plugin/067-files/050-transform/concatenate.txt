@@ -25,3 +25,15 @@ Name of the output file. Optional, defaults to @"output"@.
 h3(property). mimeType
 
 MIME type of the output file, defaults to @application/pdf@.
+
+
+h3(property). fallbackHTML
+
+HTML used to generate a 'fallback' document when a file cannot be concatenated to the document, for any reason.
+
+The string @$FILENAME@ will be replaced by the filename of the file.
+
+
+h3(property). excludeDefaultCSS
+
+If @true@, exclude the default CSS stylesheet when generating the fallback document.

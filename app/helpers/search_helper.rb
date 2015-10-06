@@ -20,7 +20,7 @@ module SearchHelper
   end
 
   def search_within_linked_objref_to_html(objref, extra_text = nil, link = nil)
-    if objref != nil && @request_user.has_permission?(:read, objref)
+    if objref != nil && @request_user.permissions.allow?(:read, KObjectStore.labels_for_ref(objref))
       obj = KObjectStore.read(objref)
       if obj != nil
         search_within_html = %Q!#{extra_text}<a href="#{link || object_urlpath(obj)}">#{h(obj.first_attr(KConstants::A_TITLE).to_s)}</a>!

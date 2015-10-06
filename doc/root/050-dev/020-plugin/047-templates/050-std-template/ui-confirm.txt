@@ -32,7 +32,7 @@ Optional. The text for the cancel link, defaulting to @"Cancel"@.
 
 h3(key). options
 
-An array of options, each of which is rendered as an HTML link. It has keys:
+An array of options, each of which is rendered as an HTML form submit button. It has keys:
 
 |@action@|The URL for the @action@ attribute of the form. The generated forms always have a @"POST"@ method.|
 |@label@|The label for the submit button.|

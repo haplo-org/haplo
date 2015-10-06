@@ -10,11 +10,6 @@
 class KObjectStoreTest < Test::Unit::TestCase
   include KConstants
 
-  FakeUser = Struct.new(:id, :permissions)
-  def make_fake_user(id, permissions = nil)
-    FakeUser.new(id, (permissions || KLabelStatements.super_user).freeze)
-  end
-
   def test_store
     restore_store_snapshot("min")
     # Object creation
@@ -136,11 +131,11 @@ class KObjectStoreTest < Test::Unit::TestCase
     assert obj.objref.obj_id > KConstants::MAX_RESERVED_OBJID
 
     # Test the user ID
-    assert_equal KObjectStore::DEFAULT_USER_ID, obj.creation_user_id
-    assert_equal KObjectStore::DEFAULT_USER_ID, obj.last_modified_user_id
+    assert_equal User::USER_SYSTEM, obj.creation_user_id
+    assert_equal User::USER_SYSTEM, obj.last_modified_user_id
 
     # Set user ID
-    KObjectStore.set_user(make_fake_user(87))
+    set_mock_objectstore_user(87)
 
     # Create an object with a pre-allocated ID
     obj_pre_alloc_id = KObject.new([O_LABEL_UNLABELLED])
@@ -230,7 +225,7 @@ class KObjectStoreTest < Test::Unit::TestCase
     end
 
     # Update the original object, check it comes out again with an updated last update time and the right user ID
-    KObjectStore.set_user(make_fake_user(91))
+    set_mock_objectstore_user(91)
     obj_last_update = obj.obj_update_time
     obj_creation_time = obj.obj_creation_time
     obj = obj.dup
@@ -241,19 +236,19 @@ class KObjectStoreTest < Test::Unit::TestCase
     assert updated_obj == obj
     assert obj_creation_time == obj.obj_creation_time
     assert obj_last_update < updated_obj.obj_update_time
-    assert_equal KObjectStore::DEFAULT_USER_ID, obj.creation_user_id
-    assert_equal KObjectStore::DEFAULT_USER_ID, updated_obj.creation_user_id
+    assert_equal User::USER_SYSTEM, obj.creation_user_id
+    assert_equal User::USER_SYSTEM, updated_obj.creation_user_id
     assert_equal 91, obj.last_modified_user_id
     assert_equal 91, updated_obj.last_modified_user_id
 
     # Can't erase because permissions active
-    KObjectStore.set_user(make_fake_user(91, KLabelStatementsOps.new.freeze))
+    set_mock_objectstore_user(91, KLabelStatementsOps.new.freeze)
     assert_raises(KObjectStore::PermissionDenied) do
       KObjectStore.erase(obj)
     end
 
     # Unset user ID and permissions
-    KObjectStore.set_user(make_fake_user(0))
+    set_mock_objectstore_user(0)
 
     # Delete the object
     KObjectStore.erase(obj)
@@ -487,7 +482,7 @@ class KObjectStoreTest < Test::Unit::TestCase
     # Check permissions are enforced on reads of cached objects
     perms = KLabelStatementsOps.new
     perms.statement(:read, KLabelList.new([1234]), KLabelList.new([9876]))
-    KObjectStore.set_user(make_fake_user(87, perms))
+    set_mock_objectstore_user(87, perms)
     expecting_store_cache_hit do
       assert_raises(KObjectStore::PermissionDenied) do
         KObjectStore.read(obj0.objref)
@@ -497,12 +492,21 @@ class KObjectStoreTest < Test::Unit::TestCase
       # Check the convenience function for reading only if permitted
       assert_equal nil, KObjectStore.read_if_permitted(obj0.objref)
     end
-    KObjectStore.set_user(make_fake_user(0))
+    set_mock_objectstore_user(0)
 
     obj1_update = obj1.dup
     obj1_update.add_attr("x", 101)
     expecting_store_to_uncache(obj1.objref) do
       KObjectStore.update(obj1_update)
+    end
+
+    # Can plugins mess up the cache if they load an object during an update operation?
+    assert KPlugin.install_plugin("k_object_store_test/load_object_during_update")
+    begin
+      KObjectStore.update(obj1_update.dup)
+      assert_equal obj1_update.version + 1, KObjectStore.read(obj1.objref).version
+    ensure
+      KPlugin.uninstall_plugin("k_object_store_test/load_object_during_update")
     end
 
     expecting_store_to_uncache(obj1.objref) do
@@ -544,6 +548,12 @@ class KObjectStoreTest < Test::Unit::TestCase
       assert objectstore_cache.include?(objref.to_i)
     end
     r
+  end
+
+  class LoadObjectDuringUpdatePlugin < KTrustedPlugin
+    def hLabelUpdatedObject(response, object)
+      KObjectStore.read(object.objref)
+    end
   end
 
   # ---------------------------------------------------------------------------------------------------------------
@@ -819,7 +829,7 @@ class KObjectStoreTest < Test::Unit::TestCase
       0,1,0,2,1,0,1,1,2,3,0,0,1,1,0,2,2,3,0,1,1,3,4,5,6,3,5,4,6,4,6,6,6
     ].each do |obj_number|
       # Set UID
-      KObjectStore.set_user(make_fake_user(uid))
+      set_mock_objectstore_user(uid)
 
       # Create or update object?
       obj = objs[obj_number]
@@ -2716,17 +2726,13 @@ _OBJS
     # Make sure the system which updates the object store permissions when users are invalidation doesn't lose superuser permissions
     db_reset_test_data
     AuthContext.with_user(User.find(41)) do
-      assert_equal false, KObjectStore.has_superuser_permissions?
-      assert KObjectStore.active_permissions.kind_of? KLabelStatements
+      assert_equal false, KObjectStore.superuser_permissions_active?
       KObjectStore.with_superuser_permissions do
-        assert_equal true, KObjectStore.has_superuser_permissions?
-        assert KObjectStore.active_permissions.kind_of? KLabelStatementsSuperUser
+        assert_equal true, KObjectStore.superuser_permissions_active?
         User.invalidate_cached
-        assert_equal true, KObjectStore.has_superuser_permissions?
-        assert KObjectStore.active_permissions.kind_of? KLabelStatementsSuperUser
+        assert_equal true, KObjectStore.superuser_permissions_active?
       end
-      assert KObjectStore.active_permissions.kind_of? KLabelStatements
-      assert_equal false, KObjectStore.has_superuser_permissions?
+      assert_equal false, KObjectStore.superuser_permissions_active?
     end
   end
 

@@ -25,6 +25,8 @@ There may be more than one JavaScript runtime for each application, if this is r
 
 Because concurrency is managed by the Platform, you don't have to worry about complex multi-threaded programming.
 
+In the very rare cases where you need to take into account multiple runtimes, you can use the [node:dev/plugin/interface/inter-runtime-signal] to communicate between them.
+
 
 h2. Speed and efficiency
 

@@ -30,7 +30,7 @@
 # to stop processing the current action and redirect to the unauthorized page.
 #
 # Use
-#    @request_user.has_permission?(:operation, obj/objref/labels)
+#    @request_user.policy.has_permission?(:operation, object)
 # to check permissions without aborting if the user doesn't have them.
 #
 

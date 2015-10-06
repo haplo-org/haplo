@@ -78,7 +78,9 @@ module KMIMETypes
       unless line =~ /\s*\#/ || line !~ /\S/
         e = line.chomp.split(/\s+/)
         t = e.shift                   # mime type is first entry
-        e.each { |ex| extns[ex] = t } # extensions, probably none
+        unless t == 'application/octet-stream'
+          e.each { |ex| extns[ex] = t } # extensions, probably none
+        end
       end
     end
   end
@@ -155,7 +157,8 @@ module KMIMETypes
   MIME_TYPE_FROM_EXTENSION.each do |k,v|
     k.freeze
     v.freeze
-    EXTENSION_FROM_MIME_TYPE[v] = k
+    # Take first extension defined, so that obscure extensions don't override normal extension
+    EXTENSION_FROM_MIME_TYPE[v] ||= k
   end
   MIME_TYPE_FROM_EXTENSION.freeze
   EXTENSION_FROM_MIME_TYPE.freeze
@@ -192,6 +195,20 @@ module KMIMETypes
 
   def self.canonical_base_type(mime_type)
     /\A([^;]+)/.match(mime_type)[1].downcase
+  end
+
+  def self.correct_filename_extension(mime_type, filename)
+    mime_type = (mime_type ||= 'application/octet-stream').strip
+    extension = (m = /\.(\w+)\z/.match(filename)) ? m[1] : ""
+    expected_extension = self.extension_from_type(self.correct_mime_type(mime_type))
+    unless expected_extension
+      mime_type_without_options = mime_type.split(/\s*;/)[0]
+      expected_extension = self.extension_from_type(self.correct_mime_type(mime_type_without_options))
+    end
+    if expected_extension && (expected_extension != extension.downcase)
+      filename = "#{filename}.#{expected_extension}"
+    end
+    filename
   end
 
   def self.correct_mime_type(mime_type_in, filename = nil)

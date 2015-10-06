@@ -757,6 +757,7 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
   # ===============================================================================================
 
   def test_database
+    install_grant_privileges_plugin_with_privileges('pDatabaseDynamicTable')
     restore_store_snapshot("basic")
     db_reset_test_data
     StoredFile.destroy_all
@@ -766,7 +767,7 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     file1 = StoredFile.from_upload(fixture_file_upload('files/example10.tiff', 'image/tiff'))
     file2 = StoredFile.from_upload(fixture_file_upload('files/example7.html', 'text/html'))
     # Run test which defines tables
-    runtime = run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_database.js', {}) do |runtime|
+    runtime = run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_database.js', nil, "grant_privileges_plugin") do |runtime|
       # Before running tests, tell the namespace the name to use, via the host
       runtime.host.setNextPluginToBeRegistered("dummy_plugin_name!", "dbtest")
       # The test callback is called in the middle of the tests, after the tables have been defined
@@ -788,11 +789,30 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
         r = KApp.get_pg_database.exec("SELECT * FROM pg_catalog.pg_indexes WHERE schemaname='a#{KApp.current_application}' AND tablename='j_dbtest_employee' AND indexdef LIKE '%lower(caseinsensitivevalue)%'");
         assert_equal 1, r.length
         r.clear
+        # Check that a index isn't created twice, using the most complex one as an example
+        r = KApp.get_pg_database.exec("SELECT * FROM pg_catalog.pg_indexes WHERE schemaname='a#{KApp.current_application}' AND tablename='j_dbtest_files1' AND indexdef LIKE '%attachedfile%'");
+        assert_equal 1, r.length
+        r.clear
         # Callback return must be a string
         ""
       })
     end
+    # Check columns for the dynamic table
+    column_defns = KApp.get_pg_database.exec("SELECT column_name,data_type FROM information_schema.columns WHERE table_schema='a#{KApp.current_application}' AND table_name='j_dbtest_dyn1'").to_a.sort
+    assert_equal [ ["_name", "text"],
+                   ["_number", "integer"],
+                   ["add1", "text"],
+                   ["add2", "smallint"],
+                   ["id", "integer"]      # implicit ID column
+      ], column_defns
+    # Check definitions for the dynamic table
+    index_defns = KApp.get_pg_database.exec("SELECT indexdef FROM pg_catalog.pg_indexes WHERE schemaname='a#{KApp.current_application}' AND tablename='j_dbtest_dyn1'").to_a.map { |row| row.first } .sort
+    assert_equal ["CREATE INDEX j_dbtest_dyn1_i0 ON j_dbtest_dyn1 USING btree (_name)",
+                  "CREATE INDEX j_dbtest_dyn1_i1 ON j_dbtest_dyn1 USING btree (add1)",
+                  "CREATE UNIQUE INDEX j_dbtest_dyn1_pkey ON j_dbtest_dyn1 USING btree (id)"], index_defns
+  ensure
     StoredFile.destroy_all
+    uninstall_grant_privileges_plugin
   end
 
   # ===============================================================================================
@@ -820,6 +840,25 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
         was_allowed = false
       end
       assert_equal allowed, was_allowed
+    end
+  end
+
+  # ===============================================================================================
+
+  def test_database_namespace_names
+    KApp.set_global(:plugin_db_namespaces, YAML::dump({}))
+    namespaces = KJSPluginRuntime::DatabaseNamespaces.new
+    allocated_namespaces = {}
+    0.upto(128) do |n|
+      ns = namespaces["plugin_n#{n}"]
+      assert !(allocated_namespaces.has_key?(ns))
+      allocated_namespaces[ns] = n
+    end
+    namespaces2 = KJSPluginRuntime::DatabaseNamespaces.new
+    0.upto(128) do |n|
+      ns2 = namespaces2["plugin_n#{n}"]
+      assert allocated_namespaces.has_key?(ns2)
+      assert_equal n, allocated_namespaces[ns2]
     end
   end
 
@@ -978,6 +1017,97 @@ __E
     KJSPluginRuntime.current.runtime.evaluateString("var x = 4;", "TEST")
     runtime4 = KJSPluginRuntime.current.__id__
     assert_equal runtime4, runtime3
+  end
+
+  # ===============================================================================================
+
+  def test_inter_runtime_signal
+    @barrier = java.util.concurrent.CyclicBarrier.new(2) # number of threads
+    application_id = _TEST_APP_ID
+    setup_js = <<-__E
+      var testSignalSignalled = false;
+      var testSignal = O.interRuntimeSignal('test_signal', function() { testSignalSignalled = true; });
+    __E
+    thread2 = Thread.new do
+      begin
+        KApp.in_application(application_id) do
+          runtime2 = KJSPluginRuntime.current
+          runtime2.runtime.evaluateString(setup_js, nil);
+          @barrier.await(); # 1
+          @barrier.await(); # 2
+          runtime2.runtime.evaluateString("testSignal.signal();", nil);
+          @barrier.await(); # 3
+        end
+      rescue => e
+        puts "in test_runtimes_and_threads second thread, caught exception #{e}"
+        e.backtrace.each { |l| puts l }
+      end
+    end
+    run_javascript_test(:inline, "#{setup_js} TEST(function() {});", nil, nil, :preserve_js_runtime);
+    run_javascript_test(:inline, <<-__E, nil, nil, :preserve_js_runtime);
+      TEST(function() {
+        TEST.assert_exceptions(function() {
+          O.interRuntimeSignal();
+        }, "Must pass non-empty name and signal function to O.interRuntimeSignal()");
+        TEST.assert_exceptions(function() {
+          O.interRuntimeSignal("hello");
+        }, "Must pass non-empty name and signal function to O.interRuntimeSignal()");
+        TEST.assert_exceptions(function() {
+          O.interRuntimeSignal("", function() {});
+        }, "Must pass non-empty name and signal function to O.interRuntimeSignal()");
+        TEST.assert_exceptions(function() {
+          O.interRuntimeSignal(undefined, function() {});
+        }, "Must pass non-empty name and signal function to O.interRuntimeSignal()");
+      });
+    __E
+    @barrier.await(); # 1
+    run_javascript_test(:inline, <<-__E, nil, nil, :preserve_js_runtime)
+      TEST(function() {
+        TEST.assert_equal(false, testSignalSignalled);
+        testSignal.check();
+        TEST.assert_equal(false, testSignalSignalled);
+      });
+    __E
+    @barrier.await(); # 2
+    @barrier.await(); # 3
+    run_javascript_test(:inline, <<-__E)
+      TEST(function() {
+        TEST.assert_equal(false, testSignalSignalled);
+        testSignal.check();
+        TEST.assert_equal(true, testSignalSignalled);
+        testSignalSignalled = false;
+        testSignal.check();
+        TEST.assert_equal(false, testSignalSignalled);
+
+        // Signalling in this thread runs the signal function
+        testSignal.signal();
+        TEST.assert_equal(true, testSignalSignalled);
+      });
+    __E
+    thread2.join
+  end
+
+  # ===============================================================================================
+
+  def test_health_reporting
+    # Very simple test which just makes sure it doesn't exception in itself
+    install_grant_privileges_plugin_with_privileges('pReportHealthEvent')
+    begin
+      run_javascript_test(:inline, <<-__E)
+        TEST(function() {
+          TEST.assert_exceptions(function() {
+            O.reportHealthEvent("a","b");
+          });
+        });
+      __E
+      run_javascript_test(:inline, <<-__E, nil, "grant_privileges_plugin")
+        TEST(function() {
+          O.reportHealthEvent("Plugin event title", "Plugin event text");\
+        });
+      __E
+    ensure
+      uninstall_grant_privileges_plugin
+    end
   end
 
   # ===============================================================================================

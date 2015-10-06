@@ -11,6 +11,8 @@ import java.sql.Connection;
 
 public interface AppRoot {
     // Application information
+    public int currentApplicationId();
+
     public String getApplicationInformation(String item);
 
     public String getApplicationConfigurationDataJSON();
@@ -68,6 +70,9 @@ public interface AppRoot {
 
     // Application support
     public void writeLog(String level, String text);
+
+    // Event reporting
+    public void reportHealthEvent(String eventTitle, String eventText);
 
     // Cache invalidation
     public void reloadUserPermissions();

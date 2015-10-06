@@ -24,6 +24,13 @@ h3(property). overlay
 
 Name of the PDF file which will be overlaid on the @input@ file. Required.
 
+If you're not sure your overlay file will be a PDF, you can use a [node:dev/plugin/files/transform/convert] step to make sure it's a PDF. If the file is already a PDF, it won't do anything.
+
+<pre>language=javascript
+pipeline.transform("std:convert",
+  {input:"overlay", output:"overlay", mimeType:"application/pdf"});
+</pre>
+
 
 h3(property). background
 

@@ -165,7 +165,7 @@ class Setup_ClassificationController < ApplicationController
 
     error = nil
 
-    unless @request_user.has_permission?(:delete, @obj)
+    unless @request_user.policy.has_permission?(:delete, @obj)
       error = 'You do not have permission to delete this object'
     end
 

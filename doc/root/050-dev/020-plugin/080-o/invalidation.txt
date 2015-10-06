@@ -1,0 +1,24 @@
+title: Invalidation
+long_title: Invalidation and reloading
+--
+
+These functions allow platform caches to be invalidated. Use them carefully, as performance will be impacted by overuse, and stale data will be used if they're not called at the right time.
+
+In general, the cache will be invalidated immediately for this thread. Other threads will see invalidated caches the next time the thread starts a request or background processing.
+
+
+h3(function). O.reloadUserPermissions()
+
+Invalidate all cached user permission information. Use when you've implemented a custom permissions system, and permissions have changed.
+
+
+h3(function). O.reloadJavaScriptRuntimes()
+
+Invalidate all current plugin JavaScript runtimes for this application. The plugin code will be loaded into fresh JavaScript runtimes as soon as possible.
+
+Avoid using this function. It should not be necessary for most plugins. Using an [node:dev/plugin/interface/inter-runtime-signal] is likely to be more appropraite.
+
+
+h3(function). O.reloadNavigation()
+
+Invalidates the cached left hand navigation for all users.

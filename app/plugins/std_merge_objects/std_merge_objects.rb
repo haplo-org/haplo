@@ -41,7 +41,7 @@ class StdMergeObjectsPlugin < KTrustedPlugin
 
       if request.post? && params[:keep]
         keep_ref = KObjRef.from_presentation(params[:keep])
-        if keep_ref && @objects.find { |o| o.objref == keep_ref }
+        if keep_ref && (kept_object = @objects.find { |o| o.objref == keep_ref })
 
           # Merge objects in store
           q = KObjectStore.query_or
@@ -71,7 +71,7 @@ class StdMergeObjectsPlugin < KTrustedPlugin
 
           # Redirect back to a tray containing just the kept object
           tray_clear
-          tray_add_object(keep_ref)
+          tray_add_object(kept_object)
           redirect_to "/do/tray"
         end
       end

@@ -159,23 +159,18 @@ public class KUser extends KScriptable {
     }
 
     public boolean jsFunction_can(String operation, Object item) {
-        Integer objId = null;
-        AppLabelList labelList = null;
+        operation = withAllowedOperationCheck(operation);
         if(item instanceof KObjRef) {
-            objId = ((KObjRef)item).jsGet_objId();
+            return rubyInterface.operationPermittedOnObjectByRef(this.user, operation, ((KObjRef)item).jsGet_objId());
         } else if(item instanceof KLabelList) {
-            labelList = ((KLabelList)item).toRubyObject();
+            return rubyInterface.operationPermittedGivenLabelList(this.user, operation, ((KLabelList)item).toRubyObject());
         } else if(item instanceof Scriptable) {
             KObject storeObject = KObject.unwrap((Scriptable)item);
             if(storeObject != null) {
-                // Get Ruby label list, avoiding conversions
-                labelList = storeObject.toRubyObject().labels();
+                return rubyInterface.operationPermittedOnObject(this.user, operation, storeObject.toRubyObject());
             }
         }
-        if(objId == null && labelList == null) {
-            throw new OAPIException("User can() functions must be passed a Ref, StoreObject or LabelList");
-        }
-        return rubyInterface.operationPermittedOnObjectOrLabelList(this.user, withAllowedOperationCheck(operation), objId, labelList);
+        throw new OAPIException("User can() functions must be passed a Ref, StoreObject or LabelList");
     }
 
     private boolean labelCheck(String operation, Object ref, boolean allow) {
@@ -337,7 +332,9 @@ public class KUser extends KScriptable {
 
         public AppUser[] loadAllMembers(AppUser group);
 
-        public boolean operationPermittedOnObjectOrLabelList(AppUser user, String operation, Integer objId, AppLabelList labelList);
+        public boolean operationPermittedGivenLabelList(AppUser user, String operation, AppLabelList labelList);
+        public boolean operationPermittedOnObject(AppUser user, String operation, AppObject object);
+        public boolean operationPermittedOnObjectByRef(AppUser user, String operation, int objId);
 
         public boolean labelCheck(AppUser user, String operation, Integer objId, boolean allow);
 

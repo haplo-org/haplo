@@ -18,9 +18,28 @@ class KObjectStoreApplicationDelegate
   include KConstants
   include KPlugin::HookSite
 
+  class AppUserPermissions < KObjectStore::UserPermissions
+    def initialize(user, enforce_permissions = false)
+      @user = user
+      @enforce_permissions = enforce_permissions
+    end
+    attr_reader :enforce_permissions
+    def user_id
+      @user.id
+    end
+    def permissions
+      # Make sure the permissions are calculated at the very last moment. This avoids recursive loops when a
+      # plugin uses the object store to work out the permissions for a user.
+      @permissions ||= (@enforce_permissions ? @user.permissions : KLabelStatements.super_user)
+    end
+    def has_permission?(operation, object)
+      @enforce_permissions ? @user.policy.has_permission?(operation, object) : true
+    end
+  end
+
   KNotificationCentre.when(:auth_context, :change) do |name, detail, old_state, new_state|
     if new_state
-      KObjectStore.set_user(new_state.user, new_state.enforce_permissions ? nil : KLabelStatements.super_user)
+      KObjectStore.set_user(AppUserPermissions.new(new_state.user, new_state.enforce_permissions))
     else
       if KObjectStore.store
         KObjectStore.set_user(nil)
@@ -30,9 +49,15 @@ class KObjectStoreApplicationDelegate
   # Update the user object in the store when the user cache is invalidated, if superuser permissions are not in use.
   # Note that any AuthContext states on the stack will use old user objects when they're restored, and if
   # superuser permissions are active, an old object will be pushed off the stack.
+  # TODO: Change AuthContext so that stale objects aren't a problem. (although this is unlikely to be an issue outside tests)
   KNotificationCentre.when(:user_cache_invalidated, nil) do
-    unless KObjectStore.has_superuser_permissions?
-      KObjectStore.set_user(User.cache[KObjectStore.external_user_id])
+    current = KObjectStore.user_permissions
+    if current.kind_of?(AppUserPermissions)
+      user = User.cache[current.user_id]
+      # Force calculation of the new user's permissions now, otherwise a stale user will be popped
+      # from the AuthContext stack at the end of the permission calculation with superuser permissions.
+      user.permissions
+      KObjectStore.set_user(AppUserPermissions.new(user, current.enforce_permissions))
     end
   end
 

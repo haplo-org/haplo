@@ -507,20 +507,6 @@ class User < ActiveRecord::Base
     @policy_bitmask
   end
 
-  # Checking permission for an operation
-  def has_permission?(operation, object)
-    ensure_permissions_calculated()
-    labels = case object
-    when KObject; object.labels
-    when KObjRef; KObjectStore.labels_for_ref(object)
-    when KLabelList; object
-    else
-      raise "Can't get labels for object of class #{object.class.name}"
-    end
-    return false unless labels
-    @permissions.allow?(operation, labels)
-  end
-
   def policy
     @cached_policy ||= UserPolicy.new(self)
   end

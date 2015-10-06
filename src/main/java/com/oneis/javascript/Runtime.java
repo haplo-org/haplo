@@ -213,6 +213,17 @@ public class Runtime {
     }
 
     /**
+     * Get current app ID, or exception
+     */
+    public static int currentApplicationId() {
+        int appId = Runtime.currentRuntimeHost().getSupportRoot().currentApplicationId();
+        if(appId == -1) {
+            throw new RuntimeException("No application is currently active");
+        }
+        return appId;
+    }
+
+    /**
      * Create a new host object in the Runtime in use on the current thread,
      * finding the correct scope to create the object in. (Avoids the sealed
      * shared scope, which is the only easy one to find with the the Rhino API.)
@@ -411,6 +422,7 @@ public class Runtime {
 
             defineSealedHostClass(scope, JdNamespace.class);
             defineSealedHostClass(scope, JdTable.class);
+            defineSealedHostClass(scope, JdDynamicTable.class, true /* map inheritance */);
             defineSealedHostClass(scope, JdSelectClause.class);
             defineSealedHostClass(scope, JdSelect.class, true /* map inheritance */);
 
@@ -422,6 +434,7 @@ public class Runtime {
             defineSealedHostClass(scope, KCheckingLookupObject.class);
             defineSealedHostClass(scope, WorkUnitTags.class);
             defineSealedHostClass(scope, GetterDictionaryBase.class);
+            defineSealedHostClass(scope, InterRuntimeSignal.class);
 
             defineSealedHostClass(scope, KCollaborationService.class);
             defineSealedHostClass(scope, KCollaborationFolder.class);

@@ -19,7 +19,12 @@ module NavigationHelper
     def adjust_groups(groups, user)
     end
     def has_permission(objref, user)
-      user.has_permission?(:read, objref)
+      # This needs to tolerant of erased objects still having refs in the navigation, and objects
+      # in the navigation which is not readable by the user.
+      KObjectStore.with_superuser_permissions do
+        object = KObjectStore.read(objref)
+        object ? user.policy.has_permission?(:read, object) : false
+      end
     end
     # If the derived class doesn't care about a certain type of entry, just ignore it
     def method_missing(sym, *args)

@@ -22,7 +22,7 @@
 
 <% if @obj_is_deleted %>
   </div>
-  <% if @request_user.permissions.allow?(:delete, @obj.labels) %>
+  <% if @request_user.policy.has_permission?(:delete, @obj) %>
     <form class="z__undelete_button" method="POST" action="/do/edit/undelete/<%= @objref.to_presentation %>"><%= form_csrf_token %>
       <input type="submit" value="Undelete">
     </form>

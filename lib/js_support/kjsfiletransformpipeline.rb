@@ -85,6 +85,7 @@ class KJSFileTransformPipeline < KJob
         end
       end
       # Call back into JavaScript to use the result
+      KNotificationCentre.notify(:jsfiletransformpipeline, :pipeline_result, result)
       KJSPluginRuntime.current.call_file_transform_pipeline_callback(result)
     ensure
       # Clean up any temporary files which weren't consumed by the callback
@@ -133,7 +134,8 @@ class KJSFileTransformPipeline < KJob
       JSON.generate(@data || {});
     end
     def get_stored_file(name, filename)
-      @pipeline.get_file(name).to_stored_file(filename)
+      file = @pipeline.get_file(name)
+      file.to_stored_file(KMIMETypes.correct_filename_extension(file.mime_type, filename))
     end
   end
 
@@ -205,6 +207,11 @@ class KJSFileTransformPipeline < KJob
     def execute(pipeline)
       input = pipeline.get_file(self.input_name)
       output_mime_type = @specification['mimeType']
+      if (input.mime_type == output_mime_type) && !(@specification.has_key?('options'))
+        # No transform necessary
+        pipeline.set_file(self.output_name, input)
+        return
+      end
       transformer = KFileTransform.get_transformer(input.mime_type, output_mime_type)
       raise JavaScriptAPIError, "Can't convert from #{input.mime_type} to #{output_mime_type}" unless transformer
       output_pathname = pipeline.make_managed_temporary_file_pathname()
@@ -241,6 +248,7 @@ class KJSFileTransformPipeline < KJob
     def to_stored_file(filename); raise "Not implemented"; end
     def disk_pathname; raise "Not implemented"; end
     def mime_type; raise "Not implemented"; end
+    def display_name; nil; end
     def details; {}; end
   end
 
@@ -256,6 +264,9 @@ class KJSFileTransformPipeline < KJob
     end
     def mime_type
       @stored_file.mime_type
+    end
+    def display_name
+      @stored_file.upload_filename
     end
   end
 

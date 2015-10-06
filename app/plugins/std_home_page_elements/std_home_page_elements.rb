@@ -151,7 +151,7 @@ __E
       # Generate posting link
       posting_user = obj.creation_user_id
       plink = people_links[posting_user] ||= begin
-        user_objref = if posting_user == nil || posting_user == KObjectStore::SYSTEM_USER_ID
+        user_objref = if posting_user == nil || posting_user == User::USER_SYSTEM
           nil
         else
           User.cache[obj.creation_user_id].objref

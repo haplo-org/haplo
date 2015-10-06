@@ -577,14 +577,22 @@ oform.on('click', '.oforms-file a.oforms-file-remove', function(evt) {
 // -----------------------------------------------------------------------------------------------------------------
 
 // Support for repeating sections with file upload UI at the top
-$('.oforms-repeat-file-ui', oform).each(function() {
-    var fileUIElement = this;
-    window.oFormsFileDelegate.fileRepeatingSectionInitTarget(fileUIElement, function(file) {
-        var row = repeatingSectionAddRow(fileUIElement);
-        var fileElement = $('.oforms-file input[type=file]', row).parents('.oforms-file').first();
-        return fileElementStartUploadUserInteface(fileElement, file);
+var doFileRepeatingSectionInitTarget = function(newRow, rowsParent) {
+    $('.oforms-repeat-file-ui', newRow).each(function() {
+        var fileUIElement = this;
+        window.oFormsFileDelegate.fileRepeatingSectionInitTarget(fileUIElement, function(file) {
+            var row = repeatingSectionAddRow(fileUIElement);
+            var fileElement = $('.oforms-file input[type=file]', row).parents('.oforms-file').first();
+            return fileElementStartUploadUserInteface(fileElement, file);
+        });
     });
-});
+};
+
+// Add file targets to initial form
+doFileRepeatingSectionInitTarget(oform, undefined);
+
+// Add file targets to new rows in repeating sections
+onCreateNewRepeatingSectionRow.push(doFileRepeatingSectionInitTarget);
 
 /////////////////////////////// element_support/date.js ///////////////////////////////
 

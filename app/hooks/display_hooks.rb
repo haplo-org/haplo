@@ -17,6 +17,8 @@ module KHooks
     h.argument    :object,      KObject,        "The object being displayed"
     h.result      :hideModificationInfo,  "bool", "false", "Set to true to hide the modification info after the object"
     h.result      :buttons,     Hash,     "{}", "Hash of String (button name) to Array of [url_path,menu_text] for the menu"
+    h.result      :backLink,    String,   nil,  "Link for the 'back' button for this object. Use with caution."
+    h.result      :backLinkText,String,   nil,  "Label for the 'back' button for this object. Always use a noun describing the item you're linking to."
   end
 
 end

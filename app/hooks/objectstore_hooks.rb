@@ -36,4 +36,12 @@ module KHooks
     h.result      :output,      String,   nil,  "Output of transform"
   end
 
+  define_hook :hOperationAllowOnObject do |h|
+    h.private_hook
+    h.argument    :user,        User,     "SecurityPrincipal attempting to perform the operation"
+    h.argument    :object,      KObject,  "The object to check"
+    h.argument    :operation,   Symbol,   "Which operation to check: 'create', 'update', 'relabel', 'delete', 'erase'"
+    h.result      :allow,       "bool",   "false",  "Whether to allow this operation"
+  end
+
 end

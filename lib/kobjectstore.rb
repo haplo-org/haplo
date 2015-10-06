@@ -8,7 +8,6 @@
 require 'kobject'
 require 'kobjref'
 require 'kschema'
-require 'kdelegate_app' # TODO: Do this in a nicer manner
 require 'kobjectstore_textidx'  # text indexing implementation
 require 'kobjectstore_query'  # the query implementation
 
@@ -23,10 +22,6 @@ class KObjectStore
   attr_reader :application_id
   attr_reader :statistics
   include KConstants
-
-  # User ID which is used by default
-  DEFAULT_USER_ID = 0
-  SYSTEM_USER_ID = DEFAULT_USER_ID  # for objects created by the system, not a person
 
   # Factor used in Xapian indexing
   TEXTIDX_WEIGHT_MULITPLER  = 4
@@ -85,9 +80,7 @@ class KObjectStore
     @@schema_caches_lock.synchronize { @@schema_caches.delete(old_store.application_id) }
     # Select a nice clean new store
     select_store(old_store.application_id)
-    self.store.instance_variable_set(:@_uid, old_store.instance_variable_get(:@_uid))
-    self.store.instance_variable_set(:@_pending_user_for_permissions, old_store.instance_variable_get(:@_pending_user_for_permissions))
-    self.store.instance_variable_set(:@_permissions, old_store.instance_variable_get(:@_permissions))
+    self.store.instance_variable_set(:@user_permissions, old_store.instance_variable_get(:@user_permissions))
   end
 
   def self.reset_thread_state
@@ -109,8 +102,6 @@ class KObjectStore
     @statistics = Statistics.new
     # Create a delegate object -- TODO: Don't hardcode this.
     @delegate = KObjectStoreApplicationDelegate.new
-    # Make sure the user state is initialised consistently
-    reset_user_state()
   end
 
   def _delegate
@@ -119,75 +110,55 @@ class KObjectStore
 
   # ----------------------------------------------------------------------------------------------------------
 
-  # Set UID and permissions from a user object. This must respond to:
-  #   id: integer representing user ID
-  #   permissions: KLabelStatements with at least operations :read, :create, :update, :delete
-  # Permissions can be overridden with given permissions object.
-  # The user object will be stored by the object store, and may be used later
-  def set_user(user, override_permissions = nil)
-    if user.nil?
-      reset_user_state()
-    else
-      uid = user.id
-      raise "Bad UID" unless uid.kind_of?(Integer)
-      @_uid = uid
-      if override_permissions
-        @_pending_user_for_permissions = nil
-        @_permissions = override_permissions
-      else
-        # If the permissions aren't overriden, the user must be stored for later so the permmissions
-        # can be calculated at the very last point. This avoids recursive loops when a plugin uses
-        # the object store to work out the permissions for a user.
-        @_pending_user_for_permissions = user
-        @_permissions = nil
-      end
+  # set_user() is passed a class which provides user and permission information to the store.
+  # It should lazily load the permissions, as permission calculation may invoke store operations.
+  class UserPermissions
+    # integer representing user ID
+    def user_id; raise "Not implemented"; end
+
+    # KLabelStatements with at least operations :read, :create, :update, :delete
+    def permissions; raise "Not implemented"; end
+
+    # Method to check permissions on a single object, which presumably uses self.permissions
+    def has_permission?(operation, object); raise "Not implemented"; end
+
+    # Generate clause for underlying SQL read queries
+    def sql_for_read_query_filter(column, additional_excludes = nil)
+      self.permissions._sql_condition(:read, column, additional_excludes)
     end
+  end
+
+  # ----------------------------------------------------------------------------------------------------------
+
+  # Set UID and permissions, taking a UserPermissions object
+  def set_user(user_permissions)
+    @user_permissions = user_permissions
     nil
   end
 
-  # Used by initialize() as well as set_user(), to ensure consistency
-  def reset_user_state
-    @_uid = DEFAULT_USER_ID
-    @_pending_user_for_permissions = nil
-    @_permissions = nil
+  def user_permissions
+    @act_as_superuser ? nil : @user_permissions
   end
 
-  # Get user ID
+  def superuser_permissions_active?
+    !!@act_as_superuser
+  end
+
+  # Integer ID of active user
   def external_user_id
-    @_uid
+    @user_permissions.user_id.to_i
   end
 
-  # Get permissions currently active
-  def active_permissions
-    if @_pending_user_for_permissions
-      permissions = @_pending_user_for_permissions.permissions
-      raise "Bad permissions" unless permissions.kind_of?(KLabelStatements)
-      raise "Permissions must be frozen" unless permissions.frozen?
-      # Store after all vars checked, so no chance of leaving incomplete state
-      @_permissions = permissions
-      @_pending_user_for_permissions = nil
-    end
-    raise "No permissions set for KObjectStore" unless @_permissions
-    @_permissions
-  end
-  
   def with_superuser_permissions
     r = nil
-    old_permissions = @_permissions
-    old_pending = @_pending_user_for_permissions
-    @_permissions = KLabelStatements.super_user
-    @_pending_user_for_permissions = nil
+    old_act_as_superuser = @act_as_superuser
+    @act_as_superuser = true
     begin
       r = yield
     ensure
-      @_permissions = old_permissions
-      @_pending_user_for_permissions = old_pending
+      @act_as_superuser = old_act_as_superuser
     end
     r
-  end
-
-  def has_superuser_permissions?
-    !!(@_permissions && @_permissions.is_superuser?)
   end
 
   # ----------------------------------------------------------------------------------------------------------
@@ -201,10 +172,10 @@ class KObjectStore
   end
 
   def enforce_permissions(operation, object)
-    labels = object.labels
-    raise PermissionDenied, "Object is not labelled" unless labels
-    unless self.active_permissions.allow?(operation, labels)
-      raise PermissionDenied, "Operation #{operation} not permitted for object #{object.objref} with labels [#{labels._to_internal.join(',')}]"
+    return if @act_as_superuser
+    raise PermissionDenied, "Object is not labelled" unless object.labels
+    unless @user_permissions.has_permission?(operation, object)
+      raise PermissionDenied, "Operation #{operation} not permitted for object #{object.objref} with labels [#{object.labels._to_internal.join(',')}]"
     end
   end
 
@@ -347,7 +318,9 @@ class KObjectStore
     versions = []
     sql = "SELECT object,labels,version,updated_at FROM os_objects_old WHERE id=#{objref.obj_id}"
     # Prevent reading anything the user shouldn't see in the history
-    sql << " AND #{self.active_permissions._sql_condition(:read, "labels")}"
+    unless @act_as_superuser
+      sql << " AND #{@user_permissions.sql_for_read_query_filter("labels")}"
+    end
     sql << " ORDER BY version"
     KApp.get_pg_database.exec(sql).each do |object,labels,version,updated_at|
       versions << ObjectHistoryVersion.new(version.to_i, DateTime.parse(updated_at), KObjectStore._deserialize_object(object,labels))
@@ -368,14 +341,13 @@ class KObjectStore
     raise "Bad changes passed to relabel" unless changes.kind_of?(KLabelChanges)
     # Get a fresh copy of the object, without permission enforcement, so we don't have to trust the labels passed in
     obj = self.with_superuser_permissions { self.read(obj_or_objref.kind_of?(KObject) ? obj_or_objref.objref : obj_or_objref) }
-    permissions = self.active_permissions
     # Must be allowed to relabel objects with these labels
-    unless permissions.allow?(:relabel, obj.labels)
+    unless @act_as_superuser || @user_permissions.has_permission?(:relabel, obj)
       raise PermissionDenied, "Not permitted to relabel object #{obj.objref}"
     end
     # :create must allow the new labels
     new_labels = changes.change(obj.labels)
-    unless permissions.allow?(:create, new_labels)
+    unless @act_as_superuser || @user_permissions.has_permission?(:create, obj.dup_with_new_labels(new_labels))
       raise PermissionDenied, "Not permitted to relabel with proposed new labels for object #{obj.objref}"
     end
     # Shortcut returning the fresh copy of the existing object if there are no changes
@@ -450,7 +422,7 @@ class KObjectStore
     r.clear
 
     # Can only erase when the active permissions are super user permissions
-    raise PermissionDenied, "Can only erase objects when super-user permissions are in force" unless self.active_permissions.is_superuser?
+    raise PermissionDenied, "Can only erase objects when super-user permissions are in force" unless @act_as_superuser || @user_permissions.permissions.is_superuser?
 
     pg = KApp.get_pg_database
 
@@ -496,7 +468,7 @@ class KObjectStore
 
   def self._deserialize_object(object_str, labels_str)
     object = Marshal.load(PGconn.unescape_bytea(object_str))
-    object.__send__(:instance_variable_set, :@labels, KLabelList._from_sql_value(labels_str))
+    object._set_labels(KLabelList._from_sql_value(labels_str))
     object.freeze
   end
 
@@ -628,7 +600,6 @@ private
     else
       raise "Object for update doesn't have objref set" if obj.objref.nil?
       obj_id = obj.objref.obj_id
-      @object_cache.delete(obj_id)
     end
 
     # Get title of object as a UTF-8 string
@@ -731,10 +702,12 @@ private
       obj_labels = label_changes.change(create_operation ? obj.labels : previous_version_of_obj.labels)
       obj_labels = KLabelList.new([O_LABEL_UNLABELLED]) if obj_labels.empty?
 
-      permissions = self.active_permissions
+      # Create a duplicate of the object with the labels applied for checking permissions
+      obj_with_proposed_labels = obj.dup_with_new_labels(obj_labels)
+
       if create_operation
         # Proposed labels are allowed
-        unless permissions.allow?(:create, obj_labels)
+        unless @act_as_superuser || @user_permissions.has_permission?(:create, obj_with_proposed_labels)
           raise PermissionDenied, "Operation create not permitted for object #{obj.objref} with labels [#{obj_labels._to_internal.join(',')}]"
         end
       else
@@ -744,7 +717,7 @@ private
         unless previous_version_of_obj.labels == obj_labels
           enforce_permissions(:relabel, previous_version_of_obj)
           # And check the new labels are acceptable to :create permissions
-          unless permissions.allow?(:create, obj_labels)
+          unless @act_as_superuser || @user_permissions.has_permission?(:create, obj_with_proposed_labels)
             raise PermissionDenied, "Operation update not permitted for object #{obj.objref} because labels [#{obj_labels._to_internal.join(',')}] are not allowed by create permissions"
           end
         end
@@ -765,7 +738,7 @@ private
         data = Marshal.dump(obj)
       ensure
         # Replace the labels in the object with the changed labels
-        obj.__send__(:instance_variable_set, :@labels, obj_labels)
+        obj._set_labels(obj_labels)
       end
 
       # TODO: Implement generic sorting on any field, and remove this hack
@@ -860,6 +833,12 @@ private
       end
 
       pg.perform('COMMIT')
+
+      unless create_operation
+        # Must invalidate the cache after the database has committed, as there are plenty of opportunities
+        # for plugins to cause a read during an update operation.
+        @object_cache.delete(obj_id)
+      end
 
       if has_text_to_index
         # Start the index job AFTER the transaction has been committed in the db

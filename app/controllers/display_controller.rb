@@ -139,7 +139,7 @@ class DisplayController < ApplicationController
     @render_options = Hash.new
 
     # Add menu items to files?
-    user_can_see_file_versions = @request_user.has_permission?(:update, @obj)
+    user_can_see_file_versions = @request_user.policy.has_permission?(:update, @obj)
     @render_options[:file_identifier_menu] = proc do |file_identifier, file_link|
       m = [['Download',"#{file_link}?attachment=1",'z__file_extra_action_link_open']]
       if user_can_see_file_versions
@@ -155,14 +155,14 @@ class DisplayController < ApplicationController
     # If the object is deleted or doesn't have a type descriptor, don't show all the extra stuff
     if @type_desc && !(@obj_is_deleted)
 
-      if @request_user.has_permission?(:update, @obj)
+      if @request_user.policy.has_permission?(:update, @obj)
          @edit_link = "/do/edit/#{@objref.to_presentation}"
       end
 
       # Extra menu entries for the Edit button
       unless @request_user.policy.is_anonymous?
         edit_entries = []
-        if @request_user.has_permission?(:delete, @obj)
+        if @request_user.policy.has_permission?(:delete, @obj)
           edit_entries << ["/do/edit/delete/#{@objref.to_presentation}", 'Delete...']
         end
         if @request_user.policy.can_view_history_of?(@obj)
@@ -174,6 +174,9 @@ class DisplayController < ApplicationController
       call_hook(:hObjectDisplay) do |hooks|
         @plugin_object_display_behaviour = hooks.run(@obj_unmodified)
         @title_bar_buttons.merge!(@plugin_object_display_behaviour.buttons)
+        if @plugin_object_display_behaviour.backLink
+          @breadcrumbs = [[@plugin_object_display_behaviour.backLink, @plugin_object_display_behaviour.backLinkText || 'Return']]
+        end
       end
 
       # Render Elements

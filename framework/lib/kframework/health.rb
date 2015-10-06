@@ -44,25 +44,46 @@ class KFramework
     end
 
     # Reporting exceptions via email
-    def log_and_report_exception(exception, info_text = nil)
+    def log_and_report_exception(exception, event_title = nil)
+      event_title ||= 'Exception thrown'
+      event_title = ''
+      handle_info = nil
+      if exception
+        event_text = "#{exception.inspect}\n  #{exception.backtrace.join("\n  ")}"
+        # Was the exception thrown while handling a request?
+        handle_info = exception.instance_variable_get(:@__handle_info);
+      end
+      self.log_and_report_event(event_title, event_text, handle_info)
+    end
+
+    def log_and_report_event(event_title, event_text, handle_info = nil)
       begin
-        KApp.logger.error("EVENT: #{@name} - #{info_text || '(no info)'}")
-        if exception
-          KApp.logger.log_exception(exception)
-        else
-          KApp.logger.error("(no exception)")
-        end
+        event_title ||= 'Application health event'
+        KApp.logger.error("EVENT: #{@name} - #{event_title}")
+        KApp.logger.error(event_text)
         app_id = KApp.current_application
         app_hostname = (app_id && (app_id != :no_app)) ? KApp.global(:ssl_hostname) : ''
         event_id = KRandom.random_api_key(15)
         KApp.logger.error("EVENT ID: #{event_id}") # for easy location of error
         path = nil
-        # Was the exception thrown while handling a request?
-        handle_info = exception.instance_variable_get(:@__handle_info);
+        method = nil
+        # Got any more info about the event?
         if handle_info
           app_id, app_hostname, method, path = handle_info
         end
+        # Attempt to get it another way
+        rc = KFramework.request_context
+        if rc
+          begin
+            method = rc.exchange.request.method if method == nil
+            path = rc.exchange.request.path if path == nil
+          rescue
+            # Ignore problems trying to find addition info
+          end
+        end
         # Write a nice email
+        # NOTE: This email avoids including more of the logs, as it might contain sensitive email
+        # that shouldn't be sent via email.
         report_email_address = KInstallProperties.get(:report_email_address, :disable)
         email = <<__E
 From: #{KHostname.hostname} <#{report_email_address}>
@@ -76,15 +97,12 @@ Event ID:     #{event_id}
 Application:  #{app_id || 'NONE'} (#{app_hostname})
 Request:      #{method} #{path || 'NO REQUEST'}
 
+#{event_title}
+
+#{event_text}
+
+
 __E
-        # NOTE: This email avoids including more of the logs, as it might contain sensitive email
-        # that shouldn't be sent via email.
-        if exception
-          email << "#{exception.inspect}\n  #{exception.backtrace.join("\n  ")}"
-        else
-          email << "NO EXCEPTION"
-        end
-        email << "\n\n\n\n"
         if report_email_address == :disable || PLUGIN_DEBUGGING_SUPPORT_LOADED
           KApp.logger.info("===== BEGIN ERROR REPORT =====\n#{email}\n===== END ERROR REPORT =====")
         else

@@ -253,7 +253,7 @@ class UserTest < Test::Unit::TestCase
     def check_states
       raise "Not locked" unless AuthContext.state.locked
       raise "Bad user" unless KObjectStore.external_user_id == 0
-      raise "Bad permissions" unless KObjectStore.active_permissions.kind_of?(KLabelStatementsSuperUser)
+      raise "Bad permissions" unless KObjectStore.user_permissions.permissions.kind_of?(KLabelStatementsSuperUser)
     end
     def hUserPermissionRules(response, user)
       check_states()

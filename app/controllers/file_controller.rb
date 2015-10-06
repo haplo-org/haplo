@@ -582,6 +582,10 @@ public
 private
   def security_checks_for(stored_file)
     permitted = false
+    # Some super-users can read any file
+    unless permitted
+      permitted = true if @request_user.policy.can_read_any_stored_file?
+    end
     # Check the request for a session-specific signature which authenticates the user
     # Do this *first*, so that requests which override the filename don't rewrite that filename
     unless permitted

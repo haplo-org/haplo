@@ -6,4 +6,4 @@ Called to add entries in the left hand navigation for logged in users. The navig
 
 The @name@ is the position name configured in the Navigation using the System management user interface.
 
-Navigation is aggressively cached, and this hook will only be called occasionally for any given user. Call [node:dev/plugin/o/cache-invalidation#O_reloadNavigation] to invalidate the cache.
+Navigation is aggressively cached, and this hook will only be called occasionally for any given user. Call [node:dev/plugin/o/invalidation#O_reloadNavigation] to invalidate the cache.

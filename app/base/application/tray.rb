@@ -30,9 +30,9 @@ class ApplicationController
     tray_store_for_current_user contents
   end
 
-  def tray_add_object(obj_or_objref)
-    permission_denied unless @request_user.has_permission?(:read, obj_or_objref)
-    r = ((obj_or_objref.class == KObject) ? obj_or_objref.objref : obj_or_objref).to_presentation
+  def tray_add_object(object)
+    permission_denied unless @request_user.policy.has_permission?(:read, object)
+    r = object.objref.to_presentation
     cache = KApp.cache(TRAY_CONTENTS_CACHE)
     tray = cache[@request_user.id]
     contents = tray.contents

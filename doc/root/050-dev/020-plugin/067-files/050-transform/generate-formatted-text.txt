@@ -30,6 +30,11 @@ h3(property). css
 Optional style information for the HTML document as a CSS document. Only simple CSS is supported.
 
 
+h3(property). excludeDefaultCSS
+
+If set to @true@, the default document styles will be omitted. The default style sheet styles the basic HTML elements and forms.
+
+
 h3(property). marginTop, marginRight, marginBottom, marginLeft
 
 Margins of the page, in points. Defaults to @96@.

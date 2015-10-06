@@ -22,7 +22,7 @@ P.respond("GET", "/do/test-generated-file/convert-to-pdf-redirect-to-built-in-ui
     var pipeline = O.fileTransformPipeline();
     pipeline.file("input", O.file(digest));
     pipeline.transform("std:convert", {mimeType:"application/pdf"});
-    var url = pipeline.urlForOuputWaitThenDownload("output", "converted.pdf", {
+    var url = pipeline.urlForOuputWaitThenDownload("output", "converted", { // no extension
         pageTitle: "TEST TITLE>",
         backLink: "/do/test-back-link",
         backLinkText: "TEST BACK>"

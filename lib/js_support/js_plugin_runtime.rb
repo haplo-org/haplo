@@ -86,10 +86,8 @@ class KJSPluginRuntime
       AuthContext.lock_current_state
       # JSSupportRoot implementation requires that a new object is created every time the runtime is checked out
       @support_root = JSSupportRoot.new
-      @runtime.useOnThisThread(@support_root) # will evaluate code to load schema
+      @runtime.useOnThisThread(@support_root)
       begin
-        # The first time this runtime is checked out, load all the plugins in strict order.
-        # This ensures there's a consistent ordering of the plugins inside the runtime, so chaining works as expected.
         unless @plugins_loaded
           ms = Benchmark.ms do
             # Quick check that nothing has been loaded into this runtime yet
@@ -100,41 +98,18 @@ class KJSPluginRuntime
             @runtime.evaluateString(KSchemaToJavaScript.schema_to_js(KObjectStore.schema), "<schema>")
             # Parse the plugin schema requirements so it can be passed to the plugins when loading
             schema_for_js_runtime = SchemaRequirements::SchemaForJavaScriptRuntime.new()
-            # Load database namespace information
-            db_namespaces = YAML::load(KApp.global(:plugin_db_namespaces) || '') || {}
-            # Go through each plugin, and ask it to load the JavaScript code
-            KPlugin.get_plugins_for_current_app.each do |plugin|
-              database_namespace = nil
-              # Does the plugin require a database?
-              if plugin.uses_database
-                # Yes - retrieve/generate a namespace name
-                database_namespace = db_namespaces[plugin.name]
-                if database_namespace == nil
-                  # Namespace not set yet - choose a random namespace name
-                  safety = 256
-                  while true
-                    safety -= 1
-                    raise "Couldn't allocate database namespace" if safety <= 0
-                    database_namespace = KRandom.random_hex(3)
-                    break unless db_namespaces.has_value?(database_namespace)
-                  end
-                  db_namespaces[plugin.name] = database_namespace
-                  KApp.set_global(:plugin_db_namespaces, YAML::dump(db_namespaces))
-                end
-              end
-              # Tell the host object to expect a plugin registration.
-              # This check prevents unexpected registrations by plugin code, and sets the database namespace for the plugin.
-              @runtime.host.setNextPluginToBeRegistered(plugin.name, database_namespace)
-              using_runtime do
-                plugin.javascript_load(@runtime, schema_for_js_runtime)
-              end
-              @runtime.host.setNextPluginToBeRegistered(nil, nil)
-            end
-            # Call the plugin's onLoad() functions
+            db_namespaces = DatabaseNamespaces.new
             using_runtime do
+              # Go through each plugin, and ask it to load the JavaScript code
+              KPlugin.get_plugins_for_current_app.each do |plugin|
+                database_namespace = plugin.uses_database ? db_namespaces[plugin.name] : nil
+                # This check prevents unexpected registrations by plugin code, and sets the database namespace for the plugin.
+                @runtime.host.setNextPluginToBeRegistered(plugin.name, database_namespace)
+                plugin.javascript_load(@runtime, schema_for_js_runtime)
+                @runtime.host.setNextPluginToBeRegistered(nil, nil)
+              end
               @runtime.host.callAllPluginOnLoad()
             end
-            # Don't load anything again
             @plugins_loaded = true
           end
           KApp.logger.info("Initialised application JavaScript runtime, took #{ms.to_i}ms\n")
@@ -147,6 +122,27 @@ class KJSPluginRuntime
         # then re-raise the error
         raise
       end
+    end
+  end
+
+  class DatabaseNamespaces
+    def initialize
+      @namespaces = YAML::load(KApp.global(:plugin_db_namespaces) || '') || {}
+    end
+    def [](plugin_name)
+      namespace = @namespaces[plugin_name]
+      return namespace if namespace
+      safety = 256
+      while safety > 0
+        safety -= 1
+        r = KRandom.random_hex(3)
+        unless @namespaces.has_value?(r)
+          @namespaces[plugin_name] = r
+          KApp.set_global(:plugin_db_namespaces, YAML::dump(@namespaces))
+          return r
+        end
+      end
+      raise "Couldn't allocate database namespace"
     end
   end
 

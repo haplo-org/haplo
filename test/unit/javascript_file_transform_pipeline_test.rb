@@ -77,6 +77,31 @@ __E
 
   # -------------------------------------------------------------------------
 
+  def test_file_conversion_will_not_convert_unnecessarily
+    pdf_file = StoredFile.from_upload(fixture_file_upload('files/example3.pdf', 'application/pdf'))
+    run_all_jobs :expected_job_count => 1
+    run_javascript_test_with_file_pipeline_callback(:inline, <<__E, nil, 'grant_privileges_plugin')
+      TEST(function() {
+        var pdfFile = O.file("#{pdf_file.digest}");
+        var pipeline = O.fileTransformPipeline("testconvert");
+        pipeline.file("input", pdfFile);
+        pipeline.transform("std:convert", {mimeType:"application/pdf"});
+        pipeline.execute();
+        var outputFile;
+        O.$registerFileTransformPipelineCallback("testconvert", this, {
+            success: function(result) {
+              outputFile = result.file("output", "test1234.pdf");
+            }
+        });
+        $host._testCallback("1");
+        TEST.assert(outputFile instanceof $StoredFile);
+        TEST.assert_equal("#{pdf_file.digest}", outputFile.digest);
+      });
+__E
+  end
+
+  # -------------------------------------------------------------------------
+
   def test_pipelined_word_to_png
     word_file = StoredFile.from_upload(fixture_file_upload('files/example.doc', 'application/msword'))
     run_all_jobs :expected_job_count => 1
@@ -92,7 +117,7 @@ __E
         O.$registerFileTransformPipelineCallback("testconvert", this, {
             success: function(result) {
               $host._testCallback("Check temp files exist");  //# intermediate file
-              result.file("output", "file100.png");
+              result.file("output", "file100.doc"); //# wrong extension, will be corrected
             }
         });
         $host._testCallback("1");
@@ -103,7 +128,7 @@ __E
     pngs = StoredFile.where(:mime_type => 'image/png')
     assert_equal 1, pngs.length
     png = pngs[0]
-    assert_equal "file100.png", png.upload_filename
+    assert_equal "file100.doc.png", png.upload_filename # check corrected filename
     assert (File.open(png.disk_pathname,'r:BINARY') { |f| f.read }) =~ /\A.PNG/
     assert_equal 100, png.dimensions_w
     assert_equal 200, png.dimensions_h

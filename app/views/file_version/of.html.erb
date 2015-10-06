@@ -1,9 +1,9 @@
 <%
   @page_title = "Versions of "+h(@file_history.last.file_identifier.presentation_filename)
   @breadcrumbs = [[object_urlpath(@object), 'Back']]
+  client_side_resources(:file_versions)
 
-  if @request_user.permissions.allow?(:update, @object.labels)
-    client_side_resources(:file_versions)
+  if @request_user.policy.has_permission?(:update, @object)
     client_side_controller_js("file_version")
     %>
       <div id="z__upload_target"></div>

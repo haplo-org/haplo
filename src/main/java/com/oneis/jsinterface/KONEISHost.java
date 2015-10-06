@@ -450,6 +450,12 @@ public class KONEISHost extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+    public void jsFunction_reportHealthEvent(String eventTitle, String eventText) {
+        Runtime.privilegeRequired("pReportHealthEvent", "report health events");
+        this.supportRoot.reportHealthEvent(eventTitle, eventText);
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
     // Cache invalidation
     public void jsFunction_reloadUserPermissions() {
         this.supportRoot.reloadUserPermissions();

@@ -163,5 +163,22 @@ class Test::Unit::TestCase
       puts "Disabling test #{method} because conversion from #{from_mime_type} to #{to_mime_type} is not supported"
     end
   end
+
+  class ObjectStorePermissionsTestUser
+    def initialize(user_id, permissions)
+      @id = user_id
+      @permissions = permissions
+    end
+    attr_reader :id, :permissions
+    def policy
+      @policy ||= UserPolicy.new(self)
+    end
+    def policy_bitmask; 0xffffff; end
+  end
+  def set_mock_objectstore_user(id, permissions = nil)
+    mock_user = ObjectStorePermissionsTestUser.new(id, (permissions || KLabelStatements.super_user).freeze)
+    AuthContext.set_user(mock_user, mock_user)
+  end
+
 end
 

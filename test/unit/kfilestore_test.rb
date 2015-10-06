@@ -73,6 +73,15 @@ class KFileStoreTest < Test::Unit::TestCase
     assert KMIMETypes.is_msoffice_type?('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     assert ! KMIMETypes.is_msoffice_type?('application/pdf')
     assert ! KMIMETypes.is_msoffice_type?('image/jpeg')
+
+    # Ensuring files have the right extension
+    assert_equal "test.pdf", KMIMETypes.correct_filename_extension("application/pdf", "test.pdf")
+    assert_equal "test.pdf", KMIMETypes.correct_filename_extension("application/pdf", "test")
+    assert_equal "test.PDF", KMIMETypes.correct_filename_extension("application/pdf", "test.PDF")
+    assert_equal "test.pdf", KMIMETypes.correct_filename_extension("application/octet-stream", "test.pdf")
+    assert_equal "test.pdf", KMIMETypes.correct_filename_extension("image/pants", "test.pdf")
+    assert_equal "test.pdf.doc", KMIMETypes.correct_filename_extension("application/msword", "test.pdf")
+    assert_equal "test.pdf.doc", KMIMETypes.correct_filename_extension("application/msword; options=382", "test.pdf")
   end
 
   def test_stored_file_creation
