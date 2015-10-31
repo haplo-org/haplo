@@ -34,6 +34,11 @@ TEST(function() {
     TEST.assert_equal(":helloThere:2:1:", d1.helloThere);
     TEST.assert_equal(":helloThere:4:2:", d2.helloThere);
 
+    // hasOwnProperty must work for iterative over contents
+    TEST.assert_equal(false, d1.hasOwnProperty("forEach"));
+    TEST.assert_equal(false, d1.hasOwnProperty("propertyWhichHasNotBeenSet"));
+    TEST.assert_equal(true, d1.hasOwnProperty("helloThere"));
+
     // ----------------------------------------------------------------------
 
     // With a suffix

@@ -803,6 +803,33 @@ var KApp = (function($) {
     app.p__inputPlaceholderSupported = 'placeholder' in document.createElement('input');
 
     // ----------------------------------------------------------------------------------------------------
+    //             Prevent double submission of forms
+    // ----------------------------------------------------------------------------------------------------
+
+    $(document).on('submit', 'form', function(evt) {
+        if(evt.isDefaultPrevented()) {
+            // This handler will be called pretty much last. If something else prevented the default,
+            // don't do anything, as no form would have been submitted.
+            return;
+        }
+        var now = (new Date()).getTime();
+        var currentFormSubmitTimeStr = this.getAttribute("data-kformsubmit");
+        if(currentFormSubmitTimeStr) {
+            var currentFormSubmitTime = 1*currentFormSubmitTimeStr;
+            // Form has already been submitted. If it was relatively recent, just ignore the second submit.
+            if((now - currentFormSubmitTime) < 5000) {
+                evt.preventDefault();
+            } else {
+                // But if was too long ago enough that it might be legitimate to retry, ask the user.
+                if(!window.confirm("Are you sure you want to send a form again?\n\nThis might result in duplicate or unexpected actions.")) {
+                    evt.preventDefault();
+                }
+            }
+        }
+        this.setAttribute("data-kformsubmit",""+now);
+    });
+
+    // ----------------------------------------------------------------------------------------------------
     //             On-load handler
     // ----------------------------------------------------------------------------------------------------
 

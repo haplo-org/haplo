@@ -85,6 +85,16 @@ TEST(function() {
     TEST.assert_equal(undefined, hdict1.get(TYPE["std:type:event:conference"]));
     TEST.assert_equal(undefined, hdict1.get(TYPE["std:type:event:conference"])); // repeat
     iteratortester(hdict1, [[TYPE["std:type:equipment"],"equipment"]]);
+
+    TEST.assert(_.isEqual(["equipment"], hdict1.getAllInHierarchy(TYPE["std:type:equipment"])));
+    var firstComputerLookup = hdict1.getAllInHierarchy(TYPE["std:type:equipment:computer"]);
+    TEST.assert(_.isEqual(["equipment"], firstComputerLookup));
+    TEST.assert(_.isEqual(["equipment"], hdict1.getAllInHierarchy(TYPE["std:type:equipment:laptop"])));
+    TEST.assert(firstComputerLookup === hdict1.getAllInHierarchy(TYPE["std:type:equipment:computer"]));
+    TEST.assert(_.isEqual(["equipment"], hdict1.getAllInHierarchy(TYPE["std:type:equipment:computer"]))); // repeat, will come from 'cache'
+    TEST.assert(_.isEqual(["equipment"], hdict1.getAllInHierarchy(TYPE["std:type:equipment:laptop"]))); // repeat
+    TEST.assert(_.isEqual([], hdict1.getAllInHierarchy(TYPE["std:type:event:conference"])));
+
     hdict1.set(TYPE["std:type:equipment:computer"], "computer");
     TEST.assert_equal("equipment", hdict1.get(TYPE["std:type:equipment"]));
     TEST.assert_equal("computer", hdict1.get(TYPE["std:type:equipment:computer"]));
@@ -92,11 +102,16 @@ TEST(function() {
     TEST.assert_equal(undefined, hdict1.get(TYPE["std:type:event:conference"]));
     iteratortester(hdict1, [[TYPE["std:type:equipment"],"equipment"],[TYPE["std:type:equipment:computer"],"computer"]]);
 
+    TEST.assert(firstComputerLookup !== hdict1.getAllInHierarchy(TYPE["std:type:equipment:computer"]));
+    TEST.assert(_.isEqual(["equipment","computer"], hdict1.getAllInHierarchy(TYPE["std:type:equipment:laptop"])));
+
     // Hierarchical with constructor function
     var hdict2ConstructCount = 0;
     var hdict2 = O.refdictHierarchical(function(ref) { hdict2ConstructCount++; return ""+ref+"/"+hdict2ConstructCount; });
     // Constructor function interacts in an interesting way, which isn't entirely useful, but keep the functionality
+    TEST.assert(_.isEqual([], hdict2.getAllInHierarchy(TYPE["std:type:equipment"])));
     TEST.assert_equal(""+TYPE["std:type:equipment"]+"/1", hdict2.get(TYPE["std:type:equipment"]));
+    TEST.assert(_.isEqual([""+TYPE["std:type:equipment"]+"/1"], hdict2.getAllInHierarchy(TYPE["std:type:equipment"])));
     TEST.assert_equal(""+TYPE["std:type:equipment"]+"/1", hdict2.get(TYPE["std:type:equipment:computer"]));
     TEST.assert_equal(""+TYPE["std:type:equipment"]+"/1", hdict2.get(TYPE["std:type:equipment:laptop"]));
     TEST.assert_equal(""+TYPE["std:type:event:conference"]+"/2", hdict2.get(TYPE["std:type:event:conference"]));

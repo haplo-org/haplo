@@ -12,9 +12,9 @@ Highlights include:
  * File handling, including conversion, previewing and version control
  * Lightweight "humane" workflow support
  * Designed to evolve as user needs change, enabling agile application development
- * Proven in production for over six years, used by a diverse range of clients
+ * Proven in production for over seven years, used by a diverse range of clients
 
-For more information, and build instructions, please see the main [Haplo web site](http://haplo.org) and the [API documentation](http://docs.oneis.co.uk/dev/plugin).
+For more information, and build instructions, please see the main [Haplo web site](http://haplo.org) and the [API documentation](http://docs.haplo.org/dev/plugin).
 
 ### License
 
@@ -22,9 +22,7 @@ Haplo is licensed under the Mozilla Public License Version 2.0. See the LICENSE 
 
 ### Copyright
 
-Haplo is copyright [ONEIS Ltd](http://oneis.co.uk). See the COPYRIGHT file for full details.
-
-The Haplo platform is derived from the ONEIS Platform, a commercial hosted information management platform and service. Software specific to the ONEIS hosting environment and components which reply on commercial software have been omitted, and we intend to develop open replacements as soon as practical.
+Haplo is copyright ONEIS Ltd t/a [Haplo Services](http://www.haplo-services.com). See the COPYRIGHT file for full details.
 
 ### Dependencies
 

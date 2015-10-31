@@ -391,7 +391,11 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
   # ===============================================================================================
 
   def test_stored_files
+    FileCacheEntry.destroy_all
+    StoredFile.destroy_all
     restore_store_snapshot("basic")
+    # PDF file to test dimensions
+    pdf_3page = StoredFile.from_upload(fixture_file_upload('files/example_3page.pdf', 'application/pdf'))
     # Create a file with a few versions
     stored_file = StoredFile.from_upload(fixture_file_upload('files/example.doc', 'application/msword'))
     # Make an object so the plugin can find it
@@ -408,8 +412,11 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     test_stored_file = StoredFile.from_upload(fixture_file_upload('files/example8_utf8nobom.txt','text/plain'))
     # Zero length file
     StoredFile.from_upload(fixture_file_upload('files/zero_length_file.txt','text/plain'))
+    # Run jobs to get file dimensions etc
+    run_all_jobs({})
     # Run test
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_stored_files.js', {
+      "PDF_THREE_PAGE" => pdf_3page.digest,
       "OBJ_WITH_FILE" => obj.objref.to_presentation,
       "STORED_FILE_ID" => stored_file.id,
       "TEXT_STORED_FILE_DIGEST" => test_stored_file.digest
@@ -425,6 +432,8 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     assert_equal "JS log message", js_identifier.log_message
     assert_equal "2.6", js_identifier.version_string
   end
+
+  disable_test_unless_file_conversion_supported :test_stored_files, "application/pdf", "image/png"
 
   # ===============================================================================================
 

@@ -1,11 +1,12 @@
 <%
 # Render non-document fields, collect documents
-documents = []
+documents = Hash.new { |h,k| h[k] = [] }
 store = obj.store
-table = obj_display_standard_table_rows(obj,store.schema,options) do |value,desc,q|
+schema = store.schema
+table = obj_display_standard_table_rows(obj,schema,options) do |value,desc,q|
   if value.class == KTextDocument
     # Documents go at the end of the object
-    documents << value
+    documents[desc] << value
     false  # filter it out
   else
     true  # display
@@ -13,6 +14,32 @@ table = obj_display_standard_table_rows(obj,store.schema,options) do |value,desc
 end
 %>
 <%= table %>
-<% documents.each do |document| %>
-  <%= render_doc_as_html(document, store, options, recursion_limit - 1) %>
-<% end %>
+<%
+  # If there are more than two attributes with KTextDocument type, display attribute names
+  document_attribute_count = 0
+  type_descriptor = schema.type_descriptor(obj.first_attr(A_TYPE))
+  attr_descriptors = {}
+  if type_descriptor
+    type_descriptor.attributes.each do |desc|
+      attr_desc = schema.attribute_descriptor(desc) || schema.aliased_attribute_descriptor(desc)
+      if attr_desc && attr_desc.data_type == T_TEXT_DOCUMENT
+        document_attribute_count += 1
+        # Store attribute descriptor (to get the right heading when aliased attributes are used)
+        attr_descriptors[attr_desc.alias_of || desc] = attr_desc
+      end
+    end
+  end
+  with_attribute_name = document_attribute_count > 1
+
+  documents.each do |desc,values|
+    if with_attribute_name
+      attr_desc = attr_descriptors[desc]
+      if attr_desc
+        %><h2><%= h(attr_desc.printable_name.to_s) %></h2><%
+      end
+    end
+    values.each do |document|
+      %><%= render_doc_as_html(document, store, options, recursion_limit - 1) %><%
+    end
+  end
+%>

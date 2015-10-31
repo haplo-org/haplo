@@ -167,14 +167,18 @@ TEST(function() {
     TEST.assert_exceptions(function() { O.work.query(5); }, "Must pass work type as a string to O.work.query()");
     TEST.assert_exceptions(function() { O.work.query("ping"); }, "Work unit work type names must start with the plugin name followed by a : to avoid collisions.");
     TEST.assert_exceptions(function() { O.work.query(":ping"); }, "Work unit work type names must start with the plugin name followed by a : to avoid collisions.");
-    // Queries without work type or ref will exception when executed
-    TEST.assert_exceptions(function() { var x = O.work.query().length; }, "Work unit queries must specify at least a work type or a ref");
-    TEST.assert_exceptions(function() { var x = O.work.query(null).length; }, "Work unit queries must specify at least a work type or a ref");
+    // Queries without minimum WHERE clause requirements will exception when executed
+    TEST.assert_exceptions(function() { var x = O.work.query().length; }, "Work unit queries must specify at least a work type, a ref, or a tag");
+    TEST.assert_exceptions(function() { var x = O.work.query(null).length; }, "Work unit queries must specify at least a work type, a ref, or a tag");
 
     // Query on ref only
     var refQuery = O.work.query().ref(O.ref(70));
     TEST.assert_equal(1, refQuery.length);
     TEST.assert_equal(unit1.id, refQuery[0].id);
+    // Query on tag only
+    var tagQuery = O.work.query().tag("tag1", "value1");
+    TEST.assert_equal(1, tagQuery.length);
+    TEST.assert_equal(unit1.id, tagQuery[0].id);
     // And check work type too
     TEST.assert_equal(0, O.work.query("x:y").ref(O.ref(70)).length);
 

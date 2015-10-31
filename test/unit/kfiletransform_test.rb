@@ -333,6 +333,9 @@ class KFileTransformTest < Test::Unit::TestCase
 
   def test_iwork_text_extract
     do_test_file_extraction(%w(pages template key kth numbers nmbtemplate))
+    # Test new iWorks'13 file formats
+    # do_test_file_extraction(%w(pages key), 'example_iworks13') # but Iwana can't do iworks13 numbers files
+    # do_test_file_extraction(%w(pages key), 'example_iworks15')
     # Check the text in the "prototype sections" is removed
     terms = KTextExtract.extract_terms("#{File.dirname(__FILE__)}/../fixtures/files/example_with_prototype_text.pages", 'application/x-iwork-pages-sffpages')
     # Check example terms aren't included

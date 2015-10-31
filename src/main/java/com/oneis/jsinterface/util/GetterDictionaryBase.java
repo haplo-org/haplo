@@ -35,7 +35,7 @@ public class GetterDictionaryBase extends KScriptable {
     @Override
     public Object get(String name, Scriptable start) {
         // Not the prototype?
-        if(this.getterFunction == null) {
+        if((this.getterFunction == null) || "hasOwnProperty".equals(name)) {
             return super.get(name, start);
         }
         // See if it has a suffix

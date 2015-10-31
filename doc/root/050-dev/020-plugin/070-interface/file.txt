@@ -59,6 +59,17 @@ h3(function). checkSecret(secret)
 Compare the given secret with the file's secret using a timing-attack resistant comparison algorithm. If the secret does not match, an exception is thrown.
 
 
+h3(property). properties
+
+A JavaScript @Object@, as a dictionary, containing additional properties of the file. These may not be available either because the file has not been processed yet, processing encountered an error, or the properties are not applicable to that file type.
+
+@numberOfPages@: Number of pages in the file.
+
+@dimensions@: Physical dimensions of the document represented by the file, with keys @width@, @height@ and @units@.
+
+@thumbnail@: The size of the thumbnail, if available, with keys @width@, @height@ and @mimeType@.
+
+
 h3(function). url(options)
 
 Return a URL which can be used to download this file. See below for the optional @options@ argument.

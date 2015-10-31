@@ -8,11 +8,14 @@ package com.oneis.jsinterface.util;
 
 import org.mozilla.javascript.*;
 import java.util.HashMap;
+import java.util.ArrayList;
 
+import com.oneis.javascript.Runtime;
 import com.oneis.jsinterface.KObject;
 
 public class KRefKeyDictionaryHierarchical extends KRefKeyDictionary {
     private HashMap<Integer, Object> childDictionary;
+    private HashMap<Integer, Object> allHierarchicalDictionary;
 
     public KRefKeyDictionaryHierarchical() {
     }
@@ -59,13 +62,55 @@ public class KRefKeyDictionaryHierarchical extends KRefKeyDictionary {
         return returnableValue(value);
     }
 
+    public Object jsFunction_getAllInHierarchy(Object keyObject) {
+        Integer id = keyObjectToId(keyObject);
+        // Create cache, or check to see if the object is in it.
+        if(this.allHierarchicalDictionary == null) {
+            this.allHierarchicalDictionary = new HashMap<Integer, Object>();
+        } else {
+            Object cachedArray = this.allHierarchicalDictionary.get(id);
+            if(cachedArray != null) {
+                return cachedArray;
+            }
+        }
+        // Find the list of values
+        Integer path[] = KObject.getObjectHierarchyIdPath(id);
+        ArrayList<Object> allValues = new ArrayList<Object>(path.length);
+        for(Integer pathId : path) {
+            Object value = getValueByIdWithoutConstructorCall(pathId);
+            if(value != null) {
+                allValues.add(returnableValue(value));
+            }
+        }
+        // Create and cache a sealed array
+        Runtime runtime = Runtime.getCurrentRuntime();
+        Object array = runtime.getContext().newArray(runtime.getJavaScriptScope(), allValues.toArray());
+        ((ScriptableObject)array).sealObject();
+        this.allHierarchicalDictionary.put(id, array);
+        return array;
+    }
+
     public Object jsFunction_set(Object keyObject, Object value) {
-        childDictionary = null; // invalidate
+        invalidateCachedLookups();
         return super.jsFunction_set(keyObject, value);
     }
 
     public Object jsFunction_remove(Object keyObject) {
-        childDictionary = null; // invalidate
+        invalidateCachedLookups();
         return super.jsFunction_remove(keyObject);
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+
+    private void invalidateCachedLookups() {
+        this.childDictionary = null;
+        this.allHierarchicalDictionary = null;
+    }
+
+    @Override
+    protected void haveUsedValueConstructorFn() {
+        // Constructing a value means the hierachical cache will be invalid
+        this.allHierarchicalDictionary = null;
+        super.haveUsedValueConstructorFn();
     }
 }

@@ -59,6 +59,8 @@ require 'socket'
 require 'digest/sha1'
 require 'rexml/document'
 require 'rexml/streamlistener'
+require 'rexml/encoding'
+require 'stringio' # for REXML
 require 'net/https'
 require 'net/smtp'
 require 'base64'

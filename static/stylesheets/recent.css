@@ -76,6 +76,10 @@
     margin: 0 0 8px 0;
 }
 
+.z__recent_entry_files .z__icon {
+    margin-right: 8px;
+}
+
 .z__recent_entry_quick_look /* hidden in printable.css */ {
     float: right;
     z-index: 2000;

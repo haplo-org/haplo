@@ -121,6 +121,10 @@ class User < ActiveRecord::Base
     User.find(:first, :conditions => {:kind => KIND_USER, :objref => objref})
   end
 
+  def self.find_by_objref(objref)
+    User.find(:first, :conditions => {:objref => objref})
+  end
+
   # Password management (hashed using bcrypt)
   def password
     # Hide password, hash or otherwise

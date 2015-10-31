@@ -47,6 +47,7 @@ module Application_IconHelper
   # Icons used as the default when setting up schema
   ICON_DEFAULT_LIST_OBJECT = 'E501,1,f'.freeze
   # Icons for UI
+  ICON_SPECIAL_RECENT_OBJECT_HAS_FILES = 'E201,1,f,y'.freeze
   ICON_SPECIAL_LINKED_ITEMS = 'E008,1,f'.freeze
   ICON_SPECIAL_LINKED_ITEMS_SELECTED = 'E525,1,f E008,1,f'.freeze
   ICON_SPECIAL_RECENT_VERSION = 'E525,1,f,s E526,2,c'.freeze

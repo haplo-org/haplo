@@ -162,6 +162,11 @@ public class KStoredFile extends KScriptable {
         return rubyInterface.fileIdentifierMakePathOrHTML(this.storedFile, parseFileRenderOptions(options), true /* HTML */);
     }
 
+    public Object jsGet_properties() throws Exception {
+        String json = rubyInterface.getFilePropertiesJSON(this.storedFile);
+        return Runtime.getCurrentRuntime().makeJsonParser().parseValue(json);
+    }
+
     public String jsFunction__oFormsFileHTML(String where) {
         return rubyInterface.oFormsFileHTML(this.storedFile, where);
     }
@@ -191,6 +196,8 @@ public class KStoredFile extends KScriptable {
         public AppStoredFile tryFindFile(String digest, Number fileSizeMaybe);
 
         public String fileIdentifierMakePathOrHTML(AppStoredFile storedFile, FileRenderOptions options, boolean html);
+
+        public String getFilePropertiesJSON(AppStoredFile storedFile);
 
         public String oFormsFileHTML(AppStoredFile storedFile, String where);
 

@@ -20,7 +20,7 @@ TEST(function() {
     TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y",email:"ping@example.com", groups:[1,"two"]}); }, "groups attribute must be an Array of integer group IDs");
 
     // Create user!
-    var user = O.setup.createUser({nameFirst:" Java ", nameLast:" Script ", email:"js@example.com", groups:[21,22]});
+    var user = O.setup.createUser({nameFirst:" Java ", nameLast:" Script ", email:"js@example.com", groups:[21,22], ref:O.ref(6543)});
     TEST.assert(user instanceof $User);
     TEST.assert(user.id > 128);
     TEST.assert(!user.isGroup);
@@ -36,6 +36,8 @@ TEST(function() {
     user1.setIsActive(false);
     TEST.assert_equal(false, user1.isActive);
     TEST.assert_equal(false, user1.isGroup);
+    TEST.assert_equal(user1.id, O.user(O.ref(6543)).id);   // can still find by ref if inactive
+    TEST.assert_equal(user1.id, O.user("js@example.com").id); // can still find by email if inactive
 
     user1.setIsActive(true);
     TEST.assert_equal(true, user1.isActive);

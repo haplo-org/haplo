@@ -449,6 +449,19 @@ module Application_RenderHelper
     KObjectUtils.title_of_object(obj, kind)
   end
 
+  def maybe_append_object_to_autocomplete_list(list, object, kind = :simple)
+    title = object.first_attr(A_TITLE).to_s
+    autocomplete_title = (kind == :full) ? title_of_object(object, :full) : title
+    call_hook(:hTempObjectAutocompleteTitle) do |hooks|
+      hooks.response.title = autocomplete_title # set default
+      r = hooks.run(object)
+      autocomplete_title = r.title
+    end
+    return nil if autocomplete_title.nil?
+    list << [object.objref.to_presentation, title, autocomplete_title]
+    title
+  end
+
   # ========================================================================================================
   # Helper function for making highlighted summary text, mainly for search results
   # Probably not very efficient

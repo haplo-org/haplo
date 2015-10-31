@@ -75,8 +75,12 @@ public class KRefKeyDictionary extends KScriptable {
                 // If it's not a null value, store it now so the result is consistent next time
                 this.dictionary.put(key, value);
             }
+            this.haveUsedValueConstructorFn();
         }
         return value;
+    }
+
+    protected void haveUsedValueConstructorFn() {
     }
 
     protected Object getValueByIdWithoutConstructorCall(Integer id) {

@@ -1436,10 +1436,11 @@ public class JdTable extends KScriptable {
         public int setWhereValue(int parameterIndex, PreparedStatement statement, Object value) throws java.sql.SQLException {
             if(value == null) {
                 // Do nothing - using IS NULL comparisons
+                return parameterIndex;
             } else {
                 statement.setInt(parameterIndex, ((KObjRef)value).jsGet_objId());
+                return parameterIndex + 1;
             }
-            return parameterIndex + 1;
         }
 
         @Override
@@ -1678,11 +1679,12 @@ public class JdTable extends KScriptable {
         public int setWhereValue(int parameterIndex, PreparedStatement statement, Object value) throws java.sql.SQLException {
             if(value == null) {
                 // Do nothing - using IS NULL comparisons
+                return parameterIndex;
             } else {
                 statement.setString(parameterIndex, ((KStoredFile)value).jsGet_digest());
                 statement.setLong(parameterIndex + 1, ((KStoredFile)value).jsGet_fileSize());
+                return parameterIndex + 2;
             }
-            return parameterIndex + 2;
         }
 
         @Override

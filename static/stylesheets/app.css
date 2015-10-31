@@ -1797,6 +1797,14 @@ body.z__minimal_layout {
     left: 15px;
 }
 
+/* links style titles need a bit of tweaking */
+h3.z__plugin_ui_action_panel_links_title {
+    color: #888;
+    padding-bottom: 3px;
+    border-bottom: 1px solid COLOUR[:main];
+    margin-bottom: 6px;
+}
+
 /* very simple temporary styles for the 'menu' style for action panels */
 .z__plugin_ui_action_panel_menu_block h2 {
     color: #888;

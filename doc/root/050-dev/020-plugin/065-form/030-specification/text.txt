@@ -11,6 +11,8 @@ h2. Properties
 |@validationRegExp@|(optional) A regular expression used for validation.|
 |@validationRegExpOptions@|(optional) Options used for the regular expression. Consider using @"i"@ for case insensitivity.|
 |@validationFailureMessage@|(optional) A message to display when the text fails to match the regular expression.|
+|@htmlPrefix@|(optional) Literal HTML output directly before the @<input>@ element.|
+|@htmlSuffix@|(optional) Literal HTML output directly before the @<input>@ element.|
 
 All the [node:dev/plugin/form/specification#Common_properties:common properties] are supported.
 

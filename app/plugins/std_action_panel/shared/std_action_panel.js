@@ -71,10 +71,10 @@
         }
         var elementTitle = optionsDecoded.title || "";
         var panelStyle = optionsDecoded.style;
-        // Check something implements the renderer
+        // If nothing implements the builder service, stop now
         var serviceName = "std:action_panel:"+optionsDecoded.panel;
         if(!O.serviceImplemented(serviceName)) {
-            return this.$renderFail(response, "Actions not available");
+            return;
         }
         // Set up the default builder, which is used as a gateway to builders for other panels
         var defaultBuilder = O.ui.panel({

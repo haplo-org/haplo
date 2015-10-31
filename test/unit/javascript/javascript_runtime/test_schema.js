@@ -86,13 +86,19 @@ TEST(function() {
         ATTR["std:attribute:relationship-manager"]],
         orgInfo.attributes));
 
-    // Check root/parent types
+    // Check root/parent/child types
     var supplierInfo = SCHEMA.getTypeInfo(TYPE["std:type:organisation:supplier"]);
     TEST.assert(TYPE["std:type:organisation"] == supplierInfo.parentType);
     TEST.assert(TYPE["std:type:organisation"] == supplierInfo.rootType);
+    var equipmentInfo = SCHEMA.getTypeInfo(TYPE["std:type:equipment"]);
+    TEST.assert(_.isEqual(
+            _.map(["std:type:equipment:computer","std:type:equipment:printer","std:type:equipment:projector"], function(t) { return TYPE[t].objId; }).sort(),
+            _.map(equipmentInfo.childTypes, function(r) { return r.objId; }).sort()
+        ));
     var laptopInfo = SCHEMA.getTypeInfo(TYPE["std:type:equipment:laptop"]);
     TEST.assert(TYPE["std:type:equipment:computer"] == laptopInfo.parentType);
     TEST.assert(TYPE["std:type:equipment"] == laptopInfo.rootType);
+    TEST.assert_equal(0, laptopInfo.childTypes.length);
 
     // Check schema again, to make sure asking for a type didn't corrupt anything
     // Belts and braces - check value and object equality

@@ -388,15 +388,17 @@ oform.on('keydown', '.oforms-lookup-input', function(event) {
 
 // Do queries on keyup so the input value is up-to-date
 oform.on('keyup', '.oforms-lookup-input', function(event) {
-    if(event.which in lookupResultPickerNavigation) { return; }
     var info = findLookupElementInfo(this);
     var lookupElement = $(this);
+    var originalValue = lookupElement.val();
+    // If the user has just picked a value, don't re-query it
+    if(originalValue === lookupElement.data("pickedDisplayValue")) {
+        return;
+    }
     // Clear the value input so invalid data isn't sent to the server
     info._valueInput.value = '';
     lookupElement.removeClass('oforms-lookup-valid');
     // Convert query to lower case and trim leading and trailing whitespace
-
-    var originalValue = lookupElement.val();
     var query = originalValue.toLowerCase().replace(/(^\s+|\s+$)/g,'');
     if(query === '') {
         return lookupResultPickerHide();
@@ -436,8 +438,8 @@ oform.on('keyup', '.oforms-lookup-input', function(event) {
                         // Just a display string
                         html.push('<span class="item">', escapeHTML(r), '</span>');
                     } else {
-                        // Array of [id, display]
-                        html.push('<span class="item">', escapeHTML(r[1]), '</span>');
+                        // Array of [id, display, pickerDisplay] with pickerDisplay optional and defaulting to display
+                        html.push('<span class="item">', escapeHTML(r[2] || r[1]), '</span>');
                     }
                 });
             }
@@ -488,6 +490,7 @@ oform.on('keyup', '.oforms-lookup-input', function(event) {
                 info._valueInput.value = id;
                 info._queryCache._idToDisplay[id] = display;
                 lookupElement.val(display).addClass('oforms-lookup-valid');
+                lookupElement.data("pickedDisplayValue", display);
             };
         }
     };

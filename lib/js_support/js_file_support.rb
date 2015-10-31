@@ -29,6 +29,30 @@ module JSFileSupport
 
   # ------------------------------------------------------------------------------------------------------------
 
+  def self.getFilePropertiesJSON(storedFile)
+    properties = {}
+    if (dimensions = storedFile.dimensions)
+      properties['dimensions'] = {
+        "width" => dimensions.width,
+        "height" => dimensions.height,
+        "units" => dimensions.units
+      }
+    end
+    if (pages = storedFile.dimensions_pages)
+      properties["numberOfPages"] = pages
+    end
+    if (thumbnail = storedFile.thumbnail)
+      properties['thumbnail'] = {
+        "width" => thumbnail.width,
+        "height" => thumbnail.height,
+        "mimeType" => storedFile.thumbnail_mime_type
+      }
+    end
+    JSON.generate(properties)
+  end
+
+  # ------------------------------------------------------------------------------------------------------------
+
   def self.oFormsFileHTML(stored_file, where)
     if where == 'form'
       # Icon + filename, not linked

@@ -43,6 +43,11 @@ h3(key). rootType
 The @Ref@ of the root type, which may be equal to the requested type if it is a root type.
 
 
+h3(key). childTypes
+
+An @Array@ of @Refs@ of the direct child types of this type. If a type has no direct child types, the array will be empty.
+
+
 h3(key). attributes
 
 An array of attribute descriptors, in the order that the attributes should be displayed in the user interface. Each matches an [node:dev/plugin/schema/schema-global/attr] constant.

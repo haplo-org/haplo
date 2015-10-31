@@ -244,8 +244,13 @@ class DisplayController < ApplicationController
         is_old_version = true if obj_at_version.version != @obj.version
         @obj = obj_at_version
       end
+      KNotificationCentre.notify(:display, :object, @obj, nil)
+      # Allow plugins to modify object
+      call_hook(:hPreObjectDisplay) do |hooks|
+        h = hooks.run(@obj)
+        @obj = h.replacementObject if h.replacementObject != nil
+      end
     end
-    KNotificationCentre.notify(:display, :object, @obj, nil)
     @html = if @obj
       render_obj(@obj, :generic, {
         :display_insertable => true,

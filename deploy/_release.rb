@@ -856,7 +856,7 @@ puts "Queue release..."
 if no_onedeploy
   puts "(skipped)"
 else
-  queue_cmd = %Q!onedeploy --archive-root=. --archive-name=khq --archive-comment="ONEIS Platform #{packaging_version}" queue-archive code!
+  queue_cmd = %Q!onedeploy --archive-root=. --archive-name=khq --archive-comment="Haplo Platform #{packaging_version}" queue-archive code!
   queue_result = `#{queue_cmd}`
   queued_archive = JSON.parse(queue_result)
   raise "No archive queued" unless queued_archive.has_key?("archive")

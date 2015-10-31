@@ -9,9 +9,9 @@ h2. Declaring tables
 
 Make sure @"pDatabase"@ is included in the @"privilegesRequired"@ array in [node:dev/plugin/plugin-json].
 
-Then, in one of your JavaScript files, define the tables using the plugin's [node:dev/plugin/interface/database] object accessed as the @db@ property. Database tables can only be defined when the plugin is loaded.
+Then, in one of your JavaScript files, define the tables using the plugin's [node:dev/plugin/interface/database] object accessed as the @db@ property. Database tables can only be defined when the plugin is loaded, so you must place the database declarations outside any other code.
 
-Place your definitions outside any function in the JavaScript file so they are executed as the plugin code is loaded. For @example_plugin@, this might look like:
+For example:
 
 <pre>language=javascript
 P.db.table("department", {
@@ -27,7 +27,7 @@ P.db.table("employee", {
 });
 </pre>
 
-Line 5 declares a very simple table with a single name, and an implicit @id@ field. Line 9 declares a more interesting table, which has a @department@ field which refers to rows in the @department@ table.
+The first example definition is a very simple table with a single @name@ column, and an implicit @id@ field. The second is more interesting, with a @department@ field which refers to rows in the @department@ table.
 
 Note that by default, fields *do not* allow @null@ values, and you must specify @nullable:true@ to allow them. This is the other way round to SQL, where you need to specify @NOT NULL@ to disallow @NULL@ values.
 

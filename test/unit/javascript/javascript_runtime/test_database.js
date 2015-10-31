@@ -211,6 +211,9 @@ TEST(function() {
     // The method on the department table doesn't leak to the employee table
     if(undefined != fred.fancyStuff) { TEST.assert(false); }    // written this way to avoid triggering a warning
 
+    // Try a form of query which used to cause bad where values to be set
+    var x = db.employee.select().where("ref","!=",null).where("ref","!=",O.ref("12345")).length;
+
     // Select by a linked field
     _.each([engineering, engineering.id], function(linkto) {
         var s = db.employee.select().where("department", "=", linkto);

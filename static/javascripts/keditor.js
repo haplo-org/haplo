@@ -850,8 +850,8 @@ _.extend(KEdObjRef.prototype, {
             h += OBJREF_LOOKUP_NO_ITEMS;
         } else {
             _.each(items, function(i) {
-                // 0 objref, 1 title of object
-                h += '<div class="z__editor_objref_lookup_result"><a href="#" class="z__editor_objref_lookup_result_link">'+escapeHTML(i[1])+'</a>';
+                // 0 objref, 1 title of object, 2 optional alternative title for autocomplete list
+                h += '<div class="z__editor_objref_lookup_result"><a href="#" class="z__editor_objref_lookup_result_link">'+escapeHTML(i[2] || i[1])+'</a>';
                 h += '</div>';
             });
         }

@@ -21,4 +21,10 @@ module KHooks
     h.result      :backLinkText,String,   nil,  "Label for the 'back' button for this object. Always use a noun describing the item you're linking to."
   end
 
+  define_hook :hTempObjectAutocompleteTitle do |h|
+    h.private_hook
+    h.argument    :object,      KObject,    "The object for inclusion in the auto-complete list"
+    h.result      :title,       String,     nil,  "The title to display in the list, or nil to remove it from the list."
+  end
+
 end

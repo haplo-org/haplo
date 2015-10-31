@@ -43,7 +43,7 @@ module JSUserSupport
   end
 
   def self.getUserByEmail(email)
-    User.find_first_by_email(email)
+    User.find_all_by_email_of_any_kind(email).first
   end
 
   def self.getAllUsersByEmail(email)
@@ -51,7 +51,7 @@ module JSUserSupport
   end
 
   def self.getUserByRef(ref)
-    User.find_active_user_by_objref(ref)
+    User.find_by_objref(ref)
   end
 
   def self.getCurrentUser()

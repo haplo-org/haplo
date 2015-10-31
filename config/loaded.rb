@@ -43,3 +43,13 @@ if KInstallProperties.get(:register_mdns_hostnames) == 'yes'
     MulticastDNSRegistration.update
   end
 end
+
+# Turn off ActiveSupport's autoloader, as it's buggy and not thread-safe.
+module ActiveSupport::Dependencies::Loadable
+  def load(file, *)
+    super
+  end
+  def require(file, *)
+    super
+  end
+end

@@ -512,8 +512,7 @@ public
       if num_results > 0
         results.ensure_range_loaded(0,num_results-1)
         0.upto(num_results-1) do |i|
-          obj = results[i]
-          lookup_results << [obj.objref.to_presentation, title_of_object(obj, :full)]  # with descriptive attributes
+          maybe_append_object_to_autocomplete_list(lookup_results, results[i], :full) # with descriptive attributes
         end
       end
     end

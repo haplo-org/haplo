@@ -1,9 +1,7 @@
 <%
-  summary = obj_display_highlighted_summary_text(obj, 1, nil)
-  summary_html = (summary == nil) ? '' : summary.first
-  files = Array.new
+  num_files = 0
   obj.each(KConstants::A_FILE) do |value,d,q|
-    files << value if value.k_typecode == KConstants::T_IDENTIFIER_FILE
+    num_files += 1 if value.k_typecode == KConstants::T_IDENTIFIER_FILE
   end
   # Is there a date to display?
   obj_date = obj.first_attr(A_DATE)
@@ -13,19 +11,8 @@
 %>
     <a class="z__recent_entry_title" href="<%= objurl %>" class="z__latest_web_title"><%= h(title_of_object(obj, :full)) %></a>
     <% if obj_date != nil %><div class="z__recent_entry_date"><%= obj_date.strftime('%d %b %Y') %></div><% end %>
-    <%= summary_html %>
     <%
-      unless files.empty?
-        %><div class="z__recent_entry_files"><%
-        files.each do |value|
-          %><%= img_tag_for_mime_type(value.mime_type) %> <a href="<%= objurl %>"><%= h(value.presentation_filename) %></a> <%
-            # Sign URL if this isn't the latest version
-            preview_url = file_url_path(value, :preview, @is_current_version_of_object ? nil : {:sign_with => session})
-            if preview_url != nil
-              %><a href="<%= preview_url %>" class="z__file_preview_link">Preview</a><%
-            end
-          %><br><%
-        end
-        %></div><%
+      if num_files > 0
+        %><div class="z__recent_entry_files"><a href="<%= objurl %>"><%= html_for_icon(Application_IconHelper::ICON_SPECIAL_RECENT_OBJECT_HAS_FILES,:micro) %><%= num_files %> <% if num_files == 1 %>file<% else %>files<% end %></a></div><%
       end
     %>

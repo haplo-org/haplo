@@ -12,5 +12,5 @@ Create a work unit query object.
 
 If the optional @workType@ is specified, the query will find the given type of work unit. If the @workType@ does not contain a @:@ character, an exception will be thrown.
 
-If it's not specified, then you must call the @ref()@ method to search for work units attached to a given object.
+If @workType@ is not specified, then you must either call [node:dev/plugin/interface/work-unit-query#ref] or [node:dev/plugin/interface/work-unit-query#tag] so that your query returns an acceptable number of work units.
 

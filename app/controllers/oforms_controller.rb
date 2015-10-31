@@ -66,14 +66,14 @@ class OFormsController < ApplicationController
       found_items = []
       json_response = {:results => found_items}
       results.each do |obj|
-        found_items << [obj.objref.to_presentation, title_of_object(obj, :full)]  # with descriptive attributes
+        # Must use the title exactly (not descriptive) so that searches definately match
+        title_text = maybe_append_object_to_autocomplete_list(found_items, obj, :simple)
         # Check for an exact match to automatically select it on the client
-        unless json_response.has_key?(:selectId)
-          title_text = obj.first_attr(A_TITLE).to_s
-          if given_text == title_text.downcase
-            json_response[:selectId] = obj.objref.to_presentation
-            json_response[:selectDisplay] = title_text
-          end
+        if title_text &&
+              !(json_response.has_key?(:selectId)) &&
+              given_text == title_text.downcase
+          json_response[:selectId] = obj.objref.to_presentation
+          json_response[:selectDisplay] = title_text
         end
       end
       render :text => json_response.to_json, :kind => :json
