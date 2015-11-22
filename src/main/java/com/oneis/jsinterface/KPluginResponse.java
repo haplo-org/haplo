@@ -254,11 +254,7 @@ public class KPluginResponse extends KScriptable {
         }
 
         public boolean checkValue(Object value) {
-            if(value == null) {
-                return true;
-            }
-            // KObjects are wrapped in JavaScript objects
-            return (value instanceof Scriptable) ? KObject.isWrapperForKObject((Scriptable)value) : false;
+            return (value == null) || (value instanceof KObject);
         }
     }
 

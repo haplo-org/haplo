@@ -74,7 +74,7 @@ class StoredFile < ActiveRecord::Base
   # Create a new object given a file. The store will then own the file, moving the file on disk into the store.
   def self.move_file_into_store(file_pathname, given_filename, mime_type, file_digest = nil, options = nil)
     file_size = File.size(file_pathname)
-    file_digest = Digest::SHA256.file(file_pathname).hexdigest if file_digest == nil
+    file_digest = Digest::SHA256.file(file_pathname).hexdigest.encode(Encoding::UTF_8) if file_digest == nil
     raise "Didn't get digest" unless file_digest.length > 10
     raise "Bad digest" unless file_digest =~ FILE_DIGEST_HEX_VALIDATE_REGEXP
 

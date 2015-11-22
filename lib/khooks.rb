@@ -89,7 +89,7 @@ module KHooks
       elsif klass.equal?(KObject)
         @response_fields.kobjectField(name)
         @response_in << "j.putR('#{name}',Java::ComOneisJsinterface::KObject.fromAppObject(r.#{name},false)) if r.#{name} != nil\n"
-        @response_out << "v = j.getR('#{name}'); r.#{name} = (v == nil) ? nil : Java::ComOneisJsinterface::KObject.toRubyObjectFromWrapper(v)\n"
+        @response_out << "v = j.getR('#{name}'); r.#{name} = (v == nil) ? nil : Java::ComOneisJsinterface::KObject.toHookResponseAppValue(v)\n"
       elsif klass.equal?(KLabelChanges)
         @response_fields.labelChangesField(name)
         @response_in << "j.putR('#{name}',Java::ComOneisJsinterface::KLabelChanges.fromAppLabelChanges(r.#{name})) if r.#{name} != nil\n"

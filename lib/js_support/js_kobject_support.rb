@@ -13,11 +13,6 @@ module JSKObjectSupport
   java_import java.util.GregorianCalendar
   java_import java.util.Calendar
 
-  def self.attrValueConversionToJava(value)
-    # This function does no conversions -- it used to convert Ruby DateTime's to Java Dates.
-    nil
-  end
-
   def self.attrValueConversionFromJava(value)
     if value.kind_of?(java.util.Date)
       c = GregorianCalendar.new
@@ -37,9 +32,9 @@ module JSKObjectSupport
 
   def self.preallocateRef(obj)
     if obj.objref
-      raise JavaScriptAPIError, "Object already has ref allocated."
+      raise JavaScriptAPIError, "Object already has a ref allocated."
     end
-    KObjectStore.preallocate_objref(obj)
+    KObjectStore.preallocate_objref(obj).objref
   end
 
   def self.check_object_before_saving(obj)
@@ -97,6 +92,10 @@ module JSKObjectSupport
     false
   end
 
+  def self.objectTitleAsString(object)
+    (object.first_attr(A_TITLE) || '').to_s
+  end
+
   def self.objectDescriptiveTitle(object)
     KObjectUtils.title_of_object(object, :full)
   end
@@ -125,121 +124,6 @@ module JSKObjectSupport
   def self.clientSideEditorEncode(object)
     return JSON.generate({"v2" => KEditor.js_for_obj_attrs(object).last})
   end
-
-  # ------------------------------------------------------------------------------------------
-
-  # TODO: Full tests for store object JS API toView()
-
-  # See lib/javascript/lib/storeobject.js for a description of the returned data structure
-  def self.makeObjectViewJSON(object, kind, optionsJSON)
-    # Decode and check options
-    options = JSON.parse(optionsJSON)
-    raise "Should be called with option Hash" unless options.kind_of?(Hash)
-    aliasing = options.has_key?("aliasing") ? !!(options["aliasing"]) : true
-    allowed_attributes = options["attributes"]
-    raise JavaScriptAPIError, "attributes options should be an array." unless allowed_attributes == nil || allowed_attributes.kind_of?(Array)
-    # Kind of output
-    display_output = true
-    case kind
-    when "display"; display_output = true
-    when "lookup"; display_output = false;
-    else
-      raise JavaScriptAPIError, "Bad kind requested from toView()"
-    end
-    # Read type information
-    schema = KObjectStore.schema
-    type = object.first_attr(A_TYPE)
-    raise JavaScriptAPIError, "toView() can only be used on objects which have a type attribute." unless type != nil
-    type_desc = schema.type_descriptor(type)
-    raise JavaScriptAPIError, "toView() can only be used on objects which have a type attribute which refers to a defined type in the application schema." unless type_desc != nil
-    root_type = type_desc.root_type
-    root_type_desc = schema.type_descriptor(root_type)
-    # Set up the view basics
-    view = {
-      :ref => object.objref.to_presentation,
-      :title => object.first_attr(A_TITLE).to_s,
-      :typeRef => type.to_presentation,
-      :typeName => type_desc.printable_name.to_s,
-      :rootTypeRef => root_type.to_presentation,
-      :rootTypeName => root_type_desc.printable_name.to_s
-    }
-    # Generate aliased (or not) version of attributes
-    # (don't filter attributes here for simplicity)
-    transformed = KAttrAlias.attr_aliasing_transform(object, schema, aliasing)
-    transformed.delete_if { |toa| toa.attributes.empty? }
-    # Filter attributes, if required
-    if allowed_attributes != nil
-      transformed = allowed_attributes.map { |desc| transformed.detect { |t| t.descriptor.desc == desc } } .compact
-    end
-    # Turn them all into values
-    attributes_output = []
-    transformed.each do |toa|
-      info = {
-        :descriptor => toa.descriptor.desc,
-        :descriptorName => toa.descriptor.printable_name.to_s
-      }
-      values = info[:values] = []
-      toa.attributes.each do |value,desc,qualifier|
-        # Typecode and qualifier info
-        a = { :typecode => value.k_typecode }
-        a[TYPECODE_TO_KEY_LOOKUP[value.k_typecode]] = true
-        if qualifier != Q_NULL
-          a[:qualifier] = qualifier
-          q_desc = schema.qualifier_descriptor(qualifier)
-          a[:qualifierName] = q_desc.printable_name.to_s if q_desc != nil
-        end
-        # Value decoding
-        case value.k_typecode
-        when T_OBJREF
-          linked_obj = KObjectStore.read(value)
-          # Be tolerant of the linked object not existing
-          if linked_obj
-            a[:string] = linked_obj.first_attr(A_TITLE).to_s
-            a[:ref] = value.to_presentation
-          else
-            a[:string] = '????'
-            # no :ref value
-          end
-        when T_TEXT_DOCUMENT
-          a[:string] = value.to_plain_text
-          a[:html] = value.to_html
-        else
-          # Default value handling
-          a[:string] = value.to_s
-          if value.respond_to?(:to_html)
-            a[:html] = value.to_html
-          end
-        end
-        # Default HTML generation from strings -- needs to be escaped!
-        unless a.has_key?(:html)
-          a[:html] = ERB::Util::html_escape(a[:string])
-        end
-        # Store in values list
-        values << a
-      end
-      info[:first] = values.first
-      values.last[:isLastValue] = true
-      attributes_output << info
-      unless display_output
-        view[toa.descriptor.desc] = info
-        code = toa.descriptor.code
-        view[code.gsub(':','_')] = info if code
-      end
-    end
-    # Store as attributes?
-    view[:attributes] = attributes_output if display_output
-    view.to_json
-  end
-
-  # Lookup for typecode names
-  TYPECODE_TO_KEY_LOOKUP = {}
-  KConstants.constants.each do |constant|
-    if constant =~ /\AT_[A-Z0-9_]+\z/ && constant !~ /\AT_PSEUDO_/
-      TYPECODE_TO_KEY_LOOKUP[KConstants.const_get(constant)] = constant
-    end
-  end
-  TYPECODE_TO_KEY_LOOKUP[T_OBJREF] = "T_REF" # JS API has a different name for objrefs
-  TYPECODE_TO_KEY_LOOKUP.freeze
 
   # ------------------------------------------------------------------------------------------
 

@@ -531,6 +531,43 @@ TEST(function() {
     TEST.assert_exceptions(function() { db.numbers.select().limit(-1); }, "Limit cannot be negative");
     TEST.assert_exceptions(function() { db.numbers.select().offset(-1); }, "Offset cannot be negative");
 
+    // Aggregate functions
+(function() { // TODO: Work out why this anon function is necessary to stop Rhino getting upset
+    var selectForAggregate = db.numbers.select();   // for reuse a few times
+    TEST.assert_equal(238,      selectForAggregate.aggregate("SUM", "small"));
+    TEST.assert_equal(2,        selectForAggregate.aggregate("COUNT", "big"));   // only 2 non-NULL
+    TEST.assert_equal(39.666666666666664, selectForAggregate.aggregate("AVG", "small"));
+    TEST.assert_equal(242847,   selectForAggregate.aggregate("SUM", "big"));   // some NULL values in SUM
+    TEST.assert_equal(35,       db.numbers.select().where("small","<",30).aggregate("SUM", "small"));
+    TEST.assert_equal(46,       db.numbers.select().where("medium","<",11).aggregate("SUM", "small"));
+    TEST.assert_equal(3498,     db.numbers.select().where("medium",">",2000).aggregate("SUM", "big"));
+    TEST.assert_equal(0,        db.numbers.select().where("small","=",-1).aggregate("COUNT", "big")); // nothing matches, 0 not NULL
+    TEST.assert_equal(0,        db.numbers.select().where("small","=",-1).aggregate("SUM", "big"));   // nothing matches, 0 not NULL
+    var selectWithWhereForAggregate = db.numbers.select().where("small",">",25);
+    TEST.assert_equal(203,      selectWithWhereForAggregate.aggregate("SUM","small"));
+    TEST.assert_equal(50.75,    selectWithWhereForAggregate.aggregate("AVG","small"));
+    TEST.assert_equal(50.75,    selectWithWhereForAggregate.aggregate("AVG","small",undefined));    // undefined OK as group by field
+
+    // Try an aggregate grouped by another column
+    TEST.assert(_.isEqual(
+        [{"value":32,"group":false},{"value":71,"group":true},{"value":135,"group":null}],
+        selectForAggregate.aggregate("SUM","small","bools")
+    ));
+
+    TEST.assert_exceptions(function() {
+        db.numbers.select().aggregate("XXX","small");
+    }, "Unknown aggregate function 'XXX' passed to aggregate(). Function names are all caps.");
+    TEST.assert_exceptions(function() {
+        db.numbers.select().aggregate("SUM","yyy");
+    }, "Unknown field 'yyy' passed to aggregate()");
+    TEST.assert_exceptions(function() {
+        db.numbers.select().aggregate("1; DELETE FROM users; --", "small");
+    }, "Unknown aggregate function '1; DELETE FROM users; --' passed to aggregate(). Function names are all caps.");
+    TEST.assert_exceptions(function() {
+        selectForAggregate.aggregate("SUM","small",42);
+    }, "Group by field name must be a String");
+})();
+
     // Delete rows
     TEST.assert_equal("a3:a6:a5:a1:a4:a2:", t_res(db.numbers.select().order("medium", true)));
     TEST.assert_equal(1, db.numbers.select().where("medium", "=", 349).deleteAll());

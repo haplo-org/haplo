@@ -280,9 +280,8 @@ public class KGenerateTable extends KScriptable implements JSGeneratedFile {
                 }
                 if(c != null && (c instanceof Scriptable)) {
                     // See if this is a wrapper for a KObject
-                    KObject kobject = KObject.unwrap((Scriptable)c);
-                    if(kobject != null) {
-                        String descriptiveTitle = kobject.getDescriptiveTitle();
+                    if(c instanceof KObject) {
+                        String descriptiveTitle = ((KObject)c).jsGet_descriptiveTitle();
                         if(descriptiveTitle != null) {
                             this.row.set(i, descriptiveTitle);
                             continue;

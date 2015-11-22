@@ -46,8 +46,6 @@ console
 $oneis_framework_initialiser
 O
 HTTP
-$StoreObject
-$StoreObjectMutable
 $StoreQuery
 DBTime
 $DbObject

@@ -27,7 +27,9 @@ public interface AppObject {
 
     public long jsGetLastModificationDate();
 
-    public Object first_attr(int desc, Integer qualifier);
+    public Object first_attr(Integer desc, Integer qualifier);
+
+    public Object[] all_attrs(Integer desc, Integer qualifier);
 
     public boolean has_attr(Object value, Integer desc, Integer qualifier);
 
@@ -36,6 +38,8 @@ public interface AppObject {
     public void jsEach(Integer desc, Integer qualifier, AttrIterator iterator);
 
     public AppObject dup();
+
+    public boolean frozen();
 
     public void add_attr(Object value, int desc, int qualifier);
 

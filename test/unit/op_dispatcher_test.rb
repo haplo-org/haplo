@@ -85,7 +85,8 @@ class OpDispatcherTest < Test::Unit::TestCase
     worker2 = dispatcher.workerConnected(2)
     worker3 = dispatcher.workerConnected(3)
     assert_raises(RuntimeException) { dispatcher.workerConnected(-1) }
-    assert_raises(Java::JavaLang::ArrayIndexOutOfBoundsException) { dispatcher.workerConnected(4) }
+    assert_raises(Java::JavaLang::RuntimeException) { dispatcher.workerConnected(4) }
+    assert_raises(Java::JavaLang::RuntimeException) { dispatcher.workerConnected(5) }
 
     # Can't connect a worker twice
     assert_raises(RuntimeException) { dispatcher.workerConnected(0) }

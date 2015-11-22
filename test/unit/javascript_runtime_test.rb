@@ -77,6 +77,9 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
   # ===============================================================================================
 
   def test_object_retrieval
+    assert_equal A_PARENT, Java::ComOneisJsinterface::KObject::A_PARENT
+    assert_equal A_TYPE, Java::ComOneisJsinterface::KObject::A_TYPE
+    assert_equal A_TITLE, Java::ComOneisJsinterface::KObject::A_TITLE
     restore_store_snapshot("basic")
     db_reset_test_data
     AuthContext.set_user(User.cache[42], User.cache[42])

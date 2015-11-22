@@ -12,6 +12,7 @@ import com.oneis.jsinterface.KScriptable;
 import org.mozilla.javascript.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class JdSelect extends JdSelectClause {
     private Scriptable[] results;
@@ -22,6 +23,8 @@ public class JdSelect extends JdSelectClause {
     private int offset;
 
     private static final int NO_LIMIT = -1;
+
+    private static final String GENERIC_SQL_ERROR = "Couldn't execute SQL (does the underlying database table need migrating?)";
 
     public JdSelect() {
         this.stableOrder = false;
@@ -141,13 +144,60 @@ public class JdSelect extends JdSelectClause {
     }
 
     // Performs a COUNT(*) instead of selecting all the values
-    public int jsFunction_count() {
+    public Object jsFunction_count() {
         try {
-            return this.table.executeCount(this);
+            return this.table.executeSingleValueExpressionUsingTrustedSQL(this, "COUNT(*)", JdTable.SingleValueKind.INT, null);
         } catch(java.sql.SQLException e) {
-            throw new OAPIException("Couldn't execute SQL query (does the underlying database table need migrating?)", e);
+            throw new OAPIException(GENERIC_SQL_ERROR, e);
         }
     }
+
+    // Calculates an aggregate function
+    public Object jsFunction_aggregate(String functionName, String fieldName, Object groupByFieldName) {
+        if(functionName == null || fieldName == null) {
+            throw new OAPIException("Must pass function and field names to aggregate()");
+        }
+        if(groupByFieldName instanceof Undefined) {
+            groupByFieldName = null;
+        }
+        if(groupByFieldName != null && !(groupByFieldName instanceof CharSequence)) {
+            throw new OAPIException("Group by field name must be a String");
+        }
+        // Security: Validate field and function names
+        JdTable.Field field = this.table.getField(fieldName);
+        if(field == null) {
+            throw new OAPIException("Unknown field '"+fieldName+"' passed to aggregate()");
+        }
+        JdTable.SingleValueKind valueKind = ALLOWED_AGGREGATE_FNS.get(functionName);
+        if(valueKind == null) {
+            throw new OAPIException("Unknown aggregate function '"+functionName+"' passed to aggregate(). Function names are all caps.");
+        }
+        // Now safe to generate SQL expression
+        String sqlExpression = functionName+"("+field.getDbName()+")";
+        // Group by?
+        JdTable.Field groupByField = null;
+        if(groupByFieldName != null) {
+            groupByField = this.table.getField(((CharSequence)groupByFieldName).toString());
+        }
+        // Execute query
+        try {
+            return this.table.executeSingleValueExpressionUsingTrustedSQL(this, sqlExpression, valueKind, groupByField);
+        } catch(java.sql.SQLException e) {
+            throw new OAPIException(GENERIC_SQL_ERROR, e);
+        }
+    }
+
+    private static HashMap<String,JdTable.SingleValueKind> ALLOWED_AGGREGATE_FNS = new HashMap<String,JdTable.SingleValueKind>(16) {{
+        put("AVG", JdTable.SingleValueKind.DOUBLE);
+        put("COUNT", JdTable.SingleValueKind.INT);
+        put("MAX", JdTable.SingleValueKind.DOUBLE);
+        put("MIN", JdTable.SingleValueKind.DOUBLE);
+        put("SUM", JdTable.SingleValueKind.DOUBLE);
+        put("STDDEV_POP", JdTable.SingleValueKind.DOUBLE);
+        put("STDDEV_SAMP", JdTable.SingleValueKind.DOUBLE);
+        put("VAR_POP", JdTable.SingleValueKind.DOUBLE);
+        put("VAR_SAMP", JdTable.SingleValueKind.DOUBLE);
+    }};
 
     // --------------------------------------------------------------------------------------------------------------
     // Deleting rows
@@ -155,7 +205,7 @@ public class JdSelect extends JdSelectClause {
         try {
             return this.table.executeDelete(this);
         } catch(java.sql.SQLException e) {
-            throw new OAPIException("Couldn't execute SQL delete", e);
+            throw new OAPIException(GENERIC_SQL_ERROR, e);
         }
     }
 
@@ -173,7 +223,7 @@ public class JdSelect extends JdSelectClause {
             try {
                 this.results = this.table.executeQuery(this);
             } catch(java.sql.SQLException e) {
-                throw new OAPIException("Couldn't execute SQL query (does the underlying database table need migrating?)", e);
+                throw new OAPIException(GENERIC_SQL_ERROR, e);
             }
         }
     }

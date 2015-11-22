@@ -165,9 +165,8 @@ public class KUser extends KScriptable {
         } else if(item instanceof KLabelList) {
             return rubyInterface.operationPermittedGivenLabelList(this.user, operation, ((KLabelList)item).toRubyObject());
         } else if(item instanceof Scriptable) {
-            KObject storeObject = KObject.unwrap((Scriptable)item);
-            if(storeObject != null) {
-                return rubyInterface.operationPermittedOnObject(this.user, operation, storeObject.toRubyObject());
+            if(item instanceof KObject) {
+                return rubyInterface.operationPermittedOnObject(this.user, operation, ((KObject)item).toRubyObject());
             }
         }
         throw new OAPIException("User can() functions must be passed a Ref, StoreObject or LabelList");

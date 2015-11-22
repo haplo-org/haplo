@@ -173,6 +173,21 @@ class KAccounting
     File.rename(write_pathname, KACCOUNTING_PRESERVED_DATA)
   end
 
+  def self.get_aggregate_accounting_data
+    aggregates = Hash.new { |h,k| h[k] = 0 }
+    num_apps = 0
+    KApp.in_every_application do |app_id|
+      num_apps += 1
+      using_counters_for_current_app do |counters|
+        counters.each_with_index { |v,i| aggregates[COUNTER_NAMES[i]] += v }
+      end
+    end
+    aggregates.delete(:_deprecated)
+    counter_types = {}
+    COUNTER_NAMES.each_with_index { |n,i| counter_types[n] = COUNTER_TYPES[i] }
+    {:num_apps => num_apps, :counters => aggregates, :counter_types => counter_types}
+  end
+
 private
   def self.using_counters_for_current_app(yield_even_if_no_counters = false)
     KApp.current_app_info.using_counters do |counters|

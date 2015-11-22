@@ -372,8 +372,8 @@ public class KONEISHost extends KScriptable {
 
     // --------------------------------------------------------------------------------------------------------------
     // Rendering and views
-    public String jsFunction_renderObject(KObject object, String style) {
-        return this.supportRoot.renderObject(object.toRubyObject(), style);
+    public String renderObject(AppObject object, String style) {
+        return this.supportRoot.renderObject(object, style);
     }
 
     public Scriptable jsFunction_loadTemplateForPlugin(Scriptable plugin, String pluginName, String templateName) {

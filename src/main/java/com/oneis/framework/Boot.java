@@ -114,7 +114,7 @@ public class Boot {
         RubyInstanceConfig rubyConfig = new RubyInstanceConfig();
         rubyConfig.setExternalEncoding("UTF-8");
         rubyConfig.setInternalEncoding("UTF-8");
-        runtime = JavaEmbedUtils.initialize(new ArrayList(), rubyConfig);
+        runtime = JavaEmbedUtils.initialize(new ArrayList<String>(), rubyConfig);
         rubyEvaluater = JavaEmbedUtils.newRuntimeAdapter();
 
         // Set constants in the runtime, then run the boot.rb script

@@ -9,19 +9,22 @@
 
 /* Adaptor code to allow external plugins some access to the client side JavaScript */
 
-var ONEIS = {};
+var Haplo = {};
+
+// TODO: Remove backwards compatibility name in client side plugin adaptor
+var ONEIS = Haplo;
 
 (function($) {
     var root = this;
 
     // Interface to KApp functions
-    ONEIS.ui = {};
-    ONEIS.ui.openCovering = function() { KApp.j__openCovering.apply(KApp, arguments); };
-    ONEIS.ui.closeCovering = function() { KApp.j__closeCovering(); };
+    Haplo.ui = {};
+    Haplo.ui.openCovering = function() { KApp.j__openCovering.apply(KApp, arguments); };
+    Haplo.ui.closeCovering = function() { KApp.j__closeCovering(); };
 
-    ONEIS.control = {};
+    Haplo.control = {};
 
-    ONEIS.html = {
+    Haplo.html = {
         spinner: KApp.p__spinnerHtml
     };
 
@@ -66,7 +69,7 @@ var ONEIS = {};
         KTree.prototype.changeDelegate = function(delegate) { this.j__changeDelegate(wrapTreeDelegate(delegate)); };
 
         // Constructor function
-        ONEIS.control.tree = function(delegate, options) {
+        Haplo.control.tree = function(delegate, options) {
             var treeOptions = {};
             if(options) {
                 if(options.small) { treeOptions.p__size = KTREE_SMALL; }
@@ -80,7 +83,7 @@ var ONEIS = {};
     // Drop down menu control
     if(undefined !== root.KCtrlDropdownMenu) {
         setupBasicControlAliases(KCtrlDropdownMenu.prototype);
-        ONEIS.control.dropdown = function(caption, delegate) {
+        Haplo.control.dropdown = function(caption, delegate) {
             return new KCtrlDropdownMenu(
                 /* get contents */ function() {
                     var html = '';
@@ -105,7 +108,7 @@ var ONEIS = {};
     // KEditor plugins
     if(undefined !== root.KEditor) {
 
-        ONEIS.editor = {};
+        Haplo.editor = {};
 
         // Option translation
         var ATTR_CONTAINER_OPTIONS = [
@@ -175,7 +178,7 @@ var ONEIS = {};
         c.getContainerDOMElement = function() { return this.q__domObj; };
 
         // Plugin delegate registration function
-        ONEIS.editor.registerDelegate = function(name, constructor) {
+        Haplo.editor.registerDelegate = function(name, constructor) {
             KEditor.p__delegate_constructors[name] = function(editor, data) {
                 var wrapper = {};
                 var delegate = constructor(editor, data);
@@ -188,7 +191,7 @@ var ONEIS = {};
         };
 
         // Plugin defined text type editing registration function
-        ONEIS.editor.registerTextType = function(type, constructor) {
+        Haplo.editor.registerTextType = function(type, constructor) {
             KEditor.p__pluginTextTypeValueConstructor[type] = function(value) {
                 return new EditorTextValueUI(constructor(value));
             };

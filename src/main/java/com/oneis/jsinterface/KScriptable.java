@@ -17,6 +17,10 @@ public class KScriptable extends ScriptableObject {
         return "$KScriptable";
     }
 
+    protected String getConsoleClassName() {
+        return this.getClassName();
+    }
+
     protected String getConsoleData() {
         return "";
     }
@@ -44,7 +48,7 @@ public class KScriptable extends ScriptableObject {
             return result.toString();
         } else if(object instanceof KScriptable) {
             data = ((KScriptable)object).getConsoleData();
-            String className = object.getClassName();
+            String className = ((KScriptable)object).getConsoleClassName();
             if(className.charAt(0) == '$') {
                 className = className.substring(1); // remove leading $
             }

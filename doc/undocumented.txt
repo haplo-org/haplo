@@ -10,7 +10,6 @@ Text objects toString() and s() take optional format strings. Telephone number h
 File identifier toString()/s() returns the filename for no format or "filename", a string ID for "id", and the MIME type for format "type"
 Text objects toFields(), with different options based on type. Includes typecode key.
 SCHEMA.AA_* constants
-object toView() function (needs more tests, returned structure described in lib/javascript/lib/storeobject.js, but not publicly documented).
 
 File handling
 -------------

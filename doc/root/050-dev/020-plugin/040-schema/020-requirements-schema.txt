@@ -4,7 +4,7 @@ link_as: keyword
 
 @requirements.schema@ files specify the minimum requirements your plugin requires to function, and the [node:dev/plugin/schema/local-schema:plugin local schema dictionaries].
 
-Comments are lines beginning with @#@, lines with no indent start a schema object declaraction, and indented lines an value of that schema object.
+Comments are lines beginning with @#@, lines with no indent start a schema object declaration, and indented lines an value of that schema object.
 
 Where values are multi-value, append @[sort=1000]@ to specify a sort order when requirements from different plugins are merged. The default sort order is @10000@.
 
@@ -146,3 +146,22 @@ h2. Features
 
 @feature@ declarations define special features, such as the elements on the home page and the left hand navigation.
 
+
+h2. Schema templates
+
+Sometimes it's useful to be able to apply requirements to more than one declaration, for example, a set of common attributes that are applied to more than one type.
+
+Define schema templates with a @schema-template@ declaration, then apply the template to other declarations with the @apply-schema-template@ pseudo-value.
+
+<pre>
+schema-template example:schema-template:common-attributes
+    attribute std:attribute:project
+
+type example:type:something
+    apply-schema-template example:schema-template:common-attributes
+    # Other values
+</pre>
+
+Multiple requirements files can add values to the same template.
+
+It is *not* an error to attempt to apply a template which does not exist.

@@ -16,61 +16,75 @@ import com.oneis.jsinterface.app.*;
 import java.util.Date;
 
 public class KObject extends KScriptable {
+    private KObjRef ref;
     private AppObject appObject;
     private String descriptiveTitle;
+    private boolean isNewObject;
+    private boolean isMutable;
+    private Scriptable history;
 
+    // --------------------------------------------------------------------------------------------------------------
+    public static final Integer A_PARENT = new Integer(201);
+    public static final Integer A_TYPE = new Integer(210);
+    public static final Integer A_TITLE = new Integer(211);
+
+    // --------------------------------------------------------------------------------------------------------------
     public KObject() {
     }
 
-    public void jsConstructor() {
-    }
-
-    public String getClassName() {
-        return "$StoredObjectInterface";
-    }
-
-    public void setAppObject(AppObject appObject) {
+    public void setAppObject(AppObject appObject, boolean isMutable) {
         if(this.appObject != null) {
             throw new RuntimeException("AppObject already set in KObject");
         }
         this.appObject = appObject;
+        this.isMutable = isMutable;
+    }
+
+    protected void setIsNewObject() {
+        this.isNewObject = true;
     }
 
     public AppObject toRubyObject() {
         return this.appObject;
     }
 
-    // Unwrap from a Scriptable, returning null if it's not a wrapped KObject
-    static public KObject unwrap(Scriptable wrapper) {
-        if(wrapper == null) {
-            return null;
-        }
-        Object o = wrapper.get("$kobject", wrapper); // ConsString is checked
-        if(o != null && o instanceof KObject) {
-            return (KObject)o;
-        }
-        return null;
+    // --------------------------------------------------------------------------------------------------------------
+    public void jsConstructor() {
     }
 
-    // Find the Ruby object via the JavaScript wrapper
-    static public AppObject toRubyObjectFromWrapper(Scriptable wrapper) {
-        Object o = wrapper.get("$kobject", wrapper); // ConsString is checked
-        if(o != null && o instanceof KObject) {
-            return ((KObject)o).toRubyObject();
-        }
-        return null;
+    public String getClassName() {
+        return "$StoreObject";
     }
 
-    // Test a JavaScript object
-    static boolean isWrapperForKObject(Scriptable wrapper) {
-        return null != toRubyObjectFromWrapper(wrapper);
+    @Override
+    public String getConsoleClassName() {
+        return this.isMutable ? "StoreObjectMutable" : "StoreObject";
     }
 
-    public static Scriptable jsStaticFunction_constructBlankObject(KLabelList labels) {
-        return KObject.fromAppObject(rubyInterface.constructBlankObject(labels.toRubyObject()), true /* mutable */);
+    @Override
+    public String getConsoleData() {
+        return rubyInterface.descriptionForConsole(this.toRubyObject());
     }
 
     // --------------------------------------------------------------------------------------------------------------
+    static public AppObject toHookResponseAppValue(Scriptable object) {
+        return (object instanceof KObject) ? ((KObject)object).toRubyObject() : null;
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+    static public KObject fromAppObject(AppObject appObj, boolean mutable) {
+        Runtime runtime = Runtime.getCurrentRuntime();
+        KObject obj = (KObject)runtime.createHostObject("$StoreObject");
+        obj.setAppObject(appObj, mutable);
+        return obj;
+    }
+
+    public static Scriptable jsStaticFunction_constructBlankObject(KLabelList labels) {
+        KObject o = KObject.fromAppObject(rubyInterface.constructBlankObject(labels.toRubyObject()), true /* mutable */);
+        o.setIsNewObject();
+        return o;
+    }
+
     static public Scriptable load(KObjRef ref) {
         AppObject appObject = rubyInterface.readObject(ref.jsGet_objId());
         if(appObject == null) {
@@ -79,33 +93,12 @@ public class KObject extends KScriptable {
         return KObject.fromAppObject(appObject, false /* not mutable */);
     }
 
-    static public Scriptable fromAppObject(AppObject appObj, boolean mutable) {
-        Runtime runtime = Runtime.getCurrentRuntime();
-
-        // Build the interface object
-        KObject obj = (KObject)runtime.createHostObject("$StoredObjectInterface");
-        obj.setAppObject(appObj);
-
-        // Make the actual JavaScript object
-        ScriptableObject jsObj = (ScriptableObject)runtime.createHostObject(mutable ? "$StoreObjectMutable" : "$StoreObject");
-        // Store the underlying object in the object
-        jsObj.put("$kobject", jsObj, obj);
-        // Store the objref of this object, if it's not the null objref
-        AppObjRef ref = appObj.objref();
-        if(ref != null && ref.objId() != 0) {
-            jsObj.put("ref", jsObj, KObjRef.fromAppObjRef(ref));
-        }
-
-        return jsObj;
-    }
-
-    // Store operations which mutate an object return a new version, which needs to be turned into a JS object and
-    // the $kobject property updated by the JS.
-    static KObject mutatedReturn(AppObject appObj) {
-        Runtime runtime = Runtime.getCurrentRuntime();
-        KObject obj = (KObject)runtime.createHostObject("$StoredObjectInterface");
-        obj.setAppObject(appObj);
-        return obj;
+    // --------------------------------------------------------------------------------------------------------------
+    private void withReturnedAppObject(AppObject appObject, boolean forceImmutable) {
+        this.appObject = appObject;
+        this.isMutable = forceImmutable ? false : !(appObject.frozen());
+        this.descriptiveTitle = null;
+        this.history = null;
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -115,146 +108,55 @@ public class KObject extends KScriptable {
 
     // --------------------------------------------------------------------------------------------------------------
     public KObjRef jsGet_ref() {
-        AppObjRef ref = this.appObject.objref();
-        return (ref == null) ? null : KObjRef.fromAppObjRef(ref);
+        if(this.ref == null) {
+            AppObjRef objref = this.appObject.objref();
+            this.ref = (objref == null) ? null : KObjRef.fromAppObjRef(objref);
+        }
+        return this.ref;
     }
 
-    public KLabelList jsFunction_getLabels() {
+    public boolean jsFunction_isMutable() {
+        return this.isMutable;
+    }
+
+    public KLabelList jsGet_labels() {
         return KLabelList.fromAppLabelList(this.appObject.labels());
     }
 
-    public boolean jsFunction_getIsDeleted() {
+    public void jsSet_labels(Object value) {
+        throw new OAPIException("labels is a read only property");
+    }
+
+    public boolean jsGet_deleted() {
         return this.appObject.deleted();
     }
 
-    public int jsFunction_getVersion() {
+    public int jsGet_version() {
         return this.appObject.version();
     }
 
-    public int jsFunction_getCreatedByUid() {
+    public int jsGet_creationUid() {
         return this.appObject.creation_user_id();
     }
 
-    public int jsFunction_getLastModificationUid() {
+    public int jsGet_lastModificationUid() {
         return this.appObject.last_modified_user_id();
     }
 
-    public Scriptable jsFunction_getCreationDate() {
+    public Scriptable jsGet_creationDate() {
         return Runtime.createHostObjectInCurrentRuntime("Date", this.appObject.jsGetCreationDate());
     }
 
-    public Scriptable jsFunction_getLastModificationDate() {
+    public Scriptable jsGet_lastModificationDate() {
         return Runtime.createHostObjectInCurrentRuntime("Date", this.appObject.jsGetLastModificationDate());
     }
 
-    public boolean jsFunction_isKindOf(KObjRef ref) {
-        // If undefined or null is passed in (eg SCHEMA.O_TYPE_SOMETHING_CUSTOM used when type is not defined), return false now.
-        if(ref == null) {
-            return false;
-        }
-        // Otherwise use the Ruby code
-        return rubyInterface.objectIsKindOf(this.toRubyObject(), ref.jsGet_objId());
-    }
-
-    public String jsFunction_generateObjectURL(boolean asFullURL) {
-        return rubyInterface.generateObjectURL(this.toRubyObject(), asFullURL);
-    }
-
-    public String jsFunction_descriptionForConsole() {
-        return rubyInterface.descriptionForConsole(this.toRubyObject());
-    }
-
     // --------------------------------------------------------------------------------------------------------------
-    public Object jsFunction_first(int desc, boolean haveQual, int qual) {
-        return attrToJs(Runtime.getCurrentRuntime(), this.appObject.first_attr(desc, haveQual ? qual : null));
+    public String jsGet_title() {
+        return rubyInterface.objectTitleAsString(this.appObject);
     }
 
-    public boolean jsFunction_has(Object value, boolean haveDesc, int desc, boolean haveQual, int qual) {
-        Object jsValue = jsToAttr(value);
-        if(jsValue == null) { return false; }
-        return this.appObject.has_attr(jsValue, haveDesc ? desc : null, haveQual ? qual : null);
-    }
-
-    public boolean jsFunction_valuesEqual(Scriptable object, boolean haveDesc, int desc, boolean haveQual, int qual) {
-        if(object == null) {
-            throw new OAPIException("Object passed to valuesEqual() may not be null or undefined");
-        }
-        AppObject appobj = toRubyObjectFromWrapper(object);
-        if(appobj == null) {
-            throw new OAPIException("Object passed to valuesEqual() is not a StoreObject");
-        }
-        if(haveQual && !haveDesc) {
-            throw new OAPIException("Descriptor required if qualifier is specified.");
-        }
-        return this.appObject.values_equal(appobj, haveDesc ? desc : null, haveQual ? qual : null);
-    }
-
-    // Uses the hasDesc and hasQual arguments as JS nulls get converted to 0 Integers by Rhino
-    public void jsFunction_each(Integer desc, boolean hasDesc, Integer qual, boolean hasQual, Scriptable iterator) {
-        final Function iteratorFn = (Function)iterator;
-        final Runtime runtime = Runtime.getCurrentRuntime();
-        this.appObject.jsEach((hasDesc ? desc : null), (hasQual ? qual : null), new AppObject.AttrIterator() {
-            public boolean attr(Object value, int desc, int qual) {
-                iteratorFn.call(runtime.getContext(), iteratorFn, iteratorFn,
-                        new Object[]{attrToJs(runtime, value), desc, qual});
-                return true;
-            }
-        });
-    }
-
-    public void jsFunction_append(Object value, int desc, int qual) {
-        Object jsValue = jsToAttr(value);
-        if(jsValue == null) {
-            throw new OAPIException("null and undefined cannot be appended to a StoreObject");
-        }
-        this.appObject.add_attr(jsValue, desc, qual);
-    }
-
-    public void jsFunction_remove(Integer desc, Integer qual, boolean hasQual, Scriptable iterator) {
-        if(iterator == null) {
-            this.appObject.jsDeleteAttrs(desc, (hasQual ? qual : null));
-        } else {
-            final Function iteratorFn = (Function)iterator;
-            final Runtime runtime = Runtime.getCurrentRuntime();
-            this.appObject.jsDeleteAttrsIterator(desc, (hasQual ? qual : null), new AppObject.AttrIterator() {
-                public boolean attr(Object value, int desc, int qual) {
-                    Boolean result = (Boolean)iteratorFn.call(runtime.getContext(), iteratorFn, iteratorFn,
-                            new Object[]{attrToJs(runtime, value), desc, qual});
-                    return result;
-                }
-            });
-        }
-    }
-
-    public KObject jsFunction_deleteObject() {
-        return mutatedReturn(rubyInterface.deleteObject(this.appObject));
-    }
-
-    public static void deleteObjectByRef(AppObjRef ref) {
-        rubyInterface.deleteObject(ref);
-    }
-
-    public KObject jsFunction_relabelObject(KLabelChanges labelChanges) {
-        return mutatedReturn(rubyInterface.relabelObject(this.appObject, labelChanges.toRubyObject()));
-    }
-
-    public String jsFunction_toViewJSON(String kind, String optionsJSON) {
-        return rubyInterface.makeObjectViewJSON(this.appObject, kind, optionsJSON);
-    }
-
-    public KObject jsFunction_saveObject(boolean create, KLabelChanges labelChanges) {
-        AppLabelChanges appLabelChanges = (labelChanges == null) ? null : labelChanges.toRubyObject();
-        AppObject mutated = null;
-        if(create) {
-            mutated = rubyInterface.createObject(this.toRubyObject(), appLabelChanges);
-        } else {
-            mutated = rubyInterface.updateObject(this.toRubyObject(), appLabelChanges);
-        }
-        return KObject.mutatedReturn(mutated);
-    }
-
-    // --------------------------------------------------------------------------------------------------------------
-    public String getDescriptiveTitle() {
+    public String jsGet_descriptiveTitle() {
         // Cached as a little expensive to generate
         if(this.descriptiveTitle == null) {
             this.descriptiveTitle = rubyInterface.objectDescriptiveTitle(this.appObject);
@@ -262,19 +164,259 @@ public class KObject extends KScriptable {
         return this.descriptiveTitle;
     }
 
-    public String jsFunction_descriptiveTitle() // function to be consistent with the rest of the object API and to reflect the expensive of calling
-    {
-        return this.getDescriptiveTitle();
+    // --------------------------------------------------------------------------------------------------------------
+    public Scriptable jsGet_history() {
+        if(this.history == null) {
+            AppObject[] history = rubyInterface.loadObjectHistory(this.appObject);
+            Object jsHistory[] = new Object[history.length];
+            for(int i = 0; i < history.length; ++i) {
+                jsHistory[i] = KObject.fromAppObject(history[i], false);
+            }
+            Runtime runtime = Runtime.getCurrentRuntime();
+            this.history = runtime.getContext().newArray(runtime.getJavaScriptScope(), jsHistory);
+        }
+        return this.history;
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    // TODO: Better error checking of objects passed in -- unwrap returns null on error.
-    public static boolean jsStaticFunction_clientSideEditorDecode(String encoded, Scriptable object) {
-        return rubyInterface.clientSideEditorDecode(encoded, KObject.unwrap(object).toRubyObject());
+    public boolean jsFunction_isKindOf(Object ref) {
+        if(ref == null || !(ref instanceof KObjRef)) { return false; }
+        return rubyInterface.objectIsKindOf(this.toRubyObject(), ((KObjRef)ref).jsGet_objId());
     }
 
-    public static String jsStaticFunction_clientSideEditorEncode(Scriptable object) {
-        return rubyInterface.clientSideEditorEncode(KObject.unwrap(object).toRubyObject());
+    public String jsFunction_url(boolean asFullURL) {
+        return rubyInterface.generateObjectURL(this.toRubyObject(), asFullURL);
+    }
+
+    public String jsFunction_render(Object jsstyle) {
+        String style = "generic";
+        if(jsstyle instanceof CharSequence) { style = jsstyle.toString(); }
+        // Rendering is performed via the host object to take advantage of controller caching
+        return Runtime.getCurrentRuntime().getHost().renderObject(this.appObject, style);
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+
+    interface ThreeArgFn {
+        Object fn(Integer desc, Integer qual, Function iterator);
+    }
+
+    private boolean caNoArg(Object a) {
+        return (a == null) || (a instanceof Undefined);
+    }
+
+    private Integer caCheckedDesc(Object a, String jsFnName, String jsArgName) {
+        if(a == null) { return null; }
+        if(a instanceof Integer) {
+            return (Integer)a;
+        } else if(!(a instanceof Number)) {
+            throw new OAPIException("Invalid "+jsArgName+" passed to StoreObject "+jsFnName);
+        } else {
+            return ((Number)a).intValue();
+        }
+    }
+
+    private Object withCheckedArgs(
+            String jsFnName,        // for exception messages
+            Object desc, boolean descRequired, // desc may be optional
+            Object qual,            // qualifer is always optional
+            Object iterator, boolean iteratorSupported, // iterator is always optional, but may not be relevant
+            ThreeArgFn implementation) {
+        if(iteratorSupported) {
+            if(caNoArg(iterator) && (qual instanceof Function)) {
+                iterator = qual;
+                qual = null;
+            } else if(caNoArg(iterator) && caNoArg(qual) && (desc instanceof Function)) {
+                iterator = desc;
+                desc = null;
+            }
+        }
+        // Convert undefined to null
+        if(desc instanceof Undefined) { desc = null; }
+        if(qual instanceof Undefined) { qual = null; }
+        if(iterator instanceof Undefined) { iterator = null; }
+        // Check types of arguments and call implementation
+        if(descRequired && desc == null) {
+            throw new OAPIException("Must pass a desc to StoreObject "+jsFnName);
+        }
+        if(iterator != null && !(iterator instanceof Function)) {
+            throw new OAPIException("Invalid iterator passed to StoreObject "+jsFnName);
+        }
+        return implementation.fn(
+            caCheckedDesc(desc, jsFnName, "descriptor"),
+            caCheckedDesc(qual, jsFnName, "qualifier"),
+            (iterator != null) ? (Function)iterator : null
+        );
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+
+    public Object jsFunction_first(Object desc, Object qual) {
+        return withCheckedArgs("first()", desc, true, qual, null, false, (d,q,i) ->
+            attrToJs(Runtime.getCurrentRuntime(), this.appObject.first_attr(d,q)));
+    }
+    public Object jsFunction_firstParent(Object qual) { return this.jsFunction_first(A_PARENT, qual); }
+    public Object jsFunction_firstType(Object qual)   { return this.jsFunction_first(A_TYPE, qual); }
+    public Object jsFunction_firstTitle(Object qual)  { return this.jsFunction_first(A_TITLE, qual); }
+
+    public Object jsFunction_has(Object value, Object desc, Object qual) {
+        Object jsValue = jsToAttr(value);
+        if(jsValue == null) { return false; }
+        return withCheckedArgs("has()", desc, false, qual, null, false, (d,q,i) ->
+            (Boolean)this.appObject.has_attr(jsValue, d, q));
+    }
+
+    public Object jsFunction_valuesEqual(Scriptable object, Object desc, Object qual) {
+        if(object == null) {
+            throw new OAPIException("Object passed to valuesEqual() may not be null or undefined");
+        }
+        if(!(object instanceof KObject)) {
+            throw new OAPIException("Object passed to valuesEqual() is not a StoreObject");
+        }
+        return withCheckedArgs("valuesEqual()", desc, false, qual, null, false, (d,q,i) -> {
+            if(q != null && d == null) {
+                throw new OAPIException("Descriptor required if qualifier is specified.");
+            }
+            return (Boolean)((KObject)object).toRubyObject().values_equal(this.appObject, d, q);
+        });
+    }
+
+    /**
+     * Different forms of calling:
+     * A) Iteration with function(value, desc, qual)
+     *   every(iterator) - all values
+     *   every(desc, iterator) - all desc values
+     *   every(desc, qual, iterator) - all desc+qual values
+     * B) Returning an array of values
+     *   every(desc)
+     *   every(desc, qual)
+     * null can be passed in place of desc, qual or iterator.
+     */
+    public Object jsFunction_every(Object desc, Object qual, Object iterator) {
+        final Runtime runtime = Runtime.getCurrentRuntime();
+        return withCheckedArgs("has()", desc, false, qual, iterator, true, (d,q,i) -> {
+            if(i != null) {
+                this.appObject.jsEach(d, q, (iValue, iDesc, iQual) -> {
+                    i.call(runtime.getContext(), i, i,
+                            new Object[]{attrToJs(runtime, iValue), iDesc, iQual});
+                    return true;
+                });
+                return Context.getUndefinedValue();
+            } else {
+                Object[] attrs = this.appObject.all_attrs(d,q);
+                Object[] jsAttrs = new Object[attrs.length];
+                for(int x = 0; x < attrs.length; ++x) {
+                    jsAttrs[x] = attrToJs(runtime, attrs[x]);
+                }
+                return runtime.getContext().newArray(runtime.getJavaScriptScope(), jsAttrs);
+            }
+        });
+    }
+
+    // Alias of every() for consistency
+    public Object jsFunction_each(Object desc, Object qual, Object iterator) {
+        return jsFunction_every(desc, qual, iterator);
+    }
+
+    // Don't have an everyParent() function because objects shouldn't have more than one parent.
+    public Object jsFunction_everyType(Object qual, Object iterator)   { return this.jsFunction_every(A_TYPE, qual, iterator); }
+    public Object jsFunction_everyTitle(Object qual, Object iterator)  { return this.jsFunction_every(A_TITLE, qual, iterator); }
+
+    // --------------------------------------------------------------------------------------------------------------
+    protected void mustBeMutableObject(String jsFnName) {
+        if(!this.isMutable) {
+            throw new OAPIException("StoreObject is not mutable when calling "+jsFnName);
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+    public Object jsFunction_append(Object value, int desc, int qual) {
+        mustBeMutableObject("append()");
+        Object jsValue = jsToAttr(value);
+        if(jsValue == null) {
+            throw new OAPIException("null and undefined cannot be appended to a StoreObject");
+        }
+        this.appObject.add_attr(jsValue, desc, qual);
+        return this;
+    }
+
+    public Object jsFunction_appendParent(Object value, int qual) { return jsFunction_append(value, A_PARENT, qual); }
+    public Object jsFunction_appendType(Object value, int qual) { return jsFunction_append(value, A_TYPE, qual); }
+    public Object jsFunction_appendTitle(Object value, int qual) { return jsFunction_append(value, A_TITLE, qual); }
+
+    public Object jsFunction_remove(Object desc, Object qual, Object iterator) {
+        mustBeMutableObject("remove()");
+        return withCheckedArgs("remove()", desc, true, qual, iterator, true, (d,q,i) -> {
+            if(i == null) {
+                this.appObject.jsDeleteAttrs(d,q);
+            } else {
+                final Runtime runtime = Runtime.getCurrentRuntime();
+                this.appObject.jsDeleteAttrsIterator(d, q, (iValue, iDesc, iQual) -> {
+                    return ScriptRuntime.toBoolean(i.call(runtime.getContext(), i, i,
+                        new Object[]{attrToJs(runtime, iValue), iDesc, iQual}));
+                });
+            }
+            return this;
+        });
+    }
+
+    public boolean jsFunction_deleteObject() {
+        withReturnedAppObject(rubyInterface.deleteObject(this.appObject), false /* use object mutability */);
+        return true;
+    }
+
+    public static void deleteObjectByRef(AppObjRef ref) {
+        rubyInterface.deleteObject(ref);
+    }
+
+    public Object jsFunction_relabel(Object labelChanges) {
+        if(this.jsGet_ref() == null) {
+            throw new OAPIException("Cannot call relabel on a storeObject before it has been saved");
+        }
+        if((labelChanges == null) || !(labelChanges instanceof KLabelChanges)) {
+            throw new OAPIException("relabel must be passed an O.labelChanges object");
+        }
+        if(this.isMutable) {
+            throw new OAPIException("relabel() can only be used on immutable objects");
+        }
+        withReturnedAppObject(
+            rubyInterface.relabelObject(this.appObject, ((KLabelChanges)labelChanges).toRubyObject()),
+            true /* force immutable */);
+        return Context.getUndefinedValue();
+    }
+
+    public Scriptable jsFunction_preallocateRef() {
+        mustBeMutableObject("preallocateRef()");
+        this.ref = KObjRef.fromAppObjRef(rubyInterface.preallocateRef(this.appObject));
+        return this.ref;
+    }
+
+    public Scriptable jsFunction_save(Object labelChanges) {
+        mustBeMutableObject("save()");
+        AppLabelChanges appLabelChanges = null;
+        if(!((labelChanges == null) || (labelChanges instanceof Undefined))) {
+            if(labelChanges instanceof KLabelChanges) {
+                appLabelChanges = ((KLabelChanges)labelChanges).toRubyObject();
+            } else {
+                throw new OAPIException("labelChanges must be an O.labelChanges object");
+            }
+        }
+        AppObject mutated = this.isNewObject ?
+            rubyInterface.createObject(this.appObject, appLabelChanges) :
+            rubyInterface.updateObject(this.appObject, appLabelChanges);
+        withReturnedAppObject(mutated, false /* use object mutability */);
+        this.isNewObject = false;
+        return this;
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+
+    public static boolean jsStaticFunction__clientSideEditorDecode(String encoded, Scriptable object) {
+        return rubyInterface.clientSideEditorDecode(encoded, ((KObject)object).toRubyObject());
+    }
+
+    public static String jsStaticFunction__clientSideEditorEncode(Scriptable object) {
+        return rubyInterface.clientSideEditorEncode(((KObject)object).toRubyObject());
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -285,7 +427,6 @@ public class KObject extends KScriptable {
         } else if(value instanceof AppObjRef) {
             return runtime.createHostObject("$Ref", ((AppObjRef)value).objId());
         } else if(value instanceof AppText) {
-            // Create a string object augmented with an additional property
             KText text = (KText)runtime.createHostObject("$KText");
             text.setText((AppText)value);
             return text;
@@ -294,20 +435,7 @@ public class KObject extends KScriptable {
         } else if(value instanceof java.lang.Number || value instanceof java.lang.Boolean) {
             // NOTE: java.lang.Strings are dropped here, because they should all be KText classes
             return value;
-        } else {
-            // Ask the Ruby side for support
-/*            Object converted = rubyInterface.attrValueConversionToJava(value);
-             if(converted != null)
-             {
-             if(converted instanceof java.util.Date)
-             {
-             // Convert the Java Date object into a JavaScript Date object
-             return runtime.createHostObject("Date", ((java.util.Date)converted).getTime());
-             }
-             }*/
         }
-
-        // Drop the value
         return null;
     }
 
@@ -318,7 +446,6 @@ public class KObject extends KScriptable {
         } else if(value instanceof KObjRef) {
             return ((KObjRef)value).toRubyObject();
         } else if(value instanceof KObject) {
-            // This is actually unlikely to happen, because KObjects are wrapped.
             return ((KObject)value).toRubyObject();
         } else if(value instanceof CharSequence) {
             // Allow java.lang.Strings/CharSequence here, because they'll be converted to KText objects in the Ruby side
@@ -328,11 +455,7 @@ public class KObject extends KScriptable {
         } else if(value instanceof java.lang.Number || value instanceof java.lang.Boolean) {
             return value;
         } else if(value instanceof KDateTime) {
-            // Return the wrapped Ruby KDateTime object.
             return ((KDateTime)value).toRubyObject();
-        } else if((value instanceof Scriptable) && null != (obj = KObject.toRubyObjectFromWrapper((Scriptable)value))) {
-            // Was a wrapped KObject
-            return obj;
         } else {
             // First attempt to convert date
             Date d = JsConvert.tryConvertJsDate(value);
@@ -345,26 +468,7 @@ public class KObject extends KScriptable {
                 return converted;
             }
         }
-
-        // Drop the value
         return null;
-    }
-
-    // --------------------------------------------------------------------------------------------------------------
-    static public void jsStaticFunction__preallocateRef(KObject object) {
-        rubyInterface.preallocateRef(object.toRubyObject());
-    }
-
-    // --------------------------------------------------------------------------------------------------------------
-    static public Scriptable jsStaticFunction_loadHistory(KObject object) {
-        AppObject[] history = rubyInterface.loadObjectHistory(object.toRubyObject());
-        Object jsHistory[] = new Object[history.length];
-        for(int i = 0; i < history.length; ++i) {
-            jsHistory[i] = KObject.fromAppObject(history[i], false);
-        }
-        Runtime runtime = Runtime.getCurrentRuntime();
-        return runtime.getContext().newArray(runtime.getJavaScriptScope(), jsHistory);
-
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -375,13 +479,11 @@ public class KObject extends KScriptable {
     // --------------------------------------------------------------------------------------------------------------
     // Interface to Ruby functions
     public interface Ruby {
-        public Object attrValueConversionToJava(Object value);
-
         public Object attrValueConversionFromJava(Object value);
 
         public AppObject constructBlankObject(AppLabelList labels);
 
-        public void preallocateRef(AppObject object);
+        public AppObjRef preallocateRef(AppObject object);
 
         public AppObject createObject(AppObject object, AppLabelChanges labelChanges);
 
@@ -395,13 +497,13 @@ public class KObject extends KScriptable {
 
         public boolean objectIsKindOf(AppObject object, int objId);
 
+        public String objectTitleAsString(AppObject object);
+
         public String objectDescriptiveTitle(AppObject object);
 
         public String generateObjectURL(AppObject object, boolean asFullURL);
 
         public String descriptionForConsole(AppObject object);
-
-        public String makeObjectViewJSON(AppObject object, String kind, String optionsJSON);
 
         public AppObject[] loadObjectHistory(AppObject object);
 

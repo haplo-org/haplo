@@ -420,29 +420,115 @@ public class JdTable extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+
+    // Execute a query returning rows of data
     public Scriptable[] executeQuery(JdSelect query) throws java.sql.SQLException {
-        return (Scriptable[])buildAndExecuteQuery(query, false /* results */);
+        return (Scriptable[])buildAndExecuteQuery(query, new QueryExecution() {
+            public int appendOutputExpressions(StringBuilder select, ParameterIndicies indicies) {
+                return appendColumnNamesForSelect(1, "m", select, indicies);
+            }
+            public int appendOutputExpressionsForLinkedTable(JdTable otherTable, int parameterIndexStart, String tableAlias, StringBuilder select, ParameterIndicies indicies) {
+                select.append(',');
+                return otherTable.appendColumnNamesForSelect(parameterIndexStart, tableAlias, select, indicies);
+            }
+            public void appendGroupAndOrder(StringBuilder select) {
+                String order = query.generateOrderSql("m");
+                if(order != null) {
+                    select.append(" ORDER BY ");
+                    select.append(order);
+                }
+            }
+            public Object createResultObject(ResultSet results, ParameterIndicies indicies, IncludedTable[] includes) throws java.sql.SQLException {
+                ArrayList<Scriptable> objects = jsObjectsFromResultsSet(results, 100 /* results size hint */, indicies, includes);
+                return objects.toArray(new Scriptable[objects.size()]);
+            }
+        });
     }
 
-    public int executeCount(JdSelect query) throws java.sql.SQLException {
-        return (Integer)buildAndExecuteQuery(query, true /* count only */);
+    // How to interpret values returned by the database in executeSingleValueExpression()
+    public enum SingleValueKind {
+        INT() {
+            public Object get(ResultSet results) throws java.sql.SQLException { return (Integer)results.getInt(1); }
+            public Object valueForNoResult() { return (Integer)0; }
+        },
+        DOUBLE() {
+            public Object get(ResultSet results) throws java.sql.SQLException { return results.getDouble(1); }
+            public Object valueForNoResult() { return (Double)0.0; }
+        };
+        public abstract Object get(ResultSet results) throws java.sql.SQLException;
+        public abstract Object valueForNoResult();
     }
 
-    private Object buildAndExecuteQuery(JdSelect query, boolean returnCount) throws java.sql.SQLException {
+    // Execute a query which returns a single value from a *trusted* SQL expression
+    public Object executeSingleValueExpressionUsingTrustedSQL(JdSelect query, String sqlExpression, SingleValueKind kind, Field groupByField) throws java.sql.SQLException {
+        // WARNING: sqlExpression is added into the SQL statement directly
+        return buildAndExecuteQuery(query, new QueryExecution() {
+            public int appendOutputExpressions(StringBuilder select, ParameterIndicies indicies) {
+                select.append(sqlExpression);
+                if(groupByField != null) {
+                    // TODO: Support group by fields with more than component column
+                    select.append(',');
+                    select.append(groupByField.getDbName());
+                }
+                select.append(' ');
+                return 0;
+            }
+            public int appendOutputExpressionsForLinkedTable(JdTable otherTable, int parameterIndexStart, String tableAlias, StringBuilder select, ParameterIndicies indicies) {
+                return parameterIndexStart;
+            };
+            public void appendGroupAndOrder(StringBuilder select) {
+                if(groupByField != null) {
+                    select.append(" GROUP BY ");
+                    select.append(groupByField.getDbName());
+                    select.append(" ORDER BY ");
+                    select.append(groupByField.getDbName());
+                }
+            }
+            public Object createResultObject(ResultSet results, ParameterIndicies indicies, IncludedTable[] includes) throws java.sql.SQLException {
+                if(groupByField != null) {
+                    // Build a JS Array of {value:sqlExpressionValue, group:groupValue}
+                    Runtime runtime = Runtime.getCurrentRuntime();
+                    ArrayList<Scriptable> groups = new ArrayList<Scriptable>();
+                    ParameterIndicies readGroupValueIndicies = new ParameterIndicies(1);
+                    readGroupValueIndicies.set(2); // Value picked up by Field is second
+                    while(results.next()) {
+                        Scriptable entry = runtime.createHostObject("Object");
+                        groups.add(entry);
+                        // Result of SQL expression
+                        entry.put("value", entry, kind.get(results));
+                        // Group value
+                        readGroupValueIndicies.nextRow();
+                        Object groupValue = groupByField.getValueFromResultSet(results, readGroupValueIndicies);
+                        if(groupValue == null || results.wasNull()) {
+                            entry.put("group", entry, null);
+                        } else {
+                            entry.put("group", entry, groupValue);
+                        }
+                    }
+                    return runtime.getContext().newArray(runtime.getJavaScriptScope(), groups.toArray(new Object[groups.size()]));
+                } else {
+                    // Just a single value
+                    return results.next() ? kind.get(results) : kind.valueForNoResult();
+                }
+            }
+        });
+    }
+
+    // Generate parts of the SQL & interpret the results
+    private interface QueryExecution {
+        int appendOutputExpressions(StringBuilder select, ParameterIndicies indicies);
+        int appendOutputExpressionsForLinkedTable(JdTable otherTable, int parameterIndexStart, String tableAlias, StringBuilder select, ParameterIndicies indicies);
+        void appendGroupAndOrder(StringBuilder select);
+        Object createResultObject(ResultSet results, ParameterIndicies indicies, IncludedTable[] includes) throws java.sql.SQLException;
+    }
+
+    private Object buildAndExecuteQuery(JdSelect query, QueryExecution execution) throws java.sql.SQLException {
         ParameterIndicies indicies = makeParameterIndicies();
         Connection db = Runtime.currentRuntimeHost().getSupportRoot().getJdbcConnection();
         // Build SELECT statement
         String from = this.getDatabaseTableName() + " AS m";
         StringBuilder select = new StringBuilder("SELECT ");
-        if(returnCount) {
-            select.append("COUNT(*) ");
-        }
-        // Field names & linked table FROM clause generation
-        int parameterIndexStart = 0;
-        if(!returnCount) // only include field names when requesting results
-        {
-            parameterIndexStart = this.appendColumnNamesForSelect(1, "m", select, indicies);
-        }
+        int parameterIndexStart = execution.appendOutputExpressions(select, indicies);
         // Load other tables at the same time?
         JdTable.LinkField[] includeFields = query.getIncludes();
         IncludedTable includes[] = null;
@@ -456,33 +542,24 @@ public class JdTable extends KScriptable {
                 String otherAlias = field.getNameForQueryAlias();
                 ParameterIndicies otherIndicies = otherTable.makeParameterIndicies();
                 includes[includeIndex] = new IncludedTable(otherTable, field, otherIndicies);
-                // Field names?
-                if(!returnCount) // only include field names when requesting results
-                {
-                    // Ask all the other tables to add their fields
-                    select.append(',');
-                    parameterIndexStart = otherTable.appendColumnNamesForSelect(parameterIndexStart, otherAlias, select, otherIndicies);
-                }
+                // Ask all the other tables to add their fields?
+                parameterIndexStart = execution.appendOutputExpressionsForLinkedTable(otherTable, parameterIndexStart, otherAlias, select, otherIndicies);
                 // Adjust the FROM statement
                 from = "(" + from + " LEFT JOIN " + otherTable.getDatabaseTableName() + " AS " + otherAlias + " ON m." + field.getDbName() + "=" + otherAlias + ".id)";
             }
         }
-        // Finish the statement
+        // FROM
         select.append(" FROM ");
         select.append(from);
+        // WHERE
         String where = query.generateWhereSql("m");
         if(where != null) {
             select.append(" WHERE ");
             select.append(where);
         }
-        if(!returnCount) // only include order when requesting results
-        {
-            String order = query.generateOrderSql("m");
-            if(order != null) {
-                select.append(" ORDER BY ");
-                select.append(order);
-            }
-        }
+        // GROUP BY, ORDER BY, etc
+        execution.appendGroupAndOrder(select);
+        // LIMIT
         String limit = query.generateLimitAndOffsetSql();
         if(limit != null) {
             select.append(limit);
@@ -490,23 +567,13 @@ public class JdTable extends KScriptable {
 
         // Run the query
         Object output = null;
-        PreparedStatement statement = db.prepareStatement(select.toString());
-        try {
+        try ( PreparedStatement statement = db.prepareStatement(select.toString()) ) {
             if(where != null) {
                 query.setWhereValues(statement);
             }
-            ResultSet results = statement.executeQuery();
-            if(returnCount) {
-                if(results.next()) {
-                    output = results.getInt(1);
-                }
-            } else {
-                ArrayList<Scriptable> objects = jsObjectsFromResultsSet(results, 100 /* results size hint */, indicies, includes);
-                output = objects.toArray(new Scriptable[objects.size()]);
+            try ( ResultSet results = statement.executeQuery() ) {
+                output = execution.createResultObject(results, indicies, includes);
             }
-            results.close();
-        } finally {
-            statement.close();
         }
 
         return output;

@@ -12,7 +12,6 @@ lib/javascript/lib/constants.js
 lib/javascript/lib/datetime.js
 lib/javascript/lib/schema_support.js
 lib/javascript/lib/labels.js
-lib/javascript/lib/storeobject.js
 lib/javascript/lib/query.js
 lib/javascript/lib/dbtime.js
 lib/javascript/lib/database.js

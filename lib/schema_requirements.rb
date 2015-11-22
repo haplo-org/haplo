@@ -30,6 +30,8 @@ module SchemaRequirements
     OBJECT_FORMAT = /\A(?<optional>OPTIONAL )?(?<kind>\S+)\s+(?<code>[a-zA-Z0-9_:-]+)\s*(as\s+(?<name>[a-zA-Z0-9_]+))?\s*\z/m
     VALUE_FORMAT = /\A\s+((?<remove>REMOVE\b)\s*)?(?<key>\S+?):?\s+(?<string>.+?)?\s*(\[sort=(?<sort>\d+)\])?\s*\z/m
     OPTIONAL_NAMES_KEY = "_optional".freeze
+    TEMPLATE_KIND = "schema-template".freeze
+    TEMPLATE_KEY = "apply-schema-template".freeze
 
     def parse(plugin_name, io)
       @number_of_files += 1
@@ -44,7 +46,12 @@ module SchemaRequirements
           sort = (sortstr && !sortstr.empty?) ? sortstr.to_i : SORT_DEFAULT
           remove = match[:remove]
           sort = SORT_REMOVE if remove && !remove.empty?
-          current_requirement.add_value(sort, match[:key], match[:string])
+          key = match[:key]
+          if key == TEMPLATE_KEY
+            current_requirement.add_template(match[:string])
+          else
+            current_requirement.add_value(sort, key, match[:string])
+          end
         elsif (match = OBJECT_FORMAT.match(line))
           kind = match[:kind]
           code = match[:code]
@@ -58,7 +65,9 @@ module SchemaRequirements
               local_names[name] = code
             end
           end
-          current_requirement = (@requirements[kind][code] ||= Requirement.new(kind, code))
+          current_requirement = (@requirements[kind][code] ||= begin
+            ((kind == TEMPLATE_KIND) ? TemplateRequirement : Requirement).new(kind, code)
+          end)
           # Keep track of whether an object is declared as optional
           current_requirement.declared_as_non_optional = true unless optional
         else
@@ -66,6 +75,23 @@ module SchemaRequirements
         end
       end
       self
+    end
+
+    def apply_templates
+      template_requirements = @requirements.delete(TEMPLATE_KIND)
+      return unless template_requirements
+      @requirements.each do |kind,reqs|
+        reqs.each do |code,requirement|
+          templates = requirement.templates
+          if templates
+            templates.each do |template_name|
+              if template = template_requirements[template_name]
+                template.apply_to_requirement(requirement)
+              end
+            end
+          end
+        end
+      end
     end
   end
 
@@ -82,9 +108,28 @@ module SchemaRequirements
       @values = Hash.new { |h,k| h[k] = RequiredValue.new }
     end
     attr_accessor :declared_as_non_optional
-    attr_reader :kind, :code, :values
+    attr_reader :kind, :code, :values, :templates
     def add_value(sort, key, value)
       @values[key].set(sort, value)
+    end
+    def add_template(template_name)
+      @templates ||= []
+      @templates.push(template_name)
+    end
+  end
+
+  class TemplateRequirement < Requirement
+    def initialize(kind, code)
+      super(kind, code)
+      @template_values = []
+    end
+    def add_value(*args)
+      @template_values << args
+    end
+    def apply_to_requirement(requirement)
+      @template_values.each do |args|
+        requirement.add_value(*args)
+      end
     end
   end
 
@@ -403,6 +448,7 @@ module SchemaRequirements
     end
     attr_reader :parser, :changes, :errors
     def apply
+      @parser.apply_templates
       @parser.requirements.each do |kind,requirements|
         kind_applier = @kinds[kind]
         unless kind_applier

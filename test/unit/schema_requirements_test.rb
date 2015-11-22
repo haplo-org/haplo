@@ -225,12 +225,19 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     }).save!
 
     parser = parser_for <<-__E
+      qualifier test:qualifier:templated-qualifier
+        title: Templated Qualifier
+
+      schema-template test:template:add-a-qualifier
+        qualifier test:qualifier:templated-qualifier
+
       attribute test:attribute:text-linked
         title: Test Link
         search-name: test-link  search, name 
         data-type link
         linked-type test:type:test-type
         linked-type test:type:not-mentioned-anywhere
+        apply-schema-template test:template:add-a-qualifier
 
       label test:label:random
         title: Random
@@ -254,6 +261,7 @@ class SchemaRequirementsTest < Test::Unit::TestCase
         render-type intranetpage
         render-icon E212,1,f E413,1,f,y
         element: std:group:everyone right std:action_panel {"panel":"test1"} [sort=100]
+        apply-schema-template test:template:not-declared
 
       type test:type:test-type
         element: std:group:everyone right std:action_panel {"panel":"test1-x"} [sort=50]
@@ -382,6 +390,10 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     assert attr_desc != nil
     assert_equal 'Test Link', attr_desc.printable_name.to_s
     assert_equal 'test-link-search-name', attr_desc.short_name.to_s
+    # Did it have the templated qualifier added?
+    templated_qual = KObjectStore.schema.all_qual_descs.map { |i| KObjectStore.schema.qualifier_descriptor(i) } .find { |t| t.code == "test:qualifier:templated-qualifier" }
+    assert templated_qual != nil
+    assert attr_desc.allowed_qualifiers.include?(templated_qual.desc)
     # Check aliased attribute
     aliased_attr_desc = KObjectStore.schema.all_aliased_attr_descriptor_objs.find { |a| a.code == 'test:nonstd-aliased-attr:alias1' }
     assert aliased_attr_desc != nil

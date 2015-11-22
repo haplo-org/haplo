@@ -57,6 +57,7 @@ __E
         O.$registerFileTransformPipelineCallback("testconvert", this, {
             success: function(result) {
               pdfFile = result.file("output", "test1234.pdf");
+              pdfFile.identifier(); // check identifier can be created
             }
         });
         TEST.assert(!pdfFile);

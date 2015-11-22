@@ -102,10 +102,10 @@ TEST(function() {
     TEST.assert((new RegExp("^https?://.+?/"+obj.ref.toString()+"/hello-there$")).test(objUrlFull));
 
     // Console string generation
-    TEST.assert_equal("[StoreObject Book "+obj.ref.toString()+" (Hello there)]", obj.$console());
-    TEST.assert_equal("[StoreObjectMutable UNKNOWN (unsaved) (????)]", O.object().$console());
-    TEST.assert_equal("[StoreObjectMutable UNKNOWN (unsaved) (T0)]", O.object().appendTitle("T0").$console());
-    TEST.assert_equal("[StoreObjectMutable Laptop (unsaved) (????)]", O.object().appendType(TYPE["std:type:equipment:laptop"]).$console());
+    TEST.assert_equal("[StoreObject Book "+obj.ref.toString()+" (Hello there)]", $KScriptable.forConsole(obj));
+    TEST.assert_equal("[StoreObjectMutable UNKNOWN (unsaved) (????)]", $KScriptable.forConsole(O.object()));
+    TEST.assert_equal("[StoreObjectMutable UNKNOWN (unsaved) (T0)]", $KScriptable.forConsole(O.object().appendTitle("T0")));
+    TEST.assert_equal("[StoreObjectMutable Laptop (unsaved) (????)]", $KScriptable.forConsole(O.object().appendType(TYPE["std:type:equipment:laptop"])));
 
     // Check file on object
     var fileIdentifier = obj.first(3070);
@@ -171,29 +171,6 @@ TEST(function() {
     m.save();
     TEST.assert_equal("Hello!", m.first(ATTR["dc:attribute:author"]).toString());
     TEST.assert_equal(null, obj.first(ATTR["dc:attribute:author"]));
-
-    // toView() conversion
-    var viewLookup = obj.toView("lookup");
-    TEST.assert_equal(obj.ref.toString(), viewLookup.ref);
-    TEST.assert_equal("Hello there", viewLookup.title);
-    TEST.assert_equal("Hello there", viewLookup.dc_attribute_title.first.string);
-    TEST.assert_equal("Hello there", viewLookup[ATTR.Title].first.string);
-    TEST.assert_equal(ATTR.Title, viewLookup.dc_attribute_title.descriptor);
-    TEST.assert_equal("Qual notes", viewLookup.std_attribute_notes.values[0].html);
-    var viewLookup2 = obj.toView("lookup", {attributes:[ATTR["std:attribute:notes"]]});
-    TEST.assert_equal("Hello there", viewLookup2.title);
-    TEST.assert_equal("Qual notes", viewLookup2.std_attribute_notes.values[0].html);
-    TEST.assert_equal(undefined, viewLookup2["A_TITLE"]);
-    TEST.assert_equal(undefined, viewLookup2[ATTR.Title]);
-    var viewDisplay = obj.toView("display", {aliasing:false});
-    TEST.assert_equal("Hello there", viewDisplay.title);
-    TEST.assert_equal("Hello there", viewDisplay.attributes[0].values[0].string);
-    var viewDisplay2 = obj.toView("display", {aliasing:false, attributes:[ATTR["std:attribute:notes"], ATTR.Title]});
-    TEST.assert_equal(2, viewDisplay2.attributes.length);
-    TEST.assert_equal(211, viewDisplay2.attributes[1].descriptor);
-    TEST.assert_equal(2, viewDisplay2.attributes[1].values.length);
-    TEST.assert_equal(undefined, viewDisplay2.attributes[1].values[0]["isLastValue"]);
-    TEST.assert_equal(true, viewDisplay2.attributes[1].values[1].isLastValue);
 
     // Bad label lists throw errors
     O.object(); // works without labels specified

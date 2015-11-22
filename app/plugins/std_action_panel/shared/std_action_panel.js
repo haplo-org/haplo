@@ -13,6 +13,7 @@
         std_action_panel.hElementDiscover = hElementDiscoverImpl;
         std_action_panel.hElementRender = hElementRenderImpl;
         std_action_panel.$renderFail = renderFailImpl;
+        std_action_panel.implementService("std_action_panel:build_panel", buildPanelService);
     };
 
     var makePriorityDecode = function(priorityLookup) {
@@ -51,9 +52,15 @@
 
     // -----------------------------------------------------------------------------------------------------
 
-    var hElementRenderImpl = function(response, name, path, object, style, options) {
-        if(name !== "std:action_panel") { return; }
+    // Service needs to set up defaults for the display object, will modify the object passed in
+    var buildPanelService = function(panelName, display) {
+        if(!display)                        { display = {}; }
+        if(!("options" in display))         { display.options = {}; }
+        if(!("panel" in display.options))   { display.options.panel = panelName; }
+        return buildPanel.call(this, panelName, display);
+    };
 
+    var buildPanel = function(panelName, display) {
         // Build priority lookups?
         if(!this.$priorityLookup) {
             this.$priorityLookup = _.extend({}, O.$private.$panelBuilderDefaultPriorities);
@@ -62,42 +69,50 @@
             }
             this.$priorityDecode = makePriorityDecode(this.$priorityLookup);
         }
+        // Set up the default builder, which is used as a gateway to builders for other panels
+        var defaultBuilder = O.ui.panel({
+            defaultHighlight: display.options.highlight,
+            style: display.style,
+            priorityDecode: this.$priorityDecode
+        });
+        // Ask other plugins to add the entries to the action panel, passing the context in which the panel is being displayed
+        var serviceNames = [
+            "std:action_panel:"+panelName
+        ];
+        // Extra service if the panel has a category
+        if("category" in display.options) {
+            serviceNames.push("std:action_panel:category:"+display.options.category);
+        }
+        serviceNames.forEach(function(serviceName) {
+            if(O.serviceImplemented(serviceName)) { 
+                O.service(serviceName, display, defaultBuilder);
+            }
+        });
+        return defaultBuilder;
+    };
 
-        // Decode options
+    var hElementRenderImpl = function(response, name, path, object, style, options) {
+        if(name !== "std:action_panel") { return; }
+
         var optionsDecoded = options ? JSON.parse(options) : {};
-        // Check options
         if(!("panel" in optionsDecoded)) {
             return this.$renderFail(response, "No panel specified in element options");
         }
         var elementTitle = optionsDecoded.title || "";
-        var panelStyle = optionsDecoded.style;
-        // If nothing implements the builder service, stop now
-        var serviceName = "std:action_panel:"+optionsDecoded.panel;
-        if(!O.serviceImplemented(serviceName)) {
-            return;
-        }
-        // Set up the default builder, which is used as a gateway to builders for other panels
-        var defaultBuilder = O.ui.panel({
-            defaultHighlight: optionsDecoded.highlight,
-            style: panelStyle,
-            priorityDecode: this.$priorityDecode
-        });
-        // Ask other plugins to add the entries to the action panel, along with the context in which the panel is being displayed
+
         var display = {
             path: path,
             object: object,
-            style: style,
             testingButtonLink: !!(optionsDecoded.buttonLink),
             options: optionsDecoded
         };
-        O.service(serviceName, display, defaultBuilder);
+        if("style" in optionsDecoded) { display.style = optionsDecoded.style; }
+
+        var defaultBuilder = buildPanel.call(this, optionsDecoded.panel, display);
+
         // Special case for when the panel style is a link to another page, if the action panel has entries
         if(optionsDecoded.buttonLink) {
-            var shouldDisplay = false;
-            _.each(defaultBuilder.__builders, function(builder, key) {
-                if(builder._shouldBeRendered()) { shouldDisplay = true; }
-            });
-            if(shouldDisplay) {
+            if(defaultBuilder.anyBuilderShouldBeRendered()) {
                 response.title = '';
                 response.html = this.template("std:ui:panel").render({
                     highlight: optionsDecoded.highlight,

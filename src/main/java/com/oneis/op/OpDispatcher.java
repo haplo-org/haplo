@@ -61,7 +61,7 @@ public class OpDispatcher {
     public Worker workerConnected(int workerNumber) {
         Worker worker = null;
         synchronized(this) {
-            if(workerNumber < 0 || workerNumber > this.workers.length || this.workers[workerNumber].connected) {
+            if(workerNumber < 0 || workerNumber >= this.workers.length || this.workers[workerNumber].connected) {
                 throw new RuntimeException("Bad worker number or already connected on worker connection.");
             }
             worker = this.workers[workerNumber];

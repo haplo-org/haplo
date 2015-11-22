@@ -579,8 +579,10 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
         // Handle the keycode
         var kc = event.which;
         if(kc == 13 /* return */) {
-            // Make sure the style on the new paragraph is normal paragraph text
-            this.j__setCurrentParagraphStyle(null);
+            // Make sure the style on the new paragraph is normal paragraph text, unless it's bullet points
+            if(!(this.q__selectedParagraph && this.q__selectedParagraph.className === 'p_i')) {
+                this.j__setCurrentParagraphStyle(null);
+            }
         } else if(((this.q__shortcutModifier == 'ctrl') ? event.ctrlKey : event.altKey) && kc >= 48 && kc <= 52)    // ctrl-0 ... 4
         {
             this.j__setCurrentParagraphStyle((kc==48)?null:String.fromCharCode(kc));

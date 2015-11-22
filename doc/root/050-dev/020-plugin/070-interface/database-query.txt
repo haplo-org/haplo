@@ -94,7 +94,7 @@ h3(function). offset(start)
 Skip the specified number of rows. Use with @limit()@ for implementing paged results.
 
 
-h2. Interface (counting)
+h2. Interface (aggregate functions)
 
 
 h3(function). count()
@@ -104,6 +104,19 @@ Return the number of rows the query would return if it was executed. This is equ
 This is similar to the @length@ property, but has very different performance characteristics. Accessing the @length@ property executes the query and loads all the results. Calling @count()@ executes a separate SQL query.
 
 Only use the @count()@ function if you are *not* going to access all the rows which would be returned by this query, otherwise you are performing unnecessary work in the database.
+
+
+h3(function). aggregate(functionName, fieldName, groupByFieldName)
+
+Return the result of an aggregate function.
+
+@functionName@ is one of @"AVG"@, @"COUNT"@, @"MAX"@, @"MIN"@, @"SUM"@, @"STDDEV_POP"@, @"STDDEV_SAMP"@, @"VAR_POP"@, or @"VAR_SAMP"@, as implemented by PostgreSQL.
+
+@fieldName@ is one of the fields in the database table, to which the aggregate function will be applied.
+
+@groupByFieldName@ is optional. If present, then the values are grouped by that field.
+
+Returns a single value if @groupByFieldName@ is not specified, otherwise an @Array@ of @Objects@ containing @value@ and @group@ properties.
 
 
 h2. Interface (results)
