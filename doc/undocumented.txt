@@ -22,6 +22,7 @@ Templates
 
 std:resource:tree
 std:treesource
+std:jquery_ui:slider
 std:render_doc_as_html
 std:resource:plugin_adaptor
 std:ui:panel

@@ -15,7 +15,7 @@ import com.oneis.op.OpQueuer;
 import com.oneis.op.OpDispatchServer;
 import com.oneis.op.OpWorkerProcess;
 import com.oneis.op.OpWorkerSupervisor;
-//import com.oneis.op.solaris.SupervisorSMF;
+import com.oneis.op.SupervisordSupervisor;
 
 public class OperationRunner {
     private static OpDispatcher dispatcher;
@@ -34,10 +34,9 @@ public class OperationRunner {
 
         Operation.setDefaultQueuer(new DefaultQueuer());
 
-        // Use the SMF supervisor in production mode only
+        // Use supervisord in production mode only
         if(productionEnvironment) {
-            throw new RuntimeException("No suitable operation supervisor available.");
-//            OperationRunner.dispatcher.useSupervisor(new SupervisorSMF());
+	    OperationRunner.dispatcher.useSupervisor(new SupervisordSupervisor());
         }
     }
 

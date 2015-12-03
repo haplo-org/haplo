@@ -1,0 +1,12 @@
+<%
+  unless @info
+    @page_title = 'Operation not found'
+    %><div class="z__general_alert">This operation has completed.</div><%
+  else
+    render :partial => "page", :data_for_template => {:default_title => 'Please wait...'}
+    %><%= render :partial => 'shared/wait_for_download', :data_for_template => {
+      :identifier => @info['identifier'],
+      :message => @info['view']['message'] || "Generating file..."
+    } %><%
+  end
+%>

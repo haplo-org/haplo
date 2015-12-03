@@ -1,0 +1,57 @@
+#!/bin/sh
+
+# Haplo Platform                                     http://haplo.org
+# (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+#
+# this script is called from release
+# the development classpath is pulled out of maven
+# for deployment need to copy the jars and rewrite the classpath.txt file
+#
+
+case $# in
+2)
+	TMPROOT=$1
+	DESTROOT=$2
+	;;
+*)
+	echo "Usage: $0 tmp_dir deployment_dir"
+	exit 1
+	;;
+esac
+
+if [ ! -d ${TMPROOT} ]; then
+   echo "No such directory ${TMPROOT}"
+   exit 1
+fi
+
+if [ ! -f target/classpath.txt ]; then
+   echo "Missing target/classpath.txt"
+   exit 1
+fi
+
+if [ ! -f ${TMPROOT}/target/classpath.txt ]; then
+   echo "Missing ${TMPROOT}/target/classpath.txt"
+   exit 1
+fi
+
+#
+# we temporarily build up the deployment package in TMPROOT
+# CLASSPATH needs to match final deployment to DESTROOT
+#
+NCPATH=""
+mkdir -p ${TMPROOT}/jars
+for jfile in `cat target/classpath.txt | sed 's=:= =g'`
+do
+	if [ ! -f $jfile ]; then
+	   echo "Warning: missing jar file $jfile"
+	fi
+	cp $jfile ${TMPROOT}/jars
+	jname=${jfile##*/}
+	NCPATH="${NCPATH}${DESTROOT}/jars/${jname}:"
+done
+echo $NCPATH | sed 's=:$==' > ${TMPROOT}/target/classpath.txt
+

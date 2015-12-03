@@ -27,13 +27,16 @@ class KJSFileTransformPipeline < KJob
     @temp_files = []  # pathnames
   end
 
+  PrepareData = Struct.new(:name, :filename, :redirect_to, :plugin_view)
+
   def prepare
     pipeline = JSON.parse(@json)
     # Tell the generated file controller that these identifiers are valid
-    pipeline['downloads'].each do |name, filename, identifier, plugin_view|
+    pipeline['waitUI'].each do |name, filename, redirect_to, identifier, plugin_view|
       begin
         plugin_view = {} unless plugin_view.kind_of?(Hash)
-        KNotificationCentre.notify(:jsfiletransformpipeline, :prepare, identifier, filename, plugin_view)
+        data = PrepareData.new(name, filename, redirect_to, plugin_view)
+        KNotificationCentre.notify(:jsfiletransformpipeline, :prepare, identifier, data)
       rescue => e
         KApp.logger.error("Exception sending notification of generated output: #{@json}")
         KApp.logger.log_exception(e)
@@ -70,12 +73,21 @@ class KJSFileTransformPipeline < KJob
         KApp.logger.log_exception(e)
       end
       # Notify generated file downloads
-      pipeline['downloads'].each do |name, filename, identifier|
+      pipeline['waitUI'].each do |name, filename, redirect_to, identifier|
         begin
-          file_list_entry = @files[name]
-          if result.success && file_list_entry
-            KNotificationCentre.notify(:jsfiletransformpipeline, :ready,
-                identifier, filename, file_list_entry.disk_pathname, file_list_entry.mime_type)
+          success = result.success; disk_pathname = nil; mime_type = nil
+          if success && name
+            # Waiting for a particular file
+            file_list_entry = @files[name]
+            if file_list_entry
+              disk_pathname = file_list_entry.disk_pathname
+              mime_type = file_list_entry.mime_type
+            else
+              success = false
+            end
+          end
+          if success
+            KNotificationCentre.notify(:jsfiletransformpipeline, :ready, identifier, disk_pathname, mime_type)
           else
             KNotificationCentre.notify(:jsfiletransformpipeline, :failure, identifier)
           end

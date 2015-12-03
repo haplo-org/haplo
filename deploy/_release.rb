@@ -16,12 +16,7 @@ require 'yaml'
 require 'digest/sha1'
 require 'json'
 
-INCLUDE_COMPONENTS = false
-
 Encoding.default_external = Encoding.default_internal = Encoding::UTF_8
-
-# Load source control module, don't assume ./build has been run
-require "lib/common/source_control/source_control.rb"
 
 # To use prefix based names with the CSS class and ID subsitution either
 #   only append numbers to z__ names
@@ -33,11 +28,10 @@ require "lib/common/source_control/source_control.rb"
 #   c_     (for category colouring in search results)
 #   el_    (for editor reordering)
 
-export_dir = 'code'
+export_dir = '/tmp/haplo-build'
 
 # Options
-test_mode_input = nil
-no_onedeploy = false
+input_dir = nil
 no_clean_up = false
 time_based_static = false
 squish_test_files = false
@@ -45,14 +39,12 @@ mapping_info = {}
 
 # Directories which aren't required for deployment
 unnecessary_dirs = [
-    'test', 'standards', 'doc', 'src', 'log', 'tmp',      # only needed in development
-    'deploy/javascript',                                  # JavaScript minimisation
-    'static/source'                                       # Don't need source files for static resources
+    'test', 'doc', 'src', 'log', 'tmp',      # only needed in development
+    'deploy/javascript'                      # JavaScript minimisation
 ]
 
 # Parse command line options
 opts = GetoptLong.new(
-  ['--no-onedeploy', GetoptLong::NO_ARGUMENT],
   ['--no-clean-up', GetoptLong::NO_ARGUMENT],
   ['--time-based-static', GetoptLong::NO_ARGUMENT],
   ['--for-testing', GetoptLong::NO_ARGUMENT],
@@ -61,8 +53,6 @@ opts = GetoptLong.new(
 option_output = nil
 opts.each do |opt, argument|
   case opt
-  when '--no-onedeploy'
-    no_onedeploy = true
   when '--no-clean-up'
     no_clean_up = true
   when '--time-based-static'
@@ -76,7 +66,7 @@ opts.each do |opt, argument|
     # Output mappings for tests, where they can't be squished automatically
     write_mapping_info_file = true
   when '--input-dir'
-    test_mode_input = argument
+    input_dir = argument
   end
 end
 
@@ -89,19 +79,19 @@ set_as_latest = (ARGV[0] == 'latest')
 
 # -----------------------------------------------------------------------------------------------
 
-puts "Get repository info..."
-source_control = SourceControl.current_revision
-revision = source_control.displayable_id
-packaging_version = "#{source_control.filename_time_string}-#{revision}"
+# Skip Get repository info...
+revision="1"
+packaging_version="1"
 $export_dir = export_dir
 
 puts "Export code ..."
 system "rm -rf #{export_dir}"
 # Test mode? (to avoid exporting things lots and lots)
-if test_mode_input != nil
-  system "cp -R #{test_mode_input} #{export_dir}"
+if input_dir != nil
+  system "cp -R #{input_dir} #{export_dir}"
 else
-  source_control.export_to(export_dir)
+  puts "Must specify input directory"
+  exit(1)
 end
 
 # -----------------------------------------------------------------------------------------------
@@ -109,29 +99,6 @@ end
 # Make a unique name for the static files directory so they can be set to never expire without problems
 $static_files_dir = "/-r#{revision}"  # use 'r' prefix for revision based names
 $static_files_dir = "/-t#{Time.now.to_i}" if time_based_static  # override with time for testing, 't' prefix
-
-# -----------------------------------------------------------------------------------------------
-puts "Rearrange exported directory..."
-if INCLUDE_COMPONENTS
-  File.rename("#{export_dir}/components", "#{export_dir}/khq/components")
-else
-  FileUtils.mkdir("#{export_dir}/khq/components", :mode => 0755)
-end
-Dir.entries(export_dir).each do |entry|
-  unless entry == '.' || entry == '..' || entry == 'khq'
-    system "rm -rf #{export_dir}/#{entry}"
-  end
-end
-Dir.entries("#{export_dir}/khq").each do |entry|
-  unless entry == '.' || entry == '..'
-    File.rename("#{export_dir}/khq/#{entry}", "#{export_dir}/#{entry}")
-  end
-end
-FileUtils.rmdir("#{export_dir}/khq")
-
-# -----------------------------------------------------------------------------------------------
-puts "Write version file..."
-File.open("#{export_dir}/VERSION.txt", "w") { |f| f.write "#{source_control.version_id}\n" }
 
 # -----------------------------------------------------------------------------------------------
 
@@ -827,16 +794,6 @@ Ingredient::Templates.get_template_root_paths.each do |root_path|
 end
 
 # -----------------------------------------------------------------------------------------------
-puts "Build executables..."
-system "(cd #{export_dir} ; ./build )"
-if 0 != $?
-  puts "**** Failed to build executables -- aborted release process"
-  exit 1
-end
-# Clean up java build
-FileUtils.rm_r("#{export_dir}/jbuild")
-
-# -----------------------------------------------------------------------------------------------
 puts "Remove unnecessary files..."
 unnecessary_dirs.each do |dir|
   FileUtils.rm_r("#{export_dir}/#{dir}")
@@ -852,61 +809,8 @@ File.open("#{export_dir}/static/squishing_mappings.yaml", 'w') do |f|
 end
 
 # -----------------------------------------------------------------------------------------------
-puts "Queue release..."
-if no_onedeploy
-  puts "(skipped)"
-else
-  queue_cmd = %Q!onedeploy --archive-root=. --archive-name=khq --archive-comment="Haplo Platform #{packaging_version}" queue-archive code!
-  queue_result = `#{queue_cmd}`
-  queued_archive = JSON.parse(queue_result)
-  raise "No archive queued" unless queued_archive.has_key?("archive")
-  # Write the manifest
-  manifest_str = File.open("#{export_dir}/config/manifest.json") { |f| f.read }
-  manifest = JSON(manifest_str)
-  # Set version
-  manifest["version"] = packaging_version
-  # Add this archive to the list of things to install
-  manifest["archives"] << queued_archive["archive"]
-  # Add the dependencies check and install actions
-  manifest["actions"] << ["pre", "command", "/usr/bin/env JAVA_HOME=`pwd`/java jruby/bin/jruby code/config/check_dependencies.rb"]
-  manifest["actions"] << ["pre", "command", "/bin/sh code/deploy/solaris/script/stop_services.sh"]
-  manifest["actions"] << ["post", "command", "/bin/sh code/deploy/solaris/install.sh"]
-  manifest["actions"] << ["post", "bin-symlink", "code/script/platform-prompt"]
-  # Write manifest
-  deployed_manifest_file = "code/platform-#{packaging_version}.json"
-  File.open(deployed_manifest_file, "wb") { |f| f.write JSON.pretty_generate(manifest) }
-  # Queue the manifest
-  queue_manifest_command = "onedeploy queue-manifest #{deployed_manifest_file}"
-  queue_manifest_command << ' latest' if set_as_latest
-  queue_manifest_result = `#{queue_manifest_command}`
-  if queue_manifest_result == ''
-    puts "Didn't queue manifest -- probably because version is already on repo server. Try yourself with"
-    puts "  #{queue_manifest_command}"
-    puts "and clean up code dir manually."
-    exit 1
-  end
-  queued_manifest = JSON.parse(queue_manifest_result)
-  raise "Manifest not queued" unless queued_manifest.has_key?("manifest") && queued_manifest["manifest"] == ["platform", packaging_version]
-  # TODO: Use future onedeploy tagging system -- and update instructions at end
-end
-
-# -----------------------------------------------------------------------------------------------
-puts "Clean up..."
 # Option to not remove the processed directory, for easier observation during development
 unless no_clean_up
+  puts "Clean up..."
   system "rm -rf #{export_dir}"
 end
-
-# -----------------------------------------------------------------------------------------------
-
-# Instructions?
-unless no_onedeploy
-  puts
-  system "onedeploy queue-list"
-  puts
-  puts "New version has been queued#{set_as_latest ? ' and set as latest version' : ''}."
-  puts "To commit to online repository for installation, run:"
-  puts "   onedeploy queue-commit"
-  puts
-end
-

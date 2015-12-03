@@ -1,0 +1,15 @@
+[Unit]
+Description=Haplo Application Server
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Group=haplo
+User=haplo
+WorkingDirectory=/opt/haplo
+Environment=TMPDIR=/haplo/tmp
+Environment=KFRAMEWORK_ENV=production
+ExecStart=/opt/haplo/script/server
+
+[Install]
+WantedBy=multi-user.target

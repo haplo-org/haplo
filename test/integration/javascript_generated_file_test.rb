@@ -60,6 +60,19 @@ class JavaScriptGeneratedFileTest < IntegrationTest
     get "/do/generated/download/#{KRandom.random_api_key}"
     assert_select("h1", "File not available")
     assert_select("div.z__general_alert", "This file is no longer available.")
+
+    # Check wait UI
+    get_302 "/do/test-generated-file/convert-to-pdf-redirect-to-wait-ui/#{word_file.digest}"
+    redirected_to = response['location']
+    assert redirected_to =~ /\A\/do\/generated\/wait\/([a-zA-Z0-9_-]{32,})\z/
+    identifier = $1
+    get redirected_to
+    assert_select("h1", "Wait&gt;")
+    assert_select("#z__heading_back_nav a", "TEST BACK2&gt;")
+    assert_select("a[href=/do/test-back-link2]", "TEST BACK2&gt;")
+    assert_select("div.z__wait_for_download[data-identifier=#{identifier}]", {:count => 1})
+    assert_select("div.z__wait_for_download b", "Wait MSG&gt;")
+    run_all_jobs :expected_job_count => 1
   end
 
   disable_test_unless_file_conversion_supported :test_download_generated_file, 'application/msword', 'application/pdf'

@@ -192,6 +192,10 @@ CLIENT_SIDE_RESOURCES = {
   :jquery_ui => {
     :javascript => [:jqueryui_custom__min]
   },
+  :jquery_ui_with_css => {
+    :stylesheet => [:jqueryui_custom],
+    :resource => [:jquery_ui]
+  },
   :controls => {
     :javascript => [:kcontrols],
     :stylesheet => [:kcontrols]
@@ -236,6 +240,9 @@ CLIENT_SIDE_RESOURCES = {
   :wait_for_download => {
     :javascript => [:wait_for_download],
     :stylesheet => [:wait_for_download]
+  },
+  :jquery_ui_slider => {
+    :resource => [:jquery_ui_with_css]
   },
 
   # Editor

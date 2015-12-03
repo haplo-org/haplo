@@ -1,26 +1,48 @@
 #!/bin/sh
 
+# (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 . config/paths-`uname`.sh
 
-# Check dependencies
-/usr/bin/env JAVA_HOME=/opt/oneis/platform/java /opt/oneis/platform/jruby/bin/jruby config/check_dependencies.rb
-if [ $? != 0 ]
-then
-    echo "Correct dependencies are not installed, cannot release. Run build script."
-    exit 1
-fi
-
-# Only make a release is the repo queue is empty
-onedeploy check-queue-empty
-QUEUE_EMPTY_RESULT=$?
-
-if [ $QUEUE_EMPTY_RESULT != 0 ]
-then
-    echo "onedeploy repo queue is not empty. Check there's nothing important there:"
-    echo "   onedeploy queue-list"
-    echo "and then delete it:"
-    echo "   onedeploy queue-delete"
-    exit 1
+#public version, fixed arguments
+$JRUBY_HOME/bin/jruby deploy/_release.rb "$@" --no-clean-up --input-dir=. latest
+deploy/fix-classpath /tmp/haplo-build /opt/haplo
+mkdir -p /tmp/haplo-build/etc/properties
+# preserve any existing properties
+if [ -f /opt/haplo/etc/properties/email_delivery_enabled ]; then
+    cp /opt/haplo/etc/properties/email_delivery_enabled /tmp/haplo-build/etc/properties/email_delivery_enabled
 else
-    $JRUBY_HOME/bin/jruby deploy/_release.rb $@
+    echo "no" > /tmp/haplo-build/etc/properties/email_delivery_enabled
 fi
+if [ -f /opt/haplo/etc/properties/plugin_debugging_support ]; then
+    cp /opt/haplo/etc/properties/plugin_debugging_support /tmp/haplo-build/etc/properties/plugin_debugging_support
+else
+    echo "no" > /tmp/haplo-build/etc/properties/plugin_debugging_support
+fi
+if [ -f /opt/haplo/etc/properties/register_mdns_hostnames ]; then
+    cp /opt/haplo/etc/properties/register_mdns_hostnames /tmp/haplo-build/etc/properties/register_mdns_hostnames
+else
+    echo "no" > /tmp/haplo-build/etc/properties/register_mdns_hostnames
+fi
+# need to copy jruby to deployment
+mkdir -p /tmp/haplo-build/vendor
+cd $JRUBY_HOME/..
+tar cf - jruby | ( cd /tmp/haplo-build/vendor ; tar xf -)
+# and we need a copy of cacert.pem in a known location
+mkdir -p /tmp/haplo-build/ssl
+if [ -f /etc/ssl/cacert.pem ]; then
+    cp /etc/ssl/cacert.pem /tmp/haplo-build/ssl
+else
+    cat /etc/ssl/certs/*.pem > /tmp/haplo-build/ssl/cacert.pem
+fi
+cd /tmp/haplo-build
+# don't deploy the git metadata
+rm -fr .git
+rm -f .gitignore
+tar cf /tmp/haplo-build.tar .
+cd /tmp
+rm -fr haplo-build
+echo "Archive built, unpack /tmp/haplo-build.tar in /opt/haplo to deploy"

@@ -25,17 +25,21 @@
 
                         } else if(data.status === "available") {
                             complete = true;
-                            var filename = $('.z__wait_for_download_inner span', container).text();
-                            $('.z__wait_for_download_inner', container).text('Download started: '+filename);
-                            window.setTimeout(function() {
-                                // No easy/reliable way to find out when download complete, so change to a 
-                                // vaguely ambigous display a few seconds later, and hope it finished.
-                                $('.z__wait_for_download_inner', container).text(filename);
-                            }, 2500);
-                            $("<iframe/>", {
-                                src: data.url,
-                                style: "visibility:hidden;display:none"
-                            }).appendTo($('#z__page'));
+                            if(data.redirectTo) {
+                                window.location = data.redirectTo;
+                            } else {
+                                var filename = $('.z__wait_for_download_inner span', container).text();
+                                $('.z__wait_for_download_inner', container).text('Download started: '+filename);
+                                window.setTimeout(function() {
+                                    // No easy/reliable way to find out when download complete, so change to a 
+                                    // vaguely ambigous display a few seconds later, and hope it finished.
+                                    $('.z__wait_for_download_inner', container).text(filename);
+                                }, 2500);
+                                $("<iframe/>", {
+                                    src: data.url,
+                                    style: "visibility:hidden;display:none"
+                                }).appendTo($('#z__page'));
+                            }
 
                         } else {
                             // The delay prevents problems causing too many requests

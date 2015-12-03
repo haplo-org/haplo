@@ -79,6 +79,17 @@ Only use this for building APIs to work with other software. Use @urlForOuputWai
 If the @filename@ has no extension, or the wrong extension, an appropriate file extension will be added.
 
 
+h2. Interface (waiting UI)
+
+h3(function). urlForWaitThenRedirect(redirectTo, view)
+
+Generate a URL to a user interface, implemented by the platform, which shows a progress bar while the file is being generated, then redirects to the path in @redirectTo@.
+
+@view@ contains extra information for rendering the UI, with keys @pageTitle@, @backLink@ and @backLinkText@ with definitions as in [node:dev/plugin/interface/exchange#render], and @message@ to specify a custom message above the progress bar.
+
+Use this when you are going to use the result of the output in the callback, but want the user to wait while it's being generated.
+
+
 h2. Interface (execute pipeline)
 
 h3(function). execute()

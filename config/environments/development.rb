@@ -5,31 +5,31 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# Where the test data lives
-DEV_ENV_TEST_DATA = "#{ENV['HOME']}/haplo-dev-support/khq-dev"
+# Where the data lives for this environment
+ENV_DATA_ROOT = "#{ENV['HOME']}/haplo-dev-support/khq-dev"
 
 # Log file
 KFRAMEWORK_LOG_FILE = 'log/development.app.log'
 
 # Temporary directories which must share same FS as file store
-FILE_UPLOADS_TEMPORARY_DIR = DEV_ENV_TEST_DATA+'/tmp'
-GENERATED_FILE_DOWNLOADS_TEMPORARY_DIR = DEV_ENV_TEST_DATA+'/generated-downloads'
+FILE_UPLOADS_TEMPORARY_DIR = ENV_DATA_ROOT+'/tmp'
+GENERATED_FILE_DOWNLOADS_TEMPORARY_DIR = ENV_DATA_ROOT+'/generated-downloads'
 
 # Object store
-KOBJECTSTORE_TEXTIDX_BASE = DEV_ENV_TEST_DATA+'/textidx'
-KOBJECTSTORE_WEIGHTING_BASE = DEV_ENV_TEST_DATA+'/textweighting'
+KOBJECTSTORE_TEXTIDX_BASE = ENV_DATA_ROOT+'/textidx'
+KOBJECTSTORE_WEIGHTING_BASE = ENV_DATA_ROOT+'/textweighting'
 
 # Message queues
-KMESSAGE_QUEUE_DIR = DEV_ENV_TEST_DATA+'/messages'
+KMESSAGE_QUEUE_DIR = ENV_DATA_ROOT+'/messages'
 
 # File store
-KFILESTORE_PATH = DEV_ENV_TEST_DATA+'/files'
+KFILESTORE_PATH = ENV_DATA_ROOT+'/files'
 
 # Accounting preserved data file
-KACCOUNTING_PRESERVED_DATA = DEV_ENV_TEST_DATA+'/accounting-data.development'
+KACCOUNTING_PRESERVED_DATA = ENV_DATA_ROOT+'/accounting-data.development'
 
 # Preserved sessions data file
-SESSIONS_PRESERVED_DATA = DEV_ENV_TEST_DATA+'/sessions-data.development'
+SESSIONS_PRESERVED_DATA = ENV_DATA_ROOT+'/sessions-data.development'
 
 # SSL
 KHQ_SSL_CERTS_DIR = "#{ENV['HOME']}/haplo-dev-support/certificates"
@@ -45,7 +45,7 @@ KInstallProperties.load_from("#{KFRAMEWORK_ROOT}/tmp/properties", {
 })
 
 # Plugins
-PLUGINS_LOCAL_DIRECTORY = DEV_ENV_TEST_DATA+'/plugins'
+PLUGINS_LOCAL_DIRECTORY = ENV_DATA_ROOT+'/plugins'
 
 # Perform operations in this process
 KNotificationCentre.when(:server, :starting) do

@@ -9,30 +9,30 @@
 
 # Tests the application after the deployment processing
 
-CHANGES=`fossil changes`
-if [ "X${CHANGES}" != "X" ]
-then
-  echo 
-  echo -------------------------------------------------------------------------------
-  echo WARNING: Uncommited changes will not be tested. Commit changes after successful
-  echo run of script/test, then run script/deployment-test.
-  echo -------------------------------------------------------------------------------
-  echo
-  # Make sure this message is seen
-  sleep 2
-fi
-
 # When debugging tests, check out source elsewhere, then use something like
-#   deploy/release --for-testing --no-clean-up --no-onedeploy --input /export/home/ben/t-oneis version
+#   deploy/release --for-testing --no-clean-up --input /export/home/ben/t-oneis version
 # and comment out script/test onwards below.
 
-deploy/release --for-testing --no-clean-up --no-onedeploy version
+if [ ! -f target/classpath.txt ]; then
+    echo "ERROR: have you built haplo?"
+    echo "run ./fetch-and-compile.sh first"
+    exit 1
+fi
 
+deploy/release --for-testing
+
+if [ ! -f /tmp/haplo-build.tar ]; then
+    "ERROR: deployment release generation failed, exiting."
+    exit 1
+fi
+
+mkdir -p code
 chmod 0755 code
 cd code
-mkdir log
+tar xf /tmp/haplo-build.tar
+rm -f /tmp/haplo-build.tar
+mkdir -p log
 cp static/stylesheets/a.css static/stylesheets/app.css
 script/test
 cd ..
 rm -rf code
-

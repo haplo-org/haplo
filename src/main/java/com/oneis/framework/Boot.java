@@ -300,7 +300,7 @@ public class Boot {
         try {
             // Which directory should it be stored in?
             String keysDirectory = (envName.equals("production")
-                    ? "/oneis/sslcerts" // main certs for everything else
+                    ? "/haplo/sslcerts" // main certs for everything else
                     : java.lang.System.getProperty("user.home") + "/haplo-dev-support/certificates"); // private certs for everything else mode
             return SSLCertificates.load(keysDirectory, certsName, clientCAName);
         } catch(Exception e) {

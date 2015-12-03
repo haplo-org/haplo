@@ -1,2 +1,2 @@
 
-Sitemap: http://docs.oneis.co.uk/sitemap.txt
+Sitemap: http://docs.haplo.org/sitemap.txt

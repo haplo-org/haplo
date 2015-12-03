@@ -74,28 +74,32 @@ class GeneratedFileController < ApplicationController
 
   # Handle notifications from the pipeline object
 
-  KNotificationCentre.when(:jsfiletransformpipeline, :prepare) do |name, detail, identifier, filename, plugin_view|
+  KNotificationCentre.when(:jsfiletransformpipeline, :prepare) do |name, detail, identifier, prepare|
     details = {
       "identifier" => identifier,
-      "filename" => filename,
+      "filename" => prepare.filename,
       "application" => KApp.current_application,
-      "view" => plugin_view # untrusted
+      "redirectTo" => prepare.redirect_to, # untrusted
+      "view" => prepare.plugin_view # untrusted
     }
     json = JSON.generate(details)
     File.open(self.pathname_for_identifier(identifier, :info), "w") { |f| f.write json }
   end
 
-  KNotificationCentre.when(:jsfiletransformpipeline, :ready) do |name, detail, identifier, filename, disk_pathame, mime_type|
-    # Add MIME type to info file
+  KNotificationCentre.when(:jsfiletransformpipeline, :ready) do |name, detail, identifier, disk_pathname, mime_type|
+    # Add MIME type to info file (if it's for a generated file)
     info_pathname = self.pathname_for_identifier(identifier, :info)
     info_pathname_new = "#{info_pathname}.t"
     info = JSON.parse(File.open(info_pathname) { |f| f.read })
-    info['mimeType'] = mime_type
+    info['ready'] = true
+    info['mimeType'] = mime_type if mime_type
     File.open(info_pathname_new, "w") { |f| f.write JSON.generate(info) }
     File.rename(info_pathname_new, info_pathname)
     # Make a hardlink to the file, as it's probably temporary
-    download_pathname = self.pathname_for_identifier(identifier, :file)
-    File.link(disk_pathame, download_pathname)
+    if disk_pathname
+      download_pathname = self.pathname_for_identifier(identifier, :file)
+      File.link(disk_pathname, download_pathname)
+    end
     # Resume any requests which were suspended to wait for the file
     self.resume_suspended_requests_for_identifier(identifier)
   end
@@ -145,11 +149,18 @@ class GeneratedFileController < ApplicationController
 
   # -------------------------------------------------------------------------
 
-  def handle_download
+  def setup_for_waiting_view
     identifier = params[:id]
     info_pathname = GeneratedFileController.pathname_for_identifier(identifier, :info)
     return unless File.exist?(info_pathname)
     @info = JSON.parse(File.open(info_pathname) { |f| f.read })
+  end
+
+  def handle_download
+    setup_for_waiting_view
+  end
+  def handle_wait
+    setup_for_waiting_view
   end
 
   # -------------------------------------------------------------------------
@@ -162,10 +173,14 @@ class GeneratedFileController < ApplicationController
     unless File.exists?(info_pathname)
       result['status'] = 'unknown'
     else
-      if File.exists?(file_pathname)
-        info = JSON.parse(File.open(info_pathname) { |f| f.read })
+      info = JSON.parse(File.open(info_pathname) { |f| f.read })
+      if info['ready'] && (info['redirectTo'] || File.exists?(file_pathname))
         result['status'] = 'available'
-        result['url'] = "/do/generated/file/#{params[:id]}/#{info['filename']}"
+        if info['redirectTo']
+          result['redirectTo'] = info['redirectTo']
+        else
+          result['url'] = "/do/generated/file/#{params[:id]}/#{info['filename']}"
+        end
         result['mimeType'] = info['mimeType']
       else
         # Not available yet, suspend, if it's the first time

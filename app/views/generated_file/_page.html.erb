@@ -1,0 +1,8 @@
+<%
+  view = @info['view'] || {} # untrusted
+  @page_title = h(view['pageTitle'] || data_for_template[:default_title])
+  back_link = view['backLink']
+  if back_link
+    @breadcrumbs = [[h(back_link), (view['backLinkText'] || 'Cancel')]]
+  end
+%>

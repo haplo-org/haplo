@@ -8,7 +8,7 @@
 KHOST_OPERATING_SYSTEM=Darwin
 export KHOST_OPERATING_SYSTEM
 
-#JAVA_HOME=/opt/oneis/platform/java
+#JAVA_HOME=/opt/haplo/platform/java
 JAVA_EXECUTABLE=$JAVA_HOME/bin/java
 export JAVA_EXECUTABLE
 
@@ -30,7 +30,7 @@ export PATH
 #GCC_HOME=/opt/gcc-4.7.2
 #export GCC_HOME
 
-FONTS_DIRECTORY=/opt/oneis/platform/fonts
+FONTS_DIRECTORY=/opt/haplo/platform/fonts
 export FONTS_DIRECTORY
 
 CLASSPATH=`cat target/classpath.txt`

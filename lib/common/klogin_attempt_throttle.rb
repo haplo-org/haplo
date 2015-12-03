@@ -25,7 +25,7 @@ module KLoginAttemptThrottle
   # Wrap a authentication attempt.
   # Will return the return value of the yield.
   def self.with_bad_login_throttling(client_ip)
-    raise "Bad IP address for throttling" unless client_ip =~ /\A\d+\.\d+\.\d+\.\d+\z/  # to check this is called correctly
+    ##raise "Bad IP address for throttling" unless client_ip =~ /\A\d+\.\d+\.\d+\.\d+\z/  # to check this is called correctly
     client_failures = nil
     $khq_login_failures_lock.synchronize do
       client_failures = $khq_login_failures[client_ip]

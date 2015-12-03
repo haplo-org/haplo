@@ -13,8 +13,11 @@ JAVA_EXECUTABLE=$JAVA_HOME/bin/java
 export JAVA_EXECUTABLE
 
 JRUBY_HOME=~/haplo-dev-support/vendor/jruby
+if [ -d `pwd`/vendor/jruby ]; then
+    JRUBY_HOME=`pwd`/vendor/jruby
+fi
 export JRUBY_HOME
-JRUBY_JFFI_LIB_PATH=$JRUBY_HOME/lib/jni/Darwin/libjffi-1.2.jnilib
+JRUBY_JFFI_LIB_PATH=$JRUBY_HOME/lib/jni/x86_64-Linux/libjffi-1.2.so
 export JRUBY_JFFI_LIB_PATH
 
 POSTGRESQL_BIN=`pg_config --bindir`
@@ -27,7 +30,7 @@ export POSTGRESQL_INCLUDE
 PATH=$POSTGRESQL_BIN:$PATH
 export PATH
 
-FONTS_DIRECTORY=/opt/oneis/platform/fonts
+FONTS_DIRECTORY=/opt/haplo/platform/fonts
 export FONTS_DIRECTORY
 
 CLASSPATH=`cat target/classpath.txt`

@@ -30,3 +30,19 @@ P.respond("GET", "/do/test-generated-file/convert-to-pdf-redirect-to-built-in-ui
     pipeline.execute();
     E.response.redirect(url);
 });
+
+P.respond("GET", "/do/test-generated-file/convert-to-pdf-redirect-to-wait-ui", [
+    {pathElement:0, as:"string"}
+], function(E, digest) {
+    var pipeline = O.fileTransformPipeline();
+    pipeline.file("input", O.file(digest));
+    pipeline.transform("std:convert", {mimeType:"application/pdf"});
+    var url = pipeline.urlForWaitThenRedirect("/redirectpage", {
+        pageTitle: "Wait>",
+        message: "Wait MSG>",
+        backLink: "/do/test-back-link2",
+        backLinkText: "TEST BACK2>"
+    });
+    pipeline.execute();
+    E.response.redirect(url);
+});

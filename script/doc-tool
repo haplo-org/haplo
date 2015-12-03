@@ -11,7 +11,6 @@
 # Actions:
 #  server - runs the test document server (default)
 #  check - checks all the pages will render correctly
-#  publish - write files for uploading to the web server
 
 . config/paths-`uname`.sh
 

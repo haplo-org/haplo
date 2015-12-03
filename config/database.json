@@ -3,12 +3,16 @@
     "adapter": "postgresql",
     "database": "khq_development"
   },
+  "openprod": {
+    "adapter": "postgresql",
+    "database": "khq_development"
+  },
   "test": {
     "adapter": "postgresql",
     "database": "khq_test"
   },
   "production": {
     "adapter": "postgresql",
-    "database": "oneis"
+    "database": "haplo"
   }
 }

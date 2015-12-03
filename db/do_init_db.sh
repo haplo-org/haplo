@@ -11,7 +11,7 @@ set -e
 
 if [ X$KFRAMEWORK_ENV = Xproduction ]
 then
-    K_DATABASE=oneis
+    K_DATABASE=haplo
     echo === PRODUCTION ===
 elif [ X$KFRAMEWORK_ENV = Xtest ]
 then

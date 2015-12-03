@@ -5,44 +5,47 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
+# Where the data lives for this environment
+ENV_DATA_ROOT = '/haplo'
+
 # Log file
-KFRAMEWORK_LOG_FILE = '/oneis/log/app.log'
+KFRAMEWORK_LOG_FILE = ENV_DATA_ROOT+'/log/app.log'
 
 # Temporary directories which must share same FS as file store
-FILE_UPLOADS_TEMPORARY_DIR = '/oneis/files/tmp'
-GENERATED_FILE_DOWNLOADS_TEMPORARY_DIR = '/oneis/files/generated-downloads'
+FILE_UPLOADS_TEMPORARY_DIR = ENV_DATA_ROOT+'/tmp'
+GENERATED_FILE_DOWNLOADS_TEMPORARY_DIR = ENV_DATA_ROOT+'/generated-downloads'
 
 # Object store
-KOBJECTSTORE_TEXTIDX_BASE = '/oneis/textidx'
-KOBJECTSTORE_WEIGHTING_BASE = '/oneis/textweighting'
+KOBJECTSTORE_TEXTIDX_BASE = ENV_DATA_ROOT+'/textidx'
+KOBJECTSTORE_WEIGHTING_BASE = ENV_DATA_ROOT+'/textweighting'
 
 # Message queues
-KMESSAGE_QUEUE_DIR = '/oneis/messages'
+KMESSAGE_QUEUE_DIR = ENV_DATA_ROOT+'/messages'
 
 # File store
-KFILESTORE_PATH = '/oneis/files'
+KFILESTORE_PATH = ENV_DATA_ROOT+'/files'
 
 # Accounting preserved data file
-KACCOUNTING_PRESERVED_DATA = '/oneis/run/accounting-data'
+KACCOUNTING_PRESERVED_DATA = ENV_DATA_ROOT+'/run/accounting-data'
 
 # Preserved sessions data file
-SESSIONS_PRESERVED_DATA = '/oneis/run/sessions-data'
+SESSIONS_PRESERVED_DATA = ENV_DATA_ROOT+'/run/sessions-data'
 
 # SSL
-KHQ_SSL_CERTS_DIR = '/oneis/sslcerts'
+KHQ_SSL_CERTS_DIR = '/haplo/sslcerts'
 
 # File of allowed SSL roots
 # TODO: Don't rely on OS SSL roots -- decide a good strategy for keeping our own roots
-SSL_CERTIFICATE_AUTHORITY_ROOTS_FILE = '/etc/ssl/cacert.pem'
+SSL_CERTIFICATE_AUTHORITY_ROOTS_FILE = '/opt/haplo/ssl/cacert.pem'
 
 # Installation properties
-KInstallProperties.load_from("/opt/oneis/etc/properties")
+KInstallProperties.load_from("/opt/haplo/etc/properties")
 
 # Make sure TMPDIR has been used to override default location for temp files
 #  -- don't want to use a memory FS for the files, and for CGI uploads need them on the same FS as the store for efficient linking
 require 'tempfile'
 Tempfile.open('CHECKPATH') do |tempfile|
-  unless tempfile.path =~ /\A\/oneis\/files\/tmp/
+  unless tempfile.path =~ /\A\/haplo\/tmp/
     raise "Ruby temporary dir is not set properly, use TMPDIR env var"
   end
   tempfile.close(true)  # close and delete it now
@@ -56,4 +59,4 @@ if KInstallProperties.get(:email_delivery_enabled) != 'yes'
 end
 
 # Plugins
-PLUGINS_LOCAL_DIRECTORY = '/oneis/plugins'
+PLUGINS_LOCAL_DIRECTORY = ENV_DATA_ROOT+'/plugins'

@@ -23,8 +23,6 @@ puts "Docs revision: #{SOURCE_CONTROL_REVISION} on #{SOURCE_CONTROL_DATE}"
 
 
 DOCS_ROOT = 'doc/root'
-PUBLISH_DIR = 'docs.haplo.org'
-SITE_URL_BASE = 'http://docs.haplo.org'
 
 # Load all the documentation
 puts "Loading all files..."
@@ -57,63 +55,6 @@ when 'check'
   puts "Checking all documentation nodes..."
   Documentation.check_all
   puts
-
-when 'publish'
-  # Check there's nothing in the queue
-  if !(system "onedeploy check-queue-empty")
-    puts "onedeploy queue is not empty"
-    exit 1
-  end
-  if File.directory?(PUBLISH_DIR)
-    puts "Removing old files..."
-    FileUtils.rm_rf PUBLISH_DIR
-  end
-  FileUtils.mkdir(PUBLISH_DIR)
-  puts "Copying static files..."
-  Dir.glob("doc/web/static/**/*").each do |filename|
-    unless filename.include?('/.')  # skip files and svn dirs
-      target = PUBLISH_DIR + filename.sub('doc/web/static','')
-      if File.file?(filename)
-        FileUtils.cp(filename, target)
-      else
-        FileUtils.mkdir(target, :mode => 0755)
-      end
-    end
-  end
-  FileUtils.mkdir(PUBLISH_DIR+'/presentation/font')
-  Dir.glob("static/images/ubuntu-{r,b}-small-webfont.*").each do |filename|
-    FileUtils.cp(filename, "#{PUBLISH_DIR}/presentation/font/#{filename.sub('static/images/','')}")
-  end
-  puts "Writing files..."
-  Documentation.publish_to(PUBLISH_DIR)
-  puts "Compress files..."
-  counter = 0
-  Dir.glob("#{PUBLISH_DIR}/**/*.{html,css,js,txt,xml,atom,rss,ttf,woff,eot}").each do |filename|
-    system "cd #{File.dirname(filename)} ; cat #{File.basename(filename)} | gzip -9 > #{File.basename(filename)}.gz"
-    counter += 1
-    STDOUT.write('.'); STDOUT.flush
-  end
-  puts; puts "#{counter} files compressed"
-  puts "Queue archive..."
-  queued_result = `onedeploy --archive-root=#{PUBLISH_DIR} --archive-name=webroot-docs --archive-comment="docs.haplo.org #{PACKAGING_VERSION}" queue-archive .`
-  queued_archive = JSON.parse(queued_result)
-  puts "Queue manifest..."
-  manifest = {
-    "name" => "website-docs",
-    "version" => PACKAGING_VERSION,
-    "description" => "Developer documentation web site",
-    "install_path" => "/www/sites/docs.haplo.org",
-    "archives" => [queued_archive["archive"]],
-  }
-  File.open("#{PUBLISH_DIR}/manifest.json", "w") { |f| f.write JSON.pretty_generate(manifest) }
-  if !(system "onedeploy queue-manifest #{PUBLISH_DIR}/manifest.json latest")
-    puts "Failed to queue manifest"
-    exit 1
-  end
-  puts "Cleaning up..."
-  FileUtils.rm_rf PUBLISH_DIR
-  puts "Done."
-  puts "Run 'onedeploy queue-commit' to update repository."
 
 else
   raise "Unknown command #{ARGV[0]}"

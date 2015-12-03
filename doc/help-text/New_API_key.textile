@@ -6,4 +6,4 @@ Click the _Create new API key_ button to create an API key, then _Reveal API key
 
 API keys are equivalent to a username and password combination. Treat them as strictly confidential.
 
-If you would like to write some software which communicates with ONEIS, you can find the API documentation <a href="http://library.oneis.co.uk/docs/api.html" target="_blank">in our support library</a>.
+If you would like to write some software which communicates with Haplo, you can find the API documentation <a href="http://docs.haplo.org/dev" target="_blank">in our developer documentation</a>.

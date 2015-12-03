@@ -1814,19 +1814,20 @@ h3.z__plugin_ui_action_panel_links_title {
     letter-spacing: 1px;
     border-bottom: 1px solid #ccc;
 }
-.z__plugin_ui_action_panel_menu_block_entries {
-    column-count: 2;
-    -moz-column-count: 2;
-    -webkit-column-count: 2;
-}
 .z__plugin_ui_action_panel_menu_block p {
-    padding-left: 16px;
-    margin: 0; /* using margin with column-column > 1 results in uneven columns, use line-height instead */
-    line-height: 24px;
-    white-space: nowrap; /* prevent menu entries being split across columns */
+    margin: 4px 0 6px 0;
+    line-height: 19px;
 }
 .z__plugin_ui_action_panel_menu_block a:visited {
     color: $ANCHOR_COLOUR;
+}
+.z__plugin_ui_action_panel_menu_block_entries {
+    /* autoclear */ overflow: auto; width: 100%;
+}
+.z__plugin_ui_action_panel_menu_block_column {
+    float: left;
+    width: 240px;
+    padding-left: 16px;
 }
 
 /* tile version of the action panel, intended for main 520px content area */
