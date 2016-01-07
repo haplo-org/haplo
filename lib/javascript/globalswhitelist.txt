@@ -39,6 +39,8 @@ RegExp
 Continuation
 JSON
 _
+$haploTemplateFunctionFinder
+$HaploTemplate
 Handlebars
 moment
 XDate

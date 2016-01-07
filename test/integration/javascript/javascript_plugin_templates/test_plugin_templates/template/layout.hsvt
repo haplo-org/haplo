@@ -1,0 +1,7 @@
+switch(layoutChoice) {}
+  s { std:layout:standard() }
+  w { std:layout:wide() }
+  m { std:layout:minimal() }
+  n { std:layout:none() }
+
+<p> "Text" </p>

@@ -18,6 +18,7 @@ lib/javascript/lib/database.js
 lib/javascript/lib/audit.js
 lib/javascript/lib/workunit.js
 lib/javascript/lib/template.js
+lib/javascript/lib/template_functions.js
 lib/javascript/lib/ruby_templates.js
 lib/javascript/lib/handlebars_setup.js
 lib/javascript/lib/exchange.js

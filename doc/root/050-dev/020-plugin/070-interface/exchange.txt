@@ -23,7 +23,7 @@ h3(property). response
 The [node:dev/plugin/interface/response] object for this HTTP exchange.
 
 
-h3(function). render(view, templateName, templateOptions)
+h3(function). render(view, templateName)
 
 This function generates an HTTP response body by rendering a [node:dev/plugin/interface/template]. The MIME type is set automatically from the @kind@ property of the template.
 
@@ -32,10 +32,6 @@ If the template is HTML, the response will include the standard 'chrome' (header
 The @templateName@ argument is optional. If it's not specified or is @null@, then an implied name will be used. This is the last path element in the path passed to the [node:dev/plugin/interface/plugin]'s @respond()@ function.
 
 Note you can use a standard template as well as your plugin's templates. This is often useful when doing common actions, for example, presenting a template object for the user to fill in and save with the [node:dev/plugin/templates/std-template/new-object-editor] template.
-
-The @templateOptions@ argument is optional. You can use it to specify custom Handlbars helpers, as in the [node:dev/plugin/interface/template#render] function.
-
-If specifying a @templateOptions@, you can omit the @templateName@ argument entirely to use the implicit name.
 
 As well as the values required by the template, the @view@ may also contain the following keys:
 
@@ -55,7 +51,6 @@ Optional. Possible values are:
 |@null@, @undefined@|Use the @std:standard@ layout.|
 |@"std:wide"@|A version of the standard layout, including all the normal Haplo navigation, with a wider content area.|
 |@"std:minimal"@|Minimal layout, using the Haplo styles and client side resource handling, but without the main navigation.|
-|Other string|The name of a template provided by the plugin.|
 
 If the template is not HTML, this property is ignored.
 
@@ -74,7 +69,7 @@ h3(key). backLinkText
 Optional. The label for the back link. If @backLink@ if specified and @backLinkText@ is not, then the default text of "Back" is used.
 
 
-h3(function). renderIntoSidebar(view, templateName, templateOptions)
+h3(function). renderIntoSidebar(view, templateName)
 
 Render a template, and append the result to the content displayed in the Sidebar.
 

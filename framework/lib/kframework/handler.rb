@@ -238,7 +238,7 @@ class KFramework
     message = "<html><h1>Request denied for security reasons</h1><p>Your request looked like an attempt to circumvent security measures. If you see this message again, please contact support.</p><h2>Cookies need to be enabled</h2><p>Please check that you have enabled cookies for this web site. Disabled cookies are the most likely cause of this problem.</p>"
     # In plugin development mode remind the developer about the requirement for a CSRF token
     if PLUGIN_DEBUGGING_SUPPORT_LOADED
-      message << %Q!<hr><h1>Plugin debugging</h1><p>This message is most likely caused by omitting the CSRF token in a POSTed form. Use the <a href="http://docs.haplo.org/dev/plugin/templates/std-template/form-csrf-token">std:form_csrf_token</a> standard template to include the token, eg:</p><pre>&lt;form method="POST"&gt;{{&gt;std:form_csrf_token}} ...&lt;form&gt;</pre>!
+      message << %Q!<hr><div style="border:2px solid #f00;padding: 4px 16px"><h1>Developing a plugin?</h1><p>This message is most likely caused by omitting the CSRF token in a POSTed form.</p><p>Use the <tt>std:form:token()</tt> template function within your &lt;form&gt;. (or <tt>{{&gt;std:form_csrf_token}}</tt> for legacy Handlebars templates)</div>!
     end
     message << "</html>"
     KFramework::DataResponse.new(message, 'text/html; charset=utf-8', 403)

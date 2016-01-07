@@ -15,6 +15,9 @@ import com.oneis.appserver.FileUploads;
 import com.oneis.jsinterface.app.*;
 import com.oneis.jsinterface.db.JdNamespace;
 import com.oneis.jsinterface.generate.JSGeneratedFile;
+import com.oneis.jsinterface.template.TemplateIncludedRenderer;
+import com.oneis.jsinterface.template.TemplatePlatformFunctions;
+import org.haplo.template.driver.rhinojs.HaploTemplate;
 
 import java.util.HashMap;
 import java.util.WeakHashMap;
@@ -24,6 +27,7 @@ import java.util.WeakHashMap;
  */
 public class KONEISHost extends KScriptable {
     private AppRoot supportRoot;
+    private TemplatePlatformFunctions templatePlatformFunctions;
     private HashMap<String, Scriptable> plugins;
     private String nextPluginToBeRegistered;
     private boolean nextPluginToBeRegisteredUsesDatabase;
@@ -39,6 +43,7 @@ public class KONEISHost extends KScriptable {
 
     public void setSupportRoot(AppRoot supportRoot) {
         this.supportRoot = supportRoot;
+        this.templatePlatformFunctions = null;
         // Reset all the data read from app globals - this is a convenient time to do the reset.
         // TODO: For efficiency, only reset app data stores for JavaScript plugins when it's changed by the same plugin in another JavaScript runtime
         resetPluginAppDataStores();
@@ -48,12 +53,20 @@ public class KONEISHost extends KScriptable {
 
     public void clearSupportRoot() {
         this.supportRoot = null;
+        this.templatePlatformFunctions = null;
         // Throw away any session store
         this.sessionStore = null;
     }
 
     public AppRoot getSupportRoot() {
         return this.supportRoot;
+    }
+
+    public TemplatePlatformFunctions getTemplatePlatformFunctions() {
+        if(this.templatePlatformFunctions == null) {
+            this.templatePlatformFunctions = this.supportRoot.createTemplatePlatformFunctionsProxy();
+        }
+        return this.templatePlatformFunctions;
     }
 
     public int getNumberOfPluginsRegistered() {
@@ -382,6 +395,12 @@ public class KONEISHost extends KScriptable {
         final Context cx = runtime.getContext();
         final Scriptable sharedScope = runtime.getSharedJavaScriptScope();
         final Scriptable scope = runtime.getJavaScriptScope();
+        if("hsvt".equals(r[1])) {
+            HaploTemplate template = (HaploTemplate)cx.newObject(scope, "$HaploTemplate", new Object[]{r[0], templateName});
+            template.put("kind", template, "html");
+            template.setOwner(plugin);
+            return template;
+        }
         final Scriptable o = (Scriptable)sharedScope.get("O", sharedScope);
         final Function createPluginTemplateFn = (Function)o.get("$createPluginTemplate", o);
         return (Scriptable)createPluginTemplateFn.call(cx, scope, o, new Object[]{plugin, templateName, r[0], r[1]});

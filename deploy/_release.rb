@@ -267,17 +267,18 @@ end
 
 # For removing unnecessary quotes in HTML elements
 def html_quote_minimisation(html)
-  html.gsub(/\<([a-zA-Z0-9="_ \.\/#-]+)?\>/) do
+  html.gsub(/\<([a-zA-Z0-9="_ \.\/%#-]+)?\>/) do
     "<#{$1.gsub(/\=\"([a-zA-Z0-9]+)\"(\s|\z)/,'=\\1\\2')}>"
   end
 end
 
 
 # -----------------------------------------------------------------------------------------------
-puts "Process .rb and server side .js & .js.erb files..."
+puts "Process .rb, .hsvt, and server side .js & .js.erb files..."
 code_files = Dir.glob("#{export_dir}/**/*.rb").map { |f| [:rb, f] }
 Dir.glob("#{export_dir}/app/**/*.js").each { |f| code_files << [:js, f] }
 Dir.glob("#{export_dir}/app/**/*.js.erb").each { |f| code_files << [:js, f] }
+Dir.glob("#{export_dir}/app/**/*.hsvt").each { |f| code_files << [:hvst, f] }
 Dir.glob("#{export_dir}/lib/javascript/lib/**/*.js").each { |f| code_files << [:js, f] }
 if squish_test_files
   Dir.glob("#{export_dir}/test/**/*.rb").each { |f| code_files << [:rb, f] }
@@ -298,6 +299,9 @@ code_files.each do |code_kind, filename|
   out = change_js_long_symbols(out)
   # If it's a helper, minimise the HTML quotes
   if code_kind == :rb && filename =~ /\/app\/helpers\//
+    out = html_quote_minimisation(out)
+  end
+  if squish_test_files && code_kind == :js && out =~ /\A\s*\/\/ DEPLOYMENT TESTS: needs html quote minimisation/
     out = html_quote_minimisation(out)
   end
   # Write out

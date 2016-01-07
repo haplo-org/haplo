@@ -22,15 +22,11 @@ The kind of output this will produce, for example, @"html"@. The value may be @n
 This property can be used to set the @kind@ property of a HTTP [node:dev/plugin/interface/response] object. This is done automatically when using the @render()@ function on an [node:dev/plugin/interface/exchange] object.
 
 
-h3(function). render(view, options)
+h3(function). render(view)
 
 Render the template, returning a @String@.
 
 @view@ is a JavaScript @Object@ used as a dictionary to provide parameters for the template rendering.
-
-The optional @options@ is an @Object@ which may contain the following keys:
-
-|@helpers@|An @Object@ containing "Handlebars helpers":http://handlebarsjs.com/block_helpers.html for use when rendering this template, in addition to the standard helpers and those registered with the plugin using [node:dev/plugin/interface/plugin/response-generation#registerHandlebarsHelper]|
 
 
 h2. Example using custom helpers

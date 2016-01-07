@@ -1,0 +1,11 @@
+{
+  "pluginName": "test_plugin_templates",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test Plugin Templates",
+  "displayDescription": "Templates testing",
+  "apiVersion": 4,
+  "load": ["js/test_plugin_templates.js"],
+  "respond": ["/do/plugin-templates"],
+  "allowAnonymousRequests": true
+}

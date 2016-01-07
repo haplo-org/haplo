@@ -1,0 +1,6 @@
+// Root test template for page title back link
+// Actually set in included template to make sure all the code is exercised
+within(a) {
+  template:subdir:page-title-and-back-link()
+}
+<p>Test page title</p>

@@ -7,6 +7,7 @@
 package com.oneis.jsinterface.app;
 
 import com.oneis.appserver.FileUploads;
+import com.oneis.jsinterface.template.TemplatePlatformFunctions;
 import java.sql.Connection;
 
 public interface AppRoot {
@@ -50,6 +51,8 @@ public interface AppRoot {
     public String[] getSessionTray();
 
     // Rendering and templating
+    TemplatePlatformFunctions createTemplatePlatformFunctionsProxy();
+
     public String renderObject(AppObject object, String style);
 
     String[] loadTemplateForPlugin(String pluginName, String templateName);

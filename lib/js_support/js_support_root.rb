@@ -182,6 +182,11 @@ class JSSupportRoot
   end
 
   # Object rendering is performed in app root so it can efficiently use a cached controller (although might be worth benchmarking this properly)
+  def createTemplatePlatformFunctionsProxy
+    # Let JRuby create the proxy object for the controller
+    controller_or_background_controller
+  end
+
   def renderObject(object, style)
     c = controller_or_background_controller
     c.render_obj(object, style)
@@ -190,7 +195,8 @@ class JSSupportRoot
   def loadTemplateForPlugin(pluginName, templateName)
     plugin = KPlugin.get(pluginName)
     return nil if plugin == nil
-    plugin.load_template(templateName)
+    # Convert : to / so template:a:b() is consistent with template function naming scheme
+    plugin.load_template(templateName.gsub(':','/'))
   end
 
   def renderRubyTemplate(templateName, args)

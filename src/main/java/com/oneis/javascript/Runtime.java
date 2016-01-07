@@ -21,6 +21,11 @@ import com.oneis.jsinterface.db.*;
 import com.oneis.jsinterface.generate.*;
 import com.oneis.jsinterface.remote.*;
 import com.oneis.jsinterface.util.*;
+import com.oneis.jsinterface.template.TemplateParserConfiguration;
+import com.oneis.jsinterface.template.TemplateIncludedRenderer;
+import com.oneis.jsinterface.template.TemplateFunctionRenderer;
+import com.oneis.jsinterface.template.GenericDeferredRender;
+import org.haplo.template.driver.rhinojs.*;
 
 /**
  * Sandboxed Javascript runtime for ONEIS
@@ -317,6 +322,9 @@ public class Runtime {
             }
             String standardTemplateJSON = standardTemplateLoader.standardTemplateJSON();
             scope.put("$STANDARDTEMPLATES", scope, standardTemplateJSON);
+            // Define the HaploTemplate host object now, so the JS code can use it to parse templates
+            // TODO: Convert all standard templates from Handlebars, move HaploTemplate host object declaraction back with the others, remove $HaploTemplate from whitelist
+            defineSealedHostClass(scope, HaploTemplate.class);
 
             // Load the library code
             FileReader bootScriptsFile = new FileReader(frameworkRoot + "/lib/javascript/bootscripts.txt");
@@ -415,6 +423,11 @@ public class Runtime {
             defineSealedHostClass(scope, KFilePipelineResult.class);
             defineSealedHostClass(scope, KSessionStore.class);
 
+            // HaploTemplate created earlier as required by some of the setup
+            defineSealedHostClass(scope, HaploTemplateDeferredRender.class);
+            defineSealedHostClass(scope, JSFunctionThis.class);
+            defineSealedHostClass(scope, GenericDeferredRender.class);
+
             defineSealedHostClass(scope, KSecurityRandom.class);
             defineSealedHostClass(scope, KSecurityBCrypt.class);
             defineSealedHostClass(scope, KSecurityDigest.class);
@@ -448,6 +461,11 @@ public class Runtime {
 
             // Check JavaScript TimeZone
             checkJavaScriptTimeZoneIsGMT();
+
+            // Templating integration
+            JSPlatformIntegration.parserConfiguration = new TemplateParserConfiguration();
+            JSPlatformIntegration.includedTemplateRenderer = new TemplateIncludedRenderer();
+            JSPlatformIntegration.platformFunctionRenderer = new TemplateFunctionRenderer();
 
             sharedScope = scope;
         } finally {

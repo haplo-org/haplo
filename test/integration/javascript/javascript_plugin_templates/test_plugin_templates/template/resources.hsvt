@@ -1,0 +1,3 @@
+std:plugin:resources("a.js" "b.js" "c.css")
+std:plugin:resources("d.css")
+<p id="resources-template">"Resources Template"</p>

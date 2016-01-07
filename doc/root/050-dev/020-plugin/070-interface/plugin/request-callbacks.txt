@@ -24,13 +24,7 @@ h3(function). requestBeforeRender(E, view, templateName)
 
 Called before a template is rendered using [node:dev/plugin/interface/exchange#render:E.render()] in a request handler. @E@ is an [node:dev/plugin/interface/exchange] object, @view@ is the view about to be rendered, and @templateName@ is the name of the template which will be used.
 
-This callback function may modify the @view@ object. For example, to set a layout for all request handlers:
-
-<pre>language=javascript
-    P.requestBeforeRender = function(E, view, templateName) {
-        view.layout = "example_layout";
-    };
-</pre>
+This callback function may modify the @view@ object.
 
 
 h3(function). requestAfterHandle(E)

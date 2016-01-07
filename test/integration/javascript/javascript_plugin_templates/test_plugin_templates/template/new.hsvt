@@ -1,0 +1,14 @@
+pageTitle(what " templates")
+backLink("/abc/d" ? what=what # "hello&") { "&back" }
+
+<div id="template-kind">
+  "New template"
+</div>
+render(deferredHandlebars)
+template:subdir:nested-new()
+template:subdir:nested-legacy()
+<div id="test-choose">
+  within(choose) {
+    template:std:ui:choose()
+  }
+</div>

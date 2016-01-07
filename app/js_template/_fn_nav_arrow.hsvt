@@ -1,0 +1,9 @@
+do() {
+  if(link) {
+    <a class="z__plugin_ui_nav_arrow" href=link> yield:arrow() </a>
+  } else {
+    <span class="z__plugin_ui_nav_arrow"> yield:arrow() </span>
+  }
+} arrow {
+  switch(direction) { "&#xE005;" } left { "&#xE016;" }
+}

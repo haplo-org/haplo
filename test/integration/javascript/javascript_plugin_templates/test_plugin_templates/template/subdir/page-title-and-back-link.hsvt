@@ -1,0 +1,10 @@
+// Included template for testing page title and back link
+// Go into view hiearchy and then back out again to make sure vars are set at view root
+within(b) {
+  within(c) {
+    ^{
+      pageTitle("A " titleText " Z")
+      backLink(blPrefix ? x=y) { backPrefix "back"}
+    }
+  }
+}
