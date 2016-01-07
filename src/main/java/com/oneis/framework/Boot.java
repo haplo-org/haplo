@@ -1,5 +1,5 @@
 /* Haplo Platform                                     http://haplo.org
- * (c) ONEIS Ltd 2006 - 2015                    http://www.oneis.co.uk
+ * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
@@ -99,7 +99,7 @@ public class Boot {
         }
 
         System.out.println("===============================================================================");
-        System.out.println("                   Haplo Platform (c) ONEIS Ltd 2006 - 2016");
+        System.out.println("               Haplo Platform (c) Haplo Services Ltd 2006 - 2016");
         System.out.println("             Licensed under the Mozilla Public License Version 2.0");
         System.out.println("===============================================================================");
         System.out.println("Starting framework in " + rootDir + " with environment " + envName);

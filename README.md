@@ -22,7 +22,7 @@ Haplo is licensed under the Mozilla Public License Version 2.0. See the LICENSE 
 
 ### Copyright
 
-Haplo is copyright ONEIS Ltd t/a [Haplo Services](http://www.haplo-services.com). See the COPYRIGHT file for full details.
+Haplo is copyright [Haplo Services Ltd](http://www.haplo-services.com). See the COPYRIGHT file for full details.
 
 ### Dependencies
 
