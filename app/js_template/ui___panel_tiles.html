@@ -1,1 +1,1 @@
-<div class="z__plugin_ui_action_panel_tile_container">{{#each elements}}<a href="{{href}}">{{label}}</a>{{/each}}</div>
+<div class="z__plugin_ui_action_panel_tile_container">{{#each elements}}<a {{#if icon}}class="z__plugin_ui_action_panel_tile_element_with_icon" {{/if}}href="{{href}}">{{#if icon}}{{std:icon:description icon "small"}}{{/if}}{{label}}</a>{{/each}}</div>

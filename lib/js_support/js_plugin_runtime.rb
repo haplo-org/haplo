@@ -210,7 +210,12 @@ class KJSPluginRuntime
     end
   end
 
-  def call_file_transform_pipeline_callback(pipeline_result)
+  KNotificationCentre.when(:jsfiletransformpipeline, :pipeline_result) do |name, operation, result|
+    # Changing this mechanism will break the test which checks the notifications
+    # happen in the right order.
+    KJSPluginRuntime.current._call_file_transform_pipeline_callback(result)
+  end
+  def _call_file_transform_pipeline_callback(pipeline_result)
     using_runtime do
       Java::ComOneisJsinterface::KFilePipelineResult.callback(pipeline_result)
     end

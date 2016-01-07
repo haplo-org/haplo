@@ -72,7 +72,11 @@ class KJSFileTransformPipeline < KJob
         KApp.logger.error("Exception running JS pipeline: #{@json}")
         KApp.logger.log_exception(e)
       end
-      # Notify generated file downloads
+      # Notify anything that is consuming notifications about pipeline results, including the
+      # JavaScript callbacks.
+      KNotificationCentre.notify(:jsfiletransformpipeline, :pipeline_result, result)
+      # FINALLY call the waitUI notifications, last, so plugin authors can assume that
+      # the JS callback happens before the next page UI is rendered.
       pipeline['waitUI'].each do |name, filename, redirect_to, identifier|
         begin
           success = result.success; disk_pathname = nil; mime_type = nil
@@ -96,9 +100,7 @@ class KJSFileTransformPipeline < KJob
           KApp.logger.log_exception(e)
         end
       end
-      # Call back into JavaScript to use the result
-      KNotificationCentre.notify(:jsfiletransformpipeline, :pipeline_result, result)
-      KJSPluginRuntime.current.call_file_transform_pipeline_callback(result)
+      # Nothing must come after the waitUI notifications.
     ensure
       # Clean up any temporary files which weren't consumed by the callback
       @temp_files.each do |temp_pathname|

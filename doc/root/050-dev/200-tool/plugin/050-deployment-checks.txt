@@ -11,7 +11,7 @@ h2. Check all files
 Run the @check@ command to syntax check all files.
 
 <pre>
-    oneis-plugin check
+    haplo-plugin check
 </pre>
 
 Make sure the output of the command is @PASSED@.
@@ -26,7 +26,7 @@ When deployed, plugins are minimised to reduce the amount of data which is trans
 Use the @--minimise@ option to upload a minimised version of the plugin.
 
 <pre>
-    oneis-plugin --minimise
+    haplo-plugin --minimise
 </pre>
 
 Upload will be a bit slower as the files need processing. When it's complete, test the client side parts of your plugin.

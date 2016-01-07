@@ -16,7 +16,7 @@ class CopyrightStatementTest < IntegrationTest
     get '/do/c'
     assert_select '#z__ws_content .z__document:nth-child(1) p', 'The copyright of content in Haplo remains the property of the copyright holder. Content held in Haplo may not be sold, licensed, transferred, copied, reproduced in whole or in part without the prior written consent of the copyright holder.'
     assert_select '#z__ws_content .z__document:nth-child(4) h2', 'Software Copyright'
-    assert_select '#z__ws_content .z__document:nth-child(4) p:nth-child(2)', %Q!The Haplo Software is provided by ONEIS Ltd, and is copyright &copy; ONEIS Ltd 2006 &mdash; 2015. All rights in the Haplo Software are expressly reserved. The Haplo Software, including graphics and code, may not be sold, licensed, transferred, copied, modified or reproduced in whole or in part without the prior written consent of ONEIS Ltd. ONEIS Ltd asserts its ownership of the design of Haplo.!
+    assert_select '#z__ws_content .z__document:nth-child(4) p:nth-child(2)', %Q!The Haplo Software is provided by Haplo Services Ltd, and is copyright &copy; Haplo Services Ltd 2006&nbsp;&mdash;&nbsp;#{DateTime.now.year}. All rights in the Haplo Software are expressly reserved. The Haplo Software, including graphics and code, may not be sold, licensed, transferred, copied, modified or reproduced in whole or in part without the prior written consent of Haplo Services Ltd. Haplo Services Ltd asserts its ownership of the design of Haplo.!
 
     KApp.set_global(:product_name, 'TEST')
     get '/do/c'

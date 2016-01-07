@@ -217,14 +217,10 @@ __E
     t1 = KTextMultiline.new("Link1 http://www.example.com/0123456789#123456 text1\nLink2 http://www.example.net/01234567890123456789012345678901234567890123456789012345678901234567890123456789 text2")
     assert_equal %Q!Link1 <a href="http://www.example.com/0123456789#123456">http://www.example.com/0123456789#123456</a> text1<br>Link2 <a href="http://www.example.net/01234567890123456789012345678901234567890123456789012345678901234567890123456789">http://www.example.net/012345678901234567890123456789012345678901234...</a> text2!, t1.to_html
 
-    # Short
+    # URL values rendered with domains highlighted, truncated with CSS
     assert_equal %Q!<a href="http://www.example.com/0123456789#&lt;123456&gt;" class="z__url_value">http://www.<span>example.com</span>/0123456789#&lt;123456&gt;</a>!, URLRenderTester.test_url_value_rendering('http://www.example.com/0123456789#<123456>')
-
     # Bare domain beginning with www
     assert_equal %Q!<a href="http://wwwexample.com/hello" class="z__url_value">http://<span>wwwexample.com</span>/hello</a>!, URLRenderTester.test_url_value_rendering('http://wwwexample.com/hello')
-
-    # Long, requiring spaces for wrapping
-    assert_equal %Q!<a href="http://www.example.net/0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789" class="z__url_value">http://www.<span>example.net</span>/012345678901234567890123456789012345678901234 56789012345678901234567890123456789012345678901234567890123456789012 34567890123456789012345678901234567890123456789</a>!, URLRenderTester.test_url_value_rendering('http://www.example.net/0123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789')
   end
   module URLRenderTester
     extend Application_RenderHelper

@@ -153,6 +153,7 @@ class KSchema
       obj.each(A_ATTR_SHORT_NAME) do |value,d,q|
         @short_names << value.to_s.downcase
       end
+      @short_names.freeze
       @preferred_short_name = (@short_names.empty? ? 'UNKNOWN' : @short_names.first)
       @relevancy_weight = obj.first_attr(A_RELEVANCY_WEIGHT)
       @relevancy_weight = @relevancy_weight.to_i if @relevancy_weight != nil

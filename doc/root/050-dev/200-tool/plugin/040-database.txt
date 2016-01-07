@@ -13,7 +13,7 @@ When you've made changes to the table definitions in your plugin, save the file 
 To apply the changes, reset the database:
 
 <pre>
-    oneis-plugin reset-db
+    haplo-plugin reset-db
 </pre>
 
 This will delete the old tables for your plugin, and recreate them with the current definitions. *All the data in the tables will be deleted.*

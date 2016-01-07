@@ -43,8 +43,8 @@ class EditController < ApplicationController
     schema = KObjectStore.schema
     desc = params[:desc].to_i
     attr_desc = schema.attribute_descriptor(desc) || schema.aliased_attribute_descriptor(desc)
-    @types = ((attr_desc == nil) ? [] : attr_desc.control_by_types)
-    @types.select! { |t| @request_user.policy.can_create_object_of_type?(t) }
+    @types = ((attr_desc == nil) ? [] : attr_desc.control_by_types).
+        select { |t| @request_user.policy.can_create_object_of_type?(t) }
     render(:layout => 'minimal')
   end
 

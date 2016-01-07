@@ -6,7 +6,7 @@ The plugin tool requires a little bit of setup.
 
 h3. Create a working folder
 
-Create a folder anywhere on your hard disc. We'll be using the example of @C:\oneis-development@ for simplicity. This working folder should be the root of your source control repository.
+Create a folder anywhere on your hard disc. We'll be using the example of @C:\haplo-development@ for simplicity. This working folder should be the root of your source control repository.
 
 Open a @cmd@ prompt, and @cd@ to that directory.
 
@@ -35,8 +35,8 @@ Return to the @cmd@ window you opened. Type
 
 <pre>
     set JAVA_HOME=C:\Program Files\Java\jre6
-    set PATH=C:\oneis-development\jruby\bin;%PATH%
-    jgem install oneis
+    set PATH=C:\haplo-development\jruby\bin;%PATH%
+    jgem install haplo
 </pre>
 
 (Change the folder in the second line to whatever folder you created in the first step.)
@@ -44,7 +44,7 @@ Return to the @cmd@ window you opened. Type
 
 h3. Create a project folder
 
-Create a folder inside your working folder, for example, @C:\oneis-development\example-project@, and @cd@ to it. In the @cmd@ window, type
+Create a folder inside your working folder, for example, @C:\haplo-development\example-project@, and @cd@ to it. In the @cmd@ window, type
 
 <pre>
     mkdir example-project
@@ -54,5 +54,5 @@ Create a folder inside your working folder, for example, @C:\oneis-development\e
 
 h3. Check the installation works
 
-Type @oneis-plugin --help@ to check the plugin tool is installed correctly.
+Type @haplo-plugin --help@ to check the plugin tool is installed correctly.
 

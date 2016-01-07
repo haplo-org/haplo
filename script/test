@@ -20,7 +20,6 @@ set -e
 #   script/test --concurrency=1
 # (automatic if no filename is specified)
 
-USES_JAVA_FONT_RENDERING=yes
 . config/paths-`uname`.sh
 
 KFRAMEWORK_ENV=test

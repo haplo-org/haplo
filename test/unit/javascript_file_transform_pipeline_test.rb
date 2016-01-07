@@ -42,7 +42,8 @@ __E
 
   # -------------------------------------------------------------------------
 
-  def test_file_conversion
+  def test_file_conversion_and_operations_ordering
+    TestNotificationObserver.operations.clear
     word_file = StoredFile.from_upload(fixture_file_upload('files/example.doc', 'application/msword'))
     run_all_jobs :expected_job_count => 1
     assert_equal 1, StoredFile.find(:all).length
@@ -52,6 +53,8 @@ __E
         var pipeline = O.fileTransformPipeline("testconvert");
         pipeline.file("input", wordFile);
         pipeline.transform("std:convert", {mimeType:"application/pdf"});
+        pipeline.urlForWaitThenRedirect("/do/one", {});
+        pipeline.urlForOuputWaitThenDownload("output", "output.pdf", {});
         pipeline.execute();
         var pdfFile;
         O.$registerFileTransformPipelineCallback("testconvert", this, {
@@ -72,9 +75,11 @@ __E
     pdf = pdfs[0]
     assert_equal "test1234.pdf", pdf.upload_filename
     assert (File.open(pdf.disk_pathname,'r:BINARY') { |f| f.read }) =~ /\A%PDF/
+    # Check that the :pipeline_result notification to JS happened before urlForWait...() were released
+    assert_equal [:prepare, :prepare, :pipeline_result, :ready, :ready], TestNotificationObserver.operations
   end
 
-  disable_test_unless_file_conversion_supported :test_file_conversion, 'application/msword', 'application/pdf'
+  disable_test_unless_file_conversion_supported :test_file_conversion_and_operations_ordering, 'application/msword', 'application/pdf'
 
   # -------------------------------------------------------------------------
 
@@ -139,6 +144,18 @@ __E
 
   disable_test_unless_file_conversion_supported :test_pipelined_word_to_png, 'application/msword', 'application/pdf'
   disable_test_unless_file_conversion_supported :test_pipelined_word_to_png, 'application/pdf', 'image/png'
+
+  # -------------------------------------------------------------------------
+
+  # Capture order of notification operations
+  class TestNotificationObserver
+    def self.operations; Thread.current[:__test_notification_observer_ops] ||= []; end
+    def self.notify(name, operation, *rest)
+      operations.push(operation) if name == :jsfiletransformpipeline
+      KNotificationCentre.notify(name, operation, *rest)
+    end
+  end
+  KJSFileTransformPipeline.const_set(:KNotificationCentre, TestNotificationObserver)
 
   # -------------------------------------------------------------------------
 

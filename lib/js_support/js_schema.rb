@@ -82,19 +82,8 @@ module KSchemaToJavaScript
     # SCHEMA object
     js << <<-__E
       var SCHEMA = new $CheckingLookupObject("SCHEMA");
+      O.$private.prepareSCHEMA(SCHEMA);
       _.extend(SCHEMA, {
-        getTypeInfo: function(type) {
-          return O.$private.$bootstrapSchemaQuery("getTypeInfo", type);
-        },
-        getAttributeInfo: function(attr) {
-          return O.$private.$bootstrapSchemaQuery("getAttributeInfo", attr);
-        },
-        getQualifierInfo: function(attr) {
-          return O.$private.$bootstrapSchemaQuery("getQualifierInfo", attr);
-        },
-        $console: function() {
-          return '[SCHEMA]';
-        },
         TYPE: TYPE,
         ATTR: ATTR,
         ALIASED_ATTR: ALIASED_ATTR,
@@ -108,78 +97,49 @@ module KSchemaToJavaScript
     js
   end
 
-  # Generate the lazily created schema query functions
-  def self.generate_schema_query_function(schema, queryName)
-    js = "(function() {\n"
-    case queryName
-    when "getTypeInfo"
-      js << "  var _info = new $RefKeyDictionary();\n"
-      schema.each_type_desc do |type_desc|
-        attrs = []
-        type_desc.attributes.each do |desc|
-          aliased = schema.aliased_attribute_descriptor(desc)
-          attrs << ((aliased == nil) ? desc : aliased.alias_of)
-        end
-        info = {
-          :name => type_desc.printable_name.to_s,
-          :shortName => type_desc.short_names.first.to_s,
-          :rootType => (type_desc.root_type || type_desc.objref).obj_id,
-          :childTypes => type_desc.children_types.map { |r| r.obj_id },
-          :attributes => attrs
-        }
-        info[:parentType] = type_desc.parent_type.obj_id if type_desc.parent_type
-        info[:code] = type_desc.code if type_desc.code
-        js << "  _info.set(new $Ref(#{type_desc.objref.obj_id}), #{info.to_json});\n"
-      end
-      js << <<-__E
-      O.$private.$bootstrapSchemaQueryTypesConvert(_info);
-      SCHEMA.getTypeInfo = function(type) {
-        return _info.get(type);
-      };
-      __E
-
-    when "getAttributeInfo"
-      attrs = {}
-      schema.each_attr_descriptor do |attr_desc|
-        info = {
-          :name => attr_desc.printable_name.to_s,
-          :shortName => attr_desc.short_name.to_s,
-          :typecode => attr_desc.data_type || T_TEXT,
-          :types => attr_desc.control_by_types.map { |t| t.obj_id }
-        }
-        info[:code] = attr_desc.code if attr_desc.code
-        attrs[attr_desc.desc] = info
-      end
-      js << <<-__E
-        var _info = #{attrs.to_json};
-        O.$private.$bootstrapSchemaQueryAttributesConvert(_info);
-        SCHEMA.getAttributeInfo = function(attr) {
-          return _info[attr];
-        };
-      __E
-
-    when "getQualifierInfo"
-      quals = {}
-      schema.each_qual_descriptor do |qual_desc|
-        info = {
-          :name => qual_desc.printable_name.to_s,
-          :shortName => qual_desc.short_name.to_s
-        }
-        info[:code] = qual_desc.code if qual_desc.code
-        quals[qual_desc.desc] = info
-      end
-      js << <<-__E
-        var _info = #{quals.to_json};
-        SCHEMA.getQualifierInfo = function(qual) {
-          return _info[qual];
-        };
-      __E
-
-    else
-      raise "Unknown queryName for KSchemaToJavaScript.generate_schema_query_function: '#{queryName}'"
+  # Schema query functions
+  def self.get_schema_type_info(schema, obj_id)
+    type_desc = schema.type_descriptor(KObjRef.new(obj_id))
+    return nil if type_desc.nil?
+    attrs = []
+    type_desc.attributes.each do |desc|
+      aliased = schema.aliased_attribute_descriptor(desc)
+      attrs << ((aliased == nil) ? desc : aliased.alias_of)
     end
-    js << "})();"
-    js
+    info = {
+      :name => type_desc.printable_name.to_s,
+      :shortName => type_desc.short_names.first.to_s,
+      :rootType => (type_desc.root_type || type_desc.objref).obj_id,
+      :childTypes => type_desc.children_types.map { |r| r.obj_id },
+      :attributes => attrs
+    }
+    info[:parentType] = type_desc.parent_type.obj_id if type_desc.parent_type
+    info[:code] = type_desc.code if type_desc.code
+    info.to_json
+  end
+
+  def self.get_schema_attribute_info(schema, obj_id)
+    attr_desc = schema.attribute_descriptor(obj_id)
+    return nil if attr_desc.nil?
+    info = {
+      :name => attr_desc.printable_name.to_s,
+      :shortName => attr_desc.short_name.to_s,
+      :typecode => attr_desc.data_type || T_TEXT,
+      :types => attr_desc.control_by_types.map { |t| t.obj_id }
+    }
+    info[:code] = attr_desc.code if attr_desc.code
+    info.to_json
+  end
+
+  def self.get_schema_qualifier_info(schema, obj_id)
+    qual_desc = schema.qualifier_descriptor(obj_id)
+    return nil if qual_desc.nil?
+    info = {
+      :name => qual_desc.printable_name.to_s,
+      :shortName => qual_desc.short_name.to_s
+    }
+    info[:code] = qual_desc.code if qual_desc.code
+    info.to_json
   end
 end
 

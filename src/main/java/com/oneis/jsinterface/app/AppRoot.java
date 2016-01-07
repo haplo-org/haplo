@@ -30,7 +30,7 @@ public interface AppRoot {
 
     public Connection getJdbcConnection();
 
-    public String generateSchemaQueryFunction(String queryName);
+    public String getSchemaInfo(int type, int objId);
 
     // Permissions & request handling context
     public boolean isHandlingRequest();

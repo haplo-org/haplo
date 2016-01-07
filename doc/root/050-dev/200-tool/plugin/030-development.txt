@@ -9,14 +9,14 @@ h2. Authorise with server
 The plugin tool needs to be authorised to use your server. Start the process by running the plugin tool @auth@ command, specifying the hostname of your application.
 
 <pre>
-    oneis-plugin auth app.example.com
+    haplo-plugin auth app.example.com
 </pre>
 
 Next, you need to open your web browser and authenticate the request. The plugin tool will have printed out a URL to visit, and on some platforms, will have automatically opened the page in your web browser.
 
 After you have authenticated, return to the terminal and wait until the plugin tool finishes the authorisation process.
 
-This will set the default server, which will be used for future @oneis-plugin@ commands. You can authorise the plugin tool for multiple servers, then use the @server@ command to switch between them. To choose a server temporarily, use the @-s@ command line switch. You only need specify a unique substring of the server name.
+This will set the default server, which will be used for future @haplo-plugin@ commands. You can authorise the plugin tool for multiple servers, then use the @server@ command to switch between them. To choose a server temporarily, use the @-s@ command line switch. You only need specify a unique substring of the server name.
 
 The API keys used by the plugin tool are stored in a @.server.json@ file in the current directory. Do not commit this to source control.
 
@@ -26,7 +26,7 @@ h2. Creating a new plugin
 To create a new plugin called @test_plugin@, make sure you're in your project folder, then type:
 
 <pre>
-    oneis-plugin -p test_plugin new
+    haplo-plugin -p test_plugin new
 </pre>
 
 This will create a @test_plugin@ folder, populated with the minimum files necessary to register the plugin and respond to an HTTP request.
@@ -37,7 +37,7 @@ h2. Developing your plugin
 Typing
 
 <pre>
-    oneis-plugin
+    haplo-plugin
 </pre>
 
 will upload the plugin to the server, and install it. You can test the plugin by visiting the URL given in the output from the @new@ command, replacing the hostname with the hostname of the application you're using for development.
@@ -66,7 +66,7 @@ h2. Tests
 Where appropriate, you should write [node:dev/plugin/tests:automated tests] for your plugin's key functionality. To run them, use the @test@ command:
 
 <pre>
-    oneis-plugin test
+    haplo-plugin test
 </pre>
 
 The @test@ command takes an optional argument to specify a subset of the tests. If given, only the test scripts whose filenames contain the given string will be run.
@@ -88,7 +88,7 @@ h2. Uninstallation
 To remove a plugin under development, type
 
 <pre>
-    oneis-plugin uninstall
+    haplo-plugin uninstall
 </pre>
 
 Run the plugin tool again to upload and re-install the plugin.
@@ -99,7 +99,7 @@ h2. Usage
 For full command line usage information, type
 
 <pre>
-    oneis-plugin --help
+    haplo-plugin --help
 </pre>
 
 to display the built in documentation.

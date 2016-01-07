@@ -1838,6 +1838,7 @@ h3.z__plugin_ui_action_panel_links_title {
 }
 .z__plugin_ui_action_panel_tile_container a,
 .z__plugin_ui_action_panel_tile_container a:visited {
+    position: relative;
     display: block;
     float: left;
     margin: 20px 20px 0 0;  /* right margin cancelled on every third tile */
@@ -1858,6 +1859,16 @@ h3.z__plugin_ui_action_panel_links_title {
 .z__plugin_ui_action_panel_tile_container a:hover {
     background: COLOUR[mix(:main,50,#fff,50)];
     text-decoration: none;
+}
+/* optional icon in tiles */
+a.z__plugin_ui_action_panel_tile_element_with_icon {
+    padding-left: 42px;
+    width: 104px;    /* compensate for CSS box model */
+}
+.z__plugin_ui_action_panel_tile_element_with_icon .z__icon {
+    position: absolute;
+    left: 10px;
+    top: 12px;
 }
 
 /* statistics version of the action panel */

@@ -127,7 +127,15 @@
 
 /* object display */
 
-/* used to highlight the relevant part of the domain name for URL values */
+/* URLs should be go on one line and be truncated with ... if necessary */
+.z__url_value {
+    display: inline-block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap; /* required to make this work in Firefox */
+    max-width: 100%;
+}
+/* URLs should have the relevant part of the domain name highlighted */
 .z__url_value span {
     color: #0c5499;
     font-weight: bold;

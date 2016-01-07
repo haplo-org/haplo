@@ -158,11 +158,8 @@ public class KONEISHost extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public void jsFunction_defineSchemaQueryFunction(String queryName) throws java.io.IOException {
-        // Generate the JavaScript source to create that function...
-        String evalString = this.supportRoot.generateSchemaQueryFunction(queryName);
-        // ... and evaluate it in the current runtime.
-        Runtime.getCurrentRuntime().evaluateString(evalString, "<schema-" + queryName + ">");
+    public String jsFunction_getSchemaInfo(int type, int objId) {
+        return this.supportRoot.getSchemaInfo(type, objId);
     }
 
     // --------------------------------------------------------------------------------------------------------------

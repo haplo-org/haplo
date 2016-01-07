@@ -6,7 +6,7 @@ The plugin tool requires a little bit of setup. These instructions work on Mac O
 
 h3. Create a working folder
 
-Create a folder anywhere on your hard disc. We'll be using the example of @/Users/developer/oneis-development@ for simplicity. This working folder should be the root of your source control repository.
+Create a folder anywhere on your hard disc. We'll be using the example of @/Users/developer/haplo-development@ for simplicity. This working folder should be the root of your source control repository.
 
 Open a Terminal window, and @cd@ to that directory.
 
@@ -33,7 +33,7 @@ Return to the Terminal window you opened. Type
 
 <pre>
     export PATH=`pwd`/jruby/bin:$PATH
-    jgem install oneis
+    jgem install haplo
 </pre>
 
 (This assumes you're running these commands with the current working directory set to the directory containing @jruby@.)
@@ -41,7 +41,7 @@ Return to the Terminal window you opened. Type
 
 h3. Create a project folder
 
-Create a folder inside your working folder, for example, @/Users/developer/oneis-development/example-project@, and @cd@ to it. In the @cmd@ window, type
+Create a folder inside your working folder, for example, @/Users/developer/haplo-development/example-project@, and @cd@ to it. In the @cmd@ window, type
 
 <pre>
     mkdir example-project
@@ -51,4 +51,4 @@ Create a folder inside your working folder, for example, @/Users/developer/oneis
 
 h3. Check the installation works
 
-Type @oneis-plugin --help@ to check the plugin tool is installed correctly.
+Type @haplo-plugin --help@ to check the plugin tool is installed correctly.

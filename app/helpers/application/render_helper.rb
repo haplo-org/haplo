@@ -376,7 +376,7 @@ module Application_RenderHelper
     # Don't use default to_html because it won't include the span to highlight the domain
     url = h(value.text)
     # The label needs spaces inserted every so often to get it to line break reasonably, and the domain higlighted
-    label = h(value.text.gsub(/(.{68})/,'\\1 ')).gsub(/(:\/\/([wW]+\.)?)([^\/]+)(\/|$)/,'\\1<span>\\3</span>\\4')
+    label = h(value.text).gsub(/(:\/\/([wW]+\.)?)([^\/]+)(\/|$)/,'\\1<span>\\3</span>\\4')
     %Q!<a href="#{url}" class="z__url_value">#{label}</a>!
   end
 

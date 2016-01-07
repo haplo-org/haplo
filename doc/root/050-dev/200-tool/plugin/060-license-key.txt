@@ -18,7 +18,7 @@ h2. License keys
 When someone installs your plugin, they'll be asked for a license key. You need to generate a key for their application. The plugin installation process will provide a numeric application ID, which you use to generate a license key.
 
 <pre>
-    oneis-plugin license-key 123456
+    haplo-plugin license-key 123456
 </pre>
 
 In this example, the application ID is @123456@. If you have multiple plugins in the working directory, you'll need to specify the plugin with the @-p@ option.

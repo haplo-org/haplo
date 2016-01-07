@@ -105,8 +105,14 @@ class JSSupportRoot
     KApp.get_jdbc_database
   end
 
-  def generateSchemaQueryFunction(queryName)
-    KSchemaToJavaScript.generate_schema_query_function(KObjectStore.schema, queryName)
+  def getSchemaInfo(type, obj_id)
+    s = KObjectStore.schema
+    case type
+    when 0; KSchemaToJavaScript.get_schema_type_info(s, obj_id)
+    when 1; KSchemaToJavaScript.get_schema_attribute_info(s, obj_id)
+    when 2; KSchemaToJavaScript.get_schema_qualifier_info(s, obj_id)
+    else; throw new JavaScriptAPIError, "bad query type"
+    end
   end
 
   def impersonating(user, runnable)

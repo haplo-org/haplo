@@ -247,12 +247,14 @@ class KSchemaApp < KSchema
       ado.each(KConstants::A_ATTR_QUALIFIER) do |value,d,q|
         @allowed_qualifiers << value.to_desc
       end
+      @allowed_qualifiers.freeze
 
       # Controlled type?
       @control_by_types = Array.new
       ado.each(KConstants::A_ATTR_CONTROL_BY_TYPE) do |value,d,q|
         @control_by_types << value if value.class == KObjRef
       end
+      @control_by_types.freeze
 
       # Relaxed about the control?
       unless @control_by_types.empty?
@@ -308,6 +310,7 @@ class KSchemaApp < KSchema
         r = q.execute(:reference, :any)
         0.upto(r.length-1) { |i| @specified_linked_types_with_children << r.objref(i) }
       end
+      @specified_linked_types_with_children.freeze
     end
     # Acessors
     def specified_qualifiers
