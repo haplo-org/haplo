@@ -1,5 +1,0 @@
-title: Constructors
-class: DocNodeTextileWithTOC
---
-
-The JavaScript API style avoids the @new@ operator, and uses constructor functions instead. Objects returned implement one of the documented [node:dev/plugin/interface].

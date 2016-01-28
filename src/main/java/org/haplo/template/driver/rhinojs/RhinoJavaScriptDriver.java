@@ -66,6 +66,19 @@ class RhinoJavaScriptDriver extends Driver {
                 return Long.toString(valueAsLong);
             }
         }
+        // If it's a JavaScript object then call toString() on it, if implemented
+        if((value instanceof Scriptable)) {
+            if(-1 != isArrayLikeScriptableObject(value)) {
+                return null;
+            }
+            Scriptable jsObject = (Scriptable)value;
+            if(ScriptableObject.hasProperty(jsObject, "toString")) {
+                Object stringRepresentation = ScriptableObject.callMethod(jsObject, "toString", new Object[] {});
+                if(stringRepresentation instanceof CharSequence) {
+                    return stringRepresentation.toString();
+                }
+            }
+        }
         return value.toString();
     }
 
@@ -75,7 +88,7 @@ class RhinoJavaScriptDriver extends Driver {
         if(length == -1) { return; }
         Scriptable scriptable = (Scriptable)value;
         for(int i = 0; i < length; ++i) {
-            Object entry = scriptable.get(i, scriptable);
+            Object entry = ScriptableObject.getProperty(scriptable, i);
             iterator.entry(hasValue(entry) ? entry : null);
         }
     }
@@ -113,7 +126,7 @@ class RhinoJavaScriptDriver extends Driver {
     private static int isArrayLikeScriptableObject(Object object) {
         if(!(object instanceof Scriptable)) { return -1; }
         Scriptable scriptable = (Scriptable)object;
-        Object lengthProperty = scriptable.get("length", scriptable);
+        Object lengthProperty = ScriptableObject.getProperty(scriptable, "length");
         if(!(hasValue(lengthProperty) && (lengthProperty instanceof Number))) { return -1; }
         long lengthL = ((Number)lengthProperty).longValue();
         // JS max array length is actually (2^53)-1, but Rhino uses int

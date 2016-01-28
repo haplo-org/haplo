@@ -1,5 +1,0 @@
-title: hMainApplicationCSS
-class: HookNode
---
-
-This hook is called to allow a plugin to append CSS to the main CSS file.

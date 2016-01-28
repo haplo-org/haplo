@@ -1,7 +1,0 @@
-title: hHelpPage
-class: HookNode
---
-
-Called when the pop up help page is displayed, allowing a plugin to change the help system.
-
-The @std:minimal@ [node:dev/plugin/request-handling#Layouts:layout] is useful for rendering replacement help pages in the correct style.

@@ -164,8 +164,11 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
 
     private static AppObject appObjectArg(FunctionBinding b) throws RenderException {
         Object o = b.nextViewObjectArgument(ArgumentRequirement.REQUIRED);
+        if(o instanceof KObjRef) {
+            o = ((KObjRef)o).jsFunction_load();
+        }
         if(!(o instanceof KObject)) {
-            throw new OAPIException(b.getFunctionName()+"() requires a StoreObject");
+            throw new OAPIException(b.getFunctionName()+"() requires a StoreObject or a Ref");
         }
         return ((KObject)o).toRubyObject();
     }

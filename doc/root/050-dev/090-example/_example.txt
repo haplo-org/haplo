@@ -1,4 +1,0 @@
-title: Examples
---
-
-Some example implementations of simple functionality.

@@ -1,7 +1,0 @@
-title: hNewObjectPage
-class: HookNode
---
-
-This hook allows plugins to add extra HTML to the new object page. You might use this to add extra user interface for creating things implemented by your plugin, if it's appropriate.
-
-The [node:dev/plugin/hook/pre-object-edit] hook can also be used to modify the behaviour of the application when adding new objects.

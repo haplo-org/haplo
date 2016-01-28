@@ -41,7 +41,8 @@ TEST(function() {
     }, "When rendering template 'undefined': std:document() can only be used in TEXT context");
 
     // std:object()
-    var object = O.ref(TEST_BOOK).load();
+    var objectRef = O.ref(TEST_BOOK);
+    var object = objectRef.load();
     template = new $HaploTemplate('<div> std:object(o "linkedheading") </div>');
     var objectRendered = template.render({o:object});
     TEST.assert(objectRendered.match(/class="?z__linked_heading"?/)); // cope with minimisation
@@ -50,11 +51,16 @@ TEST(function() {
     TEST.assert_exceptions(function() {
         new $HaploTemplate('<div data-value=std:object(o)></div>').render({o:object});
     }, "When rendering template 'undefined': std:object() can only be used in TEXT context");
+    var refRendered = template.render({o:objectRef});
+    TEST.assert(refRendered.match(/class="?z__linked_heading"?/)); // cope with minimisation
 
     // std:object:link() & std:object:link:descriptive()
     template = new $HaploTemplate('<div> std:object:link(o) " ! " std:object:link:descriptive(o) </div>');
     var objectLinksRendered = template.render({o:object}).replace(/\/[0-9qvwxyz]+\//g,'/REF/');
     TEST.assert_equal(objectLinksRendered, '<div><a href="/REF/test-book">Test book</a> ! <a href="/REF/test-book">Test book</a></div>');
+    // And with refs instead
+    var refLinksRendered = template.render({o:objectRef}).replace(/\/[0-9qvwxyz]+\//g,'/REF/');
+    TEST.assert_equal(refLinksRendered, '<div><a href="/REF/test-book">Test book</a> ! <a href="/REF/test-book">Test book</a></div>');
 
     // std:text:paragraph
     template = new $HaploTemplate('"START" std:text:paragraph(text) "END"');
@@ -79,10 +85,11 @@ TEST(function() {
     TEST.assert_equal(template.render({d:"left"}), '<div><span class="z__plugin_ui_nav_arrow">&#xE016;</span></div>');
 
     // std:icon:*
-    template = new $HaploTemplate('<div> std:icon:type(type "large") " ! " std:icon:object(obj "small") " ! " std:icon:description(desc "medium") </div>');
+    template = new $HaploTemplate('<div> std:icon:type(type "large") " ! " std:icon:object(ref "medium") " ! " std:icon:object(obj "small") " ! " std:icon:description(desc "medium") </div>');
     TEST.assert_equal(template.render({
         type: TYPE["std:type:book"],
+        ref: objectRef,
         obj: object,
         desc: "E210,1,f E505,5,b"
-    }), '<div><span class="z__icon z__icon_large"><span class="z__icon_colour1 z__icon_component_position_full">&#xE210;</span></span> ! <span class="z__icon z__icon_small"><span class="z__icon_colour1 z__icon_component_position_full">&#xE210;</span></span> ! <span class="z__icon z__icon_medium"><span class="z__icon_colour1 z__icon_component_position_full">&#xE210;</span><span class="z__icon_colour5 z__icon_component_position_top_right">&#xE505;</span></span></div>');
+    }), '<div><span class="z__icon z__icon_large"><span class="z__icon_colour1 z__icon_component_position_full">&#xE210;</span></span> ! <span class="z__icon z__icon_medium"><span class="z__icon_colour1 z__icon_component_position_full">&#xE210;</span></span> ! <span class="z__icon z__icon_small"><span class="z__icon_colour1 z__icon_component_position_full">&#xE210;</span></span> ! <span class="z__icon z__icon_medium"><span class="z__icon_colour1 z__icon_component_position_full">&#xE210;</span><span class="z__icon_colour5 z__icon_component_position_top_right">&#xE505;</span></span></div>');
 });

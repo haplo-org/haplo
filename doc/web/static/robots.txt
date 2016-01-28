@@ -1,2 +1,0 @@
-
-Sitemap: http://docs.haplo.org/sitemap.txt

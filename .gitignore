@@ -1,7 +1,6 @@
 target/
 framework/oneis.jar
 framework/oneis
-components/
 lib/xapian_pg/*.o
 lib/xapian_pg/*.so
 lib/xapian_pg/_textidx

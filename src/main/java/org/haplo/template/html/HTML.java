@@ -45,7 +45,41 @@ class HTML {
         }
     }
 
-    // Rests to see if an attribute contains a URL value.
+    // Is the name safe, and doesn't require escaping in any context?
+    public static boolean validRestrictedName(CharSequence name) {
+        int len = name.length();
+        if(len == 0) { return false; }  // because it'll be used for testing strings from anywhere, not just non-zero length symbols
+        for(int i = 0; i < len; ++i) {
+            char c = name.charAt(i);
+            if(!( ((c >= 'a') && (c <= 'z')) || ((c >= '0') && (c <= '9')) || (c == '-') || (c == '_') )) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // Checks an attribute is valid and safe
+    public static boolean validTagAttributeName(CharSequence name) {
+        if(!validRestrictedName(name)) { return false; }
+        return !((name.length() >= 2) && (name.charAt(0) == 'o') && (name.charAt(1) == 'n'));
+    }
+
+    // Checks an attribute is valid and safe and doesn't require special attention
+    public static boolean validTagAttributeNameAndNoSpecialHandlingRequired(String tag, String name) {
+        if(!validTagAttributeName(name)) { return false; }
+        if(attributeIsURL(tag, name)) { return false; }
+        switch(name) {
+            // SEE ALSO: Parser.checkedTagAttribute() which duplicates this list to give better errors
+            case "style":
+            case "id":
+            case "class":
+            case "background":
+                return false;
+        }
+        return true;
+    }
+
+    // Tests to see if an attribute contains a URL value.
     // List from http://www.w3.org/html/wg/drafts/html/master/index.html#attributes-1
     public static boolean attributeIsURL(String tag, String attribute) {
         switch(tag) {

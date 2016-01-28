@@ -1,5 +1,0 @@
-title: Email
-class: DocNodeTextileWithTOC
---
-
-The interface to the email system is through the @O.email@ property.

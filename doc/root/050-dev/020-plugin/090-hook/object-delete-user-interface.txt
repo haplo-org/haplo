@@ -1,5 +1,0 @@
-title: hObjectDeleteUserInterface
-class: HookNode
---
-
-This hook allows a plugin to replace the built-in object deletion user interface.

@@ -1,4 +1,0 @@
-title: Other features
---
-
-When you're ready, you can set up some additional features to help use some aspects of your application.

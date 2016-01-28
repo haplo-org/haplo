@@ -1,5 +1,0 @@
-title: Security
-class: DocNodeTextileWithTOC
---
-
-The platform provides functions useful for implementing secure systems.

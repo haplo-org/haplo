@@ -1,7 +1,0 @@
-title: std:resources_html
-link_as: keyword
---
-
-This template generates the necessary @<script>@ and @<link>@ tags to include the client-side resources specified with the [node:dev/plugin/templates/std-template/plugin-static] and [node:dev/plugin/templates/std-template/resources] templates.
-
-In general, you should *not* need to use this template, as these tags will automatically be included by the standard layout. However, if you are setting @layout@ to @false@ in your view and generating all the HTML yourself, you may find this useful if your pages need different resources.

@@ -1,8 +1,0 @@
-title: O.isHandlingRequest
-link_as: keyword
---
-
-h3(property). O.isHandlingRequest
-
-@true@ if the application is currently handling a request, and other information, such as [node:dev/plugin/o/request/current-user] is available.
-

@@ -10,6 +10,7 @@ final class NodeTag extends Node {
     private String name;
     private String start;
     private Attribute attributesHead;
+    private Node attributeDictionaryValue;
 
     public NodeTag(String name) {
         this.name = name;
@@ -58,8 +59,19 @@ final class NodeTag extends Node {
         }
     }
 
+    public void setAttributesDictionary(Parser parser, Node value) throws ParseException {
+        if(this.attributeDictionaryValue != null) {
+            parser.error("Tag can only have one attribute dictionary");
+        }
+        if(!value.nodeRepresentsValueFromView()) {
+            parser.error("Attribute dictionary for tag must be a value");
+        }
+        this.attributeDictionaryValue = value;
+    }
+
     private boolean canOmitQuotesForValue(CharSequence value) {
         int len = value.length();
+        if(len == 0) { return false; }
         for(int i = 0; i < len; ++i) {
             char c = value.charAt(i);
             if(!(
@@ -80,7 +92,7 @@ final class NodeTag extends Node {
     }
 
     protected Node orSimplifiedNode() {
-        if(this.attributesHead == null) {
+        if(this.attributesHead == null && this.attributeDictionaryValue == null) {
             return new NodeLiteral(this.start+">");
         }
         return this;
@@ -101,6 +113,22 @@ final class NodeTag extends Node {
                 builder.append('"');
             }
             attribute = attribute.nextAttribute;
+        }
+        if(this.attributeDictionaryValue != null) {
+            driver.iterateOverValueAsDictionary(this.attributeDictionaryValue.value(driver, view), (key, value) -> {
+                // Check the key (attribute name) in the dictionary isn't a special attribute or a value which isn't allowed
+                if(!(HTML.validTagAttributeNameAndNoSpecialHandlingRequired(this.name, key))) {
+                    throw new RenderException(driver, "Bad attribute name for tag attribute dictionary expansion: '"+key+"'");
+                }
+                String valueString = driver.valueToStringRepresentation(value);
+                if((valueString != null) && (valueString.length() > 0)) {
+                    builder.append(' ').
+                        append(key).    // safey checked above
+                        append("=\"");
+                    Escape.escape(valueString, builder, Context.ATTRIBUTE_VALUE);
+                    builder.append('"');
+                }
+            });
         }
         builder.append('>');
     }

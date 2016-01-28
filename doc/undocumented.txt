@@ -25,10 +25,8 @@ std:treesource
 std:jquery_ui:slider
 std:render_doc_as_html
 std:resource:plugin_adaptor
-std:ui:panel
 std:search_results
 std:element + handlebars helper
-std:icon:* + handlebars helpers
 
 std:new_object_editor has readOnlyAttributes property
 
@@ -37,22 +35,6 @@ Taking over object rendering
 Use render type of 'hide' or 'blank', use Element below to render whatever you want.
 For search results, plugin.renderSearchResult() and renderer object
 
-Action panels (using std:ui:panel)
-----------------------------------
-O.ui.panel() builder
-std_action_panel plugin, used eg
-  4 right std:action_panel {"panel":"X"}
-with optional options "title", "style", "highlight" and "buttonLink".
-    style is "links" for a simple unobtrusive list of links, "menu" for more of a menu listing, "tiles" for big tiles with links intended for use on the home page
-    buttonLink specifies a URL, if present, a button labelled with the title and linking to this URL will be displayed if any plugin puts something in the panel.
-uses "std:action_panel_priorities" service to get defined priorities
-uses "std:action_panel:X" service to get elements for panel X
-
-Handlebars helpers
-------------------
-
-std:parameter_inputs  -- not sure if this should be a documented helper or not
-std:ui:navigation:arrow
 
 File uploads
 ------------

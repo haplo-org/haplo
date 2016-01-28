@@ -1,9 +1,0 @@
-title: hPostObjectEdit
-class: HookNode
---
-
-This hook allows a plugin to observe or alter an object which has been edited by the user, and redirect them to an alternative page after the edit operation.
-
-The @replacementObject@ must be created using [node:dev/plugin/interface/store-object#mutableCopy] of the given @object@.
-
-hPostObjectEdit is called before [node:dev/plugin/hook/label-object] or [node:dev/plugin/hook/label-updated-object].

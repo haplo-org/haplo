@@ -1,5 +1,0 @@
-title: Lookup
-class: DocNodeTextileWithTOC
---
-
-Functions which look up information about resources managed by the Haplo Platform.

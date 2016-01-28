@@ -1,9 +1,0 @@
-title: hLabellingUserInterface
-class: HookNode
---
-
-This hook enables your plugin to add additional labelling UI to the object editor using a [node:dev/plugin/interface/labelling-user-interface] object.
-
-Labels are presented as checkboxes. For creating new objects, your plugin specifies whether they're enabled by default, and on updates, and the Platform checks the boxes to maintain the existing labelling.
-
-See also [node:dev/plugin/hook/label-object] for applying labels without user intervention.

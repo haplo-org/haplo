@@ -1,7 +1,0 @@
-title: hPreFileDownload
-class: HookNode
---
-
-This hook allows plugins to observe file downloads.
-
-If the plugin sets the @redirectPath@ response property, the file download will not be audited.

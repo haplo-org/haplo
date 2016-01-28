@@ -1,9 +1,0 @@
-title: hNavigationPosition
-class: HookNode
---
-
-Called to add entries in the left hand navigation for logged in users. The navigation should be generated for [node:dev/plugin/o/request/current-user].
-
-The @name@ is the position name configured in the Navigation using the System management user interface.
-
-Navigation is aggressively cached, and this hook will only be called occasionally for any given user. Call [node:dev/plugin/o/invalidation#O_reloadNavigation] to invalidate the cache.

@@ -8,7 +8,7 @@
 
 
 # run as
-#    lib/tasks/update_templating.sh ~/haplo-templating
+#    lib/tasks/update_templating.sh ~/haplo-safe-view-templates
 # or whereever the templating checkout is located
 
 TEMPLATING_DIR=$1

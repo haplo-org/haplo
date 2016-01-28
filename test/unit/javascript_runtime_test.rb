@@ -437,6 +437,7 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
   end
 
   disable_test_unless_file_conversion_supported :test_stored_files, "application/pdf", "image/png"
+  disable_test_unless_file_conversion_supported :test_stored_files, "application/msword", "image/png"
 
   # ===============================================================================================
 
