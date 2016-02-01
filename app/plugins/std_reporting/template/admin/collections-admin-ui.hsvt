@@ -1,0 +1,26 @@
+pageTitle("Reporting administration")
+
+<h1> "Collections" </h1>
+
+<table>
+  <tr>
+    <th> "Name" </th>
+    <th> "Description" </th>
+    <th> "Status" </th>
+    <th colspan="2"> </th>
+  </tr>
+  each(collections) {
+    <tr>
+      <td> collection.name </td>
+      <td> collection.description </td>
+      <td> if(collection.isUpdatingFacts) { "Updating " } else { "Ready " } </td>
+      <td> <a href=["/do/reporting/admin/collection-facts/" collection.name]> "Facts..." </a> </td>
+      <td>
+        <form method="POST" action="/do/reporting/admin/rebuild-collection"> std:form:token()
+          <input type="hidden" name="collection" value=collection.name>
+          <input type="submit" value="Rebuild">
+        </form>
+      </td>
+    </tr>
+  }
+</table>

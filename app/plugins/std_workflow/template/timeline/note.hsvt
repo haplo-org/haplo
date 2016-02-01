@@ -1,0 +1,10 @@
+<i> entry.user.name </i> " added a " if(entry.data.private) { <b> "private" </b> " " } "note:"
+<div class=[
+    "z__workflow_timeline_entry_note"
+    if(entry.data.private){"z__workflow_timeline_entry_note_private"}
+  ]>
+  if(showEditLink) {
+    <div class="z__workflow_timeline_entry_note_edit"> <a href=["/do/workflow/note/" M.workUnit.id ? e=entry.id]> "EDIT" </a> </div>
+  }
+  std:text:paragraph(entry.data.text)
+</div>

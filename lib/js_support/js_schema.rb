@@ -97,6 +97,17 @@ module KSchemaToJavaScript
     js
   end
 
+  # Sync with schema_requirements_app.rb
+  TYPE_BEHAVIOURS = {
+    KConstants::O_TYPE_BEHAVIOUR_CLASSIFICATION => "classification",
+    KConstants::O_TYPE_BEHAVIOUR_PHYSICAL => "physical",
+    KConstants::O_TYPE_BEHAVIOUR_HIERARCHICAL => "hierarchical",
+    KConstants::O_TYPE_BEHAVIOUR_SHOW_HIERARCHY => "show-hierarchy",
+    KConstants::O_TYPE_BEHAVIOUR_FORCE_LABEL_CHOICE => "force-label-choice",
+    KConstants::O_TYPE_BEHAVIOUR_SELF_LABELLING => "self-labelling",
+    KConstants::O_TYPE_BEHAVIOUR_HIDE_FROM_BROWSE => "hide-from-browse"
+  }
+
   # Schema query functions
   def self.get_schema_type_info(schema, obj_id)
     type_desc = schema.type_descriptor(KObjRef.new(obj_id))
@@ -111,6 +122,7 @@ module KSchemaToJavaScript
       :shortName => type_desc.short_names.first.to_s,
       :rootType => (type_desc.root_type || type_desc.objref).obj_id,
       :childTypes => type_desc.children_types.map { |r| r.obj_id },
+      :behaviours => type_desc.behaviours.map { |r| TYPE_BEHAVIOURS[r] } .compact,
       :attributes => attrs
     }
     info[:parentType] = type_desc.parent_type.obj_id if type_desc.parent_type

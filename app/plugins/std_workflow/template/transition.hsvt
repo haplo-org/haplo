@@ -1,0 +1,24 @@
+
+std:plugin:resources("w.css")
+
+unless(transition) {
+
+  template:std:ui:choose()
+
+} else {
+
+  <form method="POST"> std:form:token()
+    <input type="hidden" name="transition" value=transition>
+
+    each(topFormDeferreds) { render(.) }
+
+    if(transitionProperties.confirmText) {
+      std:text:paragraph(transitionProperties.confirmText)
+    }
+
+    <p> <input type="submit" value=["Confirm: " transitionProperties.label]> " &nbsp; &nbsp; " <a href=backLink> "Cancel" </a> </p>
+
+    each(bottomFormDeferreds) { render(.) }
+
+  </form>
+}

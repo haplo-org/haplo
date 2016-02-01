@@ -1,0 +1,5 @@
+std:plugin:resources("w.css")
+<div>
+  <i> entry.user.name </i> " " actionText " " entityName
+  if(set) { " (" replacement ")" }
+</div>

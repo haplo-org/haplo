@@ -1,0 +1,18 @@
+<table>
+  <tr>
+    <th></th> <th> "Original" </th> <th> "Replacement" </th>
+  </tr>
+  each(data) {
+    <tr>
+      <td> title </td>
+      <td> std:object:link(original) </td>
+      <td>
+        if(replacement) {
+          std:object:link(replacement) " &nbsp; " <a href=editPath> "change..." </a>
+        } else {
+          <a href=editPath> "set..." </a>
+        }
+      </td>
+    </tr>
+  }
+</table>

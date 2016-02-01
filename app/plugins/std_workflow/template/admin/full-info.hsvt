@@ -1,0 +1,25 @@
+pageTitle("Timeline: " M.title)
+backLink(M.url)
+
+<p> "Work type: " workUnit.workType </p>
+<p> "State: " workUnit.tags.state " " if(workUnit.tags.target) { workUnit.tags.target } else { <i> "(no target)" </i> } </p>
+<p> "Closed? " if(workUnit.closed) { "yes" } else { "no" } </p>
+<p> "Visible? " if(workUnit.visible) { "yes" } else { "no" } </p>
+<p> "Actionable by: " <b> workUnit.actionableBy.name </b> </p>
+if(actionableNotSameAsCalculated) {
+  <form method="POST"> std:form:token()
+    <p> <b> "Actionable should be: " calculatedActionableBy.name </b> <input type="hidden" name="actionable" value="1"> <input type="submit" value="Update"> </p>
+  </form>
+}
+<p> "Created at: " workUnit.createdAt </p>
+<p> "Opened at: " workUnit.openedAt </p>
+<p> "Deadline: " workUnit.deadline </p>
+
+<h2> "Tags" </h2>
+<pre> tags </pre>
+
+<h2> "Full workflow data" </h2>
+<form method="POST"> std:form:token()
+  <p> <input type="submit" value="Save edited data"> </p>
+  <p> <textarea style="width:100%" rows="40" name="json"> data </textarea> </p>
+</form>

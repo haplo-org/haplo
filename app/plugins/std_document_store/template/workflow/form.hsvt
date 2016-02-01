@@ -1,0 +1,6 @@
+if(deferredPreForm) {
+  render(deferredPreForm)
+}
+<form method="POST"> std:form:token()
+  render(deferredForm)
+</form>

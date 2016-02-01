@@ -1,0 +1,7 @@
+std:plugin:resources("list-filter.js")
+
+<input
+    id="z__std_reporting_list_text_filter"
+    placeholder=if(placeholder) { placeholder } else { "Search" }
+    type="search"
+>

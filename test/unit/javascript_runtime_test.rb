@@ -907,35 +907,46 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
   # ===============================================================================================
 
   def test_ui_panel_builder
-    testjs = <<-__E
-      TEST(function() {
-        var builder = O.ui.panel();
-        builder.link(18, "/link3", "Three");
-        builder.panel(4000).panel(99). // double panel() to check it works
-          link(2000, "/link2", "Label 2").
-          link(199, "/link1", "Label 1");
-        var html = builder.render();
-        TEST.assert(html.length > 32);
-        $host._testCallback(html);
-      });
-    __E
-    html = nil
-    run_javascript_test(:inline, testjs) { |runtime| runtime.host.setTestCallback(proc{|s|html=s})}
-    doc = HTML::Document.new("<html>#{html}</html>", false, false)
+    [:render,:deferred].each do |render_kind|
+      testjs = <<-__E
+        TEST(function() {
+          var builder = O.ui.panel();
+          builder.link(18, "/link3", "Three");
+          builder.panel(4000).panel(99). // double panel() to check it works
+            link(2000, "/link2", "Label 2").
+            link(199, "/link1", "Label 1");
+        __E
+          if render_kind == :deferred
+            testjs << <<-__E
+              var t = new $HaploTemplate("render(x)");
+              var html = t.render({x:builder.deferredRender()});
+          __E
+          else
+            testjs << "var html = builder.render();\n"
+          end
+        testjs << <<-__E
+          TEST.assert(html.length > 32);
+          $host._testCallback(html);
+        });
+      __E
+      html = nil
+      run_javascript_test(:inline, testjs) { |runtime| runtime.host.setTestCallback(proc{|s|html=s})}
+      doc = HTML::Document.new("<html>#{html}</html>", false, false)
 
-    panels = HTML::Selector.new('.z__plugin_ui_action_panel').select(doc.root)
-    assert_equal 2, panels.length
-    assert_equal 3, HTML::Selector.new('a.z__plugin_ui_action_panel_entry').select(doc.root).length
+      panels = HTML::Selector.new('.z__plugin_ui_action_panel').select(doc.root)
+      assert_equal 2, panels.length
+      assert_equal 3, HTML::Selector.new('a.z__plugin_ui_action_panel_entry').select(doc.root).length
 
-    panel1_links = HTML::Selector.new('.z__plugin_ui_action_panel:nth-child(1) a').select(doc.root)
-    assert_equal 2, panel1_links.length
-    assert_equal ['/link1','/link2'], panel1_links.map { |a| a.attributes['href'] }
-    assert_equal ['Label 1','Label 2'], panel1_links.map { |a| a.children[0].to_s.strip }
+      panel1_links = HTML::Selector.new('.z__plugin_ui_action_panel:nth-child(1) a').select(doc.root)
+      assert_equal 2, panel1_links.length
+      assert_equal ['/link1','/link2'], panel1_links.map { |a| a.attributes['href'] }
+      assert_equal ['Label 1','Label 2'], panel1_links.map { |a| a.children[0].to_s.strip }
 
-    panel2_links = HTML::Selector.new('.z__plugin_ui_action_panel:nth-child(2) a').select(doc.root)
-    assert_equal 1, panel2_links.length
-    assert_equal ['/link3'], panel2_links.map { |a| a.attributes['href'] }
-    assert_equal ['Three'], panel2_links.map { |a| a.children[0].to_s.strip }
+      panel2_links = HTML::Selector.new('.z__plugin_ui_action_panel:nth-child(2) a').select(doc.root)
+      assert_equal 1, panel2_links.length
+      assert_equal ['/link3'], panel2_links.map { |a| a.attributes['href'] }
+      assert_equal ['Three'], panel2_links.map { |a| a.children[0].to_s.strip }
+    end
   end
 
   # ===============================================================================================

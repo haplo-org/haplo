@@ -1,0 +1,20 @@
+pageTitle("Move state: " M.title)
+backLink(M.url)
+
+<p> <b> "WARNING:" </b> " Use this tool with care. It may result in unexpected behaviour." </p>
+
+<table>
+  each(timeline) {
+    <tr>
+      <td>
+        <form method="POST"> std:form:token()
+          <input type="hidden" name="entry" value=entry.id>
+          <input type="submit" value="Move">
+        </form>
+      </td>
+      <td> entry.state </td>
+      <td> entry.target </td>
+      <td> stateText </td>
+    </tr>
+  }
+</table>

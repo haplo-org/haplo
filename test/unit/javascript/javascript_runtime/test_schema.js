@@ -67,6 +67,7 @@ TEST(function() {
     TEST.assert_equal("File", fileInfo.name);
     TEST.assert_equal("std:type:file", fileInfo.code);
     TEST.assert_equal("file", fileInfo.shortName);
+    TEST.assert(_.isEqual([], fileInfo.behaviours.sort()));
     TEST.assert_equal(undefined, fileInfo.parentType);  // is root
     TEST.assert(fileInfo.rootType instanceof $Ref);
     TEST.assert(TYPE["std:type:file"] == fileInfo.rootType);
@@ -109,6 +110,10 @@ TEST(function() {
 
     TEST.assert(_.isEqual(fileInfo, SCHEMA.getTypeInfo(TYPE["std:type:file"])));
     TEST.assert(fileInfo === SCHEMA.getTypeInfo(TYPE["std:type:file"]));
+
+    // Behaviours
+    var subjectInfo = SCHEMA.getTypeInfo(TYPE["std:type:subject"]);
+    TEST.assert(_.isEqual(["classification", "hierarchical"], subjectInfo.behaviours.sort()));
 
     // Make sure special *Parent() *Title() and *Type() functions exist and work
     var tobj = O.object();

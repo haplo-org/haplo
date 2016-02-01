@@ -1,0 +1,35 @@
+std:plugin:resources("edit.css")
+
+unless(isSinglePage) {
+  <div class="z__docstore_nav_top"> render(navigation) </div>
+}
+
+if(showFormError) {
+  std:ui:notice("Please complete all the required fields.")
+}
+
+std:form(activePage.instance)
+
+<div class="z__docstore_save">
+  <input type="submit" value=
+    if(isSinglePage) {
+      "Save"
+    } else {
+      if(activePage.isLastPage) {
+        "Save and finish"
+      } else {
+        "Save and continue"
+      }
+    }
+  >
+  " "
+  <button name="__later" value="s">
+    "Save for later"
+  </button>
+</div>
+
+unless(isSinglePage) {
+  <div class="z__docstore_nav_bottom">
+    render(navigation)
+  </div>
+}

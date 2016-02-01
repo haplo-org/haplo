@@ -1,0 +1,16 @@
+{
+  "pluginName": "std_document_store",
+  "pluginAuthor": "Haplo Services",
+  "pluginVersion": 1,
+  "displayName": "Document Store",
+  "displayDescription": "Standard management and storage of versioned form documents",
+  "apiVersion": 4,
+  "loadPriority": 1003,
+  "load": [
+      "js/std_document_store.js",
+      "js/docstore_instance.js",
+      "js/docstore_viewer.js",
+      "js/docstore_store.js",
+      "js/docstore_workflow.js"
+    ]
+}

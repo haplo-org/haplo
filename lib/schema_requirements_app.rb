@@ -107,6 +107,7 @@ module SchemaRequirements
 
   # ---------------------------------------------------------------------------------------------------------------
 
+  # Sync with js_schema.rb
   TYPE_BEHAVIOURS = {
     "classification" => O_TYPE_BEHAVIOUR_CLASSIFICATION,
     "physical" => O_TYPE_BEHAVIOUR_PHYSICAL,

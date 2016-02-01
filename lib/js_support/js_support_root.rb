@@ -88,11 +88,6 @@ class JSSupportRoot
     plugin.has_privilege?(privilegeName)
   end
 
-  def javascriptWarningsAreErrors()
-    # In test mode, any JavaScript warning is treated as an error.
-    (KFRAMEWORK_ENV == 'test')
-  end
-
   def getPostgresSchemaName()
     app_id = KApp.current_application
     if app_id == nil || !(app_id.kind_of?(Integer)) || app_id < 0

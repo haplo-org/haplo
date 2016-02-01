@@ -1,0 +1,38 @@
+pageTitle(dashboard._displayableTitle)
+
+std:plugin:resources("dashboard.css")
+
+<div style="text-align:right;margin-bottom:12px">
+  <form method="POST" action=[spec.path "/export" ? *dashboard._linkParameters]> std:form:token()
+    <input type="submit" value="Export">
+  </form>
+</div>
+
+each(dashboard._headerDeferreds) { render(.) }
+
+within(dashboard._counts) {
+  <table class=[
+        "z__std_workflow_states_dashboard"
+        if(hasHeaderRow) { "z__std_workflow_states_dashboard_rightmost_column_is_total" }
+    ]>
+    if(hasHeaderRow) {
+      <tr>
+        <th></th>
+        each(columns) {
+          <th> name </th>
+        }
+        <th> "Total" </th>
+      </tr>
+    }
+    each(rows) {
+      <tr>
+        <td> stateName </td>
+        each(counts) {
+          switch(count)
+              { <td> <a href=[^^^{spec.path} "/list" ? *^^^{dashboard._linkParameters} *countParams state=^{state}]> count </a> </td> }
+            0 { <td class="z__std_workflow_zero_cell"></td> }
+        }
+      </tr>
+    }
+  </table>
+}

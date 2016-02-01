@@ -1,0 +1,24 @@
+{
+  "pluginName": "std_reporting",
+  "pluginAuthor": "Haplo Services",
+  "pluginVersion": 100,
+  "displayName": "Reporting",
+  "displayDescription": "Standard reporting and dashboards",
+  "apiVersion": 4,
+  "loadPriority": 1002,
+  "privilegesRequired": ["pDatabase", "pDatabaseDynamicTable", "pBackgroundProcessing", "pReportHealthEvent"],
+  "load": [
+      "js/std_reporting.js",
+      "js/std_reporting_dashboards.js",
+      "js/std_reporting_dashboard_list.js",
+      "js/std_reporting_dashboard_summary_statistics.js",
+      "js/std_reporting_statistics_panel.js",
+      "js/std_reporting_admin_ui.js"
+    ],
+  "respond": [
+      "/do/reporting",
+      "/do/dashboard",
+      "/api/reporting",
+      "/api/dashboard"
+    ]
+}

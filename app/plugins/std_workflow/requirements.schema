@@ -1,0 +1,19 @@
+
+# -------- Groups ----------------------------------
+
+group std:group:administrators as Administrators
+
+group std:group:workflow-override as WorkflowOverride
+    title: Workflow override
+
+group std:group:workflow-fallback
+    title: Workflow fallback
+
+
+# -------- Email templates -------------------------
+
+email-template std:email-template:workflow-notification
+    title: Workflow Notification
+    description: Sent to notify users when a workflow requires them to perform an action.
+    purpose: Generic
+

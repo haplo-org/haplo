@@ -1,0 +1,31 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+// DocumentStore - multi-page, versioned documents
+// DocumentInstance - JS object representing the store
+// key item - another JS object used as a key for this document
+// keyId - a value derived from the key item to use as the key in the database (by default is just the key)
+// current document - a "work in progress" which may become a new version of the document
+// committed versions - current document is committed to become a timed version
+
+// Delegate has properties:
+//    name - of store (short string) - REQUIRED
+//    keyIdType - type of keyId, if not "int"
+// Delegate has methods:
+//    formsForKey(key) - return an array of forms - REQUIRED
+//    keyToKeyId(key) - convert key to a keyId
+//    blankDocumentForKey(key) - create a blank document for a key
+//    formIdFromRequest(request) - given a request, return a form ID (default just takes the second extraPathElements)
+//    prepareFormInstance(key, form, instance, context) - prepare a form instance for "form" or "document" (optional)
+//    shouldEditForm(key, form) - return booleans about whether to edit this form
+
+P.provideFeature("std:document_store", function(plugin) {
+    var DocumentStore = P.DocumentStore;
+    plugin.defineDocumentStore = function(delegate) {
+        return new DocumentStore(plugin, delegate);
+    };
+});

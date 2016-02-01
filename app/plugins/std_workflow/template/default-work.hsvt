@@ -1,0 +1,11 @@
+<div>
+  processName
+  unless(workUnit.closed) {
+    if(status) {
+      <br> <b> status </b>
+    } else {
+      " (complete)"
+    }
+  }
+  render(timeline)
+</div>

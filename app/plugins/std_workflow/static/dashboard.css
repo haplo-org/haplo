@@ -1,0 +1,33 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+/* Table styling */
+table.z__std_workflow_states_dashboard tr:hover {
+    background: #deebf5;
+}
+table.z__std_workflow_states_dashboard tr td:first-child {
+    border-right: 2px solid #e1e1e1 !important;
+}
+table.z__std_workflow_states_dashboard tr td:nth-child(2),
+table.z__std_workflow_states_dashboard tr th:nth-child(2) {
+    padding-left: 20px !important;
+}
+table.z__std_workflow_states_dashboard_rightmost_column_is_total tr td:last-child,
+table.z__std_workflow_states_dashboard_rightmost_column_is_total tr th:last-child {
+    font-weight: bold;
+    border-left: 2px solid #e1e1e1 !important;
+    padding-left: 20px !important;
+}
+
+/* Zero cells displayed in an unobtrustive style */
+.z__std_workflow_zero_cell {
+    color: #ddd;
+}
+.z__std_workflow_zero_cell:after {
+    content: '\2013';
+}
+

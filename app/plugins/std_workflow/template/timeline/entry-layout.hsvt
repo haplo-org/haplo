@@ -1,0 +1,10 @@
+std:plugin:resources("w.css")
+
+<div class="z__workflow_timeline_entry">
+  <div class="z__workflow_timeline_entry_date"> datetime </div>
+  if(text) {
+    <i> entry.user.name </i> " " text
+  } else {
+    if(special) { render(special) }
+  }
+</div>

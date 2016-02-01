@@ -1,0 +1,174 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+.z__std_reporting_common_navigation_container {
+    text-align: right;
+    margin: 8px 0;
+}
+
+/* ----------------------------------------------------------------------- */
+
+table.z__std_reporting_dashboard_table_no_wrapping {
+    table-layout: fixed;
+}
+
+table.z__std_reporting_dashboard_table_no_wrapping tr td,
+table.z__std_reporting_dashboard_table_no_wrapping tr th {
+    vertical-align:top;
+}
+
+table.z__std_reporting_dashboard_table_no_wrapping tr:not(:hover) td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ----------------------------------------------------------------------- */
+
+.z__std_reporting_summary_display_contained_statistics {
+    height: 68px;
+    /* autoclear */ overflow: auto; width: 100%;
+}
+
+.z__std_reporting_summary_display_statistic {
+    float: left;
+    height: 64px;
+    width: 120px;
+    padding: 2px 10px;
+    text-align: center;
+}
+
+.z__std_reporting_summary_display_statistic.z__std_reporting_summary_display_statistic_thin {
+    width: 70px;
+}
+
+.z__std_reporting_summary_display_statistic + .z__std_reporting_summary_display_statistic {
+    border-left: 1px solid #eee;
+}
+
+.z__std_reporting_summary_display_statistic_number {
+    font-family: Ubuntu,Helvetica,Arial,sans-serif;
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.z__std_reporting_summary_display_statistic_description {
+    font-size: 10px;
+    line-height: 14px;
+    color: #888;
+}
+
+.z__std_reporting_summary_display_statistic_groups {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+}
+
+.z__std_reporting_summary_display_statistic_groups span {
+    display: inline-block;
+    height: 20px;
+}
+
+.z__std_reporting_summary_display_groupedresults_blob {
+    display: inline-block;
+    margin-right: 8px;
+}
+
+/* ----------------------------------------------------------------------- */
+
+.z__std_reporting_list_export_form {
+    position: relative;
+    height: 28px;
+}
+.z__std_reporting_list_export_form form {
+    position: absolute;
+    right: 0;
+}
+
+.z__std_reporting_list_widgets_top input, select {
+    margin-right: 8px;
+}
+
+.z__std_reporting_list_widgets_top input[type=search] {
+    width: 128px;
+}
+
+.z__std_reporting_list_widgets_top select {
+    max-width: 164px;
+}
+
+.z__std_reporting_list_column_wide {
+    width: 160px;
+}
+
+.z__std_reporting_list_column_medium {
+    width: 120px;
+}
+
+.z__std_reporting_list_column_small {
+    width: 80px;
+}
+
+.z__std_reporting_list_column_tiny {
+    width: 50px;
+}
+
+/* ----------------------------------------------------------------------- */
+
+.z__std_reporting_value_0 {
+    color: #ddd;
+}
+.z__std_reporting_value_0:after {
+    content: '\2013';
+}
+
+/* ----------------------------------------------------------------------- */
+
+/* Date warnings */
+td.z__std_workflow_date_warn {
+    background: #ffa !important;
+}
+td.z__std_workflow_date_error {
+    background: #faa !important;
+}
+td.z__std_workflow_success {
+    background: #afa !important;
+}
+
+/* ----------------------------------------------------------------------- */
+
+.tablesort th {
+    cursor: pointer;
+}
+
+.tablesort th:hover {
+    background: #bbb !important;
+}
+
+.tablesort th.sort-down,
+.tablesort th.sort-up {
+    background: #bbb !important;
+    position: relative;
+}
+
+.tablesort th.sort-down:after, 
+.tablesort th.sort-up:after {
+    position: absolute;
+    display:block;
+    top: 4px;
+    right: 7px;
+    font-weight: bold;
+}
+
+.tablesort th.sort-down:after { content: "\2193"; }
+.tablesort th.sort-up:after { content: "\2191"; }
+
+.tablesort tr:hover {
+    background: #deebf5;
+}
+

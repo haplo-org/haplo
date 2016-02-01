@@ -1,0 +1,25 @@
+pageTitle("Collection: " collection.description)
+backLink("/do/reporting/admin")
+
+<h1> "Lookup facts for object" </h1>
+
+<form method="GET" action=["/do/reporting/admin/collection-fact-lookup/" collection.name]>
+  <p> <input type="text" name="ref" placeholder="ref of object"> " " <input type="submit" value="Lookup facts"> </p>
+</form>
+
+<h1> "Fact definitions" </h1>
+
+<table>
+  <tr>
+    <th> "Name" </th>
+    <th> "Type" </th>
+    <th> "Description" </th>
+  </tr>
+  each(facts) {
+    <tr>
+      <td> name </td>
+      <td> type </td>
+      <td> description </td>
+    </tr>
+  }
+</table>

@@ -1,0 +1,26 @@
+pageTitle("Facts in " collection.description " for " object.title)
+backLink("/do/reporting/admin/collection-facts/" collection.name)
+
+<p> "Entries: " factsAtTimes.length </p>
+
+each(factsAtTimes) {
+  <div style="border:1px solid #ddd; background:#eee; margin:8px 0; padding:4px 8px">
+    <div>
+      from
+      " to "
+      if(to) { <br> to } else { "current time" }
+    </div>
+    <table>
+      each(facts) {
+        <tr>
+          <td> name </td>
+          <td style=if(updated){"background:#ff5"}>
+            if(ref)     { std:object:link(ref) }
+            if(string)  { <tt> "\"" string "\"" </tt> }
+            if(value)   { value }
+          </td>
+        </tr>
+      }
+    </table>
+  </div>
+}

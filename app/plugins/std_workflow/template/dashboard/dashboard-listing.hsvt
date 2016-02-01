@@ -1,0 +1,6 @@
+pageTitle(dashboard._displayableTitle ": " stateName)
+backLink(spec.path ? *dashboard._linkParameters) { "Dashboard" }
+
+each(list) {
+  <p> <a href=M.url> M.title </a> </p>
+}

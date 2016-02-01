@@ -1,0 +1,30 @@
+pageTitle("Timeline: " M.title)
+backLink(M.url)
+
+std:plugin:resources("timeline.css")
+std:plugin:resources("timeline.js")
+
+<table style="width:100%">
+  <tr>
+    <th> "Date & time" </th>
+    <th> "User" </th>
+    <th> "Action" </th>
+    <th> "Previous" </th>
+    <th> "Target" </th>
+    <th> "State" </th>
+  </tr>
+  each(timeline) {
+    <tr class="z__workflow_admin_timeline_entry">
+      <td> datetime </td>
+      <td> user.name </td>
+      <td> action </td>
+      <td> previousState </td>
+      <td> target </td>
+      <td> state </td>
+    </tr>
+    if(json) {
+      <tr class="z__workflow_admin_timeline_entry_json"> <td colspan="6"> json </td> </tr>
+      <tr> <td colspan="6"> </td> </tr>
+    }
+  }
+</table>

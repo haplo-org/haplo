@@ -19,8 +19,6 @@ public interface AppRoot {
     public String getApplicationConfigurationDataJSON();
 
     // Runtime properties
-    public boolean javascriptWarningsAreErrors();
-
     public String getCurrentlyExecutingPluginName();
 
     // JavaScript plugin privileges

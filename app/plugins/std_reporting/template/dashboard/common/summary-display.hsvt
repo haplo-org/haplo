@@ -1,0 +1,11 @@
+if(dashboard._hasSummaryDisplay) {
+  std:plugin:resources("dashboard.css")
+  <div class="z__std_reporting_summary_display_container">
+    <div class="z__std_reporting_summary_display_contained_statistics">
+      each(dashboard._summaryDisplayDeferreds) {
+        render(.)
+      }
+    </div>
+    <div class="z__std_reporting_summary_display_groupedresults"> </div>
+  </div>
+}

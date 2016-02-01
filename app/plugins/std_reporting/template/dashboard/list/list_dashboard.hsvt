@@ -1,0 +1,44 @@
+std:plugin:resources("dashboard.css" "tablesort.js")
+
+if(dashboard.collection.isUpdatingFacts) {
+  std:ui:notice("This dashboard is being updated. Some data may be out of date.")
+}
+
+if(dashboard.invalidFactsAtRequested) {
+  std:ui:notice("Invalid time requested, showing current data.")
+}
+
+template:dashboard:common:summary-display()
+
+<div class="z__std_reporting_list_export_form">
+  <form method="POST"> std:form:token() <input type="submit" value="Export"> </form>
+</div>
+
+template:dashboard:common:navigation()
+
+if(widgetsTop) {
+  <div class="z__std_reporting_list_widgets_top">
+    each(widgetsTop) { render(.) }
+  </div>
+}
+
+<table id="z__std_reporting_list_filterable_table" class="tablesort z__std_reporting_dashboard_table_no_wrapping">
+  <thead>
+    <tr>
+      each(columns) {
+        <th class=switch(columnStyle) {}
+                    wide   { "z__std_reporting_list_column_wide" }
+                    medium { "z__std_reporting_list_column_medium" }
+                    small  { "z__std_reporting_list_column_small" }
+                    tiny   { "z__std_reporting_list_column_tiny" } >
+          heading
+        </th>
+      }
+    </tr>
+  </thead>
+  <tbody>
+    each(rowsHTML) {
+      <tr *attributes> unsafeHTML(unsafeRowHTML) </tr>
+    }
+  </tbody>
+</table>

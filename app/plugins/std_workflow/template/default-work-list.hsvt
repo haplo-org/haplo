@@ -1,0 +1,8 @@
+if(object) {
+  std:object:link(object) <br>
+} else {
+  if(taskTitle) {
+    <b> taskTitle </b> <br>
+  }
+}
+status

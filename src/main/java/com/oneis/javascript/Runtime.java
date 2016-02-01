@@ -101,11 +101,6 @@ public class Runtime {
         currentContext = Runtime.enterContext();
         threadRuntime.set(this);
         host.setSupportRoot(supportRoot);
-        // Check it's using one of our ErrorReporter
-        ErrorReporter reporter = currentContext.getErrorReporter();
-        if(!(reporter instanceof OErrorReporter)) {
-            currentContext.setErrorReporter(new OErrorReporter(reporter, supportRoot.javascriptWarningsAreErrors()));
-        }
     }
 
     /**

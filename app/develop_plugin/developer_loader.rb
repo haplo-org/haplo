@@ -145,7 +145,7 @@ class DeveloperLoader
     KNotificationCentre.when(:schema_requirements, :applied) do |name, details, applier|
       unless applier.changes.empty?
         changed_codes = applier.changes.map { |object_applier| object_applier.code }
-        broadcast_notification('log ', "requirments.schema:CHANGED: #{changed_codes.join(', ')}")
+        broadcast_notification('log ', "requirements.schema:CHANGED: #{changed_codes.join(', ')}")
       end
     end
     # Send pipeline results to the console so developers can see error messages without having to write their own code

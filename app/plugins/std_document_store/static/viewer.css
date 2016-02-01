@@ -1,0 +1,28 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+.z__docstore_nav_box {
+    margin-bottom: 24px;
+}
+
+.z__docstore_nav_box div {
+    margin-bottom: 4px;
+    padding: 2px 8px;
+}
+
+div.z__docstore_nav_title {
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: #888;
+    padding: 0;
+}
+
+.z__docstore_nav_selected {
+    background: #eee;
+    font-weight: bold;
+}

@@ -1,0 +1,7 @@
+if(dashboard._hasNavigationUI) {
+  <div class="z__std_reporting_common_navigation_container">
+    each(dashboard._deferredNavigationUI) {
+      render(.)
+    }
+  </div>
+}

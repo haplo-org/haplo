@@ -1,0 +1,62 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+/* Timeline display */
+
+.z__workflow_timeline_entry {
+    border-top: 1px dotted #ddd;
+    padding-top: 4px;
+    margin-top: 4px;
+}
+.z__workflow_timeline_entry_date {
+    float:right;
+    padding-right: 4px;
+    color: #888;
+}
+.z__workflow_timeline_entry_note {
+    padding-left: 8px;
+    background: #f8f8f8;
+    border-left: 2px solid #ddd;
+}
+.z__workflow_timeline_entry_note_private {
+    border-left: 2px solid red;
+}
+.z__workflow_timeline_entry_note p {
+    margin: 0;
+}
+.z__workflow_timeline_entry_note_edit {
+    float:right;
+    padding: 2px 8px 0 0;
+}
+.z__workflow_timeline_entry_note_edit a,
+.z__workflow_timeline_entry_note_edit a:visited {
+    background: #aaa;
+    padding: 1px 4px;
+    font-size: 10px;
+    color: #fff;
+}
+
+/* Notes for workflow */
+
+.z__workflow_note_header {
+    margin: 12px 0 0 0;
+}
+
+/* Note editing */
+
+.z__workflow_note_container {
+    border-left: 5px solid #fff;
+    line-height: 10px;
+    margin: 0 0 12px 0;
+}
+.z__workflow_note_container.z__workflow_note_container_private {
+    border-color: #f00;
+}
+.z__workflow_note_container textarea {
+    margin: 0;
+    line-height: normal;
+}

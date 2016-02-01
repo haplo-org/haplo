@@ -1,0 +1,3 @@
+template:std:ui:confirm()
+
+render(ui.deferredDocument)

@@ -1,0 +1,17 @@
+<div class="z__workflow_note_header">
+  <b> "Notes" </b>
+  if(canSeePrivateNotes) { if(everyoneNoteExplaination) { " (" everyoneNoteExplaination ")" } }
+</div>
+<div class="z__workflow_note_container">
+  <textarea name="notes" cols="80" rows="6"> notes </textarea>
+</div>
+
+if(canSeePrivateNotes) {
+  <div class="z__workflow_note_header">
+    <b> "Private notes" </b>
+    if(privateNoteExplaination) { " (" privateNoteExplaination ")" }
+  </div>
+  <div class="z__workflow_note_container z__workflow_note_container_private">
+    <textarea name="privateNotes" cols="80" rows="3"> privateNotes </textarea>
+  </div>
+}

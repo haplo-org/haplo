@@ -1,0 +1,27 @@
+pageTitle(
+  if(entry) { "Edit note: " } else { "New note: " }
+  taskTitle
+)
+backLink(taskUrl)
+
+std:plugin:resources("add-note.js")
+std:plugin:resources("w.css")
+
+<form method="POST"> std:form:token()
+  if(entry) { <input type="hidden" name="e" value=entry.id> }
+
+  if(userCanSeePrivateNotes) {
+    <p>
+      <label>
+        <input type="checkbox" id="note_is_private" name="private" value="yes" checked=if(isPrivate){"checked"}>
+        "Private note" if(privateNoteExplaination) { " (" privateNoteExplaination ")" }
+      </label>
+    </p>
+  }
+
+  <div class=["z__workflow_note_container" if(isPrivate){"z__workflow_note_container_private"}]>
+    <textarea class="z__focus_candidate" rows="6" cols="80" name="note"> note </textarea>
+  </div>
+
+  <p> <input type="submit" value="Save note"> </p>
+</form>
