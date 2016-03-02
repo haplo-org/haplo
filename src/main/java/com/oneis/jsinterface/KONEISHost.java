@@ -28,6 +28,7 @@ import java.util.WeakHashMap;
 public class KONEISHost extends KScriptable {
     private AppRoot supportRoot;
     private TemplatePlatformFunctions templatePlatformFunctions;
+    private String userTimeZone;
     private HashMap<String, Scriptable> plugins;
     private String nextPluginToBeRegistered;
     private boolean nextPluginToBeRegisteredUsesDatabase;
@@ -44,6 +45,7 @@ public class KONEISHost extends KScriptable {
     public void setSupportRoot(AppRoot supportRoot) {
         this.supportRoot = supportRoot;
         this.templatePlatformFunctions = null;
+        this.userTimeZone = null;
         // Reset all the data read from app globals - this is a convenient time to do the reset.
         // TODO: For efficiency, only reset app data stores for JavaScript plugins when it's changed by the same plugin in another JavaScript runtime
         resetPluginAppDataStores();
@@ -54,6 +56,7 @@ public class KONEISHost extends KScriptable {
     public void clearSupportRoot() {
         this.supportRoot = null;
         this.templatePlatformFunctions = null;
+        this.userTimeZone = null;
         // Throw away any session store
         this.sessionStore = null;
     }
@@ -67,6 +70,12 @@ public class KONEISHost extends KScriptable {
             this.templatePlatformFunctions = this.supportRoot.createTemplatePlatformFunctionsProxy();
         }
         return this.templatePlatformFunctions;
+    }
+
+    public String getUserTimeZone() {
+        if(this.userTimeZone == null) { this.userTimeZone = this.supportRoot.userTimeZone(); }
+        if(this.userTimeZone == null) { this.userTimeZone = "Etc/UTC"; }
+        return this.userTimeZone;
     }
 
     public int getNumberOfPluginsRegistered() {
@@ -173,6 +182,10 @@ public class KONEISHost extends KScriptable {
     // --------------------------------------------------------------------------------------------------------------
     public String jsFunction_getSchemaInfo(int type, int objId) {
         return this.supportRoot.getSchemaInfo(type, objId);
+    }
+
+    public String jsFunction_getSchemaInfoTypesWithAnnotation(String annotation) {
+        return this.supportRoot.getSchemaInfoTypesWithAnnotation(annotation);
     }
 
     // --------------------------------------------------------------------------------------------------------------

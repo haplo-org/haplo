@@ -56,6 +56,7 @@ class KSchemaApp < KSchema
     attr_reader :create_show_type         # bool: show subtype in options in edit menu?
     attr_reader :creation_ui_position     # which pages should the creation UI be displayed?
     attr_reader :behaviours               # array of objrefs of type behaviours
+    attr_reader :annotations              # array of Strings (API codes)
     attr_reader :display_elements         # description of the Elements to show around this object
 
     def initialize(obj, schema, store)
@@ -117,6 +118,11 @@ class KSchemaApp < KSchema
       @behaviours = Array.new
       obj.each(A_TYPE_BEHAVIOUR) do |value,d,q|
         @behaviours << value if value.class == KObjRef
+      end
+      # Type annotations
+      @annotations = Array.new
+      obj.each(A_TYPE_ANNOTATION) do |value,d,q|
+        @annotations << value.to_s if value.class == KIdentifierConfigurationName
       end
     end
 
@@ -428,6 +434,11 @@ class KSchemaApp < KSchema
   end
   def all_aliased_attr_descriptor_objs
     @aliased_attr_descs_by_desc.values.sort { |a,b| a.printable_name.to_s <=> b.printable_name.to_s }
+  end
+
+  # Type annotation lookup for plugins
+  def get_type_refs_with_annotation(annotation)
+    @types_by_objref.values.select { |d| d.annotations.include?(annotation) } .map { |d| d.objref }
   end
 
   # ========================= XML =========================

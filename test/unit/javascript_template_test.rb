@@ -7,7 +7,11 @@
 class JavascriptTemplateTest < Test::Unit::TestCase
   include JavaScriptTestHelper
 
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_template/test_template_plugin1")
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_template/test_template_plugin2")
+
   def test_platform_template_functions
+    db_reset_test_data
     restore_store_snapshot("basic")
     obj = KObject.new()
     obj.add_attr(O_TYPE_BOOK, A_TYPE)
@@ -17,6 +21,16 @@ class JavascriptTemplateTest < Test::Unit::TestCase
       run_javascript_test(:file, 'unit/javascript/javascript_template/test_platform_template_functions.js', {
         "TEST_BOOK" => obj.objref.to_presentation
       })
+    end
+  end
+
+  def test_plugin_defined_template_functions
+    begin
+      KPlugin.install_plugin(["test_template_plugin1", "test_template_plugin2"])
+      run_javascript_test(:file, 'unit/javascript/javascript_template/test_plugin_defined_template_functions.js');
+    ensure
+      KPlugin.uninstall_plugin("test_template_plugin1")
+      KPlugin.uninstall_plugin("test_template_plugin2")
     end
   end
 end

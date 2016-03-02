@@ -46,7 +46,7 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
         entityDefinitions[name] = function(context) {
             // Build replacements map
             var replacements = O.refdict();
-            var M = this.$M;  // may be undefined if there isn't a workflow instance yet
+            var M = this.M; // may be undefined if there isn't a workflow instance yet
             if(M) {
                 var query = plugin.db[dbName].select().
                     where("workUnitId", "=", M.workUnit.id).

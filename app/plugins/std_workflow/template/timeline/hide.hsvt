@@ -1,0 +1,6 @@
+<i> entry.user.name </i>
+if(hide) {
+  " hid this task."
+} else {
+  " made this task visible."
+}

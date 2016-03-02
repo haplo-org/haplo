@@ -1544,6 +1544,49 @@ _OBJS
 
   # ---------------------
 
+  def test_label_query_clauses
+    restore_store_snapshot("min")
+    [
+      [[1,2,3], "a"],
+      [[2], "b"],
+      [[2,3], "c"],
+      [[1,2], "d"],
+      [[1,3], "e"]
+    ].each do |labels,title|
+      obj = KObject.new(labels)
+      obj.add_attr(title,A_TITLE)
+      obj.add_attr("wordx", A_TITLE, Q_ALTERNATIVE)
+      KObjectStore.create(obj)
+    end
+    run_outstanding_text_indexing
+    assert_equal ["a","d","e"],         tlqc_exec {|q| q.any_label([KObjRef.new(1)]) }
+    assert_equal ["a","d","e"],         tlqc_exec {|q| q.all_labels([KObjRef.new(1)]) }
+    assert_equal ["a","c","d","e"],     tlqc_exec {|q| q.any_label([KObjRef.new(1),3]) }
+    assert_equal ["a","e"],             tlqc_exec {|q| q.all_labels([KObjRef.new(1),3]) }
+    assert_equal ["a","b","c","d","e"], tlqc_exec {|q| q.any_label([2,3]) }
+    assert_equal ["a","c"],             tlqc_exec {|q| q.all_labels([2,3]) }
+    assert_equal [],                    tlqc_exec {|q| q.all_labels(["'"]) } # check can't inject bad things
+  end
+
+  def tlqc_exec
+    q = KObjectStore.query_and.free_text('wordx')
+    yield q
+    q.execute().map { |o| o.first_attr(A_TITLE).to_s } .sort
+  end
+
+  # ---------------------
+
+  def test_special_query_clauses
+    restore_store_snapshot("app")
+    # Match nothing clause
+    q0 = KObjectStore.query_and.link(O_TYPE_APP_VISIBLE, A_TYPE)
+    assert q0.execute().length > 0
+    q1 = KObjectStore.query_and.link(O_TYPE_APP_VISIBLE, A_TYPE).match_nothing
+    assert q1.execute().length == 0
+  end
+
+  # ---------------------
+
   def test_datetime_ranges
     restore_store_snapshot("min")
     # Build some test data

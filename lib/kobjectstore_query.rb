@@ -706,6 +706,20 @@ class KObjectStore
       @clauses << DateRangeClause.new(self, date_min, date_max, desc, qualifier)
       self
     end
+    # Labels
+    def any_label(labels)
+      @clauses << LabelClause.new(self, labels, :any)
+      self
+    end
+    def all_labels(labels)
+      @clauses << LabelClause.new(self, labels, :all)
+      self
+    end
+    # Special purpose
+    def match_nothing()
+      @clauses << MatchNothingClause.new(self)
+      self
+    end
 
     # Linkage to sub-query
     # These aren't like the methods above, because it returns the clause itself.
@@ -1068,6 +1082,31 @@ class KObjectStore
         raise "Logic error in DateRangeClause"
       end
       "(SELECT id FROM os_index_datetime WHERE #{where_clause}#{sqc})"
+    end
+  end
+
+  class LabelClause < Clause
+    def initialize(parent, labels, operation)
+      super(parent, nil, nil)
+      raise "No labels" if labels.empty?
+      @labels = labels
+      @operation = case operation
+        when :any; "&&"
+        when :all; "@>"
+        else; raise "Unknown operation for LabelClause #{operation}"
+      end
+    end
+    def generate_subquery(query, store)
+      "(SELECT id FROM os_objects WHERE labels #{@operation} '{#{@labels.map { |l| l.to_i } .uniq.sort.join(',')}}'::int[])"
+    end
+  end
+
+  class MatchNothingClause < Clause
+    def initialize(parent)
+      super(parent, nil, nil)
+    end
+    def generate_subquery(query, store)
+      "(SELECT id FROM os_objects WHERE false)"
     end
   end
 end

@@ -25,4 +25,11 @@ TEST(function() {
         test_plugin.template("std:new_object_editor").render({templateObject:template});
     }, "No request active");
 
+    // std:render
+    TEST.assert_equal("<div>X</div>",
+        test_plugin.template("std:render").render(
+            (new $HaploTemplate("<div> x </div>")).deferredRender({x:"X"})
+        )
+    );
+
 });

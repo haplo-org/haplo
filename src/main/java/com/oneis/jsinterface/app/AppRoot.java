@@ -31,6 +31,8 @@ public interface AppRoot {
 
     public String getSchemaInfo(int type, int objId);
 
+    public String getSchemaInfoTypesWithAnnotation(String annotation);
+
     // Permissions & request handling context
     public boolean isHandlingRequest();
 
@@ -58,6 +60,8 @@ public interface AppRoot {
     String renderRubyTemplate(String templateName, Object[] args);
 
     void addRightContent(String html);
+
+    String userTimeZone();
 
     // Plugin functions
     String pluginStaticDirectoryUrl(String pluginName);

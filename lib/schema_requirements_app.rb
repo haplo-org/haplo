@@ -20,6 +20,11 @@ module SchemaRequirements
     Proc.new { |v,context| v.nil? ? nil : v.to_s }
   ]
 
+  MAPPERS_CONFIGURATION_NAME = [
+    Proc.new { |v,context| v.nil? ? nil : KIdentifierConfigurationName.new(v) },
+    Proc.new { |v,context| v.nil? ? nil : v.to_s }
+  ]
+
   MAPPERS_PARAGRAPH_TEXT = [
     Proc.new { |v,context| v.nil? ? nil : KTextParagraph.new(v) },
     Proc.new { |v,context| v.nil? ? nil : v.to_s }
@@ -134,6 +139,7 @@ module SchemaRequirements
     "behaviour"         => StoreObjectRuleMulti.new(A_TYPE_BEHAVIOUR,
                               Proc.new { |v,context| TYPE_BEHAVIOURS[v] },
                               Proc.new { |v,context| TYPE_BEHAVIOURS.key(v) }),
+    "annotation"        => StoreObjectRuleMulti.new(A_TYPE_ANNOTATION, *MAPPERS_CONFIGURATION_NAME),
     "attribute"         => StoreObjectRuleMulti.new(A_RELEVANT_ATTR, *MAPPERS_ATTRIBUTE_OR_ALIAS),
     "attribute-hide"    => StoreObjectRuleMulti.new(A_RELEVANT_ATTR_REMOVE, *MAPPERS_ATTRIBUTE_OR_ALIAS),
     "attribute-descriptive" => StoreObjectRuleSingle.new(A_ATTR_DESCRIPTIVE, *mappers_for(O_TYPE_ATTR_DESC)), # not aliased
@@ -737,8 +743,7 @@ module SchemaRequirements
     end
   end
 
-  KNotificationCentre.when(:plugin_pre_install, :check) do |name, detail, will_install_plugin_names, plugins, result|
-    KApp.logger.info("Applying schema requirements for plugin install:")
+  def self.apply_schema_requirements_for_plugins(plugins)
     applier = nil
     ms = Benchmark.ms do
       applier = applier_for_plugins(plugins)
@@ -753,13 +758,37 @@ module SchemaRequirements
       # Notify interested listeners about changes
       KNotificationCentre.notify(:schema_requirements, :applied, applier)
       applier.commit
-      unless applier.errors.empty?
-        # Schema requirements errors count as warnings
-        result.append_warnings("Errors in requirements.schema files:")
-        result.append_warnings(applier.errors.join("\n"))
-      end
     end
     KApp.logger.info("Applied schema requirements: #{applier.parser.number_of_files} files, #{applier.changes.length} changes, took #{ms.to_i}ms")
+    applier
+  end
+
+  KNotificationCentre.when(:plugin_pre_install, :check) do |name, detail, will_install_plugin_names, plugins, result|
+    KApp.logger.info("Applying schema requirements for plugin install:")
+    applier = SchemaRequirements.apply_schema_requirements_for_plugins(plugins)
+    unless applier.errors.empty?
+      # Schema requirements errors count as warnings
+      result.append_warnings("Errors in requirements.schema files:")
+      result.append_warnings(applier.errors.join("\n"))
+    end
+  end
+
+  # On server upgrade, apply all requirements, so changes to requirements of bundled plugins are applied
+  KNotificationCentre.when(:server, :post_upgrade) do
+    KApp.in_every_application do
+      begin
+        KApp.logger.info("Applying schema requirements after server upgrade:")
+        plugins = KPlugin.get_plugins_for_current_app
+        SchemaRequirements.apply_schema_requirements_for_plugins(plugins)
+        # Make sure all JS runtimes are invalidated, because their local requirements might have changed
+        KApp.cache_invalidate(KPlugin::PLUGINS_CACHE)
+        # Exceptions should be reported now, and not stop other apps from having requirements applied
+        KNotificationCentre.send_buffered_then_end_on_thread
+      rescue => e
+        KApp.logger.error("Exception thrown while trying to apply requirements")
+        KApp.logger.log_exception(e)
+      end
+    end
   end
 
 end

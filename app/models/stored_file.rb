@@ -270,10 +270,7 @@ class StoredFile < ActiveRecord::Base
   # Post-create callback to get the job - in the same transaction
   # after_create
   def do_background_thumbnailing
-    # If it has been cloned, the post-create job is unnecessary.
-    unless self.dimensions_w != nil || self.thumbnail_w != nil
-      PostCreate.new(self.id).submit
-    end
+    PostCreate.new(self.id).submit
   end
 
   class PostCreate < KJob
@@ -292,9 +289,6 @@ class StoredFile < ActiveRecord::Base
 
   # JavaScript interface
   KActiveRecordJavaInterface.make_date_methods(self, :created_at, :jsGetCreatedAt)
-  def jsGetVersions
-    self.versions.to_a
-  end
   def jsGetBasename
     self.upload_filename.gsub(/\.[^\.]+\z/,'')
   end

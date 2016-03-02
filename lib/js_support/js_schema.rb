@@ -123,6 +123,7 @@ module KSchemaToJavaScript
       :rootType => (type_desc.root_type || type_desc.objref).obj_id,
       :childTypes => type_desc.children_types.map { |r| r.obj_id },
       :behaviours => type_desc.behaviours.map { |r| TYPE_BEHAVIOURS[r] } .compact,
+      :annotations => type_desc.annotations,
       :attributes => attrs
     }
     info[:parentType] = type_desc.parent_type.obj_id if type_desc.parent_type

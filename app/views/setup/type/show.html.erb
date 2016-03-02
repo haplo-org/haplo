@@ -23,6 +23,15 @@
       end
     end
   %></td></tr>
+  <tr><th>Annotations</th><td><%
+    if @type_desc.annotations.empty?
+      %><i>(no annotations)</i><%
+    else
+      @type_desc.annotations.each do |code|
+        %><span class="z__management_code_text"><%= h(code) %></span><br><%
+      end
+    end
+  %></td></tr>
   <tr><th>Attributes</th><td><%
     @type_desc.attributes.each do |adesc|
       attr_desc = @schema.attribute_descriptor(adesc) || @schema.aliased_attribute_descriptor(adesc)

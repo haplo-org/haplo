@@ -124,18 +124,32 @@ _.extend(P.WorkflowInstanceBase.prototype, {
             // If this can't be fulfilled by the text system, try the render handler instead
             if(!text) {
                 special = this._call('$renderTimelineEntryDeferred', entry) ||
-                    this._renderTimelineEntryDeferredAutoMove(entry);
+                    this._renderTimelineEntryDeferredBuiltIn(entry);
             }
             if(text || special) {
                 entries.push(layout.deferredRender({
                     entry: entry,
                     text: text,
-                    special: special,
-                    datetime: (new XDate(entry.datetime)).toString("HH:mm, dd MMM yyyy")
+                    special: special
                 }));
             }
         }
         return P.template("timeline").deferredRender({entries:entries});
+    },
+
+    // Render built-in timeline entries
+    // This is a separate function which is hardcoded into the timeline rendering so it's
+    // not easy to accidently remove, eg something else updates fallbackImplementation.
+    _renderTimelineEntryDeferredBuiltIn: function(entry) {
+        switch(entry.action) {
+            // Can be overridden with timeline-entry:<NAME> text or renderTimelineEntryDeferred handler
+            case "AUTOMOVE":
+                return P.template("timeline/automove").deferredRender({});
+            case "HIDE":
+                return P.template("timeline/hide").deferredRender({entry:entry,hide:true});
+            case "UNHIDE":
+                return P.template("timeline/hide").deferredRender({entry:entry,hide:false});
+        }
     },
 
     _workUnitRender: function(W) {

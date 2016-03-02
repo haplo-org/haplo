@@ -1,0 +1,9 @@
+<div class="z__plugin_ui_tabs">
+    each(tabs) {
+        if(selected) {
+            <span> label </span>
+        } else {
+            <a href=[href ? *parameters]> label </a>
+        }
+    }
+</div>

@@ -34,10 +34,14 @@ P.REPORTING_API.dashboard = function(E, specification) {
     var callServices = [
             // A service for any dashboard using this collection, eg, for global filtering
             // (service implementors can check isExporting property)
-            "std:reporting:collection-dashboard:"+collection.name+":setup",
+            "std:reporting:collection_dashboard:"+collection.name+":setup",
             // A service for this dashboard in particular
             "std:reporting:dashboard:"+specification.name+":setup"
         ];
+    // A service for all dashboards of a collection category, eg, for columns added to all dashboards of a collection
+    collection.$categories.forEach(function(category) {
+        callServices.push("std:reporting:collection_category_dashboard:"+category+":setup");
+    });
     if(dashboard.isExporting) {
         // A service for when the dashboard is exported
         callServices.push("std:reporting:dashboard:"+specification.name+":setup_export");

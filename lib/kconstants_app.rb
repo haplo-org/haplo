@@ -182,6 +182,7 @@ module KConstants
   A_TYPE_BASE_LABEL             = 2135      # Which labels should be always be applied to objects of this type
   A_TYPE_APPLICABLE_LABEL       = 2136      # Set of labels, one of which will always be applied if non-empty
   A_TYPE_LABEL_DEFAULT          = 2137      # Default applicable label
+  A_TYPE_ANNOTATION             = 2138      # Annotation for type (API code, of interest to plugins only)
 
   # Attributes
   A_ATTR_QUALIFIER              = 2110

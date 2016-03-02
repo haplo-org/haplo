@@ -10,9 +10,11 @@ if(dashboard.invalidFactsAtRequested) {
 
 template:dashboard:common:summary-display()
 
-<div class="z__std_reporting_list_export_form">
-  <form method="POST"> std:form:token() <input type="submit" value="Export"> </form>
-</div>
+unless(hideExport) {
+  <div class="z__std_reporting_list_export_form">
+    <form method="POST"> std:form:token() <input type="submit" value="Export"> </form>
+  </div>
+}
 
 template:dashboard:common:navigation()
 

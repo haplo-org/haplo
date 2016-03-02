@@ -18,6 +18,10 @@ module KAppInit
         self.class.name.split('::').last.downcase
       end
 
+      def basic_permission_rule_set
+        :common
+      end
+
       def implement(app, app_title, additional_info)
         app.syscreate_path = self.syscreate_path()
         template(app, app_title, additional_info)
@@ -82,6 +86,9 @@ module KAppInit
     # ------------------------------------------------------------------------------------------------------------
 
     class Minimal < Template
+      def basic_permission_rule_set
+        :none
+      end
       def template(app, app_title, additional_info)
         load_dublincore_and_basic_app_objects(app)
         app.load_objects('db/app_attrs.objects') do |obj,obj_id|
@@ -95,13 +102,29 @@ module KAppInit
           extra_attributes.each { |x| obj.add_attr(*x) }
         end
         app.load_objects('db/app_types.objects', :include, "types_include.txt") do |obj,obj_id|
-          # Remove mentions of O_LABEL_CONFIDENTIAL, as we're not using it
-          obj.delete_attr_if do |v,d,q|
-            d == A_TYPE_APPLICABLE_LABEL && v == O_LABEL_CONFIDENTIAL
+          if basic_permission_rule_set == :none
+            # Remove mentions of labels other than CONCEPT
+            obj.delete_attr_if do |v,d,q|
+              d == A_TYPE_APPLICABLE_LABEL && v != O_LABEL_CONCEPT
+            end
+          else
+            # Remove mentions of O_LABEL_CONFIDENTIAL, as we're not using it
+            obj.delete_attr_if do |v,d,q|
+              d == A_TYPE_APPLICABLE_LABEL && v == O_LABEL_CONFIDENTIAL
+            end
           end
         end
         app.add_search_subset('Everything', 10, [], [], [])
         app.make_intranet([])
+      end
+    end
+
+    class MinimalWithCommonPermissions < Minimal
+      def syscreate_directory
+        'minimal'
+      end
+      def basic_permission_rule_set
+        :common
       end
     end
 
@@ -205,6 +228,7 @@ __E
 
     TEMPLATES = {
       "minimal" => Minimal,
+      "minimal_with_common_permissions" => MinimalWithCommonPermissions,
       "sme" => SME,
       "sme_no_taxonomy" => SMENoTaxonomy
     }

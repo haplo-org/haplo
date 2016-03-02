@@ -157,7 +157,7 @@ public class KWorkUnit extends KScriptable {
     }
 
     public void jsSet_createdBy(Object value) {
-        this.workUnit.jsset_created_by_id(valueToUserIdNullAllowed(value, "createdBy"));
+        this.workUnit.jsset_created_by_id(valueToRequiredUserId(value, "createdBy"));
     }
 
     // ---- actionableBy
@@ -167,7 +167,7 @@ public class KWorkUnit extends KScriptable {
     }
 
     public void jsSet_actionableBy(Object value) {
-        this.workUnit.jsset_actionable_by_id(valueToUserIdNullAllowed(value, "actionableBy"));
+        this.workUnit.jsset_actionable_by_id(valueToRequiredUserId(value, "actionableBy"));
     }
 
     // ---- closedBy

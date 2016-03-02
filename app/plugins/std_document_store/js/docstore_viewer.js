@@ -84,21 +84,26 @@ DocumentViewer.prototype.__defineGetter__("_viewerDocumentDeferred", function() 
     });
 });
 
+DocumentViewer.prototype.__defineGetter__("_uncommittedChangesWarningText", function() {
+    return (this.options.uncommittedChangesWarningText === undefined) ?
+        "You've made some changes, but they're not visible to anyone else yet." :
+        this.options.uncommittedChangesWarningText;
+});
+
 DocumentViewer.prototype.__defineGetter__("_versionsView", function() {
     var viewer = this;
     var versions = _.map(viewer.instance.store.versionsTable.select().
         where("keyId","=",viewer.instance.keyId).order("version",true), function(row) {
             return {
-                version: row.version,
-                text: (new XDate(row.version)).toString('dd MMM yyyy') +
-                    ' ('+row.user.name+')',
+                row: row,
+                datetime: new Date(row.version),
                 selected: (row.version === viewer.version)
             };
         }
     );
     if(viewer.options.showCurrent && viewer.haveCurrent) {
         versions.unshift({
-            text: "Edited version",
+            editedVersion: true,
             selected: viewer.showingCurrent
         });
     }

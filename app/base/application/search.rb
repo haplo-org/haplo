@@ -9,7 +9,9 @@ class ApplicationController
 
   POSSIBLE_USER_SORT_OPTIONS = {
     'date' => :date,            :date => :date,
+    'date_asc' => :date_asc,    :date_asc => :date_asc,
     'title' => :title,          :title => :title,
+    'title_desc' => :title_desc,:title_desc => :title_desc,
     'relevance' => :relevance,  :relevance => :relevance
   }
 
@@ -301,10 +303,9 @@ class ApplicationController
         relevance_possible = store_query.can_order_by_relevance?
 
         # Choose sort by
-        sort = (relevance_possible) ? :relevance : :date
-        if sort != nil
-          ss = spec[:sort]
-          sort = ss if ss == :date || ss == :title
+        sort = POSSIBLE_USER_SORT_OPTIONS[spec[:sort]]
+        if sort == nil
+          sort = (relevance_possible) ? :relevance : :date
         end
         if is_calendar_style
           # Calendars need to be sorted by the date field, not anything else

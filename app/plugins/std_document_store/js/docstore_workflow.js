@@ -291,7 +291,9 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         }
         var ui = instance.makeViewerUI(E, {
             showVersions: true,
-            showCurrent: canEdit
+            showCurrent: canEdit,
+            uncommittedChangesWarningText: M.getTextMaybe("docstore-uncommitted-changes-warning-text:"+
+                spec.name)
         });
         if(canEdit) {
             E.appendSidebarHTML(P.template("std:ui:panel").render({

@@ -22,8 +22,14 @@ import org.haplo.template.driver.rhinojs.JSPlatformIntegration.JSFunctionRendere
 
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.Callable;
+import org.mozilla.javascript.ScriptRuntime;
+import org.mozilla.javascript.EvaluatorException;
 
 import java.util.regex.Pattern;
+import java.util.HashMap;
+import java.util.TimeZone;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 public class TemplateFunctionRenderer implements JSFunctionRenderer {
     public boolean renderFunction(Scriptable owner, StringBuilder builder, FunctionBinding b) throws RenderException {
@@ -34,9 +40,19 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
             case "std:object": std_object(builder, b); break;
             case "std:object:link": std_object_link(builder, b); break;
             case "std:object:link:descriptive": std_object_link_descriptive(builder, b); break;
+            case "std:object:url": std_object_url(builder, b, false); break;
+            case "std:object:url:full": std_object_url(builder, b, true); break;
 
             case "std:text:paragraph": std_text_paragraph(builder, b); break;
             case "std:text:document": std_text_document(builder, b); break;
+
+            case "std:date":            std_date(builder, b, true,  0); break;
+            case "std:date:long":       std_date(builder, b, true,  1); break;
+            case "std:date:time":       std_date(builder, b, true,  2); break;
+            case "std:utc:date":        std_date(builder, b, false, 0); break;
+            case "std:utc:date:long":   std_date(builder, b, false, 1); break;
+            case "std:utc:date:time":   std_date(builder, b, false, 2); break;
+            case "std:utc:date:sort":   std_date(builder, b, false, 3); break;
 
             case "std:plugin:resources": pluginResources(owner, b); break;
             case "pageTitle": pageTitle(b); break;
@@ -66,6 +82,16 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
 
     // ----------------------------------------------------------------------
 
+    // TODO: Full localisation of date formats (eg month names)
+    static private String[] DATE_FORMATS = {
+        "dd MMM yyyy",
+        "dd MMMM yyyy",
+        "dd MMM yyyy, HH:mm",
+        "yyyyMMddHHmm"
+    };
+
+    // ----------------------------------------------------------------------
+
     public void std_object(StringBuilder builder, FunctionBinding b) throws RenderException {
         AppObject object = appObjectArg(b);
         String style = stringArgWithDefault(b, "generic");
@@ -78,6 +104,13 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
 
     public void std_object_link_descriptive(StringBuilder builder, FunctionBinding b) throws RenderException {
         builder.append(inTextContext(b).stdtmpl_link_to_object_descriptive(appObjectArg(b)));
+    }
+
+    public void std_object_url(StringBuilder builder, FunctionBinding b, boolean asFullURL) throws RenderException {
+        String url = jsObjectArg(b).jsFunction_url(asFullURL);
+        Context context = b.getContext();
+        if(context == Context.URL) { context = Context.URL_PATH; }  // mustn't be escaped too much
+        Escape.escape(url, builder, context);
     }
 
     public void std_text_paragraph(StringBuilder builder, FunctionBinding b) throws RenderException {
@@ -108,6 +141,50 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
 
     public void std_icon_description(StringBuilder builder, FunctionBinding b) throws RenderException {
         builder.append(inTextContext(b).stdtmpl_icon_description(b.nextUnescapedStringArgument(ArgumentRequirement.REQUIRED), b.nextUnescapedStringArgument(ArgumentRequirement.OPTIONAL)));
+    }
+
+    // ----------------------------------------------------------------------
+
+    static private Object[] dateFormatCaches = new Object[8];
+
+    @SuppressWarnings("unchecked")
+    public void std_date(StringBuilder builder, FunctionBinding b, boolean local, int formatIndex) throws RenderException {
+        // Get a Java Date object from the view
+        Object maybeDate = b.nextViewObjectArgument(ArgumentRequirement.REQUIRED);
+        if(maybeDate == null) { return; }
+        Date date = jsDateToJava(maybeDate);
+        if(date == null) {
+            // Conversion didn't work, maybe it's a library implemented date?
+            // (could do it in one go, but calling the function is unnecessarily expensive for something which could be called lots of times)
+            maybeDate = Runtime.getCurrentRuntime().convertIfJavaScriptLibraryDate(maybeDate);
+            if(maybeDate != null) {
+                date = jsDateToJava(maybeDate);
+            }
+        }
+        if(date == null) {return; }
+        // Obtain a suitable formatter for the given timezone
+        String timeZoneName = local ? Runtime.getCurrentRuntime().getHost().getUserTimeZone() : "Etc/UTC";
+        HashMap<String,SimpleDateFormat> formatCache = (HashMap<String,SimpleDateFormat>)dateFormatCaches[formatIndex];
+        if(formatCache == null) { formatCache = new HashMap<String,SimpleDateFormat>(); }
+        SimpleDateFormat format = formatCache.get(timeZoneName);
+        if(format == null) {
+            formatCache = (HashMap<String,SimpleDateFormat>)formatCache.clone();  // thread safety, never write to a cache after it's been written to dateFormatCaches
+            format = new SimpleDateFormat(DATE_FORMATS[formatIndex]);
+            format.setTimeZone(TimeZone.getTimeZone(timeZoneName));
+            formatCache.put(timeZoneName, format);
+            dateFormatCaches[formatIndex] = formatCache;
+        }
+        // Write formatted date
+        Escape.escape(format.format(date), builder, b.getContext());
+    }
+
+    private static Date jsDateToJava(Object maybeDate) {
+        try {
+            return (Date)org.mozilla.javascript.Context.jsToJava(maybeDate, ScriptRuntime.DateClass);
+        } catch(EvaluatorException e) {
+            // ignore conversion errors
+        }
+        return null;
     }
 
     // ----------------------------------------------------------------------
@@ -162,7 +239,7 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
 
     // ----------------------------------------------------------------------
 
-    private static AppObject appObjectArg(FunctionBinding b) throws RenderException {
+    private static KObject jsObjectArg(FunctionBinding b) throws RenderException {
         Object o = b.nextViewObjectArgument(ArgumentRequirement.REQUIRED);
         if(o instanceof KObjRef) {
             o = ((KObjRef)o).jsFunction_load();
@@ -170,7 +247,12 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
         if(!(o instanceof KObject)) {
             throw new OAPIException(b.getFunctionName()+"() requires a StoreObject or a Ref");
         }
-        return ((KObject)o).toRubyObject();
+        return (KObject)o;
+    }
+
+    private static AppObject appObjectArg(FunctionBinding b) throws RenderException {
+        KObject o = jsObjectArg(b);
+        return (o == null) ? null : o.toRubyObject();
     }
 
     private static AppObjRef appObjRefArg(FunctionBinding b) throws RenderException {

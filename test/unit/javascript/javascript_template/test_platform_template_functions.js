@@ -62,6 +62,16 @@ TEST(function() {
     var refLinksRendered = template.render({o:objectRef}).replace(/\/[0-9qvwxyz]+\//g,'/REF/');
     TEST.assert_equal(refLinksRendered, '<div><a href="/REF/test-book">Test book</a> ! <a href="/REF/test-book">Test book</a></div>');
 
+    // std:object:url*()
+    template = new $HaploTemplate('<div> <a href=std:object:url(x)> "hello" </a> " / " <a href=std:object:url:full(x)> "world" </a> </div>');
+    var objectUrlsRendered = template.render({x:object}).replace(/\/[0-9qvwxyz]+\//g,'/REF/').replace(/www\d\d+/g,'wwwAPP').replace(/\:\d+\b/,'');
+    TEST.assert_equal(objectUrlsRendered, '<div><a href="/REF/test-book">hello</a> / <a href="http://wwwAPP.example.com/REF/test-book">world</a></div>');
+    template = new $HaploTemplate('backLink(std:object:url(q))');
+    // Check you can use it in backLink()
+    var objectUrlBackLinkView = {q:object};
+    template.render(objectUrlBackLinkView);
+    TEST.assert_equal(objectUrlBackLinkView.backLink, object.url());
+
     // std:text:paragraph
     template = new $HaploTemplate('"START" std:text:paragraph(text) "END"');
     TEST.assert_equal(template.render({text:"a"}), "START<p>a</p>END");
@@ -92,4 +102,31 @@ TEST(function() {
         obj: object,
         desc: "E210,1,f E505,5,b"
     }), '<div><span class="z__icon z__icon_large"><span class="z__icon_colour1 z__icon_component_position_full">&#xE210;</span></span> ! <span class="z__icon z__icon_medium"><span class="z__icon_colour1 z__icon_component_position_full">&#xE210;</span></span> ! <span class="z__icon z__icon_small"><span class="z__icon_colour1 z__icon_component_position_full">&#xE210;</span></span> ! <span class="z__icon z__icon_medium"><span class="z__icon_colour1 z__icon_component_position_full">&#xE210;</span><span class="z__icon_colour5 z__icon_component_position_top_right">&#xE505;</span></span></div>');
+
+    // std:date* and std:utc:date*
+    var dateToFormat = new Date(2016, 6, 3, 23, 12);  // in the summer so default Europe/London time zone is in BST
+    O.impersonating(O.user(41), function() { // to get a timezone
+        [
+            ["std:date",            "04 Jul 2016",          dateToFormat],
+            ["std:date:long",       "04 July 2016",         dateToFormat],
+            ["std:date:time",       "04 Jul 2016, 00:12",   dateToFormat],
+            ["std:utc:date",        "03 Jul 2016",          dateToFormat],
+            ["std:utc:date:long",   "03 July 2016",         dateToFormat],
+            ["std:utc:date:time",   "03 Jul 2016, 23:12",   dateToFormat],
+            ["std:utc:date:sort",   "201607032312",         dateToFormat],
+            // Check bad values just result in empty strings
+            ["std:date",            "",                     undefined],
+            ["std:date",            "",                     true],
+            ["std:date",            "",                     false],
+            ["std:date",            "",                     "Pants"],
+            ["std:date",            "",                     []],
+            // Check library dates
+            ["std:utc:date",        "06 Mar 2015",          new XDate(2015, 2, 6, 12, 34)],
+            ["std:utc:date",        "05 Apr 2010",          moment([2010, 3, 5, 15, 10, 3])]
+        ].forEach(function(t) {
+            var fnname = t[0], expected = t[1], date = t[2];
+            var datetemplate = new $HaploTemplate('<span> '+fnname+'(x) </span>');
+            TEST.assert_equal(datetemplate.render({x:date}), '<span>'+expected+'</span>');
+        });
+    });
 });

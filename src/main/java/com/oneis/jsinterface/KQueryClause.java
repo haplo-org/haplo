@@ -86,7 +86,7 @@ public class KQueryClause extends KScriptable {
 
     // --------------------------------------------------------------------------------------------------------------
     public void jsFunction_freeText(String text, int desc, boolean hasDesc, int qual, boolean hasQual) {
-        this.clause.freeText(text, hasDesc ? desc : null, hasQual ? qual : null);
+        this.clause.free_text(text, hasDesc ? desc : null, hasQual ? qual : null);
     }
 
     public void jsFunction_link(KObjRef ref, int desc, boolean hasDesc, int qual, boolean hasQual) {
@@ -94,11 +94,11 @@ public class KQueryClause extends KScriptable {
     }
 
     public void jsFunction_linkDirectly(KObjRef ref, int desc, boolean hasDesc, int qual, boolean hasQual) {
-        this.clause.linkExact((AppObjRef)ref.toRubyObject(), hasDesc ? desc : null, hasQual ? qual : null);
+        this.clause.link_exact((AppObjRef)ref.toRubyObject(), hasDesc ? desc : null, hasQual ? qual : null);
     }
 
     public void jsFunction_linkToAny(int desc, int qual, boolean hasQual) {
-        this.clause.linkToAny(desc, hasQual ? qual : null);
+        this.clause.link_to_any(desc, hasQual ? qual : null);
     }
 
     public void jsFunction_identifier(Object identifier, int desc, boolean hasDesc, int qual, boolean hasQual) {
@@ -147,15 +147,38 @@ public class KQueryClause extends KScriptable {
     }
 
     public void jsFunction_createdByUserId(int userId) {
-        this.clause.createdByUserId(userId);
+        this.clause.created_by_user_id(userId);
     }
 
     public void jsFunction_dateRange(Object beginDate, Object endDate, int desc, boolean hasDesc, int qual, boolean hasQual) {
-        this.clause.dateRange(
+        this.clause.date_range(
                 rubyInterface.convertDate(JsConvert.tryConvertJsDate(beginDate)),
                 rubyInterface.convertDate(JsConvert.tryConvertJsDate(endDate)),
                 hasDesc ? desc : null, hasQual ? qual : null
         );
+    }
+
+    public void jsFunction_anyLabel(Object labels) {
+        this.clause.any_label(checkedLabelArray(labels));
+    }
+
+    public void jsFunction_allLabels(Object labels) {
+        this.clause.all_labels(checkedLabelArray(labels));
+    }
+
+    private int[] checkedLabelArray(Object labels) {
+        if(!(labels instanceof KLabelList)) {
+            throw new OAPIException("Must pass a label list when building label queries.");
+        }
+        int[] labelArray = ((KLabelList)labels).getLabels();
+        if(labelArray.length == 0 || labelArray.length > 4096) {
+            throw new OAPIException("Bad label list length for query, cannot be empty or very long");
+        }
+        return labelArray;
+    }
+
+    public void jsFunction_matchNothing() {
+        this.clause.match_nothing();
     }
 
     public void jsFunction_limit(int maxResults) {

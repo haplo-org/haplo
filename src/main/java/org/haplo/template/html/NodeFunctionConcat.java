@@ -6,25 +6,23 @@
 
 package org.haplo.template.html;
 
-final class NodeFunctionUnsafeHTML extends NodeFunctionUnsafeBase {
-    NodeFunctionUnsafeHTML() {
+// concat() is useful for overriding the automatic addition of spaces in attributes
+final class NodeFunctionConcat extends NodeFunction {
+    NodeFunctionConcat() {
     }
 
     public String getFunctionName() {
-        return "unsafeHTML";
-    }
-
-    // Only allowed in TEXT context, as it would be too dangerous to allow it anywhere else
-    protected Context allowedContext() {
-        return Context.TEXT;
+        return "concat";
     }
 
     public void render(StringBuilder builder, Driver driver, Object view, Context context) throws RenderException {
-        // Render argument without any escaping
-        getSingleArgument().render(builder, driver, view, Context.UNSAFE);
+        Node arguments = getArgumentsHead();
+        if(arguments != null) {
+            arguments.renderWithNextNodes(builder, driver, view, context);
+        }
     }
 
     public String getDumpName() {
-        return "UNSAFEHTML";
+        return "CONCAT";
     }
 }

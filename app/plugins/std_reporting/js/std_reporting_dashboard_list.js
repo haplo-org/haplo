@@ -28,15 +28,17 @@ DashboardList.prototype.columns = function(priority, columns) {
     return this;
 };
 
-DashboardList.prototype.respond = function() {
+DashboardList.prototype._makeSortedColumnList = function() {
     // Make sorted flat list of column objects
     var columns = [];
-    var sortedGroups = _.each(_.sortBy(this.columnGroups, "priority"), function(group) {
+    _.each(_.sortBy(this.columnGroups, "priority"), function(group) {
         columns = columns.concat(group.columns);
     });
+    return columns;
+};
 
-    // Export data rather than rendering?
-    if(this.isExporting) { return this._respondWithExport(columns); }
+DashboardList.prototype._makeDashboardView = function(hideExport) {
+    var columns = this._makeSortedColumnList();
 
     // Locally scoped copy of row attribute generator functions
     var rowAttributeFns = this.$rowAttributeFns;
@@ -55,21 +57,33 @@ DashboardList.prototype.respond = function() {
         });
     });
 
-    this.E.setResponsiblePlugin(P);
-    this.E.render({
+    return {
         pageTitle: this.specification.title,
         backLink: this.specification.backLink,
         backLinkText: this.specification.backLinkText,
+        hideExport: hideExport,
         layout: "std:wide",
         dashboard: this,
         widgetsTop: _.map(this.$uiWidgetsTop, function(f) { return f(); }),
         columns: columns,
         rowsHTML: rowsHTML
-    }, "dashboard/list/list_dashboard");
+    };
+};
+
+DashboardList.prototype.respond = function() {
+    this.E.setResponsiblePlugin(P);
+    // Export data rather than rendering?
+    if(this.isExporting) { return this._respondWithExport(); }
+    this.E.render(this._makeDashboardView(), "dashboard/list/list_dashboard");
     return this;
 };
 
-DashboardList.prototype._respondWithExport = function(columns) {
+DashboardList.prototype.deferredRender = function() {
+    return P.template("dashboard/list/list_dashboard").deferredRender(this._makeDashboardView(true /* Hide Export */));
+};
+
+DashboardList.prototype._respondWithExport = function() {
+    var columns = this._makeSortedColumnList();
     var xls = O.generate.table.xlsx(this.specification.title);
     xls.newSheet(this.specification.title, true);
     _.each(columns, function(c) {

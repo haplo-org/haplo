@@ -9,14 +9,14 @@ package com.oneis.jsinterface.app;
 import java.util.Date;
 
 public interface AppQueryClause {
-    // Add clauses to query
-    public void freeText(String text, Integer desc, Integer qual);
+
+    public void free_text(String text, Integer desc, Integer qual);
 
     public void link(AppObjRef ref, Integer desc, Integer qual);
 
-    public void linkExact(AppObjRef ref, Integer desc, Integer qual);
+    public void link_exact(AppObjRef ref, Integer desc, Integer qual);
 
-    public void linkToAny(Integer desc, Integer qual);
+    public void link_to_any(Integer desc, Integer qual);
 
     public boolean jsIdentifierReturningValidity(AppText identifier, Integer desc, Integer qual);
 
@@ -30,9 +30,15 @@ public interface AppQueryClause {
 
     public AppQueryClause jsAddLinkedFromSubquery(Integer desc, Integer qual);
 
-    public void createdByUserId(int userId);
+    public void created_by_user_id(int userId);
 
-    public AppQueryClause dateRange(Object beginDate, Object endDate, Integer desc, Integer qual);
+    public void date_range(Object beginDate, Object endDate, Integer desc, Integer qual);
+
+    public void any_label(int[] labels);
+
+    public void all_labels(int[] labels);
+
+    public void match_nothing();
 
     public void maximumResults(int maxResults);
 }

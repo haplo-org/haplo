@@ -217,6 +217,16 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     q3.link(O_TYPE_PERSON)
     tqg_query(queries, q3)
 
+    # Array links
+    tqg_query(queries, KObjectStore.query_and.match_nothing())  # link([])
+    tqg_query(queries, KObjectStore.query_and.link(O_TYPE_BOOK, A_TYPE, Q_ALTERNATIVE))
+    tqg_query(queries, KObjectStore.query_and.link(O_TYPE_BOOK, A_TYPE))
+    [[A_TYPE, Q_ALTERNATIVE], [A_TYPE], []].each do |dq|
+      qra = KObjectStore.query_and
+      qra.or.link(O_TYPE_BOOK, *dq).link(O_TYPE_PERSON, *dq)
+      tqg_query(queries, qra)
+    end
+
     # Exact links
     tqg_query(queries, KObjectStore.query_and.link_exact(O_TYPE_BOOK, A_TYPE))
 
@@ -297,6 +307,10 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     # Archived objects
     tqg_query(queries, KObjectStore.query_and.free_text("b").include_archived_objects(:include_archived))
 
+    # Labels
+    tqg_query(queries, KObjectStore.query_and.any_label([5,6]).free_text("x"))
+    tqg_query(queries, KObjectStore.query_and.all_labels([1,3,7]).free_text("l") )
+
     # Make sure all the queries from the JavaScript have been used
     assert queries.isEmpty()
   end
@@ -332,6 +346,16 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
         TEST.assert_equal(#{KConstants::O_LABEL_COMMON.obj_id}, LABEL["std:label:common"].objId);
       });
     __E
+    # Apply some requirements to the schema
+    parser = SchemaRequirements::Parser.new()
+    parser.parse("test_javascript_schema", StringIO.new(<<__E))
+type std:type:file
+    annotation test:annotation:x1
+    annotation test:annotation:x2
+type std:type:book
+    annotation test:annotation:x2
+__E
+    SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new(parser)).apply.commit
     # And some tests in a .js file
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_schema.js')
   end

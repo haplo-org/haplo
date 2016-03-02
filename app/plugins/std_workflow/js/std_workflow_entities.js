@@ -88,7 +88,8 @@ var setupEntities = function(object, entityDefinitions, setupPrototype) {
         if(!ref) { throw new Error("No ref for work unit"); }
         this.object_refMaybe = ref;
         this.object_refList = [ref];
-        this.$M = M;    // may be undefined
+        this.M = M;     // may be undefined
+        this.$M = M;    // TODO: Remove this backwards compatibility property
     };
     Entities.prototype = object.$entitiesBase = new EntitiesBase();
     Entities.prototype.$entityDefinitions = entityDefinitions;

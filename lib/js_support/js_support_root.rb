@@ -110,6 +110,10 @@ class JSSupportRoot
     end
   end
 
+  def getSchemaInfoTypesWithAnnotation(annotation)
+    JSON.generate(KObjectStore.schema.get_type_refs_with_annotation(annotation).map { |r| r.obj_id })
+  end
+
   def impersonating(user, runnable)
     user ||= User.cache[User::USER_SYSTEM]
     old_state = AuthContext.set_impersonation(user)
@@ -180,6 +184,11 @@ class JSSupportRoot
   def createTemplatePlatformFunctionsProxy
     # Let JRuby create the proxy object for the controller
     controller_or_background_controller
+  end
+
+  def userTimeZone
+    user = AuthContext.user
+    user ? (user.get_user_data(UserData::NAME_TIME_ZONE) || KDisplayConfig::DEFAULT_TIME_ZONE) : nil
   end
 
   def renderObject(object, style)

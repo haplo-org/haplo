@@ -20,4 +20,12 @@ module KHooks
     h.result      :statements,KLabelStatements,   nil,  "LabelStatements object representing the permissions, which can be replaced by a plugin"
   end
 
+  define_hook :hUserAdminUserInterface do |h|
+    h.private_hook
+    h.argument    :user,      User,     "SecurityPrincipal for which admin UI is being displayed"
+    h.result      :information, Array,  "[]", "Array of [url_path,text] to display in the admin UI. url_path may be null"
+    h.result      :showEditAccessControl, "bool", "true", "Show edit buttons for editing main user access"
+    h.result      :showEditProperties,  "bool", "true", "Show edit buttons for editing user properties"
+  end
+
 end

@@ -1,0 +1,10 @@
+{
+  "pluginName": "test_template_plugin1",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test Template Plugin 1",
+  "displayDescription": "For testing",
+  "installSecret": "ABC123",
+  "apiVersion": 4,
+  "load": ["js/test_template_plugin1.js"]
+}

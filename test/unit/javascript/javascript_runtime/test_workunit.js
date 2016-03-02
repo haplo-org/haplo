@@ -24,7 +24,7 @@ TEST(function() {
     TEST.assert_equal(null, unit0.createdAt);   // not set yet
     TEST.assert_exceptions(function() { unit0.createdAt = new Date(); }); // not allowed
     TEST.assert_equal(0, unit0.createdBy.id);
-    TEST.assert_equal(null, unit0.actionableBy);
+    TEST.assert_equal(0, unit0.actionableBy.id);
     TEST.assert_equal(null, unit0.ref);
     unit0.ref = O.ref(2);
     TEST.assert(O.ref(2) == unit0.ref);
@@ -32,8 +32,9 @@ TEST(function() {
     TEST.assert_equal(true, unit0.visible);
     TEST.assert_equal(true, unit0.autoVisible);
 
-    // Without all the bits filled in, saving a work unit will fail
-    TEST.assert_exceptions(function() { O.work.create("ptest:pfdjn").save(); });
+    // null createdBy or actionableBy exceptions
+    TEST.assert_exceptions(function() { O.work.create({workType:"ptest:pfdjn",createdBy:null}).save(); }, "null not allowed for work unit property createdBy");
+    TEST.assert_exceptions(function() { O.work.create({workType:"ptest:pfdjn",actionableBy:null}).save(); }, "null not allowed for work unit property actionableBy");
 
     // Date formatting helper function
     var dateStr = function(date) {

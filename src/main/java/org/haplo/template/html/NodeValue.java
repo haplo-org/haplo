@@ -17,11 +17,6 @@ class NodeValue extends Node {
         this.path = path;
     }
 
-    // Used for validation
-    protected String _getFirstPathComponent() {
-        return this.path[0];
-    }
-
     public void render(StringBuilder builder, Driver driver, Object view, Context context) throws RenderException {
         Object value = driver.getValueFromView(view, this.path);
         if(value != null) {
@@ -55,6 +50,18 @@ class NodeValue extends Node {
             builder.append(s);
         }
         builder.append("\n");
+    }
+
+    // ----------------------------------------------------------------------
+
+    // Used for validation
+    protected boolean _pathNameRemindsUserThatUseIsUnsafe() {
+        for(int l = 0; l < path.length; ++l) {
+            if(path[l].startsWith("unsafe")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     // ----------------------------------------------------------------------

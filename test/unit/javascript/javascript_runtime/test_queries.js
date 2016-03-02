@@ -36,6 +36,14 @@ TEST(function() {
         }).link(TYPE["std:type:person"])
     );
 
+    // Link with arrays
+    qpush( O.query().link([], ATTR.Type, QUAL["dc:qualifier:alternative"]) );
+    qpush( O.query().link([TYPE["std:type:book"]], ATTR.Type, QUAL["dc:qualifier:alternative"]) );
+    qpush( O.query().link([TYPE["std:type:book"]], ATTR.Type) );
+    qpush( O.query().link([TYPE["std:type:book"], TYPE["std:type:person"]], ATTR.Type, QUAL["dc:qualifier:alternative"]) );
+    qpush( O.query().link([TYPE["std:type:book"], TYPE["std:type:person"]], ATTR.Type) );
+    qpush( O.query().link([TYPE["std:type:book"], TYPE["std:type:person"]]) );
+
     // Exact links
     qpush( O.query().linkDirectly(TYPE["std:type:book"], ATTR.Type) );
 
@@ -102,6 +110,10 @@ TEST(function() {
     // Archived objects
     qpush( O.query().freeText("b").includeArchivedObjects() );
 
+    // Labels
+    qpush( O.query().anyLabel([O.ref(5),6]).freeText("x") );
+    qpush( O.query().allLabels([1,3,O.ref(7)]).freeText("l") );
+
     // Test error messages on bad queries
     var badQuery = O.query();
     TEST.assert_exceptions(function() { badQuery.freeText(); }, "Must pass a non-empty String to query freeText() function.");
@@ -116,6 +128,7 @@ TEST(function() {
     TEST.assert_exceptions(function() { badQuery.identifier(); }, "Must pass a identifier Text object to query identifier() function.");
     TEST.assert_exceptions(function() { badQuery.identifier("test@example.com"); }, "Must pass a identifier Text object to query identifier() function.");
     TEST.assert_exceptions(function() { badQuery.identifier(O.text(O.T_TEXT, "test@example.com")); }, "Must pass a identifier Text object to query identifier() function.");
+    TEST.assert_exceptions(function() { badQuery.anyLabel([]); }, "Bad label list length for query, cannot be empty or very long");
 
     // ================================================================================================================
     //  Running queries

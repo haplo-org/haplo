@@ -5,6 +5,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
+var canChangeWorkflowVisibility = function(user) {
+    return user.isMemberOf(Group.Administrators) || user.isMemberOf(Group.WorkflowVisibility);
+};
+
 var canAdminWorkflow = function(user) {
     return user.isMemberOf(Group.Administrators) || user.isMemberOf(Group.WorkflowOverride);
 };
@@ -12,18 +16,30 @@ var canAdminWorkflow = function(user) {
 // --------------------------------------------------------------------------
 
 P.WorkflowInstanceBase.prototype._addAdminActionPanelElements = function(builder) {
-    if(!canAdminWorkflow(O.currentUser)) { return; }
-    builder.panel(9999999).
-        element(0, {title:"Workflow override"}).
-        link(1, "/do/workflow/administration/full-info/"+this.workUnit.id, "Full info").
-        link(2, "/do/workflow/administration/timeline/"+this.workUnit.id, "Timeline").
-        link(3, "/do/workflow/administration/move-state/"+this.workUnit.id, "Move state");
+    var admin = canAdminWorkflow(O.currentUser),
+        visibility = admin || canChangeWorkflowVisibility(O.currentUser);
+    if(!(visibility || admin)) { return; }
+
+    var panel = builder.panel(8888888).
+        spaceAbove().
+        element(0, {title:"Workflow override"});
+
+    if(admin) {
+        panel.
+            link(1, "/do/workflow/administration/full-info/"+this.workUnit.id, "Full info").
+            link(2, "/do/workflow/administration/timeline/"+this.workUnit.id, "Timeline").
+            link(3, "/do/workflow/administration/move-state/"+this.workUnit.id, "Move state");
+    }
+    if(visibility) {
+        panel.
+            link(9, "/do/workflow/administration/visibility/"+this.workUnit.id, "Task visibility");
+    }
 };
 
 // --------------------------------------------------------------------------
 
-var getCheckedInstanceForAdmin = function(workUnit) {
-    if(!canAdminWorkflow(O.currentUser)) { O.stop("Not authorised."); }
+var getCheckedInstanceForAdmin = function(workUnit, checkfn) {
+    if(!(checkfn || canAdminWorkflow)(O.currentUser)) { O.stop("Not authorised."); }
     var workflow = P.allWorkflows[workUnit.workType];
     if(!workflow) { O.stop("Workflow not implemented"); }
     return workflow.instance(workUnit);
@@ -99,3 +115,32 @@ P.respond("GET,POST", "/do/workflow/administration/move-state", [
         })
     }, "admin/move-state");
 });
+
+// --------------------------------------------------------------------------
+
+P.respond("GET,POST", "/do/workflow/administration/visibility", [
+    {pathElement:0, as:"workUnit", allUsers:true}
+], function(E, workUnit) {
+    var M = getCheckedInstanceForAdmin(workUnit, canChangeWorkflowVisibility);
+    var currentVisible = workUnit.visible;
+    if(E.request.method === "POST") {
+        workUnit.visible = !currentVisible;
+        workUnit.autoVisible = !currentVisible;  // so visible auto changes, but hidden doesn't
+        workUnit.save();
+        M.addTimelineEntry(currentVisible ? 'HIDE' : 'UNHIDE');
+        return E.response.redirect(M.url);
+    }
+    E.render({
+        pageTitle: (currentVisible ? "Hide: " : "Unhide: ")+M.title,
+        backLink: M.url,
+        text: currentVisible ?
+            "This task is visible. Do you want to hide it?" :
+            "This task is currently hidden. Do you want to make it visible again?",
+        options: [
+            {
+                label: currentVisible ? "Hide task" : "Unhide task"
+            }
+        ]
+    }, "std:ui:confirm");
+});
+

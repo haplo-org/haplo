@@ -25,6 +25,8 @@ abstract public class Driver {
             return ((Boolean)value).booleanValue();
         } else if(value instanceof Object[]) {
             return ((Object[])value).length > 0;
+        } else if(value instanceof Number) {
+            return ((Number)value).longValue() != 0;
         }
         return false;
     }

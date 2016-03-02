@@ -25,7 +25,13 @@
 // actionableBy must always be set by this function to update the dependency information.
 P.WorkflowInstanceBase.prototype._updateWorkUnitActionableBy = function(actionableBy, target) {
     delete this.$entities;
-    var user = this.workUnit.actionableBy = this._call('$getActionableBy', actionableBy, target);
+    var user = this._call('$getActionableBy', actionableBy, target);
+    if(!user) {
+        // If getActionableBy function returns null, function chain will terminate immediately.
+        console.log("WARNING: Workflow getActionableBy() returned null or undefined, using fallback group");
+        user = O.group(Group.WorkflowFallback);
+    }
+    this.workUnit.actionableBy = user;
     // Remove old dependency tags, then add in new ones from the objects in entities
     var tags = this.workUnit.tags;
     this._removeEntityDependencyTags(tags);
@@ -97,14 +103,3 @@ P.backgroundCallback("update_actionableby", function(data) {
     });
 });
 
-// --------------------------------------------------------------------------
-
-// Render timeline entries
-// This is a separate function which is hardcoded into the timeline rendering so it's
-// not easy to accidently remove, eg something else updates fallbackImplementation.
-P.WorkflowInstanceBase.prototype._renderTimelineEntryDeferredAutoMove = function(entry) {
-    if(entry.action === "AUTOMOVE") {
-        // Can be overridden with timeline-entry:AUTOMOVE text or renderTimelineEntryDeferred handler
-        return P.template("timeline/automove").deferredRender({});
-    }
-};

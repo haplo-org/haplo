@@ -115,6 +115,19 @@ TEST(function() {
     var subjectInfo = SCHEMA.getTypeInfo(TYPE["std:type:subject"]);
     TEST.assert(_.isEqual(["classification", "hierarchical"], subjectInfo.behaviours.sort()));
 
+    // Type annotations
+    TEST.assert(_.isEqual([], subjectInfo.annotations));
+    var fileInfo = SCHEMA.getTypeInfo(TYPE["std:type:file"]);
+    TEST.assert(_.isEqual(["test:annotation:x1", "test:annotation:x2"], fileInfo.annotations.sort()));
+    var bookInfo = SCHEMA.getTypeInfo(TYPE["std:type:book"]);
+    TEST.assert(_.isEqual(["test:annotation:x2"], bookInfo.annotations));
+    var arrayOfRefsEqual = function(a, b) {
+        var m = function(x) { return _.map(x,function(z){return z.objId;}).sort(); }
+        return _.isEqual(m(a),m(b));
+    };
+    TEST.assert(arrayOfRefsEqual(SCHEMA.getTypesWithAnnotation("test:annotation:x1"), [TYPE['std:type:file']]));
+    TEST.assert(arrayOfRefsEqual(SCHEMA.getTypesWithAnnotation("test:annotation:x2"), [TYPE['std:type:file'], TYPE['std:type:book']]));
+
     // Make sure special *Parent() *Title() and *Type() functions exist and work
     var tobj = O.object();
     tobj.appendTitle("Hello");

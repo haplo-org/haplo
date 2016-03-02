@@ -1,10 +1,12 @@
 std:plugin:resources("viewer.css")
 
 unless(document) {
-  std:ui:notice("The form has not been completed yet.")
+  std:ui:notice("The form has not yet been completed.")
 } else {
   if(showingCurrent) {
-    std:ui:notice("You've made some changes, but they're not visible to anyone else yet.")
+    if(_uncommittedChangesWarningText) {
+      std:ui:notice(_uncommittedChangesWarningText)
+    }
   }
   render(_viewerDocumentDeferred)
 }

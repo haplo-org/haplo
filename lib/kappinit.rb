@@ -117,13 +117,26 @@ module KAppInit
       app.permission_rules([
         # Allow administrators to create and edit structure objects
         [User::GROUP_ADMINISTRATORS,  O_LABEL_STRUCTURE,  :allow, :ALL],
-        # Everyone is allowed to do everything with things labelled with Common
-        [User::GROUP_EVERYONE,        O_LABEL_COMMON,     :allow, :ALL],
-        # Administrators can do anything with concept objects, but everyone else can only read
-        [User::GROUP_EVERYONE,        O_LABEL_CONCEPT,    :allow, [:read]],
-        [User::GROUP_EVERYONE,        O_LABEL_CONCEPT,    :deny,  :NOT_READ], # explicitly deny other actions
-        [User::GROUP_ADMINISTRATORS,  O_LABEL_CONCEPT,    :allow, :ALL],
+        # Everyone can read them, so plugins can read schema objects without special measures
+        [User::GROUP_EVERYONE,        O_LABEL_STRUCTURE,  :allow, [:read]],
+        # Administrators have full permissions on concept objects
+        [User::GROUP_ADMINISTRATORS,  O_LABEL_CONCEPT,    :allow, :ALL]
       ])
+
+      case application_template.basic_permission_rule_set
+      when :common
+        app.permission_rules([
+          # Everyone is allowed to do everything with things labelled with Common
+          [User::GROUP_EVERYONE,        O_LABEL_COMMON,     :allow, :ALL],
+          # Everyone can only read concept objects
+          [User::GROUP_EVERYONE,        O_LABEL_CONCEPT,    :allow, [:read]],
+          [User::GROUP_EVERYONE,        O_LABEL_CONCEPT,    :deny,  :NOT_READ], # explicitly deny other actions
+        ])
+      when :none
+        # No other rules
+      else
+        raise "Unknown basic_permission_rule_set for template"
+      end
 
       # Make the default templates, changing their IDs to those specified in the constants in the model class
       footer_html = '<div class="footer"><p class="link0"><a href="http://%%DEFAULT_HOSTNAME%%/">Sent from Haplo</a></p></div>'

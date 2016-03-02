@@ -13,10 +13,18 @@ if(options.showVersions) {
   <div class="z__docstore_nav_box">
     <div class="z__docstore_nav_title"> "Versions" </div>
     each(_versionsView) {
-      if(selected) {
-        <div class="z__docstore_nav_selected"> text </div>
-      } else {
-        <div> <a href=["?version=" version]> text </a> </div>
+      do() {
+        if(selected) {
+          <div class="z__docstore_nav_selected"> yield:text() </div>
+        } else {
+          <div> <a href=["?version=" row.version]> yield:text() </a> </div>
+        }
+      } text {
+        if(editedVersion) {
+          "Edited version"
+        } else {
+          std:date(datetime) " (" row.user.name ")"
+        }
       }
     }
   </div>
