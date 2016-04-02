@@ -1,0 +1,5 @@
+template:std:ui:tabs:links()
+within(_viewerSelectedForm) {
+  <h2>title</h2>
+  std:document(instance)
+}

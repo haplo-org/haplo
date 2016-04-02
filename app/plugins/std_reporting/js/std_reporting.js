@@ -137,7 +137,10 @@ Collection.prototype._ensureSpecGathered = function() {
         description: this.description,
         calculate: function(select) { return select.count(); }
     }};
-    var serviceNames = ["std:reporting:collection:"+this.name+":setup"];
+    var serviceNames = [
+        "std:reporting:collection:*:setup",
+        "std:reporting:collection:"+this.name+":setup"
+    ];
     this.$categories.forEach(function(category) {
         serviceNames.push("std:reporting:collection_category:"+category+":setup");
     });
@@ -377,6 +380,7 @@ var dateToDayPart = function(f) {
 // Comparison value are only called if a & b are non-null
 var factValueComparisonFunctions = {
     "ref": function(a,b) { return a == b; }, // Refs can't be compared with === or !== .
+    "labelList": function(a,b) { return a == b; }, // LabelLists can't be compared with === or !== .
     "datetime": function(a,b) { return a.getTime() === b.getTime(); },   // compare ms from epoch
     "date": function(a,b) { return dateToDayPart(a).getTime() === dateToDayPart(b).getTime(); }, // compare adjusted dates
     "time": function(a,b) { return a.getTime() === b.getTime(); }   // compare ms from epoch

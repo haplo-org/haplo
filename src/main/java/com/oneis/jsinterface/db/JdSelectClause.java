@@ -84,7 +84,7 @@ public class JdSelectClause extends KScriptable {
         }
 
         // Validate the field name
-        field = fieldTable.getField(fieldName);
+        field = fieldTable.getFieldOrGenericIdField(fieldName);
         if(field == null) {
             throw new OAPIException("Bad field '" + fieldName + "' for table '" + fieldTable.jsGet_name() + "'");
         }
@@ -100,6 +100,8 @@ public class JdSelectClause extends KScriptable {
         if(!comparisonOK) {
             if(comparison.equals("!=")) {
                 comparison = "<>";
+            } else if(comparison.equals("PERMIT READ") && field instanceof JdTable.LabelListField) {
+                field = ((JdTable.LabelListField)field).fieldForPermitReadComparison();
             } else {
                 throw new OAPIException("Bad comparison operator '" + comparison + "'");
             }

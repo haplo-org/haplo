@@ -56,7 +56,7 @@ var escapeHTML;
 (function($) {
 
     /* global */ escapeHTML = function(str) {
-        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g, '&quot;');
+        return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g, '&quot;');
     };
 
     // Used to treat whitespace only value in controls as the empty string

@@ -8,5 +8,5 @@ unless(document) {
       std:ui:notice(_uncommittedChangesWarningText)
     }
   }
-  render(_viewerDocumentDeferred)
+  render(_viewerBody)
 }

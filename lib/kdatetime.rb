@@ -184,23 +184,24 @@ private
     end
   end
   HTMLSTR_TO_END_OF = PFormatStr.new(' to end of ', ' <i>to end of</i> ')
-  HTMLSTR_TO_END_OF_BR = PFormatStr.new(' to end of ', ' <i>to end of</i><br>')
   HTMLSTR_TO = PFormatStr.new(' to ', ' <i>to</i> ')
-  HTMLSTR_TO_BR = PFormatStr.new(' to ', ' <i>to</i><br>')
   HTMLSTR_SPACE = PFormatStr.new(' ')
   HTMLSTR_COMMA = PFormatStr.new(', ')
   HTMLSTR_COMMA_FROM = PFormatStr.new(', from ', ', <i>from</i> ')
   HTMLSTR_EMPTY = PFormatStr.new('')
   PFormat = Struct.new(:format1, :format2, :range_sep, :range_sep_abbr, :swap_positions, :format_sep, :format_sep_abbr)
 
+  DISPLAY_DATE_MAPPER_PLAIN = Proc.new { |d| d }
+  DISPLAY_DATE_MAPPER_HTML  = Proc.new { |d| "<span>#{d}</span>" }
+
   PRECISION_FORMAT = {
     'C' => PFormat.new('%Yc',      nil,     HTMLSTR_TO_END_OF,    nil,               false, HTMLSTR_EMPTY),
     'D' => PFormat.new('%Ys',      nil,     HTMLSTR_TO_END_OF,    nil,               false, HTMLSTR_EMPTY),
     'Y' => PFormat.new('%Y',       nil,     HTMLSTR_TO_END_OF,    nil,               false, HTMLSTR_EMPTY),
     'M' => PFormat.new('%Y',       '%b',    HTMLSTR_TO_END_OF,    HTMLSTR_TO_END_OF, true,  HTMLSTR_SPACE),
-    'd' => PFormat.new('%b %Y',    '%d',    HTMLSTR_TO_END_OF_BR, HTMLSTR_TO_END_OF, true,  HTMLSTR_SPACE),
-    'h' => PFormat.new('%d %b %Y', '%H:00', HTMLSTR_TO_BR,        HTMLSTR_TO,        false, HTMLSTR_COMMA, HTMLSTR_COMMA_FROM),
-    'm' => PFormat.new('%d %b %Y', '%H:%M', HTMLSTR_TO_BR,        HTMLSTR_TO,        false, HTMLSTR_COMMA, HTMLSTR_COMMA_FROM)
+    'd' => PFormat.new('%b %Y',    '%d',    HTMLSTR_TO_END_OF,    HTMLSTR_TO_END_OF, true,  HTMLSTR_SPACE),
+    'h' => PFormat.new('%d %b %Y', '%H:00', HTMLSTR_TO,           HTMLSTR_TO,        false, HTMLSTR_COMMA, HTMLSTR_COMMA_FROM),
+    'm' => PFormat.new('%d %b %Y', '%H:%M', HTMLSTR_TO,           HTMLSTR_TO,        false, HTMLSTR_COMMA, HTMLSTR_COMMA_FROM)
   }
 
   PG_TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:00"
@@ -325,22 +326,24 @@ private
       x << d.strftime(format.format2) if format.format2
       x
     end
+    date_mapper = html_output ? DISPLAY_DATE_MAPPER_HTML : DISPLAY_DATE_MAPPER_PLAIN
     # Need to abbreviate if they in the same time range?
     j = if r.length > 1 && format.format2 && r.first.first == r.last.first
       # Range displayed with abbrevations
-      jx = [r.first.last, r.last.last].join((format.range_sep_abbr || format.range_sep).str(html_output))
-      jy = (format.swap_positions ? [jx, r.first.first] : [r.first.first, jx])
+      jx = [r.first.last, r.last.last].map(&date_mapper).join((format.range_sep_abbr || format.range_sep).str(html_output))
+      j2 = [r.first.first].map(&date_mapper).first
+      jy = (format.swap_positions ? [jx, j2] : [j2, jx])
       jy.join((format.format_sep_abbr || format.format_sep).str(html_output))
     else
       # Single value, or range displayed normally
       r = r.map { |x| [x.last, x.first] } if format.swap_positions
-      r.map { |y| y.join(format.format_sep.str(html_output)) } .join(format.range_sep.str(html_output))
+      r.map { |y| y.join(format.format_sep.str(html_output)) } .map(&date_mapper).join(format.range_sep.str(html_output))
     end
     # If there's not a conversion to a local time zone, but there is a timezone specified here, append it
     if timezone == nil && @z != nil
       j << " (#{@z})"
     end
-    j
+    html_output ? %Q!<span class="z__object_date_value">#{j}</span>! : j
   end
 
   # --------------------------------------------------------------------------------------------------------------
@@ -392,6 +395,10 @@ private
     r.start = range.first.to_i * 1000
     r.end = range.last.to_i * 1000
     r
+  end
+
+  def jsSpecifiedAsRange
+    !!(@e)
   end
 
 end

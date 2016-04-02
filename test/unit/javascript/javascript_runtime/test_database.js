@@ -105,6 +105,15 @@ TEST(function() {
         number1: { type:"int" }
     });
 
+    db.table("labels1", {
+        labels: { type:"labelList", nullable:true },  // but not indexed
+        number: { type:"int" }
+    });
+    db.table("labels2", {
+        labels: { type:"labelList", indexed:true }, // not nullable
+        number: { type:"int" }
+    });
+
     // Set up the storage
     $host._testCallback("");
 
@@ -506,9 +515,14 @@ TEST(function() {
         });
         return x;
     };
+(function() {
+    TEST.assert_equal("a4:a2:a1:", t_res(db.numbers.select().where("medium", "<", 349).order("id", true)));
+    TEST.assert_equal("a4:a5:a6:", t_res(db.numbers.select().where("id", ">", 4).order("id", false)));
+    TEST.assert_equal("a6:a5:a4:", t_res(db.numbers.select().where("id", ">", 4).order("id", true)));
     TEST.assert_equal("a1:a4:a2:", t_res(db.numbers.select().where("medium", "<", 349).order("medium", true)));
     TEST.assert_equal("a1:a4:a2:", t_res(db.numbers.select().where("medium", "<", 349).order("medium", true).stableOrder()));
-    TEST.assert_equal("a1:a4:a2:", t_res(db.numbers.select().where("medium", "<", 349).stableOrder().order("medium", true)));
+    TEST.assert_equal("a1:a4:a2:", t_res(db.numbers.select().where("medium", "<", 349).stableOrder().order("medium", true))); // stableOrder always goes last
+    TEST.assert_equal("a2:a4:a1:", t_res(db.numbers.select().where("medium", "<", 349).stableOrder().order("medium", false))); // stableOrder always goes last
     TEST.assert_equal("a5:", t_res(db.numbers.select().where("big", ">", 4000)));
     TEST.assert_equal("a4:a6:", t_res(db.numbers.select().where("small", "<=", 23).where("medium", ">", 2).order("small")));
     TEST.assert_equal("a3:a1:a4:", t_res(db.numbers.select().where("big", "=", null).where("medium", ">=", 10).order("medium", true)));
@@ -521,6 +535,7 @@ TEST(function() {
     TEST.assert_equal("a2:a4:a1:", t_res(db.numbers.select().where("pingTime", "=", null).order("medium")));
     TEST.assert_equal("a5:a6:a3:", t_res(db.numbers.select().where("pingTime", "<>", null).order("medium")));
     TEST.assert_equal("a2:a3:", t_res(db.numbers.select().where("bools", "=", true).order("medium")));
+})();
 
     // Limits and offsets
     TEST.assert_equal("a4:", t_res(db.numbers.select().where("pingTime", "=", null).offset(1).limit(1).order("medium")));
@@ -705,6 +720,62 @@ TEST(function() {
     TEST.assert(ee1.ref == store1.ref);
 
     // TODO: Check all validation for setters on JS database objects
+
+    // =====================================================================================
+    // LabelList
+(function() { // TODO: Use of anon functions here seems to be necessary overcome Rhino function length limits
+    db.labels1.create({
+        labels: O.labelList([1,2,3]),
+        number: 4
+    }).save();
+    db.labels1.create({
+        labels: O.labelList([7,8,9]),
+        number: 10
+    }).save();
+    db.labels1.create({
+        labels: null,
+        number: 11
+    }).save();
+    var labels1_select1 = db.labels1.select().where("labels","=",O.labelList([1,2,3]));
+    TEST.assert_equal(1, labels1_select1.length);
+    var labelsFromRow = labels1_select1[0].labels;
+    TEST.assert(labelsFromRow instanceof $LabelList);
+    TEST.assert_equal("[1, 2, 3]", labelsFromRow.toString());
+    TEST.assert_equal(4, labels1_select1[0].number);
+    var labels1_select2 = db.labels1.select().where("labels","!=",O.labelList([1,2,3]));
+    TEST.assert_equal(1, labels1_select2.length);
+    TEST.assert_equal(10, labels1_select2[0].number);
+
+    db.labels2.create({
+        labels: O.labelList([8,7,6]), // reverse order
+        number: 4
+    }).save();
+    db.labels2.create({
+        labels: O.labelList([1]),
+        number: 5
+    }).save();
+    var labels2_select1 = db.labels2.select().where("labels","=",O.labelList([6,7,8]));
+    TEST.assert_equal(1, labels2_select1.length);
+    TEST.assert_equal("[6, 7, 8]", labels2_select1[0].labels.toString());
+    TEST.assert_equal(4, labels2_select1[0].number);
+
+    var labels2_select2 = db.labels2.select().where("labels","PERMIT READ", O.user(41));
+    TEST.assert_equal(0, labels2_select2.length);
+
+    db.labels2.create({
+        labels: O.labelList([9,100]),
+        number: 900
+    }).save();
+    var labels2_select3 = db.labels2.select().where("labels","PERMIT READ", O.user(41));
+    TEST.assert_equal(1, labels2_select3.length);
+    TEST.assert_equal(900, labels2_select3[0].number);
+
+    TEST.assert_exceptions(function() { db.labels2.select().where("labels","=",123)}, "Comparison value for field 'labels' is not a compatible data type.");
+    TEST.assert_exceptions(function() { db.labels2.select().where("labels","PERMIT READ",123)}, "Comparison value for field 'labels' is not a compatible data type.");
+    // check nullable and not nullable definitions
+    TEST.assert_exceptions(function() { db.labels1.select().where("labels","PERMIT READ",null)}, "Can't use a null value for PERMIT READ comparison in a where() clause.");
+    TEST.assert_exceptions(function() { db.labels2.select().where("labels","PERMIT READ",null)}, "Can't use a null value for PERMIT READ comparison in a where() clause.");
+})();
 
     // =====================================================================================
     //  Test file values

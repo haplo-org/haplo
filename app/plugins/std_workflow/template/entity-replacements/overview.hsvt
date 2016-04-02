@@ -1,18 +1,43 @@
-<table>
-  <tr>
-    <th></th> <th> "Original" </th> <th> "Replacement" </th>
-  </tr>
-  each(data) {
+
+std:plugin:resources("replacements-overview.js")
+
+<form method="POST"> std:form:token()
+  <table>
     <tr>
-      <td> title </td>
-      <td> std:object:link(original) </td>
-      <td>
-        if(replacement) {
-          std:object:link(replacement) " &nbsp; " <a href=editPath> "change..." </a>
-        } else {
-          <a href=editPath> "set..." </a>
-        }
-      </td>
+      unless(neverSelectable) { <th> </th> } <th> "Role" </th> <th> "Original" </th> <th> "Replacement" </th>
     </tr>
-  }
-</table>
+    each(data) {
+      <tr>
+        unless(^{neverSelectable}) {
+          <td>
+            <div>
+              <input
+                type="checkbox"
+                class="z__workflow_selected"
+                name=concat(entityName "[" original "]")
+                checked=if(selected) { "checked" }
+                disabled=unless(selectable) { "disabled" }
+              >
+            </div>
+          </td>
+        }
+        <td> title </td>
+        <td> std:object:link(original) </td>
+        <td>
+          if(replacement) {
+            std:object:link(replacement)
+          }
+          if(assignable) {
+            if(replacement) {
+              " &nbsp; " <a class="z__workflow_replace" href=editPath> "change..." </a>
+            } else {
+              <a class="z__workflow_replace" href=editPath> "set..." </a>
+            }
+          }
+        </td>
+      </tr>
+    }
+  </table>
+
+  <input type="submit" value="Apply selection" id="z__workflow_apply_selection">
+</form>

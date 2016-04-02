@@ -35,7 +35,7 @@ var defineTimelineDatabase = function(plugin, workflowName) {
         previousState:  { type:"text", nullable:true }, // previous state the workflow was in (transitions only)
         target:         { type:"text", nullable:true }, // value of the target tag when this entry was created
         state:          { type:"text" },                // which state the workflow is in
-        json:           { type:"text",  nullable:true } // json encoded data
+        json:           { type:"text",  nullable:true } // json encoded data (use data property to read)
     }, function(prototype) {
         prototype.__defineGetter__('data', timelineRowDataGetter);
     });
@@ -176,6 +176,9 @@ WorkflowInstanceBase.prototype = {
             previousTarget = this.target,
             destination, destinationTarget, stateDefinition;
         this._setPendingTransition(transition);
+        // Select the handlers for transitionComplete based on the initial state of transition.
+        // (if it were done on the post transition state, it'd be quite hard to use)
+        var transitionComplete = this._callHandlerDeferred('$transitionComplete', transition, previousState);
         try {
             var props = this.transitions.properties(transition);
             if(!props) {
@@ -216,6 +219,7 @@ WorkflowInstanceBase.prototype = {
         };
         if(data) { timelineRow.json = JSON.stringify(data); }
         this.$timeline.create(timelineRow).save();
+        transitionComplete(); // Handlers selected before anything changed
         return this;
     },
 
@@ -302,6 +306,36 @@ WorkflowInstanceBase.prototype = {
         }
     },
 
+    // Create a function which will call handlers with the arguments.
+    // The handlers to call are selected using the current state of the
+    // workflow, but called with M in the state after the transition.
+    _callHandlerDeferred: function(list /* arguments */) {
+        // Copy arguments, replace first with this
+        var handlerArguments = Array.prototype.slice.call(arguments, 0);
+        handlerArguments[0] = this;
+        // Choose handlers
+        var handlers = this[list];
+        if(!handlers) { return function() {}; }
+        var selectedHandlers = [];
+        for(var i = (handlers.length - 1); i >= 0; --i) {
+            var h = handlers[i];
+            if(this.selected(h.selector)) {
+                selectedHandlers.push(h);
+            }
+        }
+        // Return function which will call the selected handler later
+        var M = this; // for scope
+        return function() {
+            // selectedHandlers is in reverse order to the list, so called in order
+            selectedHandlers.forEach(function(h) {
+                var r = h.handler.apply(M, handlerArguments);
+                if(r !== undefined) {
+                    return r;
+                }
+            });
+        };
+    },
+
     // Called to start a new workflow
     _initialise: function(properties) {
         var initial = {state:"START"};
@@ -334,6 +368,7 @@ WorkflowInstanceBase.prototype = {
         }
         // Transitions may need to be recalculated as different selectors will match
         delete this.$transitions;
+        delete this.$flags;
     },
 
     _saveWorkUnit: function() {
@@ -425,6 +460,8 @@ WorkflowInstanceBase.prototype = {
         }
         // Flags from current state (stateDefinition is left set from loop unless there are no flags at all)
         if(stateDefinition) { change('flags', true); }
+        // For setting flags calculated from workflow data, not state
+        this._call('$modifyFlags', flags);
         return flags;
     },
 
@@ -623,11 +660,13 @@ implementFunctionList('getActionableBy');
 implementFunctionList('hasRole');
 implementFunctionList('textInterpolate');
 implementFunctionList('renderTimelineEntryDeferred');
+implementFunctionList('modifyFlags');
 // text() function list implemented above with exception for text dictionary
 implementHandlerList('preWorkUnitSave');
 implementHandlerList('setWorkUnitProperties');
 implementHandlerList('observeEnter');
 implementHandlerList('observeExit');
+implementHandlerList('transitionComplete');
 implementHandlerList('renderWork');
 implementHandlerList('renderWorkList');
 implementHandlerList('workListFullInfo');

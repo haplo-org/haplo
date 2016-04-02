@@ -607,6 +607,13 @@ __E
 
   # ===============================================================================================
 
+  def test_actions
+    db_reset_test_data
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_actions.js')
+  end
+
+  # ===============================================================================================
+
   def test_client_side_editor_support
     restore_store_snapshot("basic")
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_client_side_editor_support.js')
@@ -830,6 +837,10 @@ __E
         r = KApp.get_pg_database.exec("SELECT * FROM pg_catalog.pg_indexes WHERE schemaname='a#{KApp.current_application}' AND tablename='j_dbtest_files1' AND indexdef LIKE '%attachedfile%'");
         assert_equal 1, r.length
         r.clear
+        # Check that the labels index uses GIN
+        r = KApp.get_pg_database.exec("SELECT * FROM pg_catalog.pg_indexes WHERE schemaname='a#{KApp.current_application}' AND tablename='j_dbtest_labels2' AND indexdef LIKE '%USING gin (labels gin__int_ops)%'");
+        assert_equal 1, r.length
+        r.clear
         # Callback return must be a string
         ""
       })
@@ -912,7 +923,7 @@ __E
     assert_equal "application/vnd.ms-excel", xls.getMimeType()
     assert_equal true, xls.haveData()
     xls_data = String.from_java_bytes(xls.makeData())
-    # File.open("test.xls", "w") { |f| f.write xls_data }
+    # File.open("test.xls", "w:BINARY") { |f| f.write xls_data }
     # TODO: Better test for output from xls JS interface
     [
       'Sheet One', 'TESTOBJ', 'Heading Three', '13:23', 'User 1', '(DELETED)', "ABC_DEF_"
@@ -925,7 +936,7 @@ __E
     assert_equal "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", xlsx.getMimeType()
     assert_equal true, xlsx.haveData()
     xlsx_data = String.from_java_bytes(xlsx.makeData())
-    # File.open("test.xlsx", "w") { |f| f.write xlsx_data }
+    # File.open("test.xlsx", "w:BINARY") { |f| f.write xlsx_data }
   end
 
   # ===============================================================================================

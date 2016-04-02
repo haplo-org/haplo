@@ -24,7 +24,7 @@ P.REPORTING_API.dashboard = function(E, specification) {
         throw new Error("Unknown dashboard kind: "+specification.kind);
     }
 
-    var dashboard = (new DashboardConstructor())._setupBase(collection);
+    var dashboard = (new DashboardConstructor())._setupBase(specification.name, collection);
     dashboard.E = E;
     dashboard.specification = specification;
     // dashboard filters on specification.filter
@@ -32,6 +32,8 @@ P.REPORTING_API.dashboard = function(E, specification) {
 
     // Collect extra columns and other configuration in a standardised way
     var callServices = [
+            // Wildcard 'all dashboards'
+            "std:reporting:dashboard:*:setup",
             // A service for any dashboard using this collection, eg, for global filtering
             // (service implementors can check isExporting property)
             "std:reporting:collection_dashboard:"+collection.name+":setup",
@@ -59,10 +61,11 @@ P.REPORTING_API.dashboard = function(E, specification) {
 
 P.Dashboard = function() {};
 
-P.Dashboard.prototype._setupBase = function(collection) {
+P.Dashboard.prototype._setupBase = function(name, collection) {
+    this.name = name;
+    this.collection = collection;
     this.$summaryDisplay = [];
     this.$navigationUI = [];
-    this.collection = collection;
     this.$properties = {};  // inheritance implemented by property()
     return this;
 };
@@ -153,6 +156,19 @@ P.Dashboard.prototype.calculateStatistic = function(statistic, displayOptions) {
         },
         groupBy: displayOptions.groupBy
     });
+};
+
+P.Dashboard.prototype.display = function(where, deferred) {
+    if(!deferred) { return; }
+    if(!where) { where = "above"; }
+    if(!O.isDeferredRender(deferred)) {
+        throw new Error("Second argument to where() must be a deferred render.");
+    }
+    var displays = this.$displays;
+    if(!displays) { displays = this.$displays = {}; }
+    if(!(where in displays)) { displays[where] = []; }
+    displays[where].push(deferred);
+    return this;
 };
 
 P.Dashboard.prototype.summaryStatistic = function(sort, statistic, displayOptions) {

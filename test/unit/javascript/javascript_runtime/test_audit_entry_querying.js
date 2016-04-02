@@ -63,24 +63,19 @@ TEST(function() {
             return entry.data.XX;
         }).join('');
     }
-    function queryAll() {
-        return O.audit.query().displayable(null);
-    }
     // Look in fixtures/audit_entry.csv to understand these:
-    // Note, displayable=true only by default..
-    TEST.assert_equal(getTypes(O.audit.query()), "98642");
-    TEST.assert_equal(getTypes(queryAll()), "987654321");
-    TEST.assert_equal(getTypes(queryAll().sortBy("auditEntryType")), "543198762");
+    TEST.assert_equal(getTypes(O.audit.query()), "987654321");
+    TEST.assert_equal(getTypes(O.audit.query().sortBy("auditEntryType")), "543198762");
     // This next one isn't the exact reverse, because implicit created_at DESC sorting
     // still applies, so the kind sorting is reversed, but not the date..
-    TEST.assert_equal(getTypes(queryAll().sortBy("auditEntryType_asc")), "627895431");
-    TEST.assert_equal(getTypes(queryAll().sortBy("displayable")), "986427531");
+    TEST.assert_equal(getTypes(O.audit.query().sortBy("auditEntryType_asc")), "627895431");
+    TEST.assert_equal(getTypes(O.audit.query().sortBy("displayable")), "986427531");
 
     // Displayable
-    TEST.assert_equal(getTypes(O.audit.query()), "98642");
+    TEST.assert_equal(getTypes(O.audit.query()), "987654321");
+    TEST.assert_equal(getTypes(O.audit.query().displayable(null)), "987654321");
     TEST.assert_equal(getTypes(O.audit.query().displayable(true)), "98642");
     TEST.assert_equal(getTypes(O.audit.query().displayable(false)), "7531");
-    TEST.assert_equal(getTypes(O.audit.query().displayable(null)), "987654321");
 
     O.impersonating(O.SYSTEM, function() {
         TEST.assert_equal(getTypes(O.audit.query().displayable(null)), "987654321");
@@ -92,41 +87,41 @@ TEST(function() {
     var elevenOClock = new Date("June 6, 2013 11:00:00"); // entry 2
     var oneOClock = new Date("June 6, 2013 13:00:00"); // after entry 3
     var july = new Date("July 1, 2013 00:00:00"); // After all
-    TEST.assert_equal(getTypes(queryAll().dateRange(may, july)), "987654321");
-    TEST.assert_equal(getTypes(queryAll().dateRange(oneOClock, july)), "987654");
-    TEST.assert_equal(getTypes(queryAll().dateRange(may, elevenOClock)), "21");
-    TEST.assert_equal(getTypes(queryAll().dateRange(elevenOClock, oneOClock)), "32");
+    TEST.assert_equal(getTypes(O.audit.query().dateRange(may, july)), "987654321");
+    TEST.assert_equal(getTypes(O.audit.query().dateRange(oneOClock, july)), "987654");
+    TEST.assert_equal(getTypes(O.audit.query().dateRange(may, elevenOClock)), "21");
+    TEST.assert_equal(getTypes(O.audit.query().dateRange(elevenOClock, oneOClock)), "32");
 
     // Based on Object
-    TEST.assert_equal(getTypes(queryAll().ref(O.ref(75))), "64");
-    TEST.assert_equal(getTypes(queryAll().ref(76)), "7");
+    TEST.assert_equal(getTypes(O.audit.query().ref(O.ref(75))), "64");
+    TEST.assert_equal(getTypes(O.audit.query().ref(76)), "7");
 
     // Based on editing a user
-    TEST.assert_equal(getTypes(queryAll().entityId(129)), "41");
-    TEST.assert_equal(getTypes(queryAll().entityId(130)), "");
+    TEST.assert_equal(getTypes(O.audit.query().entityId(129)), "41");
+    TEST.assert_equal(getTypes(O.audit.query().entityId(130)), "");
 
     // Edited by a user
-    TEST.assert_equal(getTypes(queryAll().userId(129)), "741");
-    TEST.assert_equal(getTypes(queryAll().userId(120)), "986532");
+    TEST.assert_equal(getTypes(O.audit.query().userId(129)), "741");
+    TEST.assert_equal(getTypes(O.audit.query().userId(120)), "986532");
 
     // Edited by a user with impersonation
-    TEST.assert_equal(getTypes(queryAll().authenticatedUserId(121)), "98765");
-    TEST.assert_equal(getTypes(queryAll().authenticatedUserId(129)), "4321");
+    TEST.assert_equal(getTypes(O.audit.query().authenticatedUserId(121)), "98765");
+    TEST.assert_equal(getTypes(O.audit.query().authenticatedUserId(129)), "4321");
 
     // Test chaining.  USER-LOGIN: 1, 3, 4, 5.  Ref(75): 4, 6 so expect only 4
-    TEST.assert_equal(getTypes(queryAll().auditEntryType("USER-LOGIN").ref(O.ref(75))), "4");
+    TEST.assert_equal(getTypes(O.audit.query().auditEntryType("USER-LOGIN").ref(O.ref(75))), "4");
     // {987654} & {986532} => {9865}
-    TEST.assert_equal(getTypes(queryAll().dateRange(oneOClock, july).userId(120)), "9865");
+    TEST.assert_equal(getTypes(O.audit.query().dateRange(oneOClock, july).userId(120)), "9865");
 
     // First method
-    TEST.assert_equal(queryAll().displayable(true).first().data.XX, 9);
+    TEST.assert_equal(O.audit.query().displayable(true).first().data.XX, 9);
 
-    var sortedQuery = queryAll().sortBy("auditEntryType_asc"); //62785431
+    var sortedQuery = O.audit.query().sortBy("auditEntryType_asc"); //62785431
     TEST.assert_equal(sortedQuery.first().data.XX, 6);
     TEST.assert_equal(sortedQuery.length, 9);
 
-    TEST.assert_equal(queryAll().limit(2).length, 2);
-    TEST.assert_equal(queryAll().limit(1000).length, 9);
+    TEST.assert_equal(O.audit.query().limit(2).length, 2);
+    TEST.assert_equal(O.audit.query().limit(1000).length, 9);
 
     for(var i=0; i < 1010; ++i) {
         O.audit.write({
@@ -135,8 +130,8 @@ TEST(function() {
         });
     }
 
-    TEST.assert_equal(queryAll().auditEntryType("test:kindx").length, 1000);
-    TEST.assert_equal(queryAll().auditEntryType("test:kindx").limit(500).length, 500);
-    TEST.assert_equal(queryAll().auditEntryType("test:kindx").limit(2000).length, 1010);
+    TEST.assert_equal(O.audit.query().auditEntryType("test:kindx").length, 1000);
+    TEST.assert_equal(O.audit.query().auditEntryType("test:kindx").limit(500).length, 500);
+    TEST.assert_equal(O.audit.query().auditEntryType("test:kindx").limit(2000).length, 1010);
 
 });

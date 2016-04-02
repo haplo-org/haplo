@@ -932,6 +932,14 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
                 } else if(nodename == 'div' && scan.className == 'z__widget_container') {
                     ok = true; // It's a widget
                 }
+            } else if(scan.nodeType == NODE__TEXT_NODE) {
+                // Bare text node found at top level of editor (eg tab into document field in Firefox 45 then type)
+                // Create a top level <p> tag for it to live in.
+                var paraForTopLevelTextNode = document.createElement('p');
+                container.replaceChild(paraForTopLevelTextNode, scan);
+                paraForTopLevelTextNode.appendChild(scan);
+                scan = paraForTopLevelTextNode;
+                ok = true;
             }
 
             if(!ok) {

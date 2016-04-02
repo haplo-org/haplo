@@ -24,7 +24,7 @@ public class JdSelect extends JdSelectClause {
 
     private static final int NO_LIMIT = -1;
 
-    private static final String GENERIC_SQL_ERROR = "Couldn't execute SQL (does the underlying database table need migrating?)";
+    private static final String GENERIC_SQL_ERROR = "Couldn't execute SQL (does the underlying database table need migrating?) - ";
 
     public JdSelect() {
         this.stableOrder = false;
@@ -45,7 +45,7 @@ public class JdSelect extends JdSelectClause {
     // API for describing queries
     public Scriptable jsFunction_order(String fieldName, boolean descending) {
         checkNotExecutedYet();
-        JdTable.Field field = this.table.getField(fieldName);
+        JdTable.Field field = this.table.getFieldOrGenericIdField(fieldName);
         if(field == null) {
             throw new OAPIException("Field '" + fieldName + "' given to order() clause doesn't exist in table");
         }
@@ -148,7 +148,7 @@ public class JdSelect extends JdSelectClause {
         try {
             return this.table.executeSingleValueExpressionUsingTrustedSQL(this, "COUNT(*)", JdTable.SingleValueKind.INT, null);
         } catch(java.sql.SQLException e) {
-            throw new OAPIException(GENERIC_SQL_ERROR, e);
+            throw new OAPIException(GENERIC_SQL_ERROR + e.getMessage(), e);
         }
     }
 
@@ -183,7 +183,7 @@ public class JdSelect extends JdSelectClause {
         try {
             return this.table.executeSingleValueExpressionUsingTrustedSQL(this, sqlExpression, valueKind, groupByField);
         } catch(java.sql.SQLException e) {
-            throw new OAPIException(GENERIC_SQL_ERROR, e);
+            throw new OAPIException(GENERIC_SQL_ERROR + e.getMessage(), e);
         }
     }
 
@@ -205,7 +205,7 @@ public class JdSelect extends JdSelectClause {
         try {
             return this.table.executeDelete(this);
         } catch(java.sql.SQLException e) {
-            throw new OAPIException(GENERIC_SQL_ERROR, e);
+            throw new OAPIException(GENERIC_SQL_ERROR + e.getMessage(), e);
         }
     }
 
@@ -223,7 +223,7 @@ public class JdSelect extends JdSelectClause {
             try {
                 this.results = this.table.executeQuery(this);
             } catch(java.sql.SQLException e) {
-                throw new OAPIException(GENERIC_SQL_ERROR, e);
+                throw new OAPIException(GENERIC_SQL_ERROR + e.getMessage(), e);
             }
         }
     }

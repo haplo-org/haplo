@@ -9,13 +9,10 @@ O.text constructor takes dictionary for T_IDENTIFIER_TELEPHONE_NUMBER which does
 Text objects toString() and s() take optional format strings. Telephone number has formatting options.
 File identifier toString()/s() returns the filename for no format or "filename", a string ID for "id", and the MIME type for format "type"
 Text objects toFields(), with different options based on type. Includes typecode key.
-SCHEMA.AA_* constants
 
 File handling
 -------------
-
 File transforms for url() and toHTML()
-readAsString(charsetName) on StoredFile objects
 
 Templates
 ---------
@@ -35,14 +32,6 @@ Taking over object rendering
 Use render type of 'hide' or 'blank', use Element below to render whatever you want.
 For search results, plugin.renderSearchResult() and renderer object
 
-
-File uploads
-------------
-
-as:"file" in respond() argument declaractions
-BinaryData & UploadedFile interfaces
-readAsString(charsetName) on BinaryData interface
-O.file(uploadedFile) to create stored file from upload
 
 Users & permissions
 -------------------
@@ -66,17 +55,9 @@ Databases
 ---------
 P.db._dynamicTable(...) for tables which can be redefined at runtime.
 
-Jobs
-----
-O.background.run()
-pBackgroundProcessing privilege
-plugin.backgroundCallback()
-
 Misc
 ----
-O.session
 O.tray
-O.refdictHierarchical()
 setResponsiblePlugin() in Exchange objects
 O.reportHealthEvent() + pReportHealthEvent
 

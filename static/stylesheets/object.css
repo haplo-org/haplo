@@ -144,6 +144,15 @@
     color: #44146f;
 }
 
+/* dates need a little tweaks for clarity */
+.z__object_date_value span,
+.z__object_date_value i {
+    white-space: nowrap; /* don't allow dates to go onto next line */
+}
+.z__object_date_value i {
+    margin: 0 6px 0 4px; /* little bit of space around things like 'to end of' for clarity, less on left because italics lean to the right */
+}
+
 div.z__jump_link {
     margin: 8px 0 28px 0;
     font-size: 11px;

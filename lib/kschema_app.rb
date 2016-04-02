@@ -199,6 +199,16 @@ class KSchemaApp < KSchema
   end
   def type_descriptor_class; TypeDescriptorApp; end
 
+  # Display element 'parser'
+  def self.each_display_element(elements_string)
+    (elements_string || '').split(/[\r\n]+/).each do |line|
+      group_s, element_position, element_name, element_options = line.split(/\s+/, 4)
+      if element_name != nil && element_name.length > 1
+        yield group_s, element_position, element_name, element_options
+      end
+    end
+  end
+
   # Which types are user visible?
   def build_query_for_user_visible_types(store)
     query = store.query_and.link(O_TYPE_APP_VISIBLE, A_TYPE)

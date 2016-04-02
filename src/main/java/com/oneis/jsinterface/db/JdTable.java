@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import com.oneis.jsinterface.KObjRef;
 import com.oneis.jsinterface.KUser;
 import com.oneis.jsinterface.KStoredFile;
+import com.oneis.jsinterface.KLabelList;
 
 // TODO: Handle java.sql.SQLException exceptions? Or use a global method of turning exceptions into something presentable to the JS code?
 public class JdTable extends KScriptable {
@@ -71,6 +72,20 @@ public class JdTable extends KScriptable {
         return null;
     }
 
+    // where() and order() allow use of "id" as well as defined field names
+    protected Field getFieldOrGenericIdField(String fieldName) {
+        Field field = getField(fieldName);  // Try first so common path doesn't have "id" comparison
+        if((field == null) && ("id".equals(fieldName))) {
+            if(genericIdField == null) {
+                genericIdField = new GenericIdField();
+            }
+            field = genericIdField;
+        }
+        return field;
+    }
+    // Use a shared generic id field definition for all tables
+    private static GenericIdField genericIdField;
+
     // --------------------------------------------------------------------------------------------------------------
     public void jsConstructor(String name, Scriptable fields, Scriptable methods) {
         Runtime runtime = Runtime.getCurrentRuntime();
@@ -111,35 +126,26 @@ public class JdTable extends KScriptable {
                 }
                 // Create the field object
                 Field field = null;
-                if(fieldType.equals("text")) {
-                    field = new TextField(fieldName, defn);
-                } else if(fieldType.equals("datetime")) {
-                    field = new DateTimeField(fieldName, defn);
-                } else if(fieldType.equals("date")) {
-                    field = new DateField(fieldName, defn);
-                } else if(fieldType.equals("time")) {
-                    field = new TimeField(fieldName, defn);
-                } else if(fieldType.equals("boolean")) {
-                    field = new BooleanField(fieldName, defn);
-                } else if(fieldType.equals("smallint")) {
-                    field = new SmallIntField(fieldName, defn);
-                } else if(fieldType.equals("int")) {
-                    field = new IntField(fieldName, defn);
-                } else if(fieldType.equals("bigint")) {
-                    field = new BigIntField(fieldName, defn);
-                } else if(fieldType.equals("float")) {
-                    field = new FloatField(fieldName, defn);
-                } else if(fieldType.equals("ref")) {
-                    field = new ObjRefField(fieldName, defn);
-                } else if(fieldType.equals("file")) {
-                    field = new FileField(fieldName, defn);
-                } else if(fieldType.equals("link")) {
-                    field = new LinkField(fieldName, defn, "i" + linkAliasNumber);
-                    linkAliasNumber++;
-                } else if(fieldType.equals("user")) {
-                    field = new UserField(fieldName, defn);
-                } else {
-                    throw new OAPIException("Unknown data type '" + fieldType + "' in field definition for " + name + "." + fieldName);
+                switch(fieldType) {
+                    case "text":        field = new TextField(fieldName, defn); break;
+                    case "datetime":    field = new DateTimeField(fieldName, defn); break;
+                    case "date":        field = new DateField(fieldName, defn); break;
+                    case "time":        field = new TimeField(fieldName, defn); break;
+                    case "boolean":     field = new BooleanField(fieldName, defn); break;
+                    case "smallint":    field = new SmallIntField(fieldName, defn); break;
+                    case "int":         field = new IntField(fieldName, defn); break;
+                    case "bigint":      field = new BigIntField(fieldName, defn); break;
+                    case "float":       field = new FloatField(fieldName, defn); break;
+                    case "ref":         field = new ObjRefField(fieldName, defn); break;
+                    case "file":        field = new FileField(fieldName, defn); break;
+                    case "user":        field = new UserField(fieldName, defn); break;
+                    case "labelList":   field = new LabelListField(fieldName, defn); break;
+                    case "link":
+                        field = new LinkField(fieldName, defn, "i" + linkAliasNumber);
+                        linkAliasNumber++;
+                        break;
+                    default:
+                        throw new OAPIException("Unknown data type '" + fieldType + "' in field definition for " + name + "." + fieldName);
                 }
                 fieldList.add(field);
             }
@@ -731,12 +737,16 @@ public class JdTable extends KScriptable {
         protected boolean uniqueIndex;
         protected String[] otherIndexFields;
 
-        public Field(String name, Scriptable defn) {
+        protected Field(String name) {
             this.dbName = name.toLowerCase();
             if(PostgresqlReservedWords.isReserved(this.dbName)) {
                 this.dbName = "_" + this.dbName;   // _ prefix ensures that it won't clash with reserved words
             }
             this.jsName = name;
+        }
+
+        public Field(String name, Scriptable defn) {
+            this(name);
             this.nullable = JsGet.booleanWithDefault("nullable", defn, false);
             this.indexed = JsGet.booleanWithDefault("indexed", defn, false);
             this.uniqueIndex = JsGet.booleanWithDefault("uniqueIndex", defn, false);
@@ -1251,6 +1261,10 @@ public class JdTable extends KScriptable {
 
     // --------------------------------------------------------------------------------------------------------------
     private static class IntField extends Field {
+        private IntField(String name) {
+            super(name);
+        }
+
         public IntField(String name, Scriptable defn) {
             super(name, defn);
         }
@@ -1290,6 +1304,15 @@ public class JdTable extends KScriptable {
         @Override
         protected Object getValueFromResultSet(ResultSet results, ParameterIndicies indicies) throws java.sql.SQLException {
             return results.getInt(indicies.get());
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+    private static class GenericIdField extends IntField {
+        GenericIdField() {
+            super("id");
+            this.dbName = "id";
+            this.jsName = "id";
         }
     }
 
@@ -1766,4 +1789,120 @@ public class JdTable extends KScriptable {
         }
     }
 
+    // --------------------------------------------------------------------------------------------------------------
+    protected static class LabelListField extends Field {
+        public LabelListField(String name, Scriptable defn) {
+            super(name, defn);
+        }
+
+        protected LabelListField(String name) {
+            super(name);
+        }
+
+        @Override
+        public String sqlDataType() {
+            return "int[]";
+        }
+
+        @Override
+        public int jdbcDataType() {
+            return java.sql.Types.ARRAY;
+        }
+
+        public Field fieldForPermitReadComparison() {
+            return new LabelListFieldForPermitReadComparison(this.dbName);
+        }
+
+        public String generateIndexSqlDefinition(JdTable table, int indexIndex) {
+            if(!this.indexed) {
+                return null;
+            }
+            if(this.uniqueIndex) {
+                throw new OAPIException("labelList database fields cannot use unique index");
+            }
+            if(this.otherIndexFields != null) {
+                throw new OAPIException("labelList database fields cannot be indexed with other fields");
+            }
+            StringBuilder create = new StringBuilder("CREATE INDEX ");
+            create.append(table.getDatabaseTableName());
+            create.append("_i" + indexIndex);
+            create.append(" ON ");
+            create.append(table.getDatabaseTableName());
+            // Special index for intarray labels
+            create.append(" using gin (");
+            create.append(this.generateIndexSqlDefinitionFields());
+            create.append(" gin__int_ops);");
+            return create.toString();
+        }
+
+        @Override
+        public boolean jsNonNullObjectIsCompatible(Object object) {
+            return object instanceof KLabelList;
+        }
+
+        @Override
+        public void setWhereNotNullValue(int parameterIndex, PreparedStatement statement, Object value) throws java.sql.SQLException {
+            KLabelList labelList = (KLabelList)value;
+            setValueInStatement(parameterIndex, statement, labelList);
+        }
+
+        @Override
+        public int setStatementField(int parameterIndex, PreparedStatement statement, Scriptable values) throws java.sql.SQLException {
+            KLabelList labelList = (KLabelList)JsGet.objectOfClass(this.jsName, values, KLabelList.class);
+            checkForForbiddenNullValue(labelList);
+            if(labelList == null) {
+                statement.setNull(parameterIndex, java.sql.Types.ARRAY);
+            } else {
+                setValueInStatement(parameterIndex, statement, labelList);
+            }
+            return parameterIndex + 1;
+        }
+
+        @Override
+        protected Object getValueFromResultSet(ResultSet results, ParameterIndicies indicies) throws java.sql.SQLException {
+            java.sql.Array array = results.getArray(indicies.get());
+            if(array == null) { return null; }
+            Integer ints[] = (Integer[])array.getArray();
+            int[] labels = new int[ints.length];
+            for(int l = 0; l < ints.length; ++l) {
+                labels[l] = ints[l];
+            }
+            return KLabelList.fromIntArray(labels);
+        }
+
+        private void setValueInStatement(int parameterIndex, PreparedStatement statement, KLabelList labelList) throws java.sql.SQLException {
+            int[] labels = labelList.getLabels();
+            Integer ints[] = new Integer[labels.length];
+            for(int l = 0; l < labels.length; ++l) {
+                ints[l] = labels[l];
+            }
+            statement.setArray(parameterIndex, 
+                statement.getConnection().createArrayOf("integer", ints));
+        }
+    }
+
+    // A pseudo field definition used for the PERMIT READ comparison in WHERE clauses
+    private static class LabelListFieldForPermitReadComparison extends LabelListField {
+        LabelListFieldForPermitReadComparison(String name) {
+            super(name);
+        }
+
+        @Override
+        public boolean jsObjectIsCompatible(Object object) {
+            if(object == null) {
+                throw new OAPIException("Can't use a null value for PERMIT READ comparison in a where() clause.");
+            }
+            return object instanceof KUser;
+        }
+
+        @Override
+        public int setWhereValue(int parameterIndex, PreparedStatement statement, Object value) throws java.sql.SQLException {
+            return parameterIndex;  // Embeds everything in generated SQL WHERE clause
+        }
+
+        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value) {
+            KUser user = (KUser)value;
+            where.append(user.makeWhereClauseForPermitRead(String.format("%1$s.%2$s", tableAlias, dbName)));
+        }
+    }
 }

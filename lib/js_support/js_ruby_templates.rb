@@ -128,6 +128,10 @@ module JSRubyTemplateControllerSupport
 
   # ------------------------------------------------------------------------------------------
 
+  def stdtmpl_document_text_to_html(document)
+    KTextDocument.new(document.to_s).to_html
+  end
+
   def stdtmpl_document_text_display(document)
     render_doc_as_html(KTextDocument.new(document.to_s), KObjectStore.store)
   end

@@ -125,7 +125,7 @@ __E
       title = obj.first_attr(KConstants::A_TITLE)
       url = obj.first_attr(KConstants::A_URL)
       if title != nil && url != nil
-        html << %Q!<a href="#{h(url)}" target="_blank">#{h(title)}</a>!
+        html << %Q!<a href="#{h(url)}" target="_blank" rel="noopener">#{h(title)}</a>!
       end
     end
     html << '</div>'

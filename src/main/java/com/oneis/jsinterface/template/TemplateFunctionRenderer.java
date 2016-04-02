@@ -45,6 +45,7 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
 
             case "std:text:paragraph": std_text_paragraph(builder, b); break;
             case "std:text:document": std_text_document(builder, b); break;
+            case "std:text:document:widgets": std_text_document_widgets(builder, b); break;
 
             case "std:date":            std_date(builder, b, true,  0); break;
             case "std:date:long":       std_date(builder, b, true,  1); break;
@@ -127,6 +128,11 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
     private final static Pattern STD_TEXT_PARAGRAPH_SPLIT = Pattern.compile("\\s*[\\r\\n]+\\s*");
 
     public void std_text_document(StringBuilder builder, FunctionBinding b) throws RenderException {
+        String document = b.nextUnescapedStringArgument(ArgumentRequirement.REQUIRED);
+        builder.append(inTextContext(b).stdtmpl_document_text_to_html(document));
+    }
+
+    public void std_text_document_widgets(StringBuilder builder, FunctionBinding b) throws RenderException {
         String document = b.nextUnescapedStringArgument(ArgumentRequirement.REQUIRED);
         builder.append(inTextContext(b).stdtmpl_document_text_display(document));
     }

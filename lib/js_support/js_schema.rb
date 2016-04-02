@@ -117,6 +117,8 @@ module KSchemaToJavaScript
       aliased = schema.aliased_attribute_descriptor(desc)
       attrs << ((aliased == nil) ? desc : aliased.alias_of)
     end
+    elements = []
+    KSchemaApp.each_display_element(type_desc.display_elements) { |g,p,element_name,o| elements << element_name }
     info = {
       :name => type_desc.printable_name.to_s,
       :shortName => type_desc.short_names.first.to_s,
@@ -124,6 +126,7 @@ module KSchemaToJavaScript
       :childTypes => type_desc.children_types.map { |r| r.obj_id },
       :behaviours => type_desc.behaviours.map { |r| TYPE_BEHAVIOURS[r] } .compact,
       :annotations => type_desc.annotations,
+      :elements => elements.sort(),
       :attributes => attrs
     }
     info[:parentType] = type_desc.parent_type.obj_id if type_desc.parent_type

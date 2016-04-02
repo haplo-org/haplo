@@ -34,12 +34,9 @@ module Application_ElementHelper
     elements = []
     inactive_elements = []
     group_lookup = User.cache.group_code_to_id_lookup
-    list.split(/[\r\n]+/).each do |line|
-      group_s, element_position, element_name, element_options = line.split(/\s+/, 4)
-      if element_name != nil && element_name.length > 1
-        displayed = @request_user.member_of?((group_lookup[group_s] || group_s).to_i)
-        (displayed ? elements : inactive_elements).push([element_name, element_position, element_options])
-      end
+    KSchemaApp.each_display_element(list) do |group_s, element_position, element_name, element_options|
+      displayed = @request_user.member_of?((group_lookup[group_s] || group_s).to_i)
+      (displayed ? elements : inactive_elements).push([element_name, element_position, element_options])
     end
     ElementsRenderer.new(elements, inactive_elements, path, object_maybe)
   end

@@ -2635,7 +2635,7 @@ _.extend(KEditor.prototype, {
                         $('#'+i+'_p').html(rtext);
                         // Make sure that clicking a link doesn't break anything.
                         // A warning message is displayed to tell the user what just happened.
-                        $('#'+i+'_p a').each(function() { this.target = '_blank'; }).
+                        $('#'+i+'_p a').each(function() { this.target = '_blank'; this.rel = "noopener"; }).
                             click(function(event) {
                                 if(!confirm("This is a preview of a new item which has not yet been saved.\n\nClick OK to open this link in a new window or tab, then return to this window to save the new item.")) { event.preventDefault(); }
                             });

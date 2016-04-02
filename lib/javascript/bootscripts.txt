@@ -23,6 +23,7 @@ lib/javascript/lib/ruby_templates.js
 lib/javascript/lib/handlebars_setup.js
 lib/javascript/lib/exchange.js
 lib/javascript/lib/navigation.js
+lib/javascript/lib/action.js
 lib/javascript/lib/plugin.js
 lib/javascript/lib/plugin_defined_text.js
 lib/javascript/lib/plugin_workunit.js

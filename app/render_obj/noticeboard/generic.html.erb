@@ -4,7 +4,7 @@
   item_link = obj.first_attr(KConstants::A_URL)
   title = obj.first_attr(KConstants::A_TITLE) || '????'
   if item_link != nil
-    %><a class="z__home_page_panel_noticeboard_viewlink" href="<%= h(item_link.to_s) %>" target="_blank">View</a><%
+    %><a class="z__home_page_panel_noticeboard_viewlink" href="<%= h(item_link.to_s) %>" target="_blank" rel="noopener">View</a><%
   end
   %><h3><a href="<%= obj_link %>"><%= h(title) %></a></h3><div class="z__home_page_panel_noticeboard_infoline"><%
   plink = options[:noticeboard_plink]

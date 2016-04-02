@@ -13,6 +13,7 @@ public interface TemplatePlatformFunctions {
     String render_obj(AppObject object, String style);
     String stdtmpl_link_to_object(AppObject object);
     String stdtmpl_link_to_object_descriptive(AppObject object);
+    String stdtmpl_document_text_to_html(String document);
     String stdtmpl_document_text_display(String document);
     void plugintmpl_include_static(String pluginName, String resourceName);
 

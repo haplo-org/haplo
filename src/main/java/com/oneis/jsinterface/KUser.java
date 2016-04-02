@@ -141,6 +141,12 @@ public class KUser extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+
+    public Object jsFunction_allowed(Object action) {
+        return Runtime.getCurrentRuntime().callSharedScopeJSClassFunction("O", "$actionAllowed", new Object[] { this, action });
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
     public void jsFunction_setAsLoggedInUser(Object auditInfo) {
         Runtime.privilegeRequired("pSetLoggedInUser", "call user.setAsLoggedInUser()");
         AppRoot supportRoot = Runtime.currentRuntimeHost().getSupportRoot();
@@ -302,6 +308,10 @@ public class KUser extends KScriptable {
         return rubyInterface.makeWhereClauseForIsMemberOf(fieldName, groupId);
     }
 
+    public String makeWhereClauseForPermitRead(String fieldName) {
+        return rubyInterface.makeWhereClauseForPermitRead(this.user, fieldName);
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     // Interface to Ruby functions
     public interface Ruby {
@@ -328,6 +338,8 @@ public class KUser extends KScriptable {
         public void setUserDataJSON(AppUser user, String json);
 
         public String makeWhereClauseForIsMemberOf(String fieldName, int groupId);
+
+        public String makeWhereClauseForPermitRead(AppUser user, String fieldName);
 
         public AppUser[] loadAllMembers(AppUser group);
 

@@ -436,6 +436,10 @@ public class KONEISHost extends KScriptable {
         this.supportRoot.addRightContent(html);
     }
 
+    public boolean jsFunction_isDeferredRender(Object object) {
+        return (object instanceof org.haplo.template.html.DeferredRender);
+    }
+
     // Search result rendering is special
     public void jsFunction_setRenderSearchResult(Function fn) {
         this.renderSearchResultFunction = fn;

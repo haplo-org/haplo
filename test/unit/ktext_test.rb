@@ -123,12 +123,12 @@ __E
     assert_equal "<h1>Heading</h1><ul><li>Item 1</li><li>Item 2</li></ul><p>Hello</p>", KTextDocument.new('<doc><h1>Heading</h1><li>Item 1</li><li>Item 2</li><p>Hello</p></doc>').to_html
     assert_equal "<p>Text</p><p>abc</p>", KTextDocument.new(%Q!<doc><p>Text</p><p>abc</p></doc>!).to_html
     assert_equal "<h1>Pants</h1><p>Text</p>", KTextDocument.new(%Q!<doc><h1>Pants</h1><widget type="W"><v name="attr">val</v></widget><p>Text</p></doc>!).to_html
-    assert_equal %Q!<p>Text <a target="_blank" href="http://www.example.com">link <b>bold</b> <i>italic</i></a></p>!,
+    assert_equal %Q!<p>Text <a target="_blank" rel="noopener" href="http://www.example.com">link <b>bold</b> <i>italic</i></a></p>!,
       KTextDocument.new(%Q!<doc><p>Text <a href="http://www.example.com">link <b>bold</b> <i>italic</i></a></p></doc>!).to_html
     assert_equal '<ul><li><b>bold</b></li></ul>', KTextDocument.new('<doc><li><b>bold</b></li></doc>').to_html
     # Auto-link URL in text elements, except if it's inside an <a> tag
     assert_equal '<ul><li><b>bold <a href="http://www.example.com">http://www.example.com</a></b></li></ul>', KTextDocument.new('<doc><li><b>bold http://www.example.com</b></li></doc>').to_html
-    assert_equal '<ul><li><b>bold <a target="_blank" href="http://www.example.com">http://www.example.com</a></b></li></ul>', KTextDocument.new('<doc><li><b>bold <a href="http://www.example.com">http://www.example.com</a></b></li></doc>').to_html
+    assert_equal '<ul><li><b>bold <a target="_blank" rel="noopener" href="http://www.example.com">http://www.example.com</a></b></li></ul>', KTextDocument.new('<doc><li><b>bold <a href="http://www.example.com">http://www.example.com</a></b></li></doc>').to_html
   end
 
   # ------------------------------------------------------------------------------------

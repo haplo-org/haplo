@@ -15,6 +15,9 @@ var GenericDeferredRender = $GenericDeferredRender;
 //    showVersions - true to allow user to select a version to view
 //    showCurrent - allow the user to see the current version
 //    hideFormNavigation - hide the interform links from the sidebar
+//    uncommittedChangesWarningText - specify (or disable) the uncommitted changes warning text
+//    style - specify the style of the viewer
+//        currently only "tabs" supported, splits forms into tabs instead of showing on one page
 
 var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
     this.instance = instance;
@@ -28,6 +31,24 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
         this.version = this.options.version;
     } else if(this.options.showVersions && ("version" in E.request.parameters)) {
         this.version = parseInt(E.request.parameters.version, 10);
+    }
+
+    if("style" in this.options) {
+        this.style = this.options.style;
+        this.options.hideFormNavigation = true;
+        if(this.style === "tabs") {
+            var selectedFormId = this.selectedFormId = E.request.parameters.form;
+            var tabs = this.tabs = [];
+            _.each(instance.forms, function(form, index) {
+                var selected = (!selectedFormId && index === 0) || (selectedFormId === form.specification.formId);
+                tabs.push({
+                    href: instance.keyId,
+                    parameters: {form: form.specification.formId},
+                    label: form.specification.formTitle,
+                    selected: selected
+                });
+            });
+        }
     }
 
     // Is there a current version of the document?
@@ -77,11 +98,20 @@ DocumentViewer.prototype.__defineGetter__("sidebarHTML", function() {
 
 // ----------------------------------------------------------------------------
 
+DocumentViewer.prototype.__defineGetter__("_viewerBody", function() {
+    var viewerBodyTemplate = this.style ? "viewer_body_"+this.style : "viewer_body";
+    return P.template(viewerBodyTemplate).deferredRender(this);
+});
+
 DocumentViewer.prototype.__defineGetter__("_viewerDocumentDeferred", function() {
     var viewer = this;
     return new GenericDeferredRender(function() {
         return viewer.instance._renderDocument(viewer.document);
     });
+});
+
+DocumentViewer.prototype.__defineGetter__("_viewerSelectedForm", function() {
+    return this.instance._selectedFormInfo(this.document, this.selectedFormId);
 });
 
 DocumentViewer.prototype.__defineGetter__("_uncommittedChangesWarningText", function() {

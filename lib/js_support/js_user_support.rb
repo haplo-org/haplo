@@ -93,6 +93,10 @@ module JSUserSupport
     "#{fieldName} IN (SELECT user_id FROM user_memberships WHERE member_of IN (#{uids.join(',')}) AND is_active)"
   end
 
+  def self.makeWhereClauseForPermitRead(user, fieldName)
+    user.permissions._sql_condition(:read, fieldName)
+  end
+
   def self.loadAllMembers(group)
     conditions = if group.id == User::GROUP_EVERYONE
       # Special case for Everyone, as the memberships don't actually exist in the user_memberships table

@@ -215,7 +215,7 @@
       unless is_button
         %><div id="z__button_bar_button_<%= button_n %>m" class="z__title_bar_button_menu" style="display:none"><%
         entries.each do |url_path, menu_text, options|
-          %><a class="z__title_bar_button_action_menu_entry" href="<%= url_path %>"<% if options != nil && options[:new_window] %> target="_blank"<% end %>><%= h(menu_text) %></a><%
+          %><a class="z__title_bar_button_action_menu_entry" href="<%= url_path %>"<% if options != nil && options[:new_window] %> target="_blank" rel="noopener"<% end %>><%= h(menu_text) %></a><%
         end
         %></div><%
       end

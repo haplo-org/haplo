@@ -78,9 +78,13 @@ TEST(function() {
     TEST.assert_equal(template.render({text:" \n\n\r a b \n\n\n b c d e \n\n\n\n"}), "START<p>a b</p><p>b c d e</p>END");
     TEST.assert_equal(template.render({text:"hello\n <a>\nthere & x \n"}), "START<p>hello</p><p>&lt;a&gt;</p><p>there &amp; x</p>END");
 
-    // std:text:document
+    // std:text:document / std:text:document:widgets
     template = new $HaploTemplate('"START" std:text:document(doc) "END"');
-    TEST.assert_equal(template.render({doc:'<doc><p>a<b>b</b>c</p><h1>x</h1></doc>'}), 'START<div class="z__document"><p>a<b>b</b>c</p><h1>x</h1></div>END');
+    TEST.assert_equal(template.render({doc:'<doc><p>a<b>b</b>c</p><h1>x</h1></doc>'}), 'START<p>a<b>b</b>c</p><h1>x</h1>END');
+    TEST.assert_equal(template.render({doc:O.text(O.T_TEXT_DOCUMENT, '<doc><p>a<b>b</b>c</p><h1>x2</h1></doc>')}), 'START<p>a<b>b</b>c</p><h1>x2</h1>END');
+    template = new $HaploTemplate('"START" std:text:document:widgets(doc) "END"');
+    TEST.assert_equal(template.render({doc:'<doc><p>a<b>b</b>c</p><h1>x3</h1></doc>'}), 'START<div class="z__document"><p>a<b>b</b>c</p><h1>x3</h1></div>END');
+    TEST.assert_equal(template.render({doc:O.text(O.T_TEXT_DOCUMENT, '<doc><p>a<b>b</b>c</p><h1>x4</h1></doc>')}), 'START<div class="z__document"><p>a<b>b</b>c</p><h1>x4</h1></div>END');
 
     // std:ui:notice
     template = new $HaploTemplate('<div> std:ui:notice(a b c) </div>');

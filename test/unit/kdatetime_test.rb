@@ -81,7 +81,7 @@ class UserDataTest < Test::Unit::TestCase
     assert_equal 'd', d10.precision
     assert_equal ["2011 10 19", "2011 10 23", 'd', ''], d10.keditor_values
     assert_equal '19 to end of 23 Oct 2011', d10.to_s
-    assert_equal '19 <i>to end of</i> 23 Oct 2011', d10.to_html
+    assert_equal '<span class="z__object_date_value"><span>19</span> <i>to end of</i> <span>23</span> <span>Oct 2011</span></span>', d10.to_html
     assert_equal ['2011-10-19 00:00:00', '2011-10-24 00:00:00'], d10.range_pg
     assert_equal DateTime.new(2011, 10, 21, 12, 0), d10.midpoint_datetime
     # And it'll reverse them if the second is later than the first
@@ -102,7 +102,7 @@ class UserDataTest < Test::Unit::TestCase
     assert_equal 'h', d13.precision
     assert_equal ["2065 4 2 1", "2065 4 2 4", 'h', ''], d13.keditor_values
     assert_equal '02 Apr 2065, from 01:00 to 04:00', d13.to_s
-    assert_equal '02 Apr 2065, <i>from</i> 01:00 <i>to</i> 04:00', d13.to_html
+    assert_equal '<span class="z__object_date_value"><span>02 Apr 2065</span>, <i>from</i> <span>01:00</span> <i>to</i> <span>04:00</span></span>', d13.to_html
     assert_equal ['2065-04-02 01:00:00', '2065-04-02 04:00:00'], d13.range_pg # not extended by precision time unit
     # Minute time unit ranges aren't extended either
     d14 = KDateTime.new("2065 4 2 1 2", "2065 4 2 4 9")
@@ -125,9 +125,9 @@ class UserDataTest < Test::Unit::TestCase
     assert_equal '2011-11-23T18:40:30+00:00', d30.midpoint_datetime.to_s
     assert_equal ['2011-11-23 18:40:00', '2011-11-23 18:41:00'], d30.range_pg
     assert_equal '23 Nov 2011, 13:40 (America/New_York)', d30.to_s
-    assert_equal '23 Nov 2011, 13:40 (America/New_York)', d30.to_html
+    assert_equal '<span class="z__object_date_value"><span>23 Nov 2011, 13:40</span> (America/New_York)</span>', d30.to_html
     assert_equal '23 Nov 2011, 18:40', d30.to_s('GMT')
-    assert_equal '23 Nov 2011, 18:40', d30.to_html('GMT')
+    assert_equal '<span class="z__object_date_value"><span>23 Nov 2011, 18:40</span></span>', d30.to_html('GMT')
 
     # Check equality with timezones
     d30_n = KDateTime.new("2011 11 23 13 40", nil, 'm')
@@ -138,34 +138,34 @@ class UserDataTest < Test::Unit::TestCase
     d31 = KDateTime.new("2011 11 24 23 40", "2011 11 26 12 50", 'm', 'Asia/Tokyo')
     assert_equal ["2011 11 24 23 40", "2011 11 26 12 50", 'm', 'Asia/Tokyo'], d31.keditor_values
     assert_equal '24 Nov 2011, 23:40 to 26 Nov 2011, 12:50 (Asia/Tokyo)', d31.to_s
-    assert_equal '24 Nov 2011, 23:40 <i>to</i><br>26 Nov 2011, 12:50 (Asia/Tokyo)', d31.to_html
+    assert_equal '<span class="z__object_date_value"><span>24 Nov 2011, 23:40</span> <i>to</i> <span>26 Nov 2011, 12:50</span> (Asia/Tokyo)</span>', d31.to_html
     assert_equal '24 Nov 2011, 15:40 to 26 Nov 2011, 04:50', d31.to_s('Europe/Berlin')
-    assert_equal '24 Nov 2011, 15:40 <i>to</i><br>26 Nov 2011, 04:50', d31.to_html('Europe/Berlin')
+    assert_equal '<span class="z__object_date_value"><span>24 Nov 2011, 15:40</span> <i>to</i> <span>26 Nov 2011, 04:50</span></span>', d31.to_html('Europe/Berlin')
   end
 
   # ----------------------------------------------------------------------------------------------------
 
   def test_range_to_string_and_html
     [
-      ['1901', '2001', 'C', '1900c to end of 2000c', '1900c <i>to end of</i> 2000c'],
-      ['1901', '1901', 'C', '1900c to end of 1900c', '1900c <i>to end of</i> 1900c'],
-      ['1901', '2001', 'D', '1900s to end of 2000s', '1900s <i>to end of</i> 2000s'],
-      ['1901', '1901', 'D', '1900s to end of 1900s', '1900s <i>to end of</i> 1900s'],
-      ['1901', '2001', 'Y', '1901 to end of 2001', '1901 <i>to end of</i> 2001'],
-      ['1901', '1901', 'Y', '1901 to end of 1901', '1901 <i>to end of</i> 1901'],
-      ['2011 1', '2011 4', 'M', 'Jan to end of Apr 2011', 'Jan <i>to end of</i> Apr 2011'],
-      ['2011 1', '2020 4', 'M', 'Jan 2011 to end of Apr 2020', 'Jan 2011 <i>to end of</i> Apr 2020'],
-      ['2011 1 12', '2011 4 13', 'd', '12 Jan 2011 to end of 13 Apr 2011', '12 Jan 2011 <i>to end of</i><br>13 Apr 2011'],
-      ['2011 1 12', '2011 1 12', 'd', '12 to end of 12 Jan 2011', '12 <i>to end of</i> 12 Jan 2011'],
-      ['2011 1 12', '2011 1 14', 'd', '12 to end of 14 Jan 2011', '12 <i>to end of</i> 14 Jan 2011'],
-      ['2011 1 12 13', '2011 1 12 14', 'h', '12 Jan 2011, from 13:00 to 14:00', '12 Jan 2011, <i>from</i> 13:00 <i>to</i> 14:00'],
-      ['2011 1 12 15', '2011 2 13 16', 'h', '12 Jan 2011, 15:00 to 13 Feb 2011, 16:00', '12 Jan 2011, 15:00 <i>to</i><br>13 Feb 2011, 16:00'],
-      ['2011 1 12 13 2', '2011 1 12 14 3', 'm', '12 Jan 2011, from 13:02 to 14:03', '12 Jan 2011, <i>from</i> 13:02 <i>to</i> 14:03'],
-      ['2011 1 12 15 5', '2011 2 13 16 6', 'm', '12 Jan 2011, 15:05 to 13 Feb 2011, 16:06', '12 Jan 2011, 15:05 <i>to</i><br>13 Feb 2011, 16:06']
+      ['1901', '2001', 'C', '1900c to end of 2000c', '<span>1900c</span> <i>to end of</i> <span>2000c</span>'],
+      ['1901', '1901', 'C', '1900c to end of 1900c', '<span>1900c</span> <i>to end of</i> <span>1900c</span>'],
+      ['1901', '2001', 'D', '1900s to end of 2000s', '<span>1900s</span> <i>to end of</i> <span>2000s</span>'],
+      ['1901', '1901', 'D', '1900s to end of 1900s', '<span>1900s</span> <i>to end of</i> <span>1900s</span>'],
+      ['1901', '2001', 'Y', '1901 to end of 2001', '<span>1901</span> <i>to end of</i> <span>2001</span>'],
+      ['1901', '1901', 'Y', '1901 to end of 1901', '<span>1901</span> <i>to end of</i> <span>1901</span>'],
+      ['2011 1', '2011 4', 'M', 'Jan to end of Apr 2011', '<span>Jan</span> <i>to end of</i> <span>Apr</span> <span>2011</span>'],
+      ['2011 1', '2020 4', 'M', 'Jan 2011 to end of Apr 2020', '<span>Jan 2011</span> <i>to end of</i> <span>Apr 2020</span>'],
+      ['2011 1 12', '2011 4 13', 'd', '12 Jan 2011 to end of 13 Apr 2011', '<span>12 Jan 2011</span> <i>to end of</i> <span>13 Apr 2011</span>'],
+      ['2011 1 12', '2011 1 12', 'd', '12 to end of 12 Jan 2011', '<span>12</span> <i>to end of</i> <span>12</span> <span>Jan 2011</span>'],
+      ['2011 1 12', '2011 1 14', 'd', '12 to end of 14 Jan 2011', '<span>12</span> <i>to end of</i> <span>14</span> <span>Jan 2011</span>'],
+      ['2011 1 12 13', '2011 1 12 14', 'h', '12 Jan 2011, from 13:00 to 14:00', '<span>12 Jan 2011</span>, <i>from</i> <span>13:00</span> <i>to</i> <span>14:00</span>'],
+      ['2011 1 12 15', '2011 2 13 16', 'h', '12 Jan 2011, 15:00 to 13 Feb 2011, 16:00', '<span>12 Jan 2011, 15:00</span> <i>to</i> <span>13 Feb 2011, 16:00</span>'],
+      ['2011 1 12 13 2', '2011 1 12 14 3', 'm', '12 Jan 2011, from 13:02 to 14:03', '<span>12 Jan 2011</span>, <i>from</i> <span>13:02</span> <i>to</i> <span>14:03</span>'],
+      ['2011 1 12 15 5', '2011 2 13 16 6', 'm', '12 Jan 2011, 15:05 to 13 Feb 2011, 16:06', '<span>12 Jan 2011, 15:05</span> <i>to</i> <span>13 Feb 2011, 16:06</span>']
     ].each do |s, e, p, str, html|
       d = KDateTime.new(s, e, p)
       assert_equal str, d.to_s
-      assert_equal html, d.to_html
+      assert_equal %Q!<span class="z__object_date_value">#{html}</span>!, d.to_html
     end
   end
 

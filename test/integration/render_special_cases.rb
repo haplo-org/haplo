@@ -10,7 +10,7 @@ class RenderSpecialCasesTest < IntegrationTest
 
   def test_render_value_datetime
     # RenderHelper#render_value_datetime is called under special circumstances by display_text_for_value. Make sure it doesn't break.
-    assert_equal '16 Jun 2009', render_value_datetime(KDateTime.new([2009, 06, 16], nil, 'd'), nil, nil)
+    assert_equal '<span class="z__object_date_value"><span>16 Jun 2009</span></span>', render_value_datetime(KDateTime.new([2009, 06, 16], nil, 'd'), nil, nil)
   end
 
 end

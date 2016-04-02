@@ -12,26 +12,29 @@ TEST(function() {
 
     var dt1 = O.datetime(new Date(2011, 4 - 1, 12, 19, 14));
     TEST.assert_equal(O.T_DATETIME, O.typecode(dt1));
+    TEST.assert_equal(false, dt1.specifiedAsRange);
     TEST.assert_equal(O.PRECISION_DAY, dt1.precision);
     TEST.assert_equal(null, dt1.timezone);
     TEST.assert_equal("12 Apr 2011", dt1.toString());
-    TEST.assert_equal("12 Apr 2011", dt1.toHTML());
+    TEST.assert_equal('<span class="z__object_date_value"><span>12 Apr 2011</span></span>', dt1.toHTML());
     TEST.assert_equal("Tue, 12 Apr 2011 00:00:00 GMT", dt1.start.toUTCString());
     TEST.assert_equal("Wed, 13 Apr 2011 00:00:00 GMT", dt1.end.toUTCString());
 
     var dt2 = O.datetime(new Date(2010, 12 - 1, 2, 9, 4), null, O.PRECISION_MINUTE, 'Europe/London');
     TEST.assert_equal(O.PRECISION_MINUTE, dt2.precision);
+    TEST.assert_equal(false, dt2.specifiedAsRange);
     TEST.assert_equal('Europe/London', dt2.timezone);
     TEST.assert_equal("02 Dec 2010, 09:04 (Europe/London)", dt2.toString());
-    TEST.assert_equal("02 Dec 2010, 09:04 (Europe/London)", dt2.toHTML());
+    TEST.assert_equal('<span class="z__object_date_value"><span>02 Dec 2010, 09:04</span> (Europe/London)</span>', dt2.toHTML());
     TEST.assert_equal("Thu, 02 Dec 2010 09:04:00 GMT", dt2.start.toUTCString());
     TEST.assert_equal("Thu, 02 Dec 2010 09:05:00 GMT", dt2.end.toUTCString());
 
     var dt3 = O.datetime(new Date(2010, 7 - 1, 15, 18, 56), new Date(2010, 7 - 1, 21, 12, 23), O.PRECISION_MINUTE, 'Europe/London');
+    TEST.assert_equal(true, dt3.specifiedAsRange);
     TEST.assert_equal(O.PRECISION_MINUTE, dt3.precision);
     TEST.assert_equal('Europe/London', dt3.timezone);
     TEST.assert_equal("15 Jul 2010, 18:56 to 21 Jul 2010, 12:23 (Europe/London)", dt3.toString());
-    TEST.assert_equal("15 Jul 2010, 18:56 <i>to</i><br>21 Jul 2010, 12:23 (Europe/London)", dt3.toHTML());
+    TEST.assert_equal('<span class="z__object_date_value"><span>15 Jul 2010, 18:56</span> <i>to</i> <span>21 Jul 2010, 12:23</span> (Europe/London)</span>', dt3.toHTML());
     // Note that the *times* below are different due to conversion to GMT
     TEST.assert_equal("Thu, 15 Jul 2010 17:56:00 GMT", dt3.start.toUTCString());
     TEST.assert_equal("Wed, 21 Jul 2010 11:23:00 GMT", dt3.end.toUTCString()); // not extended by precision time unit

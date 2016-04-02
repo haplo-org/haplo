@@ -67,6 +67,10 @@ public class KDateTime extends KScriptable {
         return this.rangeEnd;
     }
 
+    public boolean jsGet_specifiedAsRange() {
+        return this.datetime.jsSpecifiedAsRange();
+    }
+
     private void ensureRangeAvailable() {
         if(this.range == null) {
             this.range = this.datetime.jsGetRange();

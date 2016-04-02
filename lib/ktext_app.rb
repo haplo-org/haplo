@@ -295,7 +295,7 @@ class KTextDocument < KText
         return if @chars_left != nil && @chars_left <= 0
         if name =~ OUTPUT_TAG_REGEX
           if name == ANCHOR_TAG
-            @output << %Q!<a target="_blank" href="#{ERB::Util.h(attrs['href'] || '')}">!
+            @output << %Q!<a target="_blank" rel="noopener" href="#{ERB::Util.h(attrs['href'] || '')}">!
             @in_anchor_tag = true
           else
             @output << "<#{name}>"

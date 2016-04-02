@@ -33,4 +33,8 @@ class JavascriptTemplateTest < Test::Unit::TestCase
       KPlugin.uninstall_plugin("test_template_plugin2")
     end
   end
+
+  def test_template_is_deferred_render
+    run_javascript_test(:file, 'unit/javascript/javascript_template/test_template_is_deferred_render.js');
+  end
 end

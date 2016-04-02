@@ -32,7 +32,7 @@ public class KAuditEntryQuery extends KScriptable {
     public KAuditEntryQuery() {
         this.executedForFirstResult = false;
         this.limit = 1000;
-        this.displayable = true;
+        this.displayable = null;
         this.sortDesc = true;
     }
 

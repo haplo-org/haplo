@@ -46,7 +46,11 @@ class Admin_AuditController < ApplicationController
       end
       # User
       user_name = params[:user].strip
-      if user_name.length > 0
+      if user_name =~ /\A[0-9]+\z/
+        uid = user_name.to_i
+        @filter_user = uid
+        @entries = @entries.where('(user_id = ? OR auth_user_id = ?)', uid, uid)
+      elsif user_name.length > 0
         user = User.find_first_by_name_prefix(user_name)
         if user
           @filter_user = user.name

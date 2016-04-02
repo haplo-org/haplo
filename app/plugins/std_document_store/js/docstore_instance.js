@@ -147,6 +147,26 @@ DocumentInstance.prototype._renderDocument = function(document) {
     return html.join('');
 };
 
+DocumentInstance.prototype._selectedFormInfo = function(document, selectedFormId) {
+    var delegate = this.store.delegate;
+    var key = this.key;
+    var form;
+    if(selectedFormId) {
+        form = _.find(this.forms, function(form) {
+            return selectedFormId === form.specification.formId;
+        });
+    }
+    if(!form) { form = this.forms[0]; }
+    var instance = form.instance(document);
+    if(delegate.prepareFormInstance) {
+        delegate.prepareFormInstance(key, form, instance, "document");
+    }
+    return {
+        title: form.specification.formTitle,
+        instance: instance
+    };
+};
+
 DocumentInstance.prototype.__defineGetter__("lastCommittedDocumentHTML", function() {
     return this._renderDocument(this.lastCommittedDocument);
 });

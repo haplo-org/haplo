@@ -18,6 +18,8 @@ public interface AppDateTime {
 
     public DTRange jsGetRange();
 
+    public boolean jsSpecifiedAsRange();
+
     public String to_s();
 
     public String toHtml();

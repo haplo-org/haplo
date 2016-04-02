@@ -23,6 +23,7 @@ TEST(function() {
     var xls = O.generate.table.xls("TestFilename").sortedSheets();
 
     xls.newSheet("Sheet One", true);
+    TEST.assert_equal(0, xls.rowIndex);
     TEST.assert_equal(0, xls.length);
     xls[0] = 'Heading 1';
     TEST.assert_equal(1, xls.length);
@@ -31,11 +32,14 @@ TEST(function() {
     xls[1] = 'Two';
     TEST.assert_equal(3, xls.length);
     xls.nextRow();
+    TEST.assert_equal(1, xls.rowIndex);
     TEST.assert_equal(0, xls.length);
     xls.push(1);
     TEST.assert_equal(1, xls.length);
+    TEST.assert_equal(0, xls.columnIndex);
     xls.push("Stringy");
     TEST.assert_equal(2, xls.length);
+    TEST.assert_equal(1, xls.columnIndex);
     xls.push(o.ref);
     TEST.assert_equal(3, xls.length);
     xls.push(o);
@@ -49,12 +53,26 @@ TEST(function() {
     // Bad ref, which will fail when it's loaded
     xls.cell(O.ref(2398547));
 
+    // Merge some cells, then style them
+    xls.nextRow().cell("Unmerged").
+        mergeCells(1, xls.rowIndex, 7, xls.rowIndex).cell("Long merged cells").
+        styleCells(1, xls.rowIndex, 1, xls.rowIndex, "FILL", "GREY_25_PERCENT").
+        styleCells(1, xls.rowIndex, 1, xls.rowIndex, "FONT", "BOLD-ITALIC", 24).
+        styleCells(1, xls.rowIndex, 1, xls.rowIndex, "ALIGN", "CENTRE", 16);
+
     xls.newSheet("Sheet No Heading");
+    TEST.assert_equal(0, xls.rowIndex);
     xls.cell("Ping");
     xls.cell(new Date(2011, 3, 10, 12, 34), "date");
 
     // Page breaks
     xls.nextRow().cell("Break before").pageBreak().nextRow().cell("no break").nextRow().cell(2);
+    TEST.assert_equal(3, xls.rowIndex);
+
+    // Style cells
+    xls.styleCells(0, 1, 2, 3, "FILL", "GREY_25_PERCENT").
+        setColumnWidth(2, 200).
+        styleCells(1, 1, 2, 3, "BORDER", "BLACK");
 
     // Sheet name which is unacceptable to Excel
     xls.newSheet("ABC/DEF'");

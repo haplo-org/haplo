@@ -98,6 +98,14 @@ DashboardList.prototype._respondWithExport = function() {
             column.exportCell(row, xls);
         });
     });
+    O.audit.write({
+        auditEntryType: "std_reporting:export",
+        data: {
+            collection: this.collection.name,
+            dashboard: this.name,
+            at: (this.selectFactsAtTime || new Date()).toString()
+        }
+    });
     this.E.response.body = xls;
 };
 

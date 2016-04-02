@@ -128,6 +128,10 @@ TEST(function() {
     TEST.assert(arrayOfRefsEqual(SCHEMA.getTypesWithAnnotation("test:annotation:x1"), [TYPE['std:type:file']]));
     TEST.assert(arrayOfRefsEqual(SCHEMA.getTypesWithAnnotation("test:annotation:x2"), [TYPE['std:type:file'], TYPE['std:type:book']]));
 
+    // Elements
+    TEST.assert(_.isEqual(['std:contact_notes','std:sidebar_object'], SCHEMA.getTypeInfo(TYPE["std:type:person"]).elements));
+    TEST.assert(_.isEqual(['std:contact_notes','std:linked_objects'], SCHEMA.getTypeInfo(TYPE["std:type:organisation"]).elements));
+
     // Make sure special *Parent() *Title() and *Type() functions exist and work
     var tobj = O.object();
     tobj.appendTitle("Hello");

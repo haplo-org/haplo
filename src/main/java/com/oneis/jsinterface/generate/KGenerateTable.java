@@ -28,13 +28,14 @@ public class KGenerateTable extends KScriptable implements JSGeneratedFile {
     private ArrayList<Object> row;
     private ArrayList<Object> rowOptions;
     private int sheetNumber;
+    private ArrayList<SheetStyleInstruction> sheetStyleInstructions;
     private boolean rowHasPageBreak;
     private boolean finished;
     private boolean haveMadeData;
     private boolean shouldSortSheets;
 
     private final int NO_SHEET_YET = -1;
-    private final String DEFAULT_SHEET_NAME = "ONEIS Export";
+    private final String DEFAULT_SHEET_NAME = "Haplo Export";
     private final int MAX_CELLS = 1024;
 
     public KGenerateTable() {
@@ -43,6 +44,7 @@ public class KGenerateTable extends KScriptable implements JSGeneratedFile {
         this.row = new ArrayList<Object>(32);   // only a small initial capacity will do nicely for most cases
         this.rowOptions = new ArrayList<Object>(32);
         this.sheetNumber = NO_SHEET_YET;
+        this.sheetStyleInstructions = null;
         this.rowHasPageBreak = false;
         this.finished = false;
         this.haveMadeData = false;
@@ -85,7 +87,7 @@ public class KGenerateTable extends KScriptable implements JSGeneratedFile {
         shouldOverride();
     }
 
-    protected void finishSheet(int sheetNumber) {
+    protected void finishSheet(int sheetNumber, ArrayList<SheetStyleInstruction> sheetStyleInstructions) {
         shouldOverride();
     }
 
@@ -115,7 +117,7 @@ public class KGenerateTable extends KScriptable implements JSGeneratedFile {
             flushRow();
         }
         if(this.sheetNumber != NO_SHEET_YET) {
-            this.finishSheet(this.sheetNumber);
+            this.finishSheet(this.sheetNumber, this.sheetStyleInstructions);
         }
         return createNewSheet(name, firstRowIsHeader);
     }
@@ -123,6 +125,7 @@ public class KGenerateTable extends KScriptable implements JSGeneratedFile {
     private Scriptable createNewSheet(String name, boolean firstRowIsHeader) {
         this.startSheet(name, this.sheetNumber);
         this.sheetNumber++;
+        this.sheetStyleInstructions = null;
         this.rowNumber = 0;
         this.firstRowIsHeader = firstRowIsHeader;
         return this;
@@ -184,6 +187,20 @@ public class KGenerateTable extends KScriptable implements JSGeneratedFile {
         return this.row.size();
     }
 
+    public int jsGet_columnIndex() {
+        int index = this.row.size();
+        return (index == 0) ? 0 : (index - 1);
+    }
+
+    public Scriptable jsFunction_setColumnWidth(int columnIndex, int width) {
+        setMinimumWidth(columnIndex, width * 32);
+        return this;
+    }
+
+    protected void setMinimumWidth(int columnIndex, int minWidth) {
+        // Base class doesn't know how to set widths
+    }
+
     public Scriptable jsFunction_pageBreak() {
         this.rowHasPageBreak = true;
         return this;
@@ -192,6 +209,38 @@ public class KGenerateTable extends KScriptable implements JSGeneratedFile {
     public Scriptable jsFunction_nextRow() {
         flushRow();
         return this;
+    }
+
+    public int jsGet_rowIndex() {
+        return this.rowNumber;
+    }
+
+    public Scriptable jsFunction_styleCells(int column0, int row0, int column1, int row1, String kind, String colour, Object option) {
+        if(kind == null || colour == null) { return this; }
+        if(this.sheetStyleInstructions == null) {
+            this.sheetStyleInstructions = new ArrayList<SheetStyleInstruction>(8);
+        }
+        SheetStyleInstruction instruction = new SheetStyleInstruction();
+        if(option instanceof org.mozilla.javascript.Undefined) { option = null; }
+        instruction.column0 = column0;
+        instruction.row0 = row0;
+        instruction.column1 = column1;
+        instruction.row1 = row1;
+        instruction.kind = kind;
+        instruction.colour = colour;
+        instruction.option = option;
+        this.sheetStyleInstructions.add(instruction);
+        return this;
+    }
+
+    public Scriptable jsFunction_mergeCells(int column0, int row0, int column1, int row1) {
+        return jsFunction_styleCells(column0, row0, column1, row1, "MERGE", "CELLS", null);
+    }
+
+    protected static class SheetStyleInstruction {
+        int column0, row0, column1, row1;
+        String kind, colour;
+        Object option;
     }
 
     public Scriptable jsFunction_sortedSheets() {
@@ -234,7 +283,7 @@ public class KGenerateTable extends KScriptable implements JSGeneratedFile {
             throw new OAPIException("Already turned table into data");
         }
         if(this.sheetNumber != NO_SHEET_YET) {
-            this.finishSheet(this.sheetNumber);
+            this.finishSheet(this.sheetNumber, this.sheetStyleInstructions);
         }
         byte[] data = this.toByteArray();
         this.haveMadeData = true;

@@ -12,6 +12,9 @@
 
 <%
   if @elements != nil
+    # Above object display
+    %><%= @elements.html_for('top', DisplayController::OBJECT_ELEMENT_STYLE) %><%
+    # Right hand column
     in_right_column @elements.html_for('right', DisplayController::OBJECT_ELEMENT_STYLE)
   end
 %>

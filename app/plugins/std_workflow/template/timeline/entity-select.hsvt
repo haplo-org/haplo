@@ -1,0 +1,4 @@
+std:plugin:resources("w.css")
+<div>
+  <i> entry.user.name </i> " changed the selected roles for the workflow."
+</div>

@@ -8,7 +8,11 @@ if(dashboard.invalidFactsAtRequested) {
   std:ui:notice("Invalid time requested, showing current data.")
 }
 
+each(dashboard.$displays.above-summary) { render(.) }
+
 template:dashboard:common:summary-display()
+
+each(dashboard.$displays.above-export) { render(.) }
 
 unless(hideExport) {
   <div class="z__std_reporting_list_export_form">
@@ -16,13 +20,19 @@ unless(hideExport) {
   </div>
 }
 
+each(dashboard.$displays.above-navigation) { render(.) }
+
 template:dashboard:common:navigation()
+
+each(dashboard.$displays.above) { render(.) }
 
 if(widgetsTop) {
   <div class="z__std_reporting_list_widgets_top">
     each(widgetsTop) { render(.) }
   </div>
 }
+
+each(dashboard.$displays.above-table) { render(.) }
 
 <table id="z__std_reporting_list_filterable_table" class="tablesort z__std_reporting_dashboard_table_no_wrapping">
   <thead>
@@ -44,3 +54,5 @@ if(widgetsTop) {
     }
   </tbody>
 </table>
+
+each(dashboard.$displays.below) { render(.) }

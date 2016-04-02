@@ -51,6 +51,12 @@ public class KLabelList extends KScriptable {
         return list;
     }
 
+    static public KLabelList fromIntArray(int[] labels) {
+        KLabelList list = (KLabelList)Runtime.createHostObjectInCurrentRuntime("$LabelList", new Object[]{null});
+        list.setLabels(labels);
+        return list;
+    }
+
     public AppLabelList toRubyObject() {
         return rubyInterface.constructLabelList(this.labels);
     }
