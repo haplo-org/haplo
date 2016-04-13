@@ -4,7 +4,7 @@ h1. Aliased attribute information
 
 An aliased attribute is another name for an Attribute, used when displaying an object and in the editor.
 
-However, aliased attributes do more than just changing the name. You can use them to change the kind of data the field contains. This can be useful when configuring ONEIS to work with a standardised schema.
+However, aliased attributes do more than just changing the name. You can use them to change the kind of data the field contains. This can be useful when configuring PRODUCT_NAME to work with a standardised schema.
 
 This is performed by _aliasing on_ qualifiers, data types and the types of objects linked in this attribute. When determining whether an value in an object should be displayed and edited by an alias, all these factors must match.
 

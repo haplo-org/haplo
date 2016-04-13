@@ -159,7 +159,7 @@ class EditController < ApplicationController
     # Minimal check on token
     token = params[:id]
     if !token || token.length < 16 || token.length > 128
-      response.headers['X-ONEIS-Reportable-Error'] = 'yes'
+      response.headers['X-Haplo-Reportable-Error'] = 'yes'
       render :text => 'Token required', :status => 403
       return
     end

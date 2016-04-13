@@ -163,7 +163,7 @@ module JSRemoteAuthenticationServiceSupport
           begin
             # Generate a keychain with a trusted certificate
             cf = java.security.cert.CertificateFactory.getInstance("X.509")
-            cert = cf.generateCertificate(Java::ComOneisCommonUtils::SSLCertificates.readPEM(
+            cert = cf.generateCertificate(Java::OrgHaploCommonUtils::SSLCertificates.readPEM(
                 java.io.StringReader.new(configuredCA), "CA root from LDAP credential"))
             ks = java.security.KeyStore.getInstance("JKS", "SUN")
             ks.load(nil, Java::char[0].new)
@@ -295,4 +295,4 @@ module JSRemoteAuthenticationServiceSupport
 
 end
 
-Java::ComOneisJsinterfaceRemote::KAuthenticationService.setRubyInterface(JSRemoteAuthenticationServiceSupport)
+Java::OrgHaploJsinterfaceRemote::KAuthenticationService.setRubyInterface(JSRemoteAuthenticationServiceSupport)

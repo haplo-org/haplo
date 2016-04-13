@@ -8,7 +8,7 @@
 TEST(function() {
 
     TEST.assert_equal(_TEST_APP_ID, O.application.id);
-    TEST.assert_equal("ONEIS Test System "+_TEST_APP_ID, O.application.name);
+    TEST.assert_equal("Haplo Test Application "+_TEST_APP_ID, O.application.name);
     TEST.assert_equal("www"+_TEST_APP_ID+".example.com", O.application.hostname);
     TEST.assert_equal("http://www"+_TEST_APP_ID+".example.com"+SERVER_PORT_EXTERNAL_CLEAR_IN_URL, O.application.url);
 

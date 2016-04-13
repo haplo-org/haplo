@@ -53,7 +53,7 @@ class JavascriptRemoteAuthenticationTest < Test::Unit::TestCase
       # Create listening LDAP server using test SSL certificates
       config = Java::ComUnboundidLdapListener::InMemoryDirectoryServerConfig.new("dc=example,dc=com")
       config.addAdditionalBindCredentials("cn=service_account", "abcd9876")
-      sslContext = Java::ComOneisCommonUtils::SSLCertificates.load(File.expand_path("~/haplo-dev-support/certificates"), "server", nil, true)
+      sslContext = Java::OrgHaploCommonUtils::SSLCertificates.load(File.expand_path("~/haplo-dev-support/certificates"), "server", nil, true)
       config.setListenerConfigs(Java::ComUnboundidLdapListener::InMemoryListenerConfig.createLDAPSConfig(
           "LDAPS", 1636, sslContext.getServerSocketFactory()
       ))

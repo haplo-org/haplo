@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
-/* ONEIS core application styling */
+/* Haplo core application styling */
 
 /* NOTE: Print styles at end */
 
@@ -185,7 +185,7 @@ input[type=text], input[type=password], input[type=email], textarea {
 /* [squish z__aep_search_form=s] */
 /* [squish z__button_bar=b] */
 /* [squish z__button_bar_holder=g] */
-/* [squish z__header_oneis=h] */
+/* [squish z__header_haplo=h] */
 /* [squish z__help_tab=x] */
 /* [squish z__left_column=f] */
 /* [squish z__logo_display=l] */
@@ -198,7 +198,7 @@ input[type=text], input[type=password], input[type=email], textarea {
 /* -------------------------------------------------------------------------------------------------------------- */
 /* Main structural element sizing and borders */
 
-#z__header_oneis, #z__action_entry_points, #z__page, #z__logo_display, #z__spawned_subtask_header {
+#z__header_haplo, #z__action_entry_points, #z__page, #z__logo_display, #z__spawned_subtask_header {
     width: $PAGE_WIDTH;
     margin: auto;
     border: solid $PAGE_BORDER_COLOUR;
@@ -214,13 +214,13 @@ input[type=text], input[type=password], input[type=email], textarea {
 /* Page top */
 
 /* Used ONLY when there's only text in the 'header HTML' setting */
-#z__header_oneis {
+#z__header_haplo {
     position: relative;
 }
-.z__webfonts_enabled #z__header_oneis {
+.z__webfonts_enabled #z__header_haplo {
     font-family: $SPECIAL_FONT_FAMILY;
 }
-#z__header_oneis a { /* for making the logo clickable */
+#z__header_haplo a { /* for making the logo clickable */
     display: block;
     width: 940px;
     height: 54px;
@@ -230,10 +230,10 @@ input[type=text], input[type=password], input[type=email], textarea {
     font-size: $FONT_SIZE_MEDIUM;
     color: #999;
 }
-#z__header_oneis a:hover {
+#z__header_haplo a:hover {
     text-decoration: none;
 }
-#z__header_oneis.z__with_haplo_logo a:before {
+#z__header_haplo.z__with_haplo_logo a:before {
     font-family: $SPECIAL_FONT_FAMILY;
     position: absolute;
     content: "HAPLO";
@@ -2053,7 +2053,7 @@ span.z__plugin_ui_nav_arrow {
         margin-left: 16px;
     }
         /* .noprint included so headers can be set to not print */
-    .noprint, #z__header_oneis, #z__action_entry_points, #z__left_column, .z__sidebar_menu, #z__logo_display, .z__search_results_search_within_field, .z__recent_entry_quick_look, #z__object_linked_types_banner, #z__button_bar, #z__page_creation_label, #z__heading_main_buttons, #z__heading_back_nav {
+    .noprint, #z__header_haplo, #z__action_entry_points, #z__left_column, .z__sidebar_menu, #z__logo_display, .z__search_results_search_within_field, .z__recent_entry_quick_look, #z__object_linked_types_banner, #z__button_bar, #z__page_creation_label, #z__heading_main_buttons, #z__heading_back_nav {
         display: none;
     }
     #z__page_name {

@@ -2,7 +2,7 @@ FOR: /do/edit
 
 h1. Using the editor
 
-The editor is used to add or update all items in ONEIS.
+The editor is used to add or update all items in PRODUCT_NAME.
 
 Only the Title or Name field is compulsory.
 
@@ -24,7 +24,7 @@ Fields shown with a link symbol are controlled fields. You can only complete the
 
 h3. Lookup
 
-The pale yellow fields are lookup fields. Start typing your entry and matching choices will appear below the lookup field. Choose your entry from the list displayed. If your entry is not already in ONEIS, choose _Create new..._ at the bottom of the list and fill in the details.
+The pale yellow fields are lookup fields. Start typing your entry and matching choices will appear below the lookup field. Choose your entry from the list displayed. If your entry is not already in PRODUCT_NAME, choose _Create new..._ at the bottom of the list and fill in the details.
 
 When choices are displayed, you can use the up and down arrow keys and enter to select a choice.
 

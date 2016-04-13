@@ -2,7 +2,7 @@ FOR: /do/admin/latest/settings
 
 h1. Latest updates settings
 
-Latest updates are the automatic email bulletins sent by ONEIS to users showing them recent items of interest added to the system. 
+Latest updates are the automatic email bulletins sent by PRODUCT_NAME to users showing them recent items of interest added to the system. 
 
 Settings should be made on a per group basis wherever possible, though settings can be made on an individual basis. Settings on an individual user's account override those made on a group basis. 
 

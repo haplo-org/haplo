@@ -53,4 +53,4 @@ module JSKQueryClauseSupport
 
 end
 
-Java::ComOneisJsinterface::KQueryClause.setRubyInterface(JSKQueryClauseSupport)
+Java::OrgHaploJsinterface::KQueryClause.setRubyInterface(JSKQueryClauseSupport)

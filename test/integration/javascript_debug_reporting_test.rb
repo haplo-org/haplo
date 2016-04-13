@@ -76,7 +76,7 @@ class JavaScriptDebugReportingTest < IntegrationTest
         assert_equal location, first_line_in_backtrace
       end
       # Check the special header is set
-      assert_equal "yes", response["X-ONEIS-Reportable-Error"]
+      assert_equal "yes", response["X-Haplo-Reportable-Error"]
     end
 
     # Disable the reporter so it's like a normal live installation
@@ -108,7 +108,7 @@ class JavaScriptDebugReportingTest < IntegrationTest
       'Unknown application information requested',
       'badly_coded_plugin/js/badly_coded_plugin.js (line 11)'
     ],[
-      '/do/test_error/java_api', # com.oneis.javascript.OAPIException
+      '/do/test_error/java_api', # org.haplo.javascript.OAPIException
       'Unexpected plugin registration.',
       'badly_coded_plugin/js/badly_coded_plugin.js (line 15)'
     ],[

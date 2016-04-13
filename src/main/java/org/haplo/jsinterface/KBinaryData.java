@@ -1,0 +1,54 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+package org.haplo.jsinterface;
+
+import org.haplo.javascript.OAPIException;
+
+import org.haplo.utils.StringUtils;
+
+import org.haplo.jsinterface.app.*;
+
+import java.nio.charset.Charset;
+
+public class KBinaryData extends KScriptable {
+    public KBinaryData() {
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+    public void jsConstructor() {
+    }
+
+    public String getClassName() {
+        return "$BinaryData";
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+    public String jsGet_filename() {
+        throw new OAPIException("Attempt to use base class");
+    }
+
+    public String jsGet_mimeType() {
+        throw new OAPIException("Attempt to use base class");
+    }
+
+    public String jsGet_digest() {
+        throw new OAPIException("Attempt to use base class");
+    }
+
+    public long jsGet_fileSize() {
+        throw new OAPIException("Attempt to use base class");
+    }
+
+    public String jsFunction_readAsString(String charsetName) {
+        return convertToString(StringUtils.charsetFromStringWithJSChecking(charsetName));
+    }
+
+    protected String convertToString(Charset charset) {
+        // Can't make this abstract because Rhino needs to create one
+        throw new OAPIException("Attempt to use base class");
+    }
+}

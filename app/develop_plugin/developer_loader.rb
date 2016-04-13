@@ -62,7 +62,7 @@ class DeveloperLoader
   # Notifications support
   NOTIFICATION_QUEUES = Hash.new { |hash, key| hash[key] = Hash.new }
   NOTIFICATION_QUEUES_MUTEX = Mutex.new
-  ATTR_NOTIFICATION_QUEUE_NAME = 'com.oneis.devloader.queuename'
+  ATTR_NOTIFICATION_QUEUE_NAME = 'org.haplo.devloader.queuename'
 
   class NotificationQueue
     include JRuby::Synchronized

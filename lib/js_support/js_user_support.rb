@@ -254,4 +254,4 @@ module JSUserSupport
 
 end
 
-Java::ComOneisJsinterface::KUser.setRubyInterface(JSUserSupport)
+Java::OrgHaploJsinterface::KUser.setRubyInterface(JSUserSupport)

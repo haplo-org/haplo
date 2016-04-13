@@ -22,7 +22,7 @@ import org.apache.pdfbox.pdmodel.common.PDRectangle;
 
 import org.apache.log4j.Logger;
 
-import com.oneis.op.Operation;
+import org.haplo.op.Operation;
 
 /**
  * PDF identifier / handler
@@ -130,7 +130,7 @@ public class PDF {
                     resolution
                 );
         } catch(Exception e) {
-            Logger.getLogger("com.oneis.app").error("Error rendering PDF: " + e.toString());
+            Logger.getLogger("org.haplo.app").error("Error rendering PDF: " + e.toString());
             throw new RuntimeException("Couldn't render PDF page", e);
         }
 

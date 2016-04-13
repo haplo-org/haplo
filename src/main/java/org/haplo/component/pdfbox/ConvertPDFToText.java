@@ -13,7 +13,7 @@ import java.io.OutputStreamWriter;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFTextStripper;
 
-import com.oneis.op.Operation;
+import org.haplo.op.Operation;
 
 public class ConvertPDFToText extends Operation {
     private String inputPathname;

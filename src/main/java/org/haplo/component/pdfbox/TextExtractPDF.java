@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFTextStripper;
 
-import com.oneis.text.TextExtractOp;
+import org.haplo.text.TextExtractOp;
 
 public class TextExtractPDF extends TextExtractOp {
     public TextExtractPDF(String inputPathname) {

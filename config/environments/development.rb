@@ -49,5 +49,5 @@ PLUGINS_LOCAL_DIRECTORY = ENV_DATA_ROOT+'/plugins'
 
 # Perform operations in this process
 KNotificationCentre.when(:server, :starting) do
-  Java::ComOneisFramework::OperationRunner.startTestInProcessWorkers()
+  Java::OrgHaploFramework::OperationRunner.startTestInProcessWorkers()
 end

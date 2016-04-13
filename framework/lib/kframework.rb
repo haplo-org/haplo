@@ -6,7 +6,7 @@
 
 
 class KFramework
-  include Java::ComOneisFramework::Framework
+  include Java::OrgHaploFramework::Framework
 
   def initialize
   end
@@ -57,7 +57,7 @@ class KFramework
   SHOULD_BE_COMPRESSED_WEB_FONT_MIME_TYPE = STATIC_MIME_TYPES['svg']
 
   def set_static_files
-    jfrm = Java::ComOneisAppserver::GlobalStaticFiles
+    jfrm = Java::OrgHaploAppserver::GlobalStaticFiles
     # In dev mode, we'll want to check the files and reload them!
     @_devmode_static_files = Array.new if KFRAMEWORK_ENV == 'development'
     # Read the names of all static files

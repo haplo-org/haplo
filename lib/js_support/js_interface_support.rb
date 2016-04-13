@@ -15,5 +15,5 @@ module JSObjRefSupport
 
 end
 
-Java::ComOneisJsinterface::KObjRef.setRubyInterface(JSObjRefSupport)
+Java::OrgHaploJsinterface::KObjRef.setRubyInterface(JSObjRefSupport)
 

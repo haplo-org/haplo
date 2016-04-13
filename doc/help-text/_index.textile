@@ -1,4 +1,4 @@
-h1. ONEIS Manual
+h1. PRODUCT_NAME Manual
 
 [[User]]
 [[Admin]]
@@ -17,7 +17,7 @@ at the top. Find /some/url by looking at the address: http://test4.f/do/work/acc
 
 This page will then be displayed whenever someone clicks Help on any URL starting with /do/work/account.
 
-If a help page is useful on more than one ONEIS page enter multiple fors:
+If a help page is useful on more than one PRODUCT_NAME page enter multiple fors:
 
 FOR: /some/url
 

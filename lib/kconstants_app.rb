@@ -58,7 +58,7 @@ module KConstants
   A_RIGHTS                      = 224
   # (not all these may be used by a schema)
 
-  # ONEIS schema attributes -- data
+  # Haplo schema attributes -- data
   A_URL                         = 400
   A_EMAIL_ADDRESS               = 401
   A_ISBN                        = 402
@@ -66,11 +66,11 @@ module KConstants
   A_ADDRESS                     = 404
   A_TELEPHONE_NUMBER            = 405
 
-  # ONEIS schema attributes -- links to object types
+  # Haplo schema attributes -- links to object types
   A_PROJECT                     = 500
   A_EVENT                       = 501
 
-  # ONEIS schema attributes -- links to object describing relationship
+  # Haplo schema attributes -- links to object describing relationship
   A_CLIENT                      = 600
   A_WORKS_FOR                   = 601
   A_ATTENDEE                    = 602

@@ -8,7 +8,7 @@
 # Simple Ruby interfaces to Java code
 
 module KTextAnalyser
-  Analyser = Java::ComOneisText::Analyser
+  Analyser = Java::OrgHaploText::Analyser
 
   def self.text_to_terms(text, text_is_query_supporting_truncation_stars = false)
     analyser = Analyser.new;
@@ -28,7 +28,7 @@ end
 module SearchResultExcerptHighlighter
   def self.highlight(text, terms, max_excerpt_length)
     escaped_text = ERB::Util.h(text)
-    result = Java::ComOneisApp::SearchResultExcerptHighlighter.bestHighlightedExcerpts(escaped_text, terms, max_excerpt_length)
+    result = Java::OrgHaploApp::SearchResultExcerptHighlighter.bestHighlightedExcerpts(escaped_text, terms, max_excerpt_length)
     result ? result.to_a : nil
   end
 end

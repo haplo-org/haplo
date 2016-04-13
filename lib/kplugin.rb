@@ -428,7 +428,7 @@ class KPlugin
 
   # Get all the possible plugin file pathnames
   def self.get_all_plugin_file_pathnames
-    pathnames = Java::ComOneisFramework::Application::PluginFilePathnames.new
+    pathnames = Java::OrgHaploFramework::Application::PluginFilePathnames.new
     plugins_for_app = KApp.cache(PLUGINS_CACHE)
     plugins_for_app.plugins.each do |plugin|
       allowed_pathnames = plugin.get_allowed_plugin_filenames
@@ -454,9 +454,9 @@ class KPlugin
     # Get the file and generate a response
     kind, info = plugin.get_plugin_file("#{plugin_file_pathname}.#{plugin_file_extension}")
     if kind == :file
-      Java::ComOneisAppserver::StaticFileResponse.new(info, mime_type, mime_type !~ /\Aimage/i)
+      Java::OrgHaploAppserver::StaticFileResponse.new(info, mime_type, mime_type !~ /\Aimage/i)
     elsif kind == :data
-      Java::ComOneisAppserver::StaticFileResponse.new(info.to_java_bytes, mime_type, mime_type !~ /\Aimage/i)
+      Java::OrgHaploAppserver::StaticFileResponse.new(info.to_java_bytes, mime_type, mime_type !~ /\Aimage/i)
     else
       nil
     end

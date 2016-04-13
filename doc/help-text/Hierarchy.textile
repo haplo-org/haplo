@@ -1,6 +1,6 @@
 h1. Hierarchy
 
-ONEIS supports two kinds of hierarchical items:
+PRODUCT_NAME supports two kinds of hierarchical items:
 
 * Classification, as taxonomies for describing items
 * Parent/child relationships between items

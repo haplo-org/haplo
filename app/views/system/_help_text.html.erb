@@ -1,6 +1,6 @@
 <div id="p0" style="display:none">
 <h1>System Management help</h1>
-<p><em>System Management</em> controls how your ONEIS behaves, and who can use it. As you click on entries in the menus above, this help system will display relevant guidance.</p>
+<p><em>System Management</em> controls how your PRODUCT_NAME behaves, and who can use it. As you click on entries in the menus above, this help system will display relevant guidance.</p>
 <h2>Contents</h2>
 <h3>Access</h3>
 <p><a href="#" data-page="1">Users</a><br>
@@ -114,7 +114,7 @@ Sections<br>
 	<li><em>Permissions</em>: The effective permissions for this user, taking into account all the permissions for the groups the user belongs to. Note that permissions are usually set on groups, so editing a user&#8217;s permissions usually make no statement on their permissions.</li>
 	<li><em>Latest updates</em>: (may be renamed) Adjust the latest updates settings, including email frequency.</li>
 	<li><em>Home country</em>: Where the user is based, used for localising the display of information, such as telephone numbers</li>
-	<li><em>API keys</em>: When other software communicates with ONEIS, it uses an API key to gain access, like a username and password. This section lists all the current keys.</li>
+	<li><em>API keys_: When other software communicates with PRODUCT</em>NAME, it uses an API key to gain access, like a username and password. This section lists all the current keys.</li>
 </ul>
 <h4>Further help</h4>
 <p><a href="#" data-page="1">Users</a><br>
@@ -137,7 +137,7 @@ Sections<br>
 <div id="p5" style="display:none">
 <h1>Edit main details for user</h1>
 <p>Enter the first name, last name and email address for the user. All fields are compulsory.</p>
-<p>The email address will be the ONEIS login for the user, and used for any emails sent by the system.</p>
+<p>The email address will be the PRODUCT_NAME login for the user, and used for any emails sent by the system.</p>
 </div>
 
 <div id="p6" style="display:none">
@@ -224,7 +224,7 @@ Sections<br>
 
 <div id="p14" style="display:none">
 <h1>Latest updates settings</h1>
-<p>Latest updates are the automatic email bulletins sent by ONEIS to users showing them recent items of interest added to the system.</p>
+<p>Latest updates are the automatic email bulletins sent by PRODUCT_NAME to users showing them recent items of interest added to the system.</p>
 <p>Settings should be made on a per group basis wherever possible, though settings can be made on an individual basis. Settings on an individual user&#8217;s account override those made on a group basis.</p>
 <ul>
 	<li><em>Send emails</em>: choose the frequency with which latest updates emails are sent (or choose to never send emails.)</li>
@@ -340,7 +340,7 @@ Sections<br>
 	<li><em>Show linked objects under caption</em>: tick to display at the bottom of this object, all other objects which are linked to this object. Specify the caption underneath which the objects will display.</li>
 </ul>
 <ul>
-	<li><em>Render type</em>: rendering determines how objects display. Choose a render style for this type. If ONEIS does not have a special rendering for the specified type, the default <em>generic</em> type will be used.</li>
+	<li><em>Render type_: rendering determines how objects display. Choose a render style for this type. If PRODUCT</em>NAME does not have a special rendering for the specified type, the default <em>generic</em> type will be used.</li>
 </ul>
 <ul>
 	<li><em>Render icon</em>: choose an icon to represent this type, used in search results and (usually) at the top of the object page.</li>
@@ -397,7 +397,7 @@ Sections<br>
 <div id="p23" style="display:none">
 <h1>Aliased attribute information</h1>
 <p>An aliased attribute is another name for an Attribute, used when displaying an object and in the editor.</p>
-<p>However, aliased attributes do more than just changing the name. You can use them to change the kind of data the field contains. This can be useful when configuring ONEIS to work with a standardised schema.</p>
+<p>However, aliased attributes do more than just changing the name. You can use them to change the kind of data the field contains. This can be useful when configuring PRODUCT_NAME to work with a standardised schema.</p>
 <p>This is performed by <em>aliasing on</em> qualifiers, data types and the types of objects linked in this attribute. When determining whether an value in an object should be displayed and edited by an alias, all these factors must match.</p>
 <h2>Data storage with aliased attributes</h2>
 <p>The &#8216;base&#8217; attribute is aliased, so that the data is stored with the base attribute in the underlying object. However, when editing and displaying the object, the aliased attribute is used instead.</p>
@@ -411,7 +411,7 @@ Sections<br>
 	<li><em>Attribute name</em>: give a brief descriptive name of one or two words for this attribute. This is used in the object editor.</li>
 	<li><em>Search name</em>: used in the search constraints, for example, title:Hamlet (here &#8216;title&#8217; is the search constraint, specified by the search name of the <em>Title</em> attribute.) This should contain only lower case letters, numbers and hyphens. By convention it is the same as the attribute name in lower case and with spaces replaced by hyphens.</li>
 	<li><em>Example</em>: shows how data should be entered into this attribute&#8217;s field, shown in the editor when <em>Show examples</em> is ticked.</li>
-	<li><em>Relevancy weight</em>: how important this attribute should be considered when sorting search results for relevancy. 1.0 is normal weighting, 0.5 is half as relevant so would come lower down the search results, 2.0 is twice as relevant. The relevancy weighting range spans from 0.01 to infinity (though within ONEIS the range used tends to be between 0.25 and 100.) Setting a relevancy weight of 0 excludes this attribute from indexing.</li>
+	<li><em>Relevancy weight_: how important this attribute should be considered when sorting search results for relevancy. 1.0 is normal weighting, 0.5 is half as relevant so would come lower down the search results, 2.0 is twice as relevant. The relevancy weighting range spans from 0.01 to infinity (though within PRODUCT</em>NAME the range used tends to be between 0.25 and 100.) Setting a relevancy weight of 0 excludes this attribute from indexing.</li>
 	<li><em>Data type</em>: choose the type of data for this field from the drop down menu. This specifies the type of data to be entered in the field. As well as the text options, the most important data types are
 	<ul>
 		<li><strong>Link to other object</strong>. Most attributes should use the auto-completing &#8216;Lookup&#8217; option, but where you are choosing from a very limited number of classification objects, you can use a drop down menu, radio buttons or checkboxes.</li>
@@ -572,7 +572,7 @@ Sections<br>
 
 <div id="p37" style="display:none">
 <h1>Hierarchy</h1>
-<p>ONEIS supports two kinds of hierarchical items:</p>
+<p>PRODUCT_NAME supports two kinds of hierarchical items:</p>
 <ul>
 	<li>Classification, as taxonomies for describing items</li>
 	<li>Parent/child relationships between items</li>
@@ -683,15 +683,15 @@ Sections<br>
 <h1>Identity</h1>
 <p>Choose <em>Edit</em> to edit an identity option.</p>
 <h2>System name</h2>
-<p>The name of the system, generally the name of the organisation using this ONEIS.</p>
+<p>The name of the system, generally the name of the organisation using this PRODUCT_NAME.</p>
 <h2>Administrator email address</h2>
 <p>The email address of the person responsible for the system at the client organisation. Unless overridden by an Email Template, this will be used as the &#8216;from&#8217; address on emails sent by the system.</p>
 <h2>Web addresses and SSL policy</h2>
-<p>Options for the web address used to access this ONEIS.</p>
+<p>Options for the web address used to access this PRODUCT_NAME.</p>
 <h2>Object web addresses</h2>
 <p>Options for the URLs for the objects stored in this system.</p>
 <h2>Copyright notice</h2>
-<p>The copyright notice editor will open in a new window. The copyright notice is linked to the bottom right of every page in ONEIS.</p>
+<p>The copyright notice editor will open in a new window. The copyright notice is linked to the bottom right of every page in PRODUCT_NAME.</p>
 </div>
 
 <div id="p45" style="display:none">
@@ -699,7 +699,7 @@ Sections<br>
 <p>The application hostname chooses which of the available addresses is used for the system. All other hostnames are used as aliases and redirected to the application hostname.</p>
 <p><strong>Warning</strong>: changing these settings will invalidate URLs configured in external systems.</p>
 <p>There is a separate hostname used for SSL encryption to match the certificate name. Use the clear hostname for branding the URLs you give to your staff and clients. If it&#8217;s important to use your company URL, uncheck the &#8220;Visible URLs&#8221; checkbox so that URLs in emails use the clear hostname. They&#8217;ll be redirected to the SSL hostname if &#8220;Logged in users&#8221; is checked.</p>
-<p>Additional hostnames can be added to this list by ONEIS Support, if required, for example, to brand the web address to match your company URL. For example, if you are <em>example.com</em>, you could use <em>oneis.example.com</em>. This requires DNS settings to be changed, and your own branded URLs can&#8217;t be used with SSL for technical reasons.</p>
+<p>Additional hostnames can be added to this list by PRODUCT_NAME Support, if required, for example, to brand the web address to match your company URL. For example, if you are <em>example.com</em>, you could use <em>oneis.example.com</em>. This requires DNS settings to be changed, and your own branded URLs can&#8217;t be used with SSL for technical reasons.</p>
 </div>
 
 <div id="p46" style="display:none">
@@ -748,7 +748,7 @@ Sections<br>
 <div id="p50" style="display:none">
 <h1>Appearance</h1>
 <h2>Header</h2>
-<p>The header area at the top of your ONEIS is customised using the Header HTML and Extra CSS fields.</p>
+<p>The header area at the top of your PRODUCT_NAME is customised using the Header HTML and Extra CSS fields.</p>
 <h3>Display your logo</h3>
 <p>To display your logo, first upload it to the <em>Static files</em> area in System Management.</p>
 <ul>
@@ -789,12 +789,12 @@ Sections<br>
 
 <div id="p52" style="display:none">
 <h1>External providers</h1>
-<p>Choose which external providers are used by ONEIS.</p>
+<p>Choose which external providers are used by PRODUCT_NAME.</p>
 </div>
 
 <div id="p53" style="display:none">
 <h1>Email templates</h1>
-<p>Email templates allow you to customise the emails sent by ONEIS. You need knowledge of HTML and CSS to edit these templates, and it&#8217;s recommended you seek the assistance of a designer to get the best results.</p>
+<p>Email templates allow you to customise the emails sent by PRODUCT_NAME. You need knowledge of HTML and CSS to edit these templates, and it&#8217;s recommended you seek the assistance of a designer to get the best results.</p>
 <h2>Edit an email template</h2>
 <ul>
 	<li>Choose the email template from the list and click on <em>Edit</em> in the right hand panel.</li>
@@ -819,12 +819,12 @@ Sections<br>
 <div id="p54" style="display:none">
 <h1>Edit email template</h1>
 <p>Editing an email template requires knowledge of HTML and CSS.</p>
-<p>By default, the colours used in the email are chosen from the colours used for the ONEIS sytem.</p>
+<p>By default, the colours used in the email are chosen from the colours used for the PRODUCT_NAME sytem.</p>
 <ul>
 	<li><em>Name</em>: of the template, used to choose the template in other parts of the system management.</li>
 	<li><em>Description</em>: notes about the template (only viewable to  administrators)</li>
 	<li><em>Purpose</em>: What the template will be used for. Some choices of template will only include templates for a given purpose.</li>
-	<li><em>From (email address)</em>: the &#8216;from&#8217; address on the sent emails (the default is the administrator of your ONEIS). Set this to a valid address for the responsible individual in your organisation.</li>
+	<li><em>From (email address)_: the &#8216;from&#8217; address on the sent emails (the default is the administrator of your PRODUCT</em>NAME). Set this to a valid address for the responsible individual in your organisation.</li>
 	<li><em>From (name)</em>: the name shown in the from field of the email</li>
 	<li><em>Extra CSS</em>: Additional CSS included in the HTML, to customise the look of the email.</li>
 	<li><em>Branding (plain)</em>: Text which appears at the top of the plain text version of this email. Use the interpolated strings listed above where required.</li>

@@ -14,7 +14,7 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     File.open("#{KFRAMEWORK_ROOT}/lib/javascript/thirdparty/handlebars.js") do |f|
       source = f.read
       # Got the topping and tailing?
-      assert source =~ /BEGIN ONEIS MODIFICATION/
+      assert source =~ /BEGIN HAPLO MODIFICATION/
       # Is it the forked version which does sealing?
       assert source.include?('Handlebars.HbParser')
       # Is it the forked version which allowes : in IDs?
@@ -30,7 +30,7 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     # Make sure the underscore.string.js file has modifications to work in the sealed runtime
     File.open("#{KFRAMEWORK_ROOT}/lib/javascript/thirdparty/underscore.string.js") do |f|
       mustache = f.read
-      assert mustache =~ /BEGIN ONEIS MODIFICATION/
+      assert mustache =~ /BEGIN HAPLO MODIFICATION/
     end
     # Make sure the underscore.string.js library is loaded and part of underscore
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_underscore_string.js')
@@ -77,9 +77,9 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
   # ===============================================================================================
 
   def test_object_retrieval
-    assert_equal A_PARENT, Java::ComOneisJsinterface::KObject::A_PARENT
-    assert_equal A_TYPE, Java::ComOneisJsinterface::KObject::A_TYPE
-    assert_equal A_TITLE, Java::ComOneisJsinterface::KObject::A_TITLE
+    assert_equal A_PARENT, Java::OrgHaploJsinterface::KObject::A_PARENT
+    assert_equal A_TYPE, Java::OrgHaploJsinterface::KObject::A_TYPE
+    assert_equal A_TITLE, Java::OrgHaploJsinterface::KObject::A_TITLE
     restore_store_snapshot("basic")
     db_reset_test_data
     AuthContext.set_user(User.cache[42], User.cache[42])
@@ -388,8 +388,8 @@ __E
     });
     db_reset_test_data
     # Check all permissions reflected in User JS API
-    kuser = Java::ComOneisJsinterface::KUser.new
-    allowedOps = Java::ComOneisJsinterface::KLabelStatements.getAllowedOperations()
+    kuser = Java::OrgHaploJsinterface::KUser.new
+    allowedOps = Java::OrgHaploJsinterface::KLabelStatements.getAllowedOperations()
     assert_equal KPermissionRegistry.entries.length, allowedOps.length();
     KPermissionRegistry.entries.each do |entry|
       assert kuser.respond_to? "jsFunction_can#{entry.symbol.to_s.capitalize}"
@@ -470,12 +470,12 @@ __E
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_label_primitives.js') do |runtime|
       # While the runtime is active, check round-tripping
       list0 = KLabelList.new([1,4,6])
-      list1 = Java::ComOneisJsinterface::KLabelList.fromAppLabelList(list0).toRubyObject()
+      list1 = Java::OrgHaploJsinterface::KLabelList.fromAppLabelList(list0).toRubyObject()
       assert ! list0.equal?(list1) # not same object
       assert list0 == list1
 
       changes0 = KLabelChanges.new([1,2], [4,5])
-      changes1 = Java::ComOneisJsinterface::KLabelChanges.fromAppLabelChanges(changes0).toRubyObject()
+      changes1 = Java::OrgHaploJsinterface::KLabelChanges.fromAppLabelChanges(changes0).toRubyObject()
       assert ! changes0.equal?(changes1)
       assert changes0._add_internal == changes1._add_internal
       assert changes0._remove_internal == changes1._remove_internal
@@ -866,7 +866,7 @@ __E
   # ===============================================================================================
 
   def test_database_allowed_names
-    ns = Java::ComOneisJsinterfaceDb::JdNamespace
+    ns = Java::OrgHaploJsinterfaceDb::JdNamespace
     [
       ['Hello', false],
       ['thisIsOK2', true],
@@ -990,7 +990,7 @@ __E
     runtime = make_javascript_runtime()
     runtime.useOnThisThread(JSSupportRoot.new)
     # use the symbol whitelist to find all the symbols we're interested in, and try and add a property
-    symbols = ['$ONEISHost','$Ref']
+    symbols = ['$Host','$Ref']
     File.open(KFRAMEWORK_ROOT+'/lib/javascript/globalswhitelist.txt') do |f|
       f.each do |line|
         symbol = line.chomp
@@ -1025,10 +1025,10 @@ __E
       runtime.evaluateString(%Q!var semaphore = new java.util.concurrent.Semaphore(23);!, nil)
     end
     assert_raise Java::OrgMozillaJavascript::EcmaError do
-      runtime.evaluateString(%Q!var semaphore = $ONEISHost.getClass();!, nil)
+      runtime.evaluateString(%Q!var semaphore = $Host.getClass();!, nil)
     end
     assert_raise Java::OrgMozillaJavascript::EcmaError do
-      runtime.evaluateString(%Q!var semaphore = $ONEISHost['class'].forName('java.lang.StringBuffer').newInstance();!, nil)
+      runtime.evaluateString(%Q!var semaphore = $Host['class'].forName('java.lang.StringBuffer').newInstance();!, nil)
     end
     # Make sure the (lazily loaded) RegExp class works
     runtime.evaluateString(<<-__E, nil)

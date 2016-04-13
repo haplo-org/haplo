@@ -50,4 +50,4 @@ module KRandom
 
 end
 
-Java::ComOneisCommonUtils::KRandom.setRubyInterface(KRandom)
+Java::OrgHaploCommonUtils::KRandom.setRubyInterface(KRandom)

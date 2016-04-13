@@ -55,7 +55,7 @@ lib/javascript/thirdparty/xdate.js
   It is included in this distribution under the MIT license.
 
 BCrypt Java implementation
-src/main/java/com/oneis/common/utils/BCrypt.java
+src/main/java/org/haplo/common/utils/BCrypt.java
   http://www.mindrot.org/projects/jBCrypt/
   BSD licensed.
 

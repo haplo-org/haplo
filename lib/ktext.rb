@@ -8,7 +8,7 @@
 
 
 class KText
-  include Java::ComOneisJsinterfaceApp::AppText
+  include Java::OrgHaploJsinterfaceApp::AppText
 
   attr :text
   attr :language
@@ -119,4 +119,4 @@ class KText
 end
 
 # Workaround for http://jira.codehaus.org/browse/JRUBY-5317
-Java::ComOneisJsinterfaceApp::JRuby5317Workaround.appText(KText.new(''))
+Java::OrgHaploJsinterfaceApp::JRuby5317Workaround.appText(KText.new(''))

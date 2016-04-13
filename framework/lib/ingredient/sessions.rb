@@ -251,7 +251,7 @@ module Ingredient
 
     class SessionsBackgroundTask < KFramework::BackgroundTask
       def initialize
-        @stop_flag = Java::ComOneisCommonUtils::WaitingFlag.new
+        @stop_flag = Java::OrgHaploCommonUtils::WaitingFlag.new
         @do_background = true
       end
       def start

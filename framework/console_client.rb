@@ -85,7 +85,7 @@ end
 
 # Run a command, or start an interactive console?
 if console_command == nil
-  puts "\n**** Started ONEIS console ****\n\nType help for help.\n\n"
+  puts "\n**** Started Haplo console ****\n\nType help for help.\n\n"
   IRB.start
 else
   if console_command == :runner

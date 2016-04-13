@@ -8,7 +8,7 @@
 # Minimally compatible with the bcrypt-ruby gem
 
 module BCrypt
-  JAVA_BCRYPT = Java::ComOneisCommonUtils::BCrypt
+  JAVA_BCRYPT = Java::OrgHaploCommonUtils::BCrypt
 
   class Password
 

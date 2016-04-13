@@ -201,7 +201,7 @@ private
   # Background task to startup
   class AccountingBackgroundTask < KFramework::BackgroundTask
     def initialize
-      @stop_flag = Java::ComOneisCommonUtils::WaitingFlag.new
+      @stop_flag = Java::OrgHaploCommonUtils::WaitingFlag.new
       @do_background = true
     end
     def start

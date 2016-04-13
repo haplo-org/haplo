@@ -31,7 +31,7 @@ h2. Display
 
 * _Show linked objects under caption_: tick to display at the bottom of this object, all other objects which are linked to this object. Specify the caption underneath which the objects will display.
 
-* _Render type_: rendering determines how objects display. Choose a render style for this type. If ONEIS does not have a special rendering for the specified type, the default _generic_ type will be used.
+* _Render type_: rendering determines how objects display. Choose a render style for this type. If PRODUCT_NAME does not have a special rendering for the specified type, the default _generic_ type will be used.
 
 * _Render icon_: choose an icon to represent this type, used in search results and (usually) at the top of the object page.
 

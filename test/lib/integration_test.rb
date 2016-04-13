@@ -300,7 +300,7 @@ class IntegrationTest < Test::Unit::TestCase
       return "No session" if @_cookies == nil || !(@_cookies.has_key?('s'))
       session_id = @_cookies['s']
       # Rummage around in the internals to find the session data
-      app_info = Java::ComOneisFramework::Application.fromHostname(_testing_host).getRubyObject
+      app_info = Java::OrgHaploFramework::Application.fromHostname(_testing_host).getRubyObject
       sessions = app_info.all_sessions
       # It's possible a session doesn't exist, in which case, return an empty session with marker
       session = (sessions[session_id] || {:_no_session_found => true})

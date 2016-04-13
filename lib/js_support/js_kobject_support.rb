@@ -133,5 +133,5 @@ module JSKObjectSupport
 
 end
 
-Java::ComOneisJsinterface::KObject.setRubyInterface(JSKObjectSupport)
+Java::OrgHaploJsinterface::KObject.setRubyInterface(JSKObjectSupport)
   

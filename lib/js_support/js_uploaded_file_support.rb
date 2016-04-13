@@ -13,4 +13,4 @@ module JSUploadedFileSupport
 
 end
 
-Java::ComOneisJsinterface::KUploadedFile.setRubyInterface(JSUploadedFileSupport)
+Java::OrgHaploJsinterface::KUploadedFile.setRubyInterface(JSUploadedFileSupport)

@@ -1,6 +1,6 @@
 h1. System Management help
 
-_System Management_ controls how your ONEIS behaves, and who can use it. As you click on entries in the menus above, this help system will display relevant guidance.
+_System Management_ controls how your PRODUCT_NAME behaves, and who can use it. As you click on entries in the menus above, this help system will display relevant guidance.
 
 h2. Contents
 

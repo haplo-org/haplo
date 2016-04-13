@@ -14,7 +14,7 @@ module PluginDebugging
       # A plugin misused a JavaScript API (Ruby)
       JavaScriptAPIError,
       # A plugin misused a JavaScript API (Java)
-      com.oneis.javascript.OAPIException,
+      org.haplo.javascript.OAPIException,
       # A javascript exception (Syntax errors etc. see ECMA v3, section 15.11.6)
       org.mozilla.javascript.EcmaError,
       org.mozilla.javascript.EvaluatorException,

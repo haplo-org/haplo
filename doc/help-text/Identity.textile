@@ -6,7 +6,7 @@ Choose _Edit_ to edit an identity option.
 
 h2. System name
 
-The name of the system, generally the name of the organisation using this ONEIS.
+The name of the system, generally the name of the organisation using this PRODUCT_NAME.
 
 h2. Administrator email address
 
@@ -14,7 +14,7 @@ The email address of the person responsible for the system at the client organis
 
 h2. Web addresses and SSL policy
 
-Options for the web address used to access this ONEIS.
+Options for the web address used to access this PRODUCT_NAME.
 
 h2. Object web addresses
 
@@ -22,5 +22,5 @@ Options for the URLs for the objects stored in this system.
 
 h2. Copyright notice
 
-The copyright notice editor will open in a new window. The copyright notice is linked to the bottom right of every page in ONEIS. 
+The copyright notice editor will open in a new window. The copyright notice is linked to the bottom right of every page in PRODUCT_NAME. 
 

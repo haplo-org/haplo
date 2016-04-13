@@ -2,11 +2,11 @@ FOR: /do/tray
 
 h1. Tray
 
-The Tray is a holding area for items you're going to use later, either in an action elsewhere in ONEIS or just to keep a list to refer to later. The tray works a bit like a shopping basket.
+The Tray is a holding area for items you're going to use later, either in an action elsewhere in PRODUCT_NAME or just to keep a list to refer to later. The tray works a bit like a shopping basket.
 
 To add items to the tray, you can click the _Add to tray_ icon when you're viewing an item, or use the checkboxes next to search results.
 
 Once you've got something in the tray, you can perform actions on the contents by viewing the tray and using the buttons and menus above the tray listing. For example, you can create a new Intranet page which links to all the items in the tray.
 
-You can also use the contents of the tray in other parts of ONEIS. For example, in the intranet page editor and navigation editor, you can insert links to the pages in your tray using the _Add_ buttons.
+You can also use the contents of the tray in other parts of PRODUCT_NAME. For example, in the intranet page editor and navigation editor, you can insert links to the pages in your tray using the _Add_ buttons.
 

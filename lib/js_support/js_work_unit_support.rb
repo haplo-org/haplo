@@ -111,4 +111,4 @@ module JSWorkUnitSupport
 
 end
 
-Java::ComOneisJsinterface::KWorkUnit.setRubyInterface(JSWorkUnitSupport)
+Java::OrgHaploJsinterface::KWorkUnit.setRubyInterface(JSWorkUnitSupport)

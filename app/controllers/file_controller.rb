@@ -235,7 +235,7 @@ class FileController < ApplicationController
 
     # Zip file handling
     if what == :file && zipped
-      results = Java::ComOneisApp::FileController.zipFileExtraction(
+      results = Java::OrgHaploApp::FileController.zipFileExtraction(
           data, zipped_default_filename, "#{zipped_dir_name}/#{@requested_filename}"
         )
       if results == nil
@@ -334,7 +334,7 @@ public
   # How long to wait for a file transform to complete
   TRANSFORM_MAX_WAIT_TIME = 90000 # 1.5 minutes
 
-  MultiRequestOperationTarget = Java::ComOneisApp::MultiRequestOperationTarget
+  MultiRequestOperationTarget = Java::OrgHaploApp::MultiRequestOperationTarget
 
   class InProgressTransforms
     def initialize
@@ -406,7 +406,7 @@ public
 
   # Use the cache system to have a per-application object for storing transforms in progress
   IN_PROGRESS_CACHE = KApp.cache_register(InProgressTransforms, "File transforms", :shared)
-  TRANSFORM_CONTINUATION_ATTRIBUTE = "com.oneis.app.filecontroller.transform".to_java_string
+  TRANSFORM_CONTINUATION_ATTRIBUTE = "org.haplo.app.filecontroller.transform".to_java_string
 
   # This complicated way of handling file transformations does two things:
   #   1) Suspends the request while the file is being processed, as only a few request can
@@ -526,7 +526,7 @@ public
     # Can only be used by an API key. While this isn't going to help right now, it's a useful restriction
     # in case uploads are ever tightened up.
     unless @request_user.policy.is_not_anonymous? && @request_uses_api_key
-      response.headers['X-ONEIS-Reportable-Error'] = 'yes'
+      response.headers['X-Haplo-Reportable-Error'] = 'yes'
       render :text => 'Must be authenticated with an API key', :status => 403
       return
     end

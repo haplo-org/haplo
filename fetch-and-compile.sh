@@ -226,13 +226,13 @@ g++ $OXP_LINK $OXP_DIR/_all.o $XAPIAN_LIB -lz -L$POSTGRESQL_LIB -o $OXP_DIR/oxp.
 # ----------------------------------------------------------------------------------
 
 echo "Compiling runner utility..."
-g++ framework/support/oneis.cpp -O2 -o framework/oneis
+g++ framework/support/haplo.cpp -O2 -o framework/haplo
 
 # ----------------------------------------------------------------------------------
 
 echo "Compiling Java sources with maven..."
 mvn package
-cp target/haplo-3.20160402.0817.c6634a05a4.jar framework/oneis.jar
+cp target/haplo-3.20160407.1619.c195b3fbd4.jar framework/haplo.jar
 
 mvn -Dmdep.outputFile=target/classpath.txt dependency:build-classpath
 

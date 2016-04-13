@@ -43,4 +43,4 @@ module JSKJobSupport
 
 end
 
-Java::ComOneisJsinterface::KJob.setRubyInterface(JSKJobSupport)
+Java::OrgHaploJsinterface::KJob.setRubyInterface(JSKJobSupport)

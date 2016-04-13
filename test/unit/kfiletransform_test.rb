@@ -230,7 +230,7 @@ class KFileTransformTest < Test::Unit::TestCase
   end
 
   def tgfdo_get_dim_string(filename)
-    i = Java::ComOneisGraphics::ImageIdentifier.new(filename)
+    i = Java::OrgHaploGraphics::ImageIdentifier.new(filename)
     i.perform()
     if i.getSuccess()
       "ok #{i.getWidth()} #{i.getHeight()} #{i.getFormat().downcase}"
@@ -321,7 +321,7 @@ class KFileTransformTest < Test::Unit::TestCase
       pathname1 = "#{FILE_UPLOADS_TEMPORARY_DIR}/test_utf8_bom_removal1.#{Thread.current.object_id}"
       pathname2 = "#{FILE_UPLOADS_TEMPORARY_DIR}/test_utf8_bom_removal2.#{Thread.current.object_id}"
       File.open(pathname1, "wb") { |f| f.write string }
-      com.oneis.utils.UTF8Utils.rewriteTextFileWithoutUTF8BOMAndFixLineEndings(pathname1, pathname2)
+      org.haplo.utils.UTF8Utils.rewriteTextFileWithoutUTF8BOMAndFixLineEndings(pathname1, pathname2)
       contents = File.open(pathname2) { |f| f.read }
       assert_equal "Hello world!\n\nPing\nPong", contents
       assert File.exist?(pathname1)
@@ -464,7 +464,7 @@ class KFileTransformTest < Test::Unit::TestCase
   def get_dimensions_of(file_name, mime_type)
     dims = nil
     if mime_type =~ /\Aimage\//
-      identifier = Java::ComOneisGraphics::ImageIdentifier.new(file_name)
+      identifier = Java::OrgHaploGraphics::ImageIdentifier.new(file_name)
       identifier.perform()
       if identifier.getSuccess()
         # Good image!

@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# Interface to the Java com.oneis.text.extract.* classes.
+# Interface to the Java org.haplo.text.extract.* classes.
 
 module KTextExtract
 
@@ -30,12 +30,12 @@ module KTextExtract
   end
 
   OP_CLASSES = {
-    'application/rtf' => Java::ComOneisTextExtract::RTF,
-    'text/html' => Java::ComOneisTextExtract::HTML,
-    'text/plain' => Java::ComOneisTextExtract::Text
+    'application/rtf' => Java::OrgHaploTextExtract::RTF,
+    'text/html' => Java::OrgHaploTextExtract::HTML,
+    'text/plain' => Java::OrgHaploTextExtract::Text
   }
-  KFileTransform::MSOFFICE_MIME_TYPES.each { |t| OP_CLASSES[t] = Java::ComOneisTextExtract::MSOffice }
-  KFileTransform::IWORK_MIME_TYPES.each { |t| OP_CLASSES[t] = Java::ComOneisTextExtract::IWorkSFF }
+  KFileTransform::MSOFFICE_MIME_TYPES.each { |t| OP_CLASSES[t] = Java::OrgHaploTextExtract::MSOffice }
+  KFileTransform::IWORK_MIME_TYPES.each { |t| OP_CLASSES[t] = Java::OrgHaploTextExtract::IWorkSFF }
   def self.register_op_class(mime_type, java_class)
     OP_CLASSES[mime_type] = java_class
   end
@@ -45,7 +45,7 @@ module KTextExtract
   def self.make_extraction_operation(filename, mime_type)
     m = KMIMETypes.canonical_base_type(mime_type)
     c = OP_CLASSES[m]
-    c = Java::ComOneisTextExtract::OpenOffice if c == nil && m =~ KFileTransform::OPENOFFICE_MIME_TYPE_REGEXP
+    c = Java::OrgHaploTextExtract::OpenOffice if c == nil && m =~ KFileTransform::OPENOFFICE_MIME_TYPE_REGEXP
     (c == nil) ? nil : c.new(filename)
   end
 

@@ -12,7 +12,7 @@
 # user entered, but include which culture was used to enter that date.
 
 class KDateTime
-  include Java::ComOneisJsinterfaceApp::AppDateTime
+  include Java::OrgHaploJsinterfaceApp::AppDateTime
 
   PRECISION_OPTIONS = [
     ['Century', 'C'],
@@ -388,7 +388,7 @@ private
   # --------------------------------------------------------------------------------------------------------------
   # JavaScript interface
 
-  GETRANGE_RESPONSE = Java::ComOneisJsinterfaceApp::AppDateTime::DTRange
+  GETRANGE_RESPONSE = Java::OrgHaploJsinterfaceApp::AppDateTime::DTRange
   def jsGetRange
     range = _make_range
     r = GETRANGE_RESPONSE.new
@@ -404,4 +404,4 @@ private
 end
 
 # Workaround for http://jira.codehaus.org/browse/JRUBY-5317
-Java::ComOneisJsinterfaceApp::JRuby5317Workaround.appDateTime(KDateTime.new('2010 01 01'))
+Java::OrgHaploJsinterfaceApp::JRuby5317Workaround.appDateTime(KDateTime.new('2010 01 01'))

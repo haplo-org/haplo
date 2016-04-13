@@ -333,7 +333,7 @@ class KObjectStore
   # ----------------------------------------------------------------------------------------------------
 
   class Results
-    include Java::ComOneisJsinterfaceApp::AppQueryResults
+    include Java::OrgHaploJsinterfaceApp::AppQueryResults
 
     include Enumerable
 
@@ -458,7 +458,7 @@ class KObjectStore
 
   # Base class for clauses
   class Clause
-    include Java::ComOneisJsinterfaceApp::AppQueryClause
+    include Java::OrgHaploJsinterfaceApp::AppQueryClause
 
     def initialize(parent, desc = nil, qualifier = nil)
       @parent = parent

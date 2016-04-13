@@ -16,4 +16,4 @@ module JSKDateTimeSupport
 
 end
 
-Java::ComOneisJsinterface::KDateTime.setRubyInterface(JSKDateTimeSupport)
+Java::OrgHaploJsinterface::KDateTime.setRubyInterface(JSKDateTimeSupport)

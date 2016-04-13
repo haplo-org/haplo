@@ -26,7 +26,9 @@ class JavascriptCheckRhinoConsStringTest < Test::Unit::TestCase
 
   def test_conssstring_usage
     @failures = 0
-    Dir.glob("java/com/oneis/{javascript,jsinterface}/**/*.java").sort.each do |pathname|
+    @checks = 0
+    Dir.glob("src/main/java/org/haplo/{javascript,jsinterface}/**/*.java").sort.each do |pathname|
+      @checks += 1
       File.open(pathname) { |f| f.read } .split(/\n/).each_with_index do |line, index|
         if line =~ /\(\s*String\s*\)/
           found_failure(pathname, line, index, "Suspicious cast to String.")
@@ -47,6 +49,8 @@ class JavascriptCheckRhinoConsStringTest < Test::Unit::TestCase
       puts
       assert false
     end
+    # Make sure this test is looking in the right place
+    assert @checks > 0
   end
 
   def found_failure(pathname, line, index, reason)

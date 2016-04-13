@@ -45,7 +45,7 @@ Handlebars
 moment
 XDate
 console
-$oneis_framework_initialiser
+$haplo_framework_initialiser
 O
 HTTP
 $StoreQuery

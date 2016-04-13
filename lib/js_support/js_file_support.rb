@@ -64,7 +64,7 @@ module JSFileSupport
 
     elsif where == 'document'
       # Thumbnail + filename, linked
-      options = com.oneis.jsinterface.KStoredFile::FileRenderOptions.new()
+      options = org.haplo.jsinterface.KStoredFile::FileRenderOptions.new()
       options.authenticationSignature = true
       options.forceDownload = true
       path = fileIdentifierMakePathOrHTML(stored_file, options, false)
@@ -182,4 +182,4 @@ module JSFileSupport
 
 end
 
-Java::ComOneisJsinterface::KStoredFile.setRubyInterface(JSFileSupport)
+Java::OrgHaploJsinterface::KStoredFile.setRubyInterface(JSFileSupport)

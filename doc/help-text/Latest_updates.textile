@@ -11,9 +11,9 @@ To set up a latest updates bulletin:
 * _Save choices_
 * click on _Settings_ on the right hand side of the page to set the frequency of updates and format of emails. 
 
-h2. Viewing your latest updates in ONEIS
+h2. Viewing your latest updates in PRODUCT_NAME
 
-As well as receiving email bulletins, you can also view all new items matching your preferences in ONEIS. Go to:
+As well as receiving email bulletins, you can also view all new items matching your preferences in PRODUCT_NAME. Go to:
 
 * your account
 * click on _View latest updates_

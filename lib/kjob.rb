@@ -28,7 +28,7 @@ class KJob
   # For signalling to job runner threads
   @@run_flags = Array.new
   0.upto(QUEUE__COUNT-1) do
-    flag = Java::ComOneisCommonUtils::WaitingFlag.new
+    flag = Java::OrgHaploCommonUtils::WaitingFlag.new
     @@run_flags << flag
     flag.setFlag()  # make sure the job queues are examined when starting up
   end

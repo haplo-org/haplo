@@ -81,7 +81,7 @@
             if(err && (err instanceof Object) && ("message" in err)) {
                 // Remove the prefix if it's an API error
                 message = err.message.
-                    replace(/^com\.oneis\.javascript\.OAPIException\: /,'').
+                    replace(/^org\.haplo\.javascript\.OAPIException\: /,'').
                     replace(/^org\.haplo\.template\.html\.RenderException: /,'').
                     replace(/^org\.jruby\.exceptions\.RaiseException\: \(JavaScriptAPIError\) /, '').
                     replace(/^org\.jruby\.exceptions\.RaiseException\: \(PermissionDenied\) /, '');

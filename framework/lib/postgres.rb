@@ -7,7 +7,7 @@
 
 # Make pg utilities available to java in a way matching the old interface
 module PGconn
-  PS = Java::ComOneisUtils::PostgresSupport
+  PS = Java::OrgHaploUtils::PostgresSupport
   def self.escape_string(s); s == nil ? nil : String.from_java_bytes(PS.escape_string(s.to_java_bytes, false)).force_encoding(Encoding::UTF_8); end
   def self.quote(s); %Q!'#{PGconn.escape_string(s)}'!; end
 

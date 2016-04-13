@@ -278,7 +278,7 @@ var Ks = (function($) {
                 var c = $('#z__browse_term_search_result_container');
                 c.html(rtext);
                 // Setup demand loading?
-                var hdr = jqXHR.getResponseHeader("X-ONEIS-SDL");
+                var hdr = jqXHR.getResponseHeader("X-Haplo-SDL");
                 if(hdr !== undefined && hdr !== null) {
                     setUpDemandLoadingOfResults.apply(this, $.parseJSON(hdr));
                 }
@@ -432,7 +432,7 @@ var Ks = (function($) {
         // Search tips?
         $('#z__search_tips_button').click(function(event) {
             event.preventDefault();
-            var w = window.open('/search/tips', 'oneis_search_tips',
+            var w = window.open('/search/tips', 'haplo_search_tips',
                 'scrollbars=1,toolbar=0,status=0,location=0,menubar=0,scrollbars=0,resizable=1,left=120000,top=120000,width=560,height=360');
             w.focus();  /* bring to top if it's already open and covered */
         });

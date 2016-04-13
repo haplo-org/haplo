@@ -8,7 +8,7 @@ package org.haplo.component.pdfbox;
 
 import java.io.IOException;
 
-import com.oneis.op.Operation;
+import org.haplo.op.Operation;
 
 public class PDFPageRender extends Operation {
     private String inputPathname;

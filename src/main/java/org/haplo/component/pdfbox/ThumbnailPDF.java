@@ -8,8 +8,8 @@ package org.haplo.component.pdfbox;
 
 import java.io.IOException;
 
-import com.oneis.op.Operation;
-import com.oneis.graphics.ThumbnailSize;
+import org.haplo.op.Operation;
+import org.haplo.graphics.ThumbnailSize;
 
 public class ThumbnailPDF extends Operation {
     private String inputPathname;

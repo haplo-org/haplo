@@ -90,7 +90,7 @@ module KApp
 
   # Get an app_id given a hostname. Will exception if the hostname isn't known.
   def self.hostname_to_app_id(hostname)
-    application = Java::ComOneisFramework::Application.fromHostname(hostname.downcase)
+    application = Java::OrgHaploFramework::Application.fromHostname(hostname.downcase)
     raise "No application for hostname #{hostname}" if application == nil
     application.getApplicationID()
   end
@@ -153,16 +153,16 @@ module KApp
 
   # Inform the Java framework which applications are defined in the database.
   def self.update_app_server_mappings
-    # Read the application mapping from the database, and tell the com.oneis.framework.Application class about it.
+    # Read the application mapping from the database, and tell the org.haplo.framework.Application class about it.
     in_application(:no_app) do
       pg = get_pg_database
       results = pg.exec('SELECT hostname,application_id FROM applications')
-      map = Java::ComOneisFramework::Application.createEmptyHostnameMapping()
+      map = Java::OrgHaploFramework::Application.createEmptyHostnameMapping()
       results.each do |hostname, app_id|
         map.setMapping(hostname, app_id.to_i)
       end
       results.clear
-      Java::ComOneisFramework::Application.setHostnameMapping(map)
+      Java::OrgHaploFramework::Application.setHostnameMapping(map)
     end
   end
 
@@ -175,7 +175,7 @@ module KApp
   def self.current_java_app_info
     thread_context = self._thread_context
     raise "No valid app set" unless thread_context.current_application_id.kind_of?(Integer)
-    Java::ComOneisFramework::Application.fromApplicationID(thread_context.current_application_id)
+    Java::OrgHaploFramework::Application.fromApplicationID(thread_context.current_application_id)
   end
 
   # ----------------------------------------------------------------------------------------------------
@@ -333,7 +333,7 @@ private
 
   def self.get_app_info_for(app_id)
     # Get the AppInfo object, or create a new one if it doesn't exist
-    japp = Java::ComOneisFramework::Application.fromApplicationID(app_id)
+    japp = Java::OrgHaploFramework::Application.fromApplicationID(app_id)
     app_info = japp.getRubyObject()
     if app_info == nil
       # Not defined, create one

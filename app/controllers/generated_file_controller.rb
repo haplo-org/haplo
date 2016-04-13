@@ -13,7 +13,7 @@ class GeneratedFileController < ApplicationController
 
   # -------------------------------------------------------------------------
 
-  Util = Java::ComOneisApp::GeneratedFileController
+  Util = Java::OrgHaploApp::GeneratedFileController
 
   # -------------------------------------------------------------------------
 

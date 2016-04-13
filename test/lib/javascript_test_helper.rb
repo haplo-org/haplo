@@ -7,7 +7,7 @@
 
 module JavaScriptTestHelper
 
-  Runtime = Java::ComOneisJavascript::Runtime
+  Runtime = Java::OrgHaploJavascript::Runtime
 
   # Make a runtime which also loads in the testing framework
   def make_javascript_runtime

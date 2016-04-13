@@ -15,7 +15,7 @@ class OAuthClient
         "auth_url" => "https://accounts.google.com/o/oauth2/auth",
           # The URL to redirect the user to, to allow authentication
         "token_url" => "https://accounts.google.com/o/oauth2/token",
-          # The URL that ONEIS should use to verify the authentication token against the provider.
+          # The URL that Haplo should use to verify the authentication token against the provider.
         "cert_url" => "https://www.googleapis.com/oauth2/v1/certs",
           # In google-flavoured OAuth, the token response contains a JWT signed message,
           # this URL should return a dictionary of PEM encoded keys used to sign the JWT.

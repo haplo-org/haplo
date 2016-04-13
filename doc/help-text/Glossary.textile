@@ -20,7 +20,7 @@ h1. Glossary
 
 *Object*: an entry in the system which records a description of an entity and sometimes the entity itself as an attached file, or text. Also referred to as an _item_.
 
-*Pop-up*: a new window automatically opening in a web browser, you will need pop-ups enabled to use some of the features in ONEIS, instructions for enabling pop-ups are different for each web browser.
+*Pop-up*: a new window automatically opening in a web browser, you will need pop-ups enabled to use some of the features in PRODUCT_NAME, instructions for enabling pop-ups are different for each web browser.
 
 *Qualifier*: a term added to an attribute to clarify a particular instance of that attribute ie sub-title is a qualifier for title.
 
@@ -28,7 +28,7 @@ h1. Glossary
 
 *Results*: the results of a search are the items displayed which match the search terms entered.
 
-*Search illustrator*: a feature in ONEIS which displays an illustration of how your search terms will be connected together.
+*Search illustrator*: a feature in PRODUCT_NAME which displays an illustration of how your search terms will be connected together.
 
 *Search operators*: words added to a search by the user to specify how their search terms should be connected. The commonly used search operators are: AND, OR, NOT.
 
@@ -38,6 +38,6 @@ h1. Glossary
 
 *Taxonomy*: a subject list systematically arranged to show the relationship between terms, including their hiearchical relationship. A taxonomy would be used in a controlled field to control the terms used to describe objects.
 
-*Tray*: a holding place within ONEIS into which you can add items which you use later.
+*Tray*: a holding place within PRODUCT_NAME into which you can add items which you use later.
 
 *Type*: used to distinguish different kinds of object ie a document, book or person are all types of object.

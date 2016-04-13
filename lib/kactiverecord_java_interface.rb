@@ -6,7 +6,7 @@
 
 
 # Helpers for writing the JS interface to ActiveRecord objects.
-# See java/com/oneis/jsinterface/app/README.txt
+# See src/main/java/org/haplo/jsinterface/app/README.txt
 
 module KActiveRecordJavaInterface
   def self.make_jsset_methods(klass, *methods)

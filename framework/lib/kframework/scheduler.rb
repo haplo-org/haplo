@@ -62,7 +62,7 @@ class KFramework
   # Called by framework start
   def scheduled_tasks_start
     @@scheduled_tasks_delayed_registration.each do |args|
-      Java::ComOneisAppserver::Scheduler.add(*args)
+      Java::OrgHaploAppserver::Scheduler.add(*args)
     end
   end
 

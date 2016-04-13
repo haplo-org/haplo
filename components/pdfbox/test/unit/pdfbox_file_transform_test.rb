@@ -108,7 +108,7 @@ class ComponentPdfboxFileTransformTest < Test::Unit::TestCase
     dims = nil
     if mime_type == 'application/pdf'
       begin
-        Java::ComOneisOp::Operation.markThreadAsWorker() # so PDF class can be used
+        Java::OrgHaploOp::Operation.markThreadAsWorker() # so PDF class can be used
         pdf = Java::OrgHaploComponentPdfbox::PDF.new(file_name)
         begin
           if pdf.isValid()
@@ -118,8 +118,8 @@ class ComponentPdfboxFileTransformTest < Test::Unit::TestCase
           pdf.close()
         end
       ensure
-        Java::ComOneisOp::Operation.unmarkThreadAsWorker() # back to normal tests
-        assert !(Java::ComOneisOp::Operation.isThreadMarkedAsWorker())
+        Java::OrgHaploOp::Operation.unmarkThreadAsWorker() # back to normal tests
+        assert !(Java::OrgHaploOp::Operation.isThreadMarkedAsWorker())
       end
     else
       raise "Can't get file dimensions for #{mime_type}"
@@ -128,7 +128,7 @@ class ComponentPdfboxFileTransformTest < Test::Unit::TestCase
   end
 
   def tgfdo_get_dim_string(filename)
-    i = Java::ComOneisGraphics::ImageIdentifier.new(filename)
+    i = Java::OrgHaploGraphics::ImageIdentifier.new(filename)
     i.perform()
     if i.getSuccess()
       "ok #{i.getWidth()} #{i.getHeight()} #{i.getFormat().downcase}"

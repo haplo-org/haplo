@@ -14,4 +14,4 @@ module JSInterRuntimeSignalSupport
   end
 end
 
-Java::ComOneisJsinterfaceUtil::InterRuntimeSignal.setRubyInterface(JSInterRuntimeSignalSupport)
+Java::OrgHaploJsinterfaceUtil::InterRuntimeSignal.setRubyInterface(JSInterRuntimeSignalSupport)

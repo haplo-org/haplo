@@ -49,10 +49,10 @@ class KFileTransform
   # -----------------------------------------------------------------------------------------------------------------
   # Java classes used
 
-  ImageIdentifier = Java::ComOneisGraphics::ImageIdentifier
-  ImageTransform = Java::ComOneisGraphics::ImageTransform
-  ThumbnailFinder = Java::ComOneisGraphics::ThumbnailFinder
-  HTMLToText = Java::ComOneisConvert::HTMLToText
+  ImageIdentifier = Java::OrgHaploGraphics::ImageIdentifier
+  ImageTransform = Java::OrgHaploGraphics::ImageTransform
+  ThumbnailFinder = Java::OrgHaploGraphics::ThumbnailFinder
+  HTMLToText = Java::OrgHaploConvert::HTMLToText
 
   # -----------------------------------------------------------------------------------------------------------------
 

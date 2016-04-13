@@ -30,5 +30,5 @@ then
 fi
 
 
-framework/oneis utility $KFRAMEWORK_BITS config/java.config $JAVA_EXECUTABLE `pwd` $KFRAMEWORK_ENV $@
+framework/haplo utility $KFRAMEWORK_BITS config/java.config $JAVA_EXECUTABLE `pwd` $KFRAMEWORK_ENV $@
 

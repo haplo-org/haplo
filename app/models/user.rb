@@ -8,7 +8,7 @@
 # NOTE: Plugin notifications for changes are done in user_controller as it's far easier to detect and aggreate changes into one hook call.
 
 class User < ActiveRecord::Base
-  include Java::ComOneisJsinterfaceApp::AppUser
+  include Java::OrgHaploJsinterfaceApp::AppUser
   include KPlugin::HookSite
   extend KPlugin::HookSite
   after_update :update_membership_table_active_attr

@@ -28,7 +28,7 @@ module KDynamicFiles
 
   def self.devmode_reload
     puts "Invalidating all dynamic files..."
-    Java::ComOneisFramework::Application.allLoadedApplicationObjects().each do |japp|
+    Java::OrgHaploFramework::Application.allLoadedApplicationObjects().each do |japp|
       japp.invalidateAllDynamicFiles()
     end
     eval(File.open(CSS_PREPROCESS_RUBY) { |f| f.read })

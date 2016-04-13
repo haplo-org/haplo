@@ -6,7 +6,7 @@
 
 
 class KObjRef
-  include Java::ComOneisJsinterfaceApp::AppObjRef
+  include Java::OrgHaploJsinterfaceApp::AppObjRef
 
   attr_reader :obj_id
   # NOTE: k_typecode defined in kconstants.rb to avoid circular ref
@@ -74,5 +74,5 @@ class KObjRef
 end
 
 # Workaround for http://jira.codehaus.org/browse/JRUBY-5317
-Java::ComOneisJsinterfaceApp::JRuby5317Workaround.appObjRef(KObjRef.new(1))
+Java::OrgHaploJsinterfaceApp::JRuby5317Workaround.appObjRef(KObjRef.new(1))
 

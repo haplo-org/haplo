@@ -142,7 +142,7 @@ class KFramework
         KApp.logger.error("Reportable error from #{exchange.request.path}")
         KApp.logger.log_exception(e)
         exchange.response = KFramework::DataResponse.new(reportable_error_text, 'text/html; charset=utf-8', 500)
-        exchange.response.headers["X-ONEIS-Reportable-Error"] = "yes"
+        exchange.response.headers["X-Haplo-Reportable-Error"] = "yes"
       end
     end
   end

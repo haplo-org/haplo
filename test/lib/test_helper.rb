@@ -113,7 +113,7 @@ class Test::Unit::TestCase
     # Get leafname
     leafname = (filename =~ /\/([^\/]+)\z/) ? $1 : filename
     # Make a java upload object and return it
-    upload = Java::ComOneisAppserver::FileUploads::Upload.new("file", FILE_UPLOADS_TEMPORARY_DIR, "SHA-1", nil)
+    upload = Java::OrgHaploAppserver::FileUploads::Upload.new("file", FILE_UPLOADS_TEMPORARY_DIR, "SHA-1", nil)
     upload.setUploadDetails(outfilename, digest, mime_type, leafname, File.size(full_pathname))
     upload
   end

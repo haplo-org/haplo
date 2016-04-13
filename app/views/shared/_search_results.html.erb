@@ -173,7 +173,7 @@ end
     client_side_resources(:search_results_demand)
     dl_args = %Q!["z__search_container_#{res_idx}",#{ajax_works ? 'null' : "'z__search_results_pager_#{res_idx}'"},#{count},"/api/search/demand_load?#{search_url_params(search_results)}"]!
     if data_for_template[:rendering_for_insertable]
-      response.headers['X-ONEIS-SDL'] = dl_args
+      response.headers['X-Haplo-SDL'] = dl_args
     else
       %><div class="z__search_demand_load_params" data-sdl="<%= h(dl_args) %>"></div><%
     end

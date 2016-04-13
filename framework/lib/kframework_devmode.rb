@@ -63,7 +63,7 @@ if KFRAMEWORK_ENV == 'development'
         @_devmode_static_files_to_reload.each do |e|
           puts "Reloading static file #{e.last[1]}"
           # NOTE: This isn't actually thread safe as the underlying Java Map isn't protected. But should be OK for dev mode.
-          Java::ComOneisAppserver::GlobalStaticFiles.__send__(:addStaticFile, *e.last)
+          Java::OrgHaploAppserver::GlobalStaticFiles.__send__(:addStaticFile, *e.last)
           e[0] = File.mtime(e.last[1])
         end
         # Templates

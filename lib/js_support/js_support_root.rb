@@ -35,7 +35,7 @@ require 'js_support/js_inter_runtime_signal_support'
 # Root class for interacting with a JavaScript runtime.
 # Expects a new object to be created every time the runtime is checked out.
 class JSSupportRoot
-  include Java::ComOneisJsinterfaceApp::AppRoot
+  include Java::OrgHaploJsinterfaceApp::AppRoot
 
   def initialize
     @controller = nil
@@ -76,12 +76,12 @@ class JSSupportRoot
 
   # For working out which plugin is to blame for an error
   def getCurrentlyExecutingPluginName()
-    com.oneis.javascript.Runtime.findCurrentlyExecutingPluginFromStack()
+    org.haplo.javascript.Runtime.findCurrentlyExecutingPluginFromStack()
   end
 
   # Does the last used plugin have the requested privilege?
   def currentlyExecutingPluginHasPrivilege(privilegeName)
-    found_name = com.oneis.javascript.Runtime.findCurrentlyExecutingPluginFromStack()
+    found_name = org.haplo.javascript.Runtime.findCurrentlyExecutingPluginFromStack()
     return false unless found_name != nil
     plugin = KPlugin.get(found_name)
     return false unless plugin != nil

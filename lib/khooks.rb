@@ -19,7 +19,7 @@ module KHooks
       @run_arguments = []
       @js_call_index = 0
       @js_call_args = ''
-      @response_fields = Java::ComOneisJsinterface::KPluginResponse::Fields.new
+      @response_fields = Java::OrgHaploJsinterface::KPluginResponse::Fields.new
       @response_in = ""
       @response_out = ""
     end
@@ -39,17 +39,17 @@ module KHooks
       elsif klass.equal?(Fixnum)
         @js_call_args << %Q!, args[#{@js_call_index}].to_i!
       elsif klass.equal?(KObject)
-        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::ComOneisJsinterface::KObject.fromAppObject(args[#{@js_call_index}], false))!
+        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KObject.fromAppObject(args[#{@js_call_index}], false))!
       elsif klass.equal?(KObjRef)
-        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::ComOneisJsinterface::KObjRef.fromAppObjRef(args[#{@js_call_index}]))!
+        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KObjRef.fromAppObjRef(args[#{@js_call_index}]))!
       elsif klass.equal?(WorkUnit)
-        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::ComOneisJsinterface::KWorkUnit.fromAppWorkUnit(args[#{@js_call_index}]))!
+        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KWorkUnit.fromAppWorkUnit(args[#{@js_call_index}]))!
       elsif klass.equal?(User)
-        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::ComOneisJsinterface::KUser.fromAppUser(args[#{@js_call_index}]))!
+        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KUser.fromAppUser(args[#{@js_call_index}]))!
       elsif klass.equal?(AuditEntry)
-        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::ComOneisJsinterface::KAuditEntry.fromAppAuditEntry(args[#{@js_call_index}]))!
+        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KAuditEntry.fromAppAuditEntry(args[#{@js_call_index}]))!
       elsif klass.equal?(StoredFile)
-        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::ComOneisJsinterface::KStoredFile.fromAppStoredFile(args[#{@js_call_index}]))!
+        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KStoredFile.fromAppStoredFile(args[#{@js_call_index}]))!
       elsif klass == "bool"
         @js_call_args << %Q@, !!(args[#{@js_call_index}])@
       else
@@ -88,15 +88,15 @@ module KHooks
         @response_out << "r.#{name} = KHooks.structure_j_to_r(j.getRJSON('#{name}'), Hash)\n"
       elsif klass.equal?(KObject)
         @response_fields.kobjectField(name)
-        @response_in << "j.putR('#{name}',Java::ComOneisJsinterface::KObject.fromAppObject(r.#{name},false)) if r.#{name} != nil\n"
-        @response_out << "v = j.getR('#{name}'); r.#{name} = (v == nil) ? nil : Java::ComOneisJsinterface::KObject.toHookResponseAppValue(v)\n"
+        @response_in << "j.putR('#{name}',Java::OrgHaploJsinterface::KObject.fromAppObject(r.#{name},false)) if r.#{name} != nil\n"
+        @response_out << "v = j.getR('#{name}'); r.#{name} = (v == nil) ? nil : Java::OrgHaploJsinterface::KObject.toHookResponseAppValue(v)\n"
       elsif klass.equal?(KLabelChanges)
         @response_fields.labelChangesField(name)
-        @response_in << "j.putR('#{name}',Java::ComOneisJsinterface::KLabelChanges.fromAppLabelChanges(r.#{name})) if r.#{name} != nil\n"
+        @response_in << "j.putR('#{name}',Java::OrgHaploJsinterface::KLabelChanges.fromAppLabelChanges(r.#{name})) if r.#{name} != nil\n"
         @response_out << "v = j.getR('#{name}'); r.#{name} = (v == nil) ? nil : v.toRubyObject()\n"
       elsif klass.equal?(KLabelStatements)
         @response_fields.labelStatementsField(name)
-        @response_in << "j.putR('#{name}',Java::ComOneisJsinterface::KLabelStatements.fromAppLabelStatements(r.#{name})) if r.#{name} != nil\n"
+        @response_in << "j.putR('#{name}',Java::OrgHaploJsinterface::KLabelStatements.fromAppLabelStatements(r.#{name})) if r.#{name} != nil\n"
         @response_out << "v = j.getR('#{name}'); r.#{name} = (v == nil) ? nil : v.toRubyObject()\n"
       elsif klass.kind_of?(String) && klass =~ /\Ajs:(.+?)\z/
         @response_fields.hashField(name)

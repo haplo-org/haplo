@@ -37,7 +37,7 @@ class KAppDelete
 
     KApp.clear_all_cached_data_for_app(app_id)
 
-    Java::ComOneisFramework::Application.forgetApplication(app_id)
+    Java::OrgHaploFramework::Application.forgetApplication(app_id)
 
     KObjectStore.forget_store(app_id)
 

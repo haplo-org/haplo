@@ -25,4 +25,4 @@ module JsTemplateLoader
   end
 end
 
-Java::ComOneisJavascript::Runtime.setStandardTemplateLoader(JsTemplateLoader)
+Java::OrgHaploJavascript::Runtime.setStandardTemplateLoader(JsTemplateLoader)

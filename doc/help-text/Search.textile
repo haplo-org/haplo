@@ -28,7 +28,7 @@ You can combine AND, OR and NOT operators to form more complex queries. The sear
 
 h2. Stemming, truncation and plurals
 
-ONEIS uses automatic stemming so you don't have to worry about the different endings of words in your queries. For example _stopping_ will be treated the same as _stop_, so a search for _stop_ will find _stopping_ and you can use either in your query.
+PRODUCT_NAME uses automatic stemming so you don't have to worry about the different endings of words in your queries. For example _stopping_ will be treated the same as _stop_, so a search for _stop_ will find _stopping_ and you can use either in your query.
 
 Stemming also handles singular and plural forms of common words. For instance _meetings_ retrieves _meeting_ and vice versa; and _lady_ retrieves _ladies_.
 

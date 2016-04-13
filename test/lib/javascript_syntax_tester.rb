@@ -6,7 +6,7 @@
 
 
 require 'java'
-require 'framework/oneis.jar'
+require 'framework/haplo.jar'
 
 require 'rubygems'
 gem 'json'
@@ -24,12 +24,12 @@ class JavaScriptSyntaxTester
       end
     end
     # Add in names from the interface classes
-    zipFile = java.util.zip.ZipFile.new('framework/oneis.jar')
+    zipFile = java.util.zip.ZipFile.new('framework/haplo.jar')
     entries = zipFile.entries()
     while(entries.hasMoreElements())
       entry = entries.nextElement()
       name = entry.getName()
-      if name =~ /\A(com\/oneis\/jsinterface[a-zA-Z0-9\/]*)\/([a-zA-Z0-9]+)\.class\z/
+      if name =~ /\A(org\/haplo\/jsinterface[a-zA-Z0-9\/]*)\/([a-zA-Z0-9]+)\.class\z/
         kla = $2
         mod = $1.split('/').map { |a| a.capitalize } .join
         begin

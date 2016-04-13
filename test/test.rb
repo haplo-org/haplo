@@ -89,7 +89,7 @@ unless KFRAMEWORK_LOADED_COMPONENTS.empty?
 end
 
 # Start in-process operation runners for the tests
-Java::ComOneisFramework::OperationRunner.startTestInProcessWorkers()
+Java::OrgHaploFramework::OperationRunner.startTestInProcessWorkers()
 
 # Collect together all test cases (don't use ObjectSpace on JRuby)
 $k_all_test_cases = Array.new
@@ -198,7 +198,7 @@ class TestApplicationInit
     FileUtils.rm_rf("#{KOBJECTSTORE_WEIGHTING_BASE}/#{test_app_id}.yaml")
     puts "Initialise test application #{test_app_id}..."
     # initialise with wwwDDDD.example.com (used by IntegrationTest) and testDDDD.host
-    KAppInit.create('oneis', "www#{test_app_id}.example.com,test#{test_app_id}.host", "ONEIS Test System #{test_app_id}", 'sme', test_app_id)
+    KAppInit.create('haplo', "www#{test_app_id}.example.com,test#{test_app_id}.host", "Haplo Test Application #{test_app_id}", 'sme', test_app_id)
     # Create a user
     KAppInit.create_app_user("www#{test_app_id}.example.com", 'Init User', 'test@example.com', 'password1')
     # Make some changes
@@ -253,7 +253,7 @@ class MockedObjectStoreFlag
   def initialize(first, last)
     @flags = Hash.new
     first.upto(last) do |app_id|
-      @flags[app_id] = Java::ComOneisCommonUtils::WaitingFlag.new
+      @flags[app_id] = Java::OrgHaploCommonUtils::WaitingFlag.new
     end
   end
   def method_missing(symbol, *args)

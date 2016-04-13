@@ -9,12 +9,12 @@ class OpDispatcherTest < Test::Unit::TestCase
 
   RuntimeException = Java::JavaLang::RuntimeException
 
-  OpDispatcher = Java::ComOneisOp::OpDispatcher
-  OpWorkerSupervisor = Java::ComOneisOp::OpWorkerSupervisor
+  OpDispatcher = Java::OrgHaploOp::OpDispatcher
+  OpWorkerSupervisor = Java::OrgHaploOp::OpWorkerSupervisor
   WorkerState = OpDispatcher::WorkerState
-  Operation = Java::ComOneisOp::Operation
-  OpNotifyTarget = Java::ComOneisOp::OpNotifyTarget
-  TestOperation = Java::ComOneisOpTest::TestOperation
+  Operation = Java::OrgHaploOp::Operation
+  OpNotifyTarget = Java::OrgHaploOp::OpNotifyTarget
+  TestOperation = Java::OrgHaploOpTest::TestOperation
 
   # ------------------------------------------------------------------------------------
 

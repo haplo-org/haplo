@@ -34,4 +34,4 @@ module JSRemoteCollaborationServiceSupport
 
 end
 
-Java::ComOneisJsinterfaceRemote::KCollaborationService.setRubyInterface(JSRemoteCollaborationServiceSupport)
+Java::OrgHaploJsinterfaceRemote::KCollaborationService.setRubyInterface(JSRemoteCollaborationServiceSupport)

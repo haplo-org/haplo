@@ -9,14 +9,7 @@ module HelpTextHelper
 
   # Does text subsitutions in place in the string
   def help_text_rename_product!(text)
-    if KApp.global(:product_name) != 'ONEIS'
-      # Only need to do renaming if the product doesn't match the text
-      text.gsub!('ONEIS Desktop', '--DESKTOP--')
-      text.gsub!('ONEIS Managed Files', '--DESKTOP-FILES--')
-      text.gsub!('ONEIS', KApp.global(:product_name))
-      text.gsub!('--DESKTOP--', 'ONEIS Desktop')
-      text.gsub!('--DESKTOP-FILES--', 'ONEIS Managed Files')
-    end
+    text.gsub!('PRODUCT_NAME', KApp.global(:product_name))
     text
   end
 

@@ -138,9 +138,9 @@ module JSAuditEntrySupport
       end
     end
     data = results.to_json.to_java_bytes
-    Java::ComOneisJsinterfaceGenerate::KGeneratedBinaryData.new(nil, "application/json", data)
+    Java::OrgHaploJsinterfaceGenerate::KGeneratedBinaryData.new(nil, "application/json", data)
   end
 
 end
 
-Java::ComOneisJsinterface::KAuditEntry.setRubyInterface(JSAuditEntrySupport)
+Java::OrgHaploJsinterface::KAuditEntry.setRubyInterface(JSAuditEntrySupport)

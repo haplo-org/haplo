@@ -10,7 +10,7 @@ Your account page lists different options specific to you.
 
 * Tasks: view current and future tasks assigned to you.
 
-* View latest updates: view new additions to ONEIS matching your interests.
+* View latest updates: view new additions to PRODUCT_NAME matching your interests.
 
 * Latest update topics: select the topics to be included in your latest updates.
 
@@ -18,6 +18,6 @@ Your account page lists different options specific to you.
 
 * Change password: click here to change your password.
 
-* Logout: click here to finish using ONEIS, and ensure that anyone else using this computer cannot access your information.
+* Logout: click here to finish using PRODUCT_NAME, and ensure that anyone else using this computer cannot access your information.
 
 * Devices: Manage computers, laptops and phones activated with your account.

@@ -4,7 +4,7 @@ h1. Appearance
 
 h2. Header
 
-The header area at the top of your ONEIS is customised using the Header HTML and Extra CSS fields. 
+The header area at the top of your PRODUCT_NAME is customised using the Header HTML and Extra CSS fields. 
 
 h3. Display your logo
 

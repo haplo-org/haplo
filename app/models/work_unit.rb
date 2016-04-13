@@ -6,7 +6,7 @@
 
 
 class WorkUnit < ActiveRecord::Base
-  include Java::ComOneisJsinterfaceApp::AppWorkUnit
+  include Java::OrgHaploJsinterfaceApp::AppWorkUnit
   composed_of :objref, :allow_nil => true, :class_name => 'KObjRef', :mapping => [[:obj_id,:obj_id]]
   belongs_to :created_by,     :class_name => 'User', :foreign_key => 'created_by_id'
   belongs_to :actionable_by,  :class_name => 'User', :foreign_key => 'actionable_by_id'

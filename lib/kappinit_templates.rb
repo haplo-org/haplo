@@ -187,11 +187,11 @@ module KAppInit
         create_taxonomies(app)
 
         # Create a contact so the contact directory isn't empty
-        oneis_org = KObject.new([O_LABEL_COMMON])
-        oneis_org.add_attr(O_TYPE_SUPPLIER, A_TYPE)
-        oneis_org.add_attr('Haplo Services', A_TITLE)
-        oneis_org.add_attr(KIdentifierURL.new('http://www.haplo-services.com'), A_URL)
-        KObjectStore.create(oneis_org)
+        haplo_org = KObject.new([O_LABEL_COMMON])
+        haplo_org.add_attr(O_TYPE_SUPPLIER, A_TYPE)
+        haplo_org.add_attr('Haplo Services', A_TITLE)
+        haplo_org.add_attr(KIdentifierURL.new('http://www.haplo-services.com'), A_URL)
+        KObjectStore.create(haplo_org)
 
         # Create a welcome news item -- LAST so it appears at the top of the RECENT listing
         welcome_news = KObject.new([O_LABEL_COMMON])

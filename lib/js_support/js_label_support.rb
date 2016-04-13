@@ -24,7 +24,7 @@ module JSLabelStatementSupport
 
 end
 
-Java::ComOneisJsinterface::KLabelStatements.setRubyInterface(JSLabelStatementSupport)
+Java::OrgHaploJsinterface::KLabelStatements.setRubyInterface(JSLabelStatementSupport)
 
 # ------------------------------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ module JSLabelListSupport
 
 end
 
-Java::ComOneisJsinterface::KLabelList.setRubyInterface(JSLabelListSupport)
+Java::OrgHaploJsinterface::KLabelList.setRubyInterface(JSLabelListSupport)
 
 # ------------------------------------------------------------------------------------------
 
@@ -57,4 +57,4 @@ module JSLabelChangesSupport
 
 end
 
-Java::ComOneisJsinterface::KLabelChanges.setRubyInterface(JSLabelChangesSupport)
+Java::OrgHaploJsinterface::KLabelChanges.setRubyInterface(JSLabelChangesSupport)

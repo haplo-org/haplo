@@ -84,7 +84,7 @@ class KFramework
     end
 
     def make_java_object
-      Java::ComOneisAppserver::DataResponse.new(@body.to_java_bytes, @response_code)
+      Java::OrgHaploAppserver::DataResponse.new(@body.to_java_bytes, @response_code)
     end
   end
 
@@ -101,7 +101,7 @@ class KFramework
       headers[Headers::LOCATION] = @url
       headers[Headers::CONTENT_TYPE] = 'text/html; charset=utf-8'
       body = %Q!<html><body><p><a href="#{@url}">Redirect</a></p></body></html>!
-      Java::ComOneisAppserver::DataResponse.new(body.to_java_bytes, 302) # use temporary redirect
+      Java::OrgHaploAppserver::DataResponse.new(body.to_java_bytes, 302) # use temporary redirect
     end
   end
 
@@ -128,7 +128,7 @@ class KFramework
       end
       headers[Headers::CONTENT_DISPOSITION] = disposition
       headers[Headers::CONTENT_TYPE] = @options[:type] || 'application/octet-stream'
-      Java::ComOneisAppserver::FileResponse.new(@pathname)
+      Java::OrgHaploAppserver::FileResponse.new(@pathname)
     end
   end
 
@@ -137,7 +137,7 @@ class KFramework
   # Jetty continuation support response
   class ContinuationSuspendedResponse < Response
     def make_java_object
-      Java::ComOneisAppserver::ContinuationSuspendedResponse.new
+      Java::OrgHaploAppserver::ContinuationSuspendedResponse.new
     end
   end
 

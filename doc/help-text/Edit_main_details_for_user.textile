@@ -4,4 +4,4 @@ h1. Edit main details for user
 
 Enter the first name, last name and email address for the user. All fields are compulsory. 
 
-The email address will be the ONEIS login for the user, and used for any emails sent by the system.
+The email address will be the PRODUCT_NAME login for the user, and used for any emails sent by the system.

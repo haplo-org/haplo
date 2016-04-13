@@ -5,12 +5,12 @@ h1. Edit email template
 
 Editing an email template requires knowledge of HTML and CSS.
 
-By default, the colours used in the email are chosen from the colours used for the ONEIS sytem.
+By default, the colours used in the email are chosen from the colours used for the PRODUCT_NAME sytem.
 
 * _Name_: of the template, used to choose the template in other parts of the system management.
 * _Description_: notes about the template (only viewable to  administrators)
 * _Purpose_: What the template will be used for. Some choices of template will only include templates for a given purpose.
-* _From (email address)_: the 'from' address on the sent emails (the default is the administrator of your ONEIS). Set this to a valid address for the responsible individual in your organisation.
+* _From (email address)_: the 'from' address on the sent emails (the default is the administrator of your PRODUCT_NAME). Set this to a valid address for the responsible individual in your organisation.
 * _From (name)_: the name shown in the from field of the email
 * _Extra CSS_: Additional CSS included in the HTML, to customise the look of the email.
 * _Branding (plain)_: Text which appears at the top of the plain text version of this email. Use the interpolated strings listed above where required.

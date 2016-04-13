@@ -8,7 +8,7 @@
 # TODO: Turn the dynamic CSS files into a methods which can be executed without the use of lots of evals
 
 module KDynamicFiles
-  include Java::ComOneisFramework::Application::DynamicFileFactory
+  include Java::OrgHaploFramework::Application::DynamicFileFactory
 
   extend KPlugin::HookSite
 
@@ -37,10 +37,10 @@ module KDynamicFiles
         if file != nil
           mime_type = file.mime_type
           # allow compression if the file isn't an image
-          response = Java::ComOneisAppserver::StaticFileResponse.new(file.data.to_java_bytes, mime_type, mime_type !~ /\Aimage/i)
+          response = Java::OrgHaploAppserver::StaticFileResponse.new(file.data.to_java_bytes, mime_type, mime_type !~ /\Aimage/i)
         else
           # Return a placeholder otherwise
-          response = Java::ComOneisAppserver::StaticFileResponse.new("(not found)".to_java_bytes, 'text/plain', false)
+          response = Java::OrgHaploAppserver::StaticFileResponse.new("(not found)".to_java_bytes, 'text/plain', false)
         end
 
       elsif filename =~ /\A([a-z]+)\/(.+)\z/
@@ -69,7 +69,7 @@ module KDynamicFiles
           css << KApp.global(:appearance_css)
         end
 
-        response = Java::ComOneisAppserver::StaticFileResponse.new(css.to_java_bytes, CSS_MIME_TYPE, true) # allow compression
+        response = Java::OrgHaploAppserver::StaticFileResponse.new(css.to_java_bytes, CSS_MIME_TYPE, true) # allow compression
       else
         # Re-colour an image
         virtual_file_method = VIRTUAL_IMAGE_FILENAME_TO_METHOD[filename]
@@ -86,7 +86,7 @@ module KDynamicFiles
           filename =~ /\.(\w+)\z/
           kind = $1
           kind = 'jpeg' if kind == 'jpg'
-          response = Java::ComOneisAppserver::StaticFileResponse.new(imagedata.to_java_bytes, "image/#{kind}", false) # no compression
+          response = Java::OrgHaploAppserver::StaticFileResponse.new(imagedata.to_java_bytes, "image/#{kind}", false) # no compression
 
         end
 
@@ -127,7 +127,7 @@ module KDynamicFiles
 
   # Called to set up dynamic files
   def self.setup
-    dyn = Java::ComOneisFramework::Application
+    dyn = Java::OrgHaploFramework::Application
     # Load and transform stylesheets, and tell the framework which filenames are allowed
     Dir.new(CSS_SOURCE_DIR).each do |filename|
       next unless filename =~ /\A[^\.].*?\.css\z/ # make sure files beginning with a dot are ignored so ._ files created in development don't cause problems
@@ -216,7 +216,7 @@ module KDynamicFiles
 
   # -------------------------------------------------------------------------------------------------------
 
-  COLOURING = Java::ComOneisUtils::ImageColouring
+  COLOURING = Java::OrgHaploUtils::ImageColouring
   METHOD_LOOKUP = {
     'blend' => COLOURING::METHOD_BLEND,
     'avg' => COLOURING::METHOD_AVG,

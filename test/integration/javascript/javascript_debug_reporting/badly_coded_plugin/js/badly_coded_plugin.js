@@ -12,7 +12,7 @@ P.respond("GET", "/do/test_error/ruby_api", [], function(E) {
 });
 
 P.respond("GET", "/do/test_error/java_api", [], function(E) {
-    $host.registerPlugin("carrots", {}); // com.oneis.javascript.OAPIException
+    $host.registerPlugin("carrots", {}); // org.haplo.javascript.OAPIException
 });
 
 P.respond("GET", "/do/test_error/js_throw", [], function(E) {

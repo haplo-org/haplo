@@ -31,4 +31,4 @@ module JSEmailTemplateSupport
 
 end
 
-Java::ComOneisJsinterface::KEmailTemplate.setRubyInterface(JSEmailTemplateSupport)
+Java::OrgHaploJsinterface::KEmailTemplate.setRubyInterface(JSEmailTemplateSupport)

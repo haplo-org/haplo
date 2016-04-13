@@ -1054,8 +1054,8 @@ public
 
 public
   # Flags for notifying state efficently to the indexing process
-  TEXTIDX_FLAG_GENERAL = Java::ComOneisCommonUtils::WaitingFlag.new
-  TEXTIDX_FLAG_REINDEX = Java::ComOneisCommonUtils::WaitingFlag.new
+  TEXTIDX_FLAG_GENERAL = Java::OrgHaploCommonUtils::WaitingFlag.new
+  TEXTIDX_FLAG_REINDEX = Java::OrgHaploCommonUtils::WaitingFlag.new
 
   # Set both the flags on init so the background task checks for work on startup
   TEXTIDX_FLAG_GENERAL.setFlag()

@@ -929,7 +929,7 @@ var KApp = (function($) {
         $('#z__help_tab a').click(function(event) {
             event.preventDefault();
             var w = window.open('/do/help/pop',
-                'oneis_help',
+                'haplo_help',
                 'scrollbars=1,toolbar=0,status=0,location=0,menubar=0,resizable=1,left=12,top=12,width=400,height=512');
             // Make sure it pops to the top if it's covered
             w.focus();

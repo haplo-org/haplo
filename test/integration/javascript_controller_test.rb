@@ -132,7 +132,7 @@ class JavaScriptControllerTest < IntegrationTest
     assert_select '#z__ws_content .z__general_alert', "Stopping request early"
     assert response.body.include? "<title>Error"
     assert (not response.body.include? "should not be seen")
-    assert response.body.include? "ONEIS Test System"
+    assert response.body.include? "Haplo Test Application"
 
     get '/do/plugin_test/stop/dont_stop'
     assert_equal '200', response.code
@@ -491,7 +491,7 @@ __E
     # Upload to string conversion
     multipart_post '/do/plugin_test/file_upload_readasstring', {:file => fixture_file_upload('files/example8_utf8nobom.txt','text/plain')}
     assert_equal response.body.force_encoding(Encoding::UTF_8), File.open("test/fixtures/files/example8_utf8nobom.txt") { |f| f.read }
-    assert_equal (1024*1024*16), Java::ComOneisUtils::StringUtils.MAXIMUM_READ_FILE_AS_STRING_SIZE
+    assert_equal (1024*1024*16), Java::OrgHaploUtils::StringUtils.MAXIMUM_READ_FILE_AS_STRING_SIZE
 
     # HTML & paths for the file
     run_all_jobs({}) # make sure thumbnailing is done

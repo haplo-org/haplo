@@ -1,6 +1,6 @@
 {
   "pluginName": "std_action_panel",
-  "pluginAuthor": "ONEIS",
+  "pluginAuthor": "Haplo Services",
   "pluginVersion": 100,
   "displayName": "Action Panel",
   "displayDescription": "Standard Action Panel user interface for use by other plugins.",

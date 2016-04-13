@@ -7,7 +7,7 @@
 
 class KLabelList
   include Enumerable
-  include Java::ComOneisJsinterfaceApp::AppLabelList
+  include Java::OrgHaploJsinterfaceApp::AppLabelList
 
   def initialize(list)
     @list = list.map { |l| l.to_i } .sort.uniq.freeze
@@ -86,7 +86,7 @@ end
 
 # Represents changes to a list of labels
 class KLabelChanges
-  include Java::ComOneisJsinterfaceApp::AppLabelChanges
+  include Java::OrgHaploJsinterfaceApp::AppLabelChanges
 
   def initialize(add = nil, remove = nil)
     @add = add || []
@@ -150,7 +150,7 @@ end
 
 # Base class which says no to everything
 class KLabelStatements
-  include Java::ComOneisJsinterfaceApp::AppLabelStatements # required because auto-include when passing to Java breaks if instance is frozen
+  include Java::OrgHaploJsinterfaceApp::AppLabelStatements # required because auto-include when passing to Java breaks if instance is frozen
 
   def is_simple_statements?
     false # base class doesn't represent a simple statement about rules

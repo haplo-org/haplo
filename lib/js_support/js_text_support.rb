@@ -74,4 +74,4 @@ module JSTextSupport
 
 end
 
-Java::ComOneisJsinterface::KText.setRubyInterface(JSTextSupport)
+Java::OrgHaploJsinterface::KText.setRubyInterface(JSTextSupport)

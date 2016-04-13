@@ -6,7 +6,7 @@
 
 
 class KObject
-  include Java::ComOneisJsinterfaceApp::AppObject
+  include Java::OrgHaploJsinterfaceApp::AppObject
 
   include KConstants
 

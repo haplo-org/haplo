@@ -7,7 +7,7 @@
 
 class KJSPluginRuntime
   RUNTIME_CACHE = KApp.cache_register(KJSPluginRuntime, "JavaScript runtimes")
-  Runtime = Java::ComOneisJavascript::Runtime
+  Runtime = Java::OrgHaploJavascript::Runtime
 
   JS_PLUGIN_RUNTIME_HEALTH_REPORTER = KFramework::HealthEventReporter.new("JS_PLUGIN_RUNTIME")
 
@@ -171,7 +171,7 @@ class KJSPluginRuntime
   end
 
   def make_response(ruby_response, runner)
-    js_response = Java::ComOneisJsinterface::KPluginResponse.make(runner.class.instance_variable_get(:@_RESPONSE_FIELDS))
+    js_response = Java::OrgHaploJsinterface::KPluginResponse.make(runner.class.instance_variable_get(:@_RESPONSE_FIELDS))
     runner.response_r_to_j(ruby_response, js_response)
     js_response.prepareForUse()
     js_response
@@ -201,12 +201,12 @@ class KJSPluginRuntime
 
   def call_fast_work_unit_render(work_unit, context)
     using_runtime do
-      Java::ComOneisJsinterface::KWorkUnit.fastWorkUnitRender(work_unit, context)
+      Java::OrgHaploJsinterface::KWorkUnit.fastWorkUnitRender(work_unit, context)
     end
   end
   def call_work_unit_render_for_event(event_name, work_unit)
     using_runtime do
-      Java::ComOneisJsinterface::KWorkUnit.workUnitRenderForEvent(event_name, work_unit)
+      Java::OrgHaploJsinterface::KWorkUnit.workUnitRenderForEvent(event_name, work_unit)
     end
   end
 
@@ -217,7 +217,7 @@ class KJSPluginRuntime
   end
   def _call_file_transform_pipeline_callback(pipeline_result)
     using_runtime do
-      Java::ComOneisJsinterface::KFilePipelineResult.callback(pipeline_result)
+      Java::OrgHaploJsinterface::KFilePipelineResult.callback(pipeline_result)
     end
   end
 

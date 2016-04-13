@@ -29,4 +29,4 @@ fi
 KLOG4J_CONFIG=`pwd`/config/log4j/development-worker.properties
 export KLOG4J_CONFIG
 
-framework/oneis utility $KFRAMEWORK_BITS config/java-worker.config $JAVA_EXECUTABLE $WORKER_NUMBER
+framework/haplo utility $KFRAMEWORK_BITS config/java-worker.config $JAVA_EXECUTABLE $WORKER_NUMBER

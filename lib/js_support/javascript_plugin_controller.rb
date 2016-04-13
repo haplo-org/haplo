@@ -12,8 +12,8 @@ class JavaScriptPluginController < ApplicationController
     @factory = factory
   end
 
-  JSGeneratedFile = Java::ComOneisJsinterfaceGenerate::JSGeneratedFile
-  KStoredFile = Java::ComOneisJsinterface::KStoredFile
+  JSGeneratedFile = Java::OrgHaploJsinterfaceGenerate::JSGeneratedFile
+  KStoredFile = Java::OrgHaploJsinterface::KStoredFile
 
   CONTENT_TYPES = Hash.new
   Ingredient::Rendering::RENDER_KIND_CONTENT_TYPES.each_key { |k| CONTENT_TYPES[k.to_s] = k}
@@ -115,7 +115,7 @@ class JavaScriptPluginController < ApplicationController
       @generated_file = generated_file
     end
     def make_java_object
-      Java::ComOneisAppserver::DataResponse.new(@generated_file.makeData())
+      Java::OrgHaploAppserver::DataResponse.new(@generated_file.makeData())
     end
   end
 
