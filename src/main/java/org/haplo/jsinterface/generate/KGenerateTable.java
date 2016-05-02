@@ -12,6 +12,7 @@ import org.haplo.javascript.JsConvert;
 import org.haplo.jsinterface.KScriptable;
 import org.mozilla.javascript.*;
 
+import org.haplo.jsinterface.KBinaryData;
 import org.haplo.jsinterface.KObjRef;
 import org.haplo.jsinterface.KObject;
 import org.haplo.jsinterface.KUser;
@@ -21,7 +22,7 @@ import java.util.Date;
 
 // While this should be an abstract class, Rhino mapping requires that it can be instantiated to map class to prototype inheritance.
 // If not, the derived classes have to implement the js*() functions.
-public class KGenerateTable extends KScriptable implements JSGeneratedFile {
+public class KGenerateTable extends KBinaryData {
     private String filename;
     private boolean firstRowIsHeader;
     private int rowNumber;
@@ -31,8 +32,8 @@ public class KGenerateTable extends KScriptable implements JSGeneratedFile {
     private ArrayList<SheetStyleInstruction> sheetStyleInstructions;
     private boolean rowHasPageBreak;
     private boolean finished;
-    private boolean haveMadeData;
     private boolean shouldSortSheets;
+    private byte[] data;    // generated spreadsheet
 
     private final int NO_SHEET_YET = -1;
     private final String DEFAULT_SHEET_NAME = "Haplo Export";
@@ -47,7 +48,6 @@ public class KGenerateTable extends KScriptable implements JSGeneratedFile {
         this.sheetStyleInstructions = null;
         this.rowHasPageBreak = false;
         this.finished = false;
-        this.haveMadeData = false;
         this.shouldSortSheets = false;
     }
 
@@ -253,7 +253,10 @@ public class KGenerateTable extends KScriptable implements JSGeneratedFile {
     }
 
     public Scriptable jsFunction_finish() {
-        flushRow();
+        if(this.sheetNumber != NO_SHEET_YET) {
+            flushRow();
+            this.finishSheet(this.sheetNumber, this.sheetStyleInstructions);
+        }
         if(this.shouldSortSheets) {
             sortSheetsOnFinish();
         }
@@ -262,12 +265,11 @@ public class KGenerateTable extends KScriptable implements JSGeneratedFile {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    // Framework interface
-    public String getProposedFilename() {
+    public String jsGet_filename() {
         return this.filename + '.' + this.getFileExtension();
     }
 
-    public String getMimeType() {
+    public String jsGet_mimeType() {
         return this.fileMimeType();
     }
 
@@ -275,19 +277,19 @@ public class KGenerateTable extends KScriptable implements JSGeneratedFile {
         return (this.sheetNumber != NO_SHEET_YET);
     }
 
-    public byte[] makeData() {
+    public boolean isAvailableInMemoryForResponse() {
+        return true;
+    }
+
+    protected byte[] getDataAsBytes() {
+        if(this.data != null) {
+            return this.data;
+        }
         if(!this.finished) {
             throw new OAPIException("Must call finish() before data can be generated");
         }
-        if(this.haveMadeData) {
-            throw new OAPIException("Already turned table into data");
-        }
-        if(this.sheetNumber != NO_SHEET_YET) {
-            this.finishSheet(this.sheetNumber, this.sheetStyleInstructions);
-        }
-        byte[] data = this.toByteArray();
-        this.haveMadeData = true;
-        return data;
+        this.data = this.toByteArray();
+        return this.data;
     }
 
     // --------------------------------------------------------------------------------------------------------------

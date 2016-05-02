@@ -28,17 +28,19 @@ DashboardList.prototype.columns = function(priority, columns) {
     return this;
 };
 
-DashboardList.prototype._makeSortedColumnList = function() {
-    // Make sorted flat list of column objects
+DashboardList.prototype._makeRenderableColumnList = function() {
+    // Make sorted flat list of column objects, then prepare them use
+    var dashboard = this;
     var columns = [];
     _.each(_.sortBy(this.columnGroups, "priority"), function(group) {
         columns = columns.concat(group.columns);
     });
+    columns.forEach(function(c) { c.prepare(dashboard); });
     return columns;
 };
 
 DashboardList.prototype._makeDashboardView = function(hideExport) {
-    var columns = this._makeSortedColumnList();
+    var columns = this._makeRenderableColumnList();
 
     // Locally scoped copy of row attribute generator functions
     var rowAttributeFns = this.$rowAttributeFns;
@@ -83,7 +85,7 @@ DashboardList.prototype.deferredRender = function() {
 };
 
 DashboardList.prototype._respondWithExport = function() {
-    var columns = this._makeSortedColumnList();
+    var columns = this._makeRenderableColumnList();
     var xls = O.generate.table.xlsx(this.specification.title);
     xls.newSheet(this.specification.title, true);
     _.each(columns, function(c) {
@@ -182,6 +184,9 @@ var CELL_STYLE_TO_ATTRS = {
 // --------------------------------------------------------------------------
 
 var ColumnBase = function() { };
+
+ColumnBase.prototype.prepare = function(dashboard) {
+};
 
 ColumnBase.prototype.renderCell = function(row) {
     return '<td>'+this.renderCellInner(row)+'</td>';
@@ -464,6 +469,12 @@ var JoinColumn = makeColumnType({
     }
 });
 
+JoinColumn.prototype.prepare = function(dashboard) {
+    this.columns.forEach(function(c) {
+        c.prepare(dashboard);
+    });
+};
+
 JoinColumn.prototype.renderCellInner = function(row) {
     return _.reduce(this.columns, function(memo, column) {
         var cellValue = column.renderCellInner(row);
@@ -533,6 +544,10 @@ var LinkedColumn = makeColumnType({
     }
 });
 
+LinkedColumn.prototype.prepare = function(dashboard) {
+    this.column.prepare(dashboard);
+};
+
 LinkedColumn.prototype.renderCellInner = function(row) {
     var cellHTML = this.column.renderCellInner(row);
     var linkPath = this.link(row);
@@ -579,4 +594,38 @@ HTMLColumn.prototype.renderCellInner = function(row) {
 
 HTMLColumn.prototype.exportCell = function(row, xls) {
     xls.cell(this.exportValue(row), this.exportOptions);
+};
+
+// --------------------------------------------------------------------------
+
+var JsonColumn = makeColumnType({
+    type:"json",
+    construct: function(collection, colspec) {
+        this.valueProperty = colspec.valueProperty;
+    }
+});
+
+JsonColumn.prototype.prepare = function(dashboard) {
+    if(!this.valueProperty) {
+        this.valueProperty = dashboard.property("std:reporting:json_column:default_value_property");
+    }
+};
+
+JsonColumn.prototype.renderCellInner = function(row) {
+    var obj = row[this.fact];
+    if(obj === null) {
+        return '';
+    } else {
+        var value = obj[this.valueProperty];
+        if((value === null) || (value === undefined)) {
+            return '';
+        } else {
+            return _.escape(""+value);
+        }
+    }
+};
+
+JsonColumn.prototype.exportCell = function(row, xls) {
+    var obj = row[this.fact];
+    xls.cell((obj === null) ? null : obj[this.valueProperty]);
 };

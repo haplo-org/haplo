@@ -19,6 +19,15 @@ P.use("std:workflow");
 //    path: URL path where the handlers should be implemented
 //    panel: Which panel the view link should appear in
 //    priority: The priority within the panel, defaulting to "default"
+//    ----------
+//          history/view/edit have the concept of "allowing for roles at selectors"
+//                  it is a list of these definition objects, which have properties:
+//                      roles: ["researcher", ...] - list of roles to match on
+//                      selector: {state:"state"} - Workflow selector to match on
+//                      action: "allow"/"deny" - Default: allow. specify whether to eg: give permissions
+//                              for a particular matched role/selector or whether to deny access
+//    history: [{roles:[],selector:{}}, ...] - OPTIONAL, when the document history can be viewed, omitting this
+//              property allows the history to be viewable by everyone
 //    view: [{roles:[],selector:{}}, ...] - when the document can be viewed
 //              (omit roles key to mean everyone)
 //    edit: [{roles:[],selector:{},transitionsFiltered:[]},optional:true, ...] - when the document
@@ -27,6 +36,7 @@ P.use("std:workflow");
 //              edited & completed, the optional property overrides the default that,
 //              when a user is allowed to edit a document, there must be a committed
 //              version before they can transition
+//    ----------
 //    actionableUserMustReview: (selector) - a selector which specifies when the
 //              current actionable user should be shown the completed document and
 //              prompts the user to review/confirm before progressing use selector
@@ -41,6 +51,7 @@ Delegate.prototype = {
 
 var can = function(M, user, list) {
     if(!list) { return false; }
+    var allow = false, deny = false;
     for(var i = (list.length - 1); i >= 0; --i) {
         var t = list[i];
         if(t.roles && !(M.hasAnyRole(user, t.roles))) {
@@ -49,9 +60,21 @@ var can = function(M, user, list) {
         if(t.selector && !(M.selected(t.selector))) {
             continue;
         }
-        return true;
+        switch(t.action) {
+            case "allow":
+                allow = true;
+                break;
+            case "deny":
+                deny = true;
+                break;
+            default:
+                if(t.action !== undefined) {
+                    throw new Error("Document store 'action' parameter must be either 'allow' or 'deny'.");
+                } else { allow = true; }
+                break;
+        }
     }
-    return false;
+    return allow && !deny;
 };
 
 var isOptional = function(M, user, list) {
@@ -136,11 +159,11 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     if("panel" in spec) {
         workflow.actionPanel({}, function(M, builder) {
             var instance = docstore.instance(M);
+            var viewTitle = M.getTextMaybe("docstore-panel-view-link:"+spec.name) || spec.title;
             var haveDocument = instance.hasCommittedDocument;
             if(haveDocument && can(M, O.currentUser, spec.view)) {
                 builder.panel(spec.panel).
-                    link(spec.priority || "default", spec.path+'/view/'+M.workUnit.id,
-                        spec.title);
+                    link(spec.priority || "default", spec.path+'/view/'+M.workUnit.id, viewTitle);
             }
         });
     }
@@ -149,13 +172,13 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         if(can(M, O.currentUser, spec.edit)) {
             var searchPath = "docstore-panel-edit-link:"+spec.name;
             var instance = docstore.instance(M);
+            var label = M.getTextMaybe(searchPath+":"+M.state, searchPath) || "Edit "+spec.title.toLowerCase();
+            var isDone = isOptional(M, O.currentUser, spec.edit) || instance.currentDocumentIsComplete;
             builder.
                 link(spec.editPriority || "default",
                         spec.path+'/form/'+M.workUnit.id,
-                        M.getTextMaybe(searchPath+":"+M.state, searchPath) ||
-                            "Edit "+spec.title.toLowerCase(),
-                            (isOptional(M, O.currentUser, spec.edit) ||
-                            instance.currentDocumentIsComplete) ?"standard" : "primary");
+                        label,
+                        isDone ? "standard" : "primary");
         }
     });
 
@@ -290,7 +313,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             O.stop("Form hasn't been completed yet.");
         }
         var ui = instance.makeViewerUI(E, {
-            showVersions: true,
+            showVersions: spec.history ? can(M, O.currentUser, spec.history) : true,
             showCurrent: canEdit,
             uncommittedChangesWarningText: M.getTextMaybe("docstore-uncommitted-changes-warning-text:"+
                 spec.name)

@@ -32,6 +32,12 @@ public class GenericDeferredRender extends KScriptable implements DeferredRender
         return "$GenericDeferredRender";
     }
 
+    public String jsFunction_toString() throws RenderException {
+        StringBuilder builder = new StringBuilder();
+        renderDeferred(builder, Context.TEXT);
+        return builder.toString();
+    }
+
     public void renderDeferred(StringBuilder builder, Context context) throws RenderException {
         if(context != Context.TEXT) {
             throw new OAPIException("Can't render this deferred render outside TEXT context");

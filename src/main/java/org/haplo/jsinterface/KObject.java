@@ -294,7 +294,7 @@ public class KObject extends KScriptable {
      */
     public Object jsFunction_every(Object desc, Object qual, Object iterator) {
         final Runtime runtime = Runtime.getCurrentRuntime();
-        return withCheckedArgs("has()", desc, false, qual, iterator, true, (d,q,i) -> {
+        return withCheckedArgs("every()", desc, false, qual, iterator, true, (d,q,i) -> {
             if(i != null) {
                 this.appObject.jsEach(d, q, (iValue, iDesc, iQual) -> {
                     i.call(runtime.getContext(), i, i,
@@ -411,6 +411,15 @@ public class KObject extends KScriptable {
 
     // --------------------------------------------------------------------------------------------------------------
 
+    public Scriptable jsFunction_reindexText() {
+        if(this.appObject != null && this.appObject.version() > 0) {
+            rubyInterface.reindexText(this.appObject);
+        }
+        return this;
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+
     public static boolean jsStaticFunction__clientSideEditorDecode(String encoded, Scriptable object) {
         return rubyInterface.clientSideEditorDecode(encoded, ((KObject)object).toRubyObject());
     }
@@ -494,6 +503,8 @@ public class KObject extends KScriptable {
         public AppObject deleteObject(Object object);    // AppObject or AppObjRef
 
         public AppObject relabelObject(Object object, AppLabelChanges labelChanges);
+
+        public void reindexText(AppObject object);
 
         public boolean objectIsKindOf(AppObject object, int objId);
 

@@ -90,4 +90,20 @@ TEST(function() {
     xlsx.cell("Ping").cell(new Date(2014, 3, 10, 12, 34));
     xlsx.finish();
     $host._debugPushObject(xlsx);
+
+    // ---------------------------------
+
+    // BinaryData interface
+    var xls2 = O.generate.table.xlsx("testbinary");
+    xls2.newSheet("Test").cell("Value").finish();
+    TEST.assert_equal("testbinary.xlsx", xls2.filename);
+    TEST.assert_equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", xls2.mimeType);
+    var xls2size = xls2.fileSize;
+    TEST.assert(xls2size > 2048 && xls2size < 16384);
+    TEST.assert(/^[0-9a-f]{64}$/.test(xls2.digest));
+    var xls2file = O.file(xls2);
+    TEST.assert(xls2file instanceof $StoredFile);
+    TEST.assert_equal("testbinary.xlsx", xls2file.filename);
+    TEST.assert_equal("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", xls2file.mimeType);
+
 });

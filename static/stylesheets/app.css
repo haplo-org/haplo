@@ -1347,6 +1347,12 @@ span.z__drag_handle {  /* drag handle */
     display: block;
     line-height: 21px;
 }
+.z__keyvalue_row:after { /* needed so that qualified attributes in the object editor can be reordered */
+    content:"";
+    display:table;
+    clear:both;
+    height:0px;
+}
 
 .z__keyvalue_col1 {
     clear: left;

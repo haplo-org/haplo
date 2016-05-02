@@ -43,7 +43,9 @@ DashboardBase.prototype = {
     // requires a workflow instance.
     _displayableStateName: function(state) {
         var textLookup = this.workflow.$instanceClass.prototype.$textLookup;
-        return textLookup["dashboard-status:"+state] || textLookup["status:"+state] || '????';
+        var text = textLookup["dashboard-status:"+state] || textLookup["status:"+state] || '????';
+        // Need to do the NAME interpolation for dashboard states
+        return P.interpolateNAME(undefined, text);
     },
 
     _generateCounts: function() {

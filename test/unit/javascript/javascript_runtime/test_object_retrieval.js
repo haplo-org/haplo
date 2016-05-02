@@ -349,4 +349,7 @@ TEST(function() {
     TEST.assert(preobj2);
     TEST.assert_equal("PREALLOC", preobj2.firstTitle().toString());
     TEST.assert(preobj_ref, preobj2);
+
+    // FINALLY request a text reindex
+    O.ref(OBJ_TO_REINDEX).load().reindexText();
 });

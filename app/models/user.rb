@@ -33,6 +33,8 @@ class User < ActiveRecord::Base
   # Time to subtract from the UNIX time
   RECOVERY_TOKEN_TIME_OFFSET = 1378290000
 
+  INVALID_PASSWORD = '-'.freeze
+
   has_many :user_datas, :dependent => :delete_all # when deleting users, delete all the user data without calling callbacks
 
   # The has_many associations are called 'raw_*' so they doesn't interfere with other methods and prevent destroy() from working.
@@ -135,7 +137,10 @@ class User < ActiveRecord::Base
     write_attribute('password', BCrypt::Password.create(new_password).to_s)
   end
   def set_invalid_password
-    write_attribute('password','-')
+    write_attribute('password',INVALID_PASSWORD)
+  end
+  def password_is_invalid?
+    read_attribute('password') == INVALID_PASSWORD
   end
   def password_check(given_password)
     BCrypt::Password.new(read_attribute('password')) == given_password

@@ -249,7 +249,7 @@ CLIENT_SIDE_RESOURCES = {
   :object_editor => {
     :javascript => [:keditor],
     :stylesheet => [:keditor],
-    :resource => [:file_upload, :tray, :tree, :document_editor],
+    :resource => [:jquery_ui, :file_upload, :tray, :tree, :document_editor],
     :requires_schema => true
   },
 

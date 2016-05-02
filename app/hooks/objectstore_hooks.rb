@@ -23,6 +23,11 @@ module KHooks
     h.result      :changes,     KLabelChanges,  nil,  "Changes to apply to the label list"
   end
 
+  define_hook :hPreIndexObject do |h|
+    h.argument    :object,      KObject,  "The object which is being updated"
+    h.result      :replacementObject, KObject, nil, "An object which will be indexed in place of the given object, or null for no effect"
+  end
+
   define_hook :hObjectTextValueDiscover do |h|
     h.private_hook
     h.result      :types,       Array,    "[]",   "Append an array of [type, description] for each defined text type."

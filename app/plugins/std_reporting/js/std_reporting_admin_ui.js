@@ -110,6 +110,12 @@ P.respond("GET", "/do/reporting/admin/collection-fact-lookup", [
                 e.ref = value;
             } else if(typeof(value) === "string") {
                 e.string = value;
+            } else if(typeof(value) === "object") {
+                try {
+                    e.pre = JSON.stringify(value, undefined, 2);
+                } catch(_) {
+                    e.pre = 'ERROR JSON ENCODING';
+                }
             } else {
                 e.value = ""+value;
             }

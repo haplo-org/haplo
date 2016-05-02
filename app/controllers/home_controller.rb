@@ -6,10 +6,18 @@
 
 
 class HomeController < ApplicationController
+  include Application_HstsHelper
   include KConstants
   policies_required nil
 
   HOME_PAGE_ELEMENT_STYLE = ElementDisplayStyle.new('<h1 class="z__home_page_panel_title">', '</h1>')
+
+  # Include HSTS header so security test services realise it's enabled, as they don't
+  # tend to follow redirects to authentication.
+  def post_handle
+    send_hsts_header
+    super
+  end
 
   def handle_index
     # TODO: Any more sophisticated permissions required for working out whether or not to redirect the home page to the authentication?

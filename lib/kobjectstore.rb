@@ -404,6 +404,13 @@ class KObjectStore
     end
   end
 
+  # Trigger a text reindex, for example, if something is altering the indexed object to add additional text
+  def reindex_text_for_object(objref)
+    raise "Bad argument to reindex_text_for_object" unless objref.kind_of?(KObjRef)
+    KApp.get_pg_database.perform("INSERT INTO os_dirty_text(app_id,osobj_id) VALUES(#{@application_id.to_i},#{objref.obj_id.to_i})")
+    TEXTIDX_FLAG_GENERAL.setFlag()
+  end
+
   # Erase all existence of an object from the store, including history
   # Returns nil
   def erase(obj_or_objref)
@@ -619,235 +626,282 @@ private
     # For update operations, a copy of the previous version of the object
     previous_version_of_obj = nil
     parent_path_update_sql = nil
+    previous_version_database_row = nil
 
-    pg.perform('BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE')
-    begin
-      # Path of the parent of this object
-      parent_path = nil
-      parent = obj.first_attr(KConstants::A_PARENT)
-      if parent != nil
-        parent_path = full_obj_id_path(parent)
-      end
+    # Path of the parent of this object
+    parent_path = nil
+    parent = obj.first_attr(KConstants::A_PARENT)
+    if parent != nil
+      parent_path = full_obj_id_path(parent)
+    end
 
-      if create_operation then
-        # -- CREATE
-        if obj_id_required != nil
-          # check that this object hasn't already been created
-          r = pg.exec("SELECT id FROM os_objects WHERE id=#{obj_id_required} LIMIT 1").result
-          if r.length > 0 then
-            raise "KObject ref #{obj_id_required} already exists"
-          end
-          r.clear
-          # Set the object ID to the required ID
-          obj_id = obj_id_required
-        elsif nil != obj.objref
-          # Pre-allocated object ID
-          obj_id = obj.objref.obj_id
-        else
-          # Generate an obj_id from the sequence
-          r = pg.exec("SELECT nextval('os_objects_id_seq')").result
-          obj_id = r.first.first.to_i
-          r.clear
+    # Ensure object ID allocated
+    if create_operation
+      # -- CREATE
+      if obj_id_required != nil
+        # check that this object hasn't already been created
+        r = pg.exec("SELECT id FROM os_objects WHERE id=#{obj_id_required} LIMIT 1").result
+        if r.length > 0
+          raise "KObject ref #{obj_id_required} already exists"
         end
-
-        # Store the ID in the object
-        obj.objref = KObjRef.new(obj_id)
+        # Set the object ID to the required ID (checked unused inside transaction)
+        obj_id = obj_id_required
+      elsif obj.objref != nil
+        # Pre-allocated object ID
+        obj_id = obj.objref.obj_id
       else
-        # -- UPDATE
-        # Load the current version of the object, for updating and comparison later
-        i = pg.exec("SELECT id,object,labels FROM os_objects WHERE id=#{obj_id}").result
-        if i.length == 0
-          i.clear
-          raise "Attempt to update object which doesn't exist"
-        end
-        previous_version_of_obj = KObjectStore._deserialize_object(i.first[1], i.first[2])
-        i.clear
+        # Generate an obj_id from the sequence (OK to do outside transaction because of nextval behaviour)
+        r = pg.exec("SELECT nextval('os_objects_id_seq')").result
+        obj_id = r.first.first.to_i
+      end
+      # Store the ID in the object
+      obj.objref = KObjRef.new(obj_id)
+    else
+      # -- UPDATE
+      # Load the current version of the object, for updating and comparison later
+      i = pg.exec("SELECT id,object,labels FROM os_objects WHERE id=#{obj_id}").result
+      if i.length == 0
+        raise "Attempt to update object which doesn't exist"
+      end
+      previous_version_of_obj = KObjectStore._deserialize_object(i.first[1], i.first[2])
+      previous_version_database_row = i.first
 
-        # Enforce update permissions on *old* version of object (so can't overwrite something you can't write)
-        enforce_permissions(:update, previous_version_of_obj)
+      # Enforce update permissions on *old* version of object (so can't overwrite something you can't write)
+      enforce_permissions(:update, previous_version_of_obj)
 
-        # Check the right version of the object is being updated
-        unless obj.version == previous_version_of_obj.version
-          raise "Not updating the correct version of an object"
-        end
-
-        # When updating, it's necessary to check that the parent of the object doesn't change
-        r = pg.exec("SELECT value FROM os_index_link WHERE id=#{obj_id} AND attr_desc=#{A_PARENT} LIMIT 1").result
-        old_parent_path = (r.length > 0) ? decode_intarray(r.first[0]) : nil
-        r.clear
-        if parent_path != old_parent_path
-          # Update indicies with the new parent path
-          oldpp = old_parent_path || []
-          newpp = parent_path || []
-          oldp = oldpp.dup << obj_id
-          newp = newpp.dup << obj_id
-          # start with this clause so that the pg index can be used as an initial filter
-          # Now of course we should be able to use just obj_id to filter, but let's be 'safe'.
-          ppclauses = ["value @> '{#{oldp.join(',')}}'"]
-          # then confirm with positional statements, again, this is belts and braces
-          1.upto(oldp.length) {|i| ppclauses << "value[#{i}] = #{oldp[i-1]}"}
-          parent_path_update_sql = %Q!UPDATE os_index_link SET value = '{#{newpp.join(',')}}' + (value - '{#{oldpp.join(',')}}') WHERE #{ppclauses.join(' AND ')}!
-          # SQL executed later
-        end
+      # Check the right version of the object is being updated
+      unless obj.version == previous_version_of_obj.version
+        raise "Not updating the correct version of an object"
       end
 
-      obj.update_responsible_user_id(self.external_user_id)
+      # When updating, it's necessary to check that the parent of the object doesn't change
+      r = pg.exec("SELECT value FROM os_index_link WHERE id=#{obj_id} AND attr_desc=#{A_PARENT} LIMIT 1").result
+      old_parent_path = (r.length > 0) ? decode_intarray(r.first[0]) : nil
+      if parent_path != old_parent_path
+        # Update indicies with the new parent path
+        oldpp = old_parent_path || []
+        newpp = parent_path || []
+        oldp = oldpp.dup << obj_id
+        newp = newpp.dup << obj_id
+        # start with this clause so that the pg index can be used as an initial filter
+        # Now of course we should be able to use just obj_id to filter, but let's be 'safe'.
+        ppclauses = ["value @> '{#{oldp.join(',')}}'"]
+        # then confirm with positional statements, again, this is belts and braces
+        1.upto(oldp.length) {|i| ppclauses << "value[#{i}] = #{oldp[i-1]}"}
+        parent_path_update_sql = %Q!UPDATE os_index_link SET value = '{#{newpp.join(',')}}' + (value - '{#{oldpp.join(',')}}') WHERE #{ppclauses.join(' AND ')};!
+        # SQL executed later
+      end
+    end
 
-      # Call the delegate; it may throw an exception to back out
-      @delegate.pre_object_write(self, operation, obj, previous_version_of_obj)
-      # Update labels - delegate will change the label_changes and/or return a different changes object
-      label_changes = @delegate.update_label_changes_for(self, operation, obj, previous_version_of_obj, is_schema_obj?(obj), label_changes)
+    obj.update_responsible_user_id(self.external_user_id)
 
-      # Determine next labels for object
-      obj_labels = label_changes.change(create_operation ? obj.labels : previous_version_of_obj.labels)
-      obj_labels = KLabelList.new([O_LABEL_UNLABELLED]) if obj_labels.empty?
+    # Call the delegate; it may throw an exception to back out
+    @delegate.pre_object_write(self, operation, obj, previous_version_of_obj)
+    # Update labels - delegate will change the label_changes and/or return a different changes object
+    label_changes = @delegate.update_label_changes_for(self, operation, obj, previous_version_of_obj, is_schema_obj?(obj), label_changes)
 
-      # Create a duplicate of the object with the labels applied for checking permissions
-      obj_with_proposed_labels = obj.dup_with_new_labels(obj_labels)
+    # Determine next labels for object
+    obj_labels = label_changes.change(create_operation ? obj.labels : previous_version_of_obj.labels)
+    obj_labels = KLabelList.new([O_LABEL_UNLABELLED]) if obj_labels.empty?
 
-      if create_operation
-        # Proposed labels are allowed
+    # Create a duplicate of the object with the labels applied for checking permissions
+    obj_with_proposed_labels = obj.dup_with_new_labels(obj_labels)
+
+    if create_operation
+      # Proposed labels are allowed
+      unless @act_as_superuser || @user_permissions.has_permission?(:create, obj_with_proposed_labels)
+        raise PermissionDenied, "Operation create not permitted for object #{obj.objref} with labels [#{obj_labels._to_internal.join(',')}]"
+      end
+    else
+      # Labels of previous version allow an update
+      enforce_permissions(:update, previous_version_of_obj)
+      # If labels changed, then also need relabel permissions
+      unless previous_version_of_obj.labels == obj_labels
+        enforce_permissions(:relabel, previous_version_of_obj)
+        # And check the new labels are acceptable to :create permissions
         unless @act_as_superuser || @user_permissions.has_permission?(:create, obj_with_proposed_labels)
-          raise PermissionDenied, "Operation create not permitted for object #{obj.objref} with labels [#{obj_labels._to_internal.join(',')}]"
-        end
-      else
-        # Labels of previous version allow an update
-        enforce_permissions(:update, previous_version_of_obj)
-        # If labels changed, then also need relabel permissions
-        unless previous_version_of_obj.labels == obj_labels
-          enforce_permissions(:relabel, previous_version_of_obj)
-          # And check the new labels are acceptable to :create permissions
-          unless @act_as_superuser || @user_permissions.has_permission?(:create, obj_with_proposed_labels)
-            raise PermissionDenied, "Operation update not permitted for object #{obj.objref} because labels [#{obj_labels._to_internal.join(',')}] are not allowed by create permissions"
-          end
+          raise PermissionDenied, "Operation update not permitted for object #{obj.objref} because labels [#{obj_labels._to_internal.join(',')}] are not allowed by create permissions"
         end
       end
+    end
 
-      # Update object version and timestamps
-      if create_operation
-        obj.pre_create_store
-      else
-        obj.pre_update_store
+    # Update object version and timestamps
+    if create_operation
+      obj.pre_create_store
+    else
+      obj.pre_update_store
+    end
+
+    begin
+      # Remove any labels from the object, as these may change by direct updates to the row
+      # and they may have been changed above.
+      obj.__send__(:remove_instance_variable, :@labels) # OK to use, object always has labels by this point
+      # Serialize the data
+      data = Marshal.dump(obj)
+    ensure
+      # Replace the labels in the object with the changed labels
+      obj._set_labels(obj_labels)
+    end
+
+    # TODO: Implement generic sorting on any field, and remove this hack
+    # Creation time for SQL (used for sorting)
+    creation_time_value = nil
+    # Look in object for a date value (any field, use the first)
+    obj.each do |value,d,q|
+      if value.k_typecode == T_DATETIME
+        # Use the start of the range as the creation time -- this enables sorting of things
+        # like Events in calendars to work as expected.
+        creation_time_value = value.start_datetime if creation_time_value == nil
       end
+    end
+    creation_time_value ||= obj.obj_creation_time
+    unless creation_time_value.kind_of?(Date) || creation_time_value.kind_of?(Time)
+      raise "Logic error"
+    end
+    creation_time = creation_time_value.strftime(OBJECTSTORE_PG_TIMESTAMP_FORMAT)
 
-      begin
-        # Remove any labels from the object, as these may change by direct updates to the row
-        # and they may have been changed above.
-        obj.__send__(:remove_instance_variable, :@labels) # OK to use, object always has labels by this point
-        # Serialize the data
-        data = Marshal.dump(obj)
-      ensure
-        # Replace the labels in the object with the changed labels
-        obj._set_labels(obj_labels)
+    type_object_id = 0
+    begin
+      t = obj.first_attr(A_TYPE)
+      if t != nil && t.class == KObjRef
+        type_object_id = t.obj_id
       end
+    end
 
-      # TODO: Implement generic sorting on any field, and remove this hack
-      # Creation time for SQL (used for sorting)
-      creation_time_value = nil
-      # Look in object for a date value (any field, use the first)
-      obj.each do |value,d,q|
-        if value.k_typecode == T_DATETIME
-          # Use the start of the range as the creation time -- this enables sorting of things
-          # like Events in calendars to work as expected.
-          creation_time_value = value.start_datetime if creation_time_value == nil
+    # Generate store modification SQL
+    sql = ''
+    if create_operation
+      # ----- CREATE OBJECT ------------------------------------------------------------
+      sql << "INSERT INTO os_objects (id,version,labels,creation_time,created_by,updated_by,type_object_id,sortas_title,object) VALUES(#{obj_id},#{obj.version.to_i},'#{obj_labels._to_sql_value}','#{PGconn.escape_string(creation_time)}',#{self.external_user_id},#{self.external_user_id},#{type_object_id},'#{PGconn.escape_string(obj_title_sortas)}',E'#{PGconn.escape_bytea(data)}');"
+      # Update any objects which linked to this when it didn't exist, moving pending values into the real link table
+      pids = ((parent_path == nil) ? [obj_id] : parent_path + [obj_id]).join(',')
+      sql << "INSERT INTO os_index_link SELECT id,attr_desc,qualifier,'{#{pids}}'::int[] AS value,#{obj_id} AS object_id FROM os_index_link_pending WHERE link_to_obj_id=#{obj_id}; DELETE FROM os_index_link_pending WHERE link_to_obj_id=#{obj_id};"
+    else
+      # ----- UPDATE OBJECT ------------------------------------------------------------
+      # Add the (old) current version to the object history
+      sql << "INSERT INTO os_objects_old (id,version,labels,creation_time,updated_at,created_by,updated_by,retired_by,type_object_id,sortas_title,object) SELECT id,version,labels,creation_time,updated_at,created_by,updated_by,#{self.external_user_id},type_object_id,sortas_title,object FROM os_objects WHERE id=#{obj_id.to_i};"
+      # Update to create a new current version
+      sql << "UPDATE os_objects SET version=#{obj.version.to_i},labels='#{obj_labels._to_sql_value}',creation_time='#{PGconn.escape_string(creation_time)}',updated_at=NOW(),updated_by=#{self.external_user_id},type_object_id=#{type_object_id},sortas_title='#{PGconn.escape_string(obj_title_sortas)}',object=E'#{PGconn.escape_bytea(data)}' WHERE id=#{obj_id};"
+      # Delete rows from the indicies which refer to the object, as they're going to be recreated next
+      sql << (ALL_INDEX_TABLES.map { |type| "DELETE FROM os_index_#{type} WHERE id=#{obj_id};" } .join)
+    end
+    # Update parent paths?
+    if parent_path_update_sql
+      sql << parent_path_update_sql
+    end
+    # -----------------------------------------------------------------------------------
+    # Basic fragement for SQL generation
+    sql_fragment1 = ' (id,attr_desc,qualifier,value'
+    sql_fragment2 = ") VALUES (#{obj_id},"
+    sql_fragment = sql_fragment1 + sql_fragment2
+    # Flag for text
+    has_text_to_index = false
+    # Write new index entries. Delegate may want to alter the object which is indexed.
+    obj_indexable = @delegate.indexed_version_of_object(obj)
+    obj_indexable.each do |value,desc,qualifier_v|
+      qualifier = (qualifier_v == nil) ? 0 : qualifier_v
+      if value.class == Fixnum || value.class == Bignum
+        sql << "INSERT INTO os_index_int"+sql_fragment+"#{desc},#{qualifier},#{value});"
+      elsif value.class == KObjRef
+        if _temp_does_object_exist?(value.obj_id)
+          # Insert full path of link into the index
+          pids = full_obj_id_path(value).join(',')
+          sql << %Q!INSERT INTO os_index_link #{sql_fragment1},object_id#{sql_fragment2}#{desc},#{qualifier},'{#{pids}}'::int[],#{value.obj_id});!
+        else
+          # Insert pending link
+          sql << %Q!INSERT INTO os_index_link_pending (id,attr_desc,qualifier,link_to_obj_id #{sql_fragment2}#{desc},#{qualifier},#{value.obj_id});!
         end
-      end
-      creation_time_value ||= obj.obj_creation_time
-      raise "Logic error" unless creation_time_value.kind_of?(Date) || creation_time_value.kind_of?(Time)
-      creation_time = creation_time_value.strftime(OBJECTSTORE_PG_TIMESTAMP_FORMAT)
-
-      type_object_id = 0
-      begin
-        t = obj.first_attr(A_TYPE)
-        if t != nil && t.class == KObjRef
-          type_object_id = t.obj_id
-        end
-      end
-
-      if create_operation
-        # ----- CREATE OBJECT ------------------------------------------------------------
-        pg.update("INSERT INTO os_objects (id,version,labels,creation_time,created_by,updated_by,type_object_id,sortas_title,object) VALUES(#{obj_id},#{obj.version.to_i},'#{obj_labels._to_sql_value}','#{PGconn.escape_string(creation_time)}',#{self.external_user_id},#{self.external_user_id},#{type_object_id},'#{PGconn.escape_string(obj_title_sortas)}',E'#{PGconn.escape_bytea(data)}')")
-        # Update any objects which linked to this when it didn't exist, moving pending values into the real link table
-        pids = ((parent_path == nil) ? [obj_id] : parent_path + [obj_id]).join(',')
-        pg.update("INSERT INTO os_index_link SELECT id,attr_desc,qualifier,'{#{pids}}'::int[] AS value,#{obj_id} AS object_id FROM os_index_link_pending WHERE link_to_obj_id=#{obj_id}; DELETE FROM os_index_link_pending WHERE link_to_obj_id=#{obj_id}")
-      else
-        # ----- UPDATE OBJECT ------------------------------------------------------------
-        # Add the (old) current version to the object history
-        pg.update("INSERT INTO os_objects_old (id,version,labels,creation_time,updated_at,created_by,updated_by,retired_by,type_object_id,sortas_title,object) SELECT id,version,labels,creation_time,updated_at,created_by,updated_by,#{self.external_user_id},type_object_id,sortas_title,object FROM os_objects WHERE id=#{obj_id.to_i}")
-        # Update to create a new current version
-        pg.update("UPDATE os_objects SET version=#{obj.version.to_i},labels='#{obj_labels._to_sql_value}',creation_time='#{PGconn.escape_string(creation_time)}',updated_at=NOW(),updated_by=#{self.external_user_id},type_object_id=#{type_object_id},sortas_title='#{PGconn.escape_string(obj_title_sortas)}',object=E'#{PGconn.escape_bytea(data)}' WHERE id=#{obj_id}")
-        # Delete rows from the indicies which refer to the object, as they're going to be recreated next
-        pg.update(ALL_INDEX_TABLES.map { |type| "DELETE FROM os_index_#{type} WHERE id=#{obj_id};" } .join)
-      end
-      # Update parent paths?
-      if parent_path_update_sql
-        pg.update(parent_path_update_sql)
-      end
-      # -----------------------------------------------------------------------------------
-      # Basic fragement for SQL generation
-      sql_fragment1 = ' (id,attr_desc,qualifier,value'
-      sql_fragment2 = ") VALUES (#{obj_id},"
-      sql_fragment = sql_fragment1 + sql_fragment2
-      # Flag for text
-      has_text_to_index = false
-      # Write new index entries
-      obj.each do |value,desc,qualifier_v|
-        qualifier = (qualifier_v == nil) ? 0 : qualifier_v
-        if value.class == Fixnum || value.class == Bignum
-          pg.update("INSERT INTO os_index_int"+sql_fragment+"#{desc},#{qualifier},#{value})")
-        elsif value.class == KObjRef
-          if _temp_does_object_exist?(value.obj_id)
-            # Insert full path of link into the index
-            pids = full_obj_id_path(value).join(',')
-            pg.update(%Q!INSERT INTO os_index_link #{sql_fragment1},object_id#{sql_fragment2}#{desc},#{qualifier},'{#{pids}}'::int[],#{value.obj_id})!)
-          else
-            # Insert pending link
-            pg.update(%Q!INSERT INTO os_index_link_pending (id,attr_desc,qualifier,link_to_obj_id #{sql_fragment2}#{desc},#{qualifier},#{value.obj_id})!)
-          end
-        elsif value.k_is_string_type?
-          # Mark this field as requiring text indexing
-          has_text_to_index = true
-
-          # Identifiers are also derived from text, but have a special index
-          identifier_index_str = value.to_identifier_index_str()
-          if identifier_index_str
-            raise "Bad indexed form for identifier" unless identifier_index_str.kind_of?(String) && identifier_index_str.length > 0
-            pg.update("INSERT INTO os_index_identifier#{sql_fragment1},identifier_type#{sql_fragment2}#{desc},#{qualifier},#{PGconn.quote(identifier_index_str)},#{value.k_typecode})")
-          end
-        elsif value.class == KDateTime
-          # Store the range in the datetime index
-          dtr1, dtr2 = value.range_pg
-          pg.update("INSERT INTO os_index_datetime#{sql_fragment1},value2#{sql_fragment2}#{desc},#{qualifier},'#{dtr1}','#{dtr2}')")
-        end
-      end
-
-      if has_text_to_index
-        pg.update("INSERT INTO os_dirty_text(app_id,osobj_id) VALUES(#{@application_id.to_i},#{obj_id})")
-        # Note semaphore trigger after COMMIT
-      end
-
-      # For updates, need to update indicies of objects linking to this object?
-      if !create_operation && generate_reindex_entries_for_linking_objects(pg, obj_id, previous_version_of_obj, obj)
-        # Make sure reindexer is triggered
+      elsif value.k_is_string_type?
+        # Mark this field as requiring text indexing
         has_text_to_index = true
+
+        # Identifiers are also derived from text, but have a special index
+        identifier_index_str = value.to_identifier_index_str()
+        if identifier_index_str
+          unless identifier_index_str.kind_of?(String) && identifier_index_str.length > 0
+            raise "Bad indexed form for identifier"
+          end
+          sql << "INSERT INTO os_index_identifier#{sql_fragment1},identifier_type#{sql_fragment2}#{desc},#{qualifier},#{PGconn.quote(identifier_index_str)},#{value.k_typecode});"
+        end
+      elsif value.class == KDateTime
+        # Store the range in the datetime index
+        dtr1, dtr2 = value.range_pg
+        sql << "INSERT INTO os_index_datetime#{sql_fragment1},value2#{sql_fragment2}#{desc},#{qualifier},'#{dtr1}','#{dtr2}');"
       end
+    end
 
-      pg.perform('COMMIT')
+    if has_text_to_index
+      sql << "INSERT INTO os_dirty_text(app_id,osobj_id) VALUES(#{@application_id.to_i},#{obj_id});"
+      # Note semaphore trigger after COMMIT
+    end
 
-      unless create_operation
+    # Commit to store, checking that state hasn't changed
+    retries = 3
+    while true
+
+      pg.perform('BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE')
+      begin
+        # Check parent path hasn't changed
+        if parent != nil
+          if parent_path != full_obj_id_path(parent)
+            raise "KObjectStore detected concurrent modification, aborting update"
+          end
+        end
+
+        if create_operation
+          # -- CREATE
+          if obj_id_required != nil
+            # check that this object hasn't already been created (again)
+            r = pg.exec("SELECT id FROM os_objects WHERE id=#{obj_id_required} LIMIT 1").result
+            if r.length > 0
+              raise "KObject ref #{obj_id_required} already exists"
+            end
+          end
+        else
+          # -- UPDATE
+          # Check the database wasn't changed since the previous checked
+          i = pg.exec("SELECT id,object,labels FROM os_objects WHERE id=#{obj_id}").result
+          if i.length == 0 || i.first != previous_version_database_row
+            raise "KObjectStore detected concurrent modification, aborting update"
+          end
+        end
+
+        # Do the precalculated database updates
+        pg.exec(sql)
+
+        # For updates, need to update indicies of objects linking to this object?
+        if !create_operation && generate_reindex_entries_for_linking_objects(pg, obj_id, previous_version_of_obj, obj)
+          # Make sure reindexer is triggered
+          has_text_to_index = true
+        end
+
+        pg.perform('COMMIT')
+
+        if has_text_to_index
+          # Start the index job AFTER the transaction has been committed in the db
+          TEXTIDX_FLAG_GENERAL.setFlag()
+        end
+
+        # Everything worked
+        break
+
+      rescue Java::OrgPostgresqlUtil::PSQLException => e
+        pg.perform('ROLLBACK')
+        KApp.logger.error("KObjectStore caught postgresql retryable exception on object commit for application #{@application_id}, object #{obj_id}, retries left #{retries}, exception #{e}")
+        retries -= 1
+        raise if retries < 0
+        # Sleep a little before retrying, in case more than one thread has to retry
+        sleep(0.1 + rand(400)/1000.0)
+      rescue => e
+        pg.perform('ROLLBACK')
+        KApp.logger.error("KObjectStore caught misc exception (won't retry) on object commit for application #{@application_id}, object #{obj_id}, retries left #{retries}, exception #{e}")
+        raise
+      ensure
         # Must invalidate the cache after the database has committed, as there are plenty of opportunities
         # for plugins to cause a read during an update operation.
         @object_cache.delete(obj_id)
       end
-
-      if has_text_to_index
-        # Start the index job AFTER the transaction has been committed in the db
-        TEXTIDX_FLAG_GENERAL.setFlag()
-      end
-    rescue
-      pg.perform('ROLLBACK')
-      raise
-    end
+    end # Retry loop
 
     obj.freeze
 
@@ -954,7 +1008,7 @@ private
 
 public
   def full_obj_id_path(objref)
-    # TODO: Cache full_obj_id_path in KObjectStore - remember they can change
+    # WARNING: Don't cache this without making sure that the checks in create_and_update still work
     obj_id = objref.obj_id
     qr = KApp.get_pg_database.exec("SELECT value FROM os_index_link WHERE id=#{obj_id.to_i} AND attr_desc=#{A_PARENT} LIMIT 1").result
     r = if qr.length == 0

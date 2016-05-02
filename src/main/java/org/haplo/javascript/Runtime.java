@@ -412,7 +412,8 @@ public class Runtime {
             defineSealedHostClass(scope, KWorkUnitQuery.class);
             defineSealedHostClass(scope, KEmailTemplate.class);
             defineSealedHostClass(scope, KBinaryData.class);
-            defineSealedHostClass(scope, KUploadedFile.class);
+            defineSealedHostClass(scope, KBinaryDataInMemory.class, true /* map inheritance */);
+            defineSealedHostClass(scope, KUploadedFile.class, true /* map inheritance */);
             defineSealedHostClass(scope, KStoredFile.class);
             defineSealedHostClass(scope, KJob.class);
             defineSealedHostClass(scope, KFilePipelineResult.class);
@@ -434,7 +435,7 @@ public class Runtime {
             defineSealedHostClass(scope, JdSelectClause.class);
             defineSealedHostClass(scope, JdSelect.class, true /* map inheritance */);
 
-            defineSealedHostClass(scope, KGenerateTable.class);
+            defineSealedHostClass(scope, KGenerateTable.class, true /* map inheritance */);
             defineSealedHostClass(scope, KGenerateXLS.class, true /* map inheritance */);
 
             defineSealedHostClass(scope, KRefKeyDictionary.class);

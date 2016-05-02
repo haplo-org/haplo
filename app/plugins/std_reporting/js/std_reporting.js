@@ -381,6 +381,7 @@ var dateToDayPart = function(f) {
 var factValueComparisonFunctions = {
     "ref": function(a,b) { return a == b; }, // Refs can't be compared with === or !== .
     "labelList": function(a,b) { return a == b; }, // LabelLists can't be compared with === or !== .
+    "json": function(a,b) { return _.isEqual(a,b); }, // deep comparison of nested JS objects
     "datetime": function(a,b) { return a.getTime() === b.getTime(); },   // compare ms from epoch
     "date": function(a,b) { return dateToDayPart(a).getTime() === dateToDayPart(b).getTime(); }, // compare adjusted dates
     "time": function(a,b) { return a.getTime() === b.getTime(); }   // compare ms from epoch
@@ -412,13 +413,16 @@ var updateFacts = function(collection, object, existingRow, timeNow) {
         xImplValidFrom: timeNow
     });
     // Ask other plugins to update the values
-    var serviceNames = ["std:reporting:collection:"+collection.name+":get_facts_for_object"];
+    var serviceNames = [
+        "std:reporting:collection:*:get_facts_for_object",
+        "std:reporting:collection:"+collection.name+":get_facts_for_object"
+    ];
     collection.$categories.forEach(function(category) {
         serviceNames.push("std:reporting:collection_category:"+category+":get_facts_for_object");
     });
     serviceNames.forEach(function(serviceName) {
         if(O.serviceImplemented(serviceName)) {
-            O.service(serviceName, object, row);
+            O.service(serviceName, object, row, collection);
         }
     });
     // New rows are just saved, updates checked to see if they actually need updating

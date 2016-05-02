@@ -44,6 +44,10 @@ module JSTextSupport
     raise JavaScriptAPIError, "Bad format passed to toString() on a Text object"
   end
 
+  def self.maybePluginDefinedTextType(ktext)
+    ktext.kind_of?(KTextPluginDefined) ? ktext.plugin_type_name : nil
+  end
+
   # ------------------------------------------------------------------------------------------------------------
 
   POSTAL_ADDRESS_KEYS = [:street1, :street2, :city, :county, :postcode, :country]

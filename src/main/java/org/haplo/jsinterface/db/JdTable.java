@@ -140,6 +140,7 @@ public class JdTable extends KScriptable {
                     case "file":        field = new FileField(fieldName, defn); break;
                     case "user":        field = new UserField(fieldName, defn); break;
                     case "labelList":   field = new LabelListField(fieldName, defn); break;
+                    case "json":        field = new JsonField(fieldName, defn); break;
                     case "link":
                         field = new LinkField(fieldName, defn, "i" + linkAliasNumber);
                         linkAliasNumber++;
@@ -797,6 +798,10 @@ public class JdTable extends KScriptable {
             return jsNonNullObjectIsCompatible(object);
         }
 
+        public boolean jsObjectIsCompatibleForWhereClause(Object object) {
+            return jsObjectIsCompatible(object);
+        }
+
         public void checkNonNullJsObjectForComparison(Object object, String comparison) {
             // Subclasses should throw an exception if they don't like the value
         }
@@ -1412,12 +1417,12 @@ public class JdTable extends KScriptable {
 
         @Override
         public String sqlDataType() {
-            throw new RuntimeException("shouldn't call sqlDataType for ObjRefField");
+            return "INT";
         }
 
         @Override
         public int jdbcDataType() {
-            throw new RuntimeException("shouldn't call jdbcDataType for ObjRefField");
+            return java.sql.Types.INTEGER;
         }
 
         @Override
@@ -1425,30 +1430,11 @@ public class JdTable extends KScriptable {
             return object instanceof KObjRef;
         }
 
-        @Override
-        public String generateSqlDefinition(JdTable table) {
-            StringBuilder defn = new StringBuilder(this.dbName);
-            defn.append(" INT");
-            if(!this.nullable) {
-                defn.append(" NOT NULL");
+        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value) {
+            if(!(comparison.equals("=") || comparison.equals("<>"))) {
+                throw new OAPIException("Can't use a comparison other than = for a ref field in a where() clause");
             }
-            return defn.toString();
-        }
-
-        @Override
-        public String generateIndexSqlDefinitionFields() {
-            return getDbName();
-        }
-
-        // INSERT
-        @Override
-        public void appendInsertColumnName(StringBuilder builder) {
-            builder.append(this.dbName);
-        }
-
-        @Override
-        public void appendInsertMarker(StringBuilder builder) {
-            builder.append("?");
+            super.appendWhereSql(where, tableAlias, comparison, value);
         }
 
         @Override
@@ -1463,74 +1449,8 @@ public class JdTable extends KScriptable {
             return parameterIndex + 1;
         }
 
-        // UPDATE
-        @Override
-        public int appendUpdateSQL(StringBuilder builder, boolean needsComma, Scriptable values, int parameterIndex, ParameterIndicies indicies) {
-            Object value = values.get(jsName, values); // ConsString is checked
-            if(value == Scriptable.NOT_FOUND) {
-                indicies.set(-1);   // not in this update
-                return parameterIndex;
-            } else {
-                indicies.set(parameterIndex);   // in this update
-                if(needsComma) {
-                    builder.append(',');
-                }
-                builder.append(dbName);
-                builder.append("=?");
-                return parameterIndex + 1;
-            }
-        }
-
-        // SELECT
-        @Override
-        public int appendColumnNamesForSelect(int parameterIndex, String tableAlias, StringBuilder builder, ParameterIndicies indicies) {
-            builder.append(tableAlias);
-            builder.append('.');
-            builder.append(dbName);
-            // Store read column index for later and return the next index
-            indicies.set(parameterIndex);
-            return parameterIndex + 1;
-        }
-
-        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value) {
-            boolean isEqualComparison = comparison.equals("=");
-            if(!(isEqualComparison || comparison.equals("<>"))) {
-                throw new OAPIException("Can't use a comparison other than = for a ref field in a where() clause");
-            }
-            if(value == null) {
-                if(isEqualComparison) {
-                    where.append(String.format("%1$s.%2$s IS NULL", tableAlias, dbName));
-                } else {
-                    where.append(String.format("%1$s.%2$s IS NOT NULL", tableAlias, dbName));
-                }
-            } else {
-                where.append(String.format("(%1$s.%2$s %3$s ?)", tableAlias, dbName, comparison));
-            }
-        }
-
-        @Override
-        public void appendOrderSql(StringBuilder clause, String tableAlias, boolean descending) {
-            // TODO: In JavaScript database API, ordering by ref should join in the os_objects table and sort on title (if efficient)
-            clause.append(tableAlias);
-            clause.append('.');
-            clause.append(dbName);
-            if(descending) {
-                clause.append(" DESC");
-            }
-        }
-
         public void setWhereNotNullValue(int parameterIndex, PreparedStatement statement, Object value) throws java.sql.SQLException {
-            throw new RuntimeException("logic error");
-        }
-
-        public int setWhereValue(int parameterIndex, PreparedStatement statement, Object value) throws java.sql.SQLException {
-            if(value == null) {
-                // Do nothing - using IS NULL comparisons
-                return parameterIndex;
-            } else {
-                statement.setInt(parameterIndex, ((KObjRef)value).jsGet_objId());
-                return parameterIndex + 1;
-            }
+            statement.setInt(parameterIndex, ((KObjRef)value).jsGet_objId());
         }
 
         @Override
@@ -1903,6 +1823,64 @@ public class JdTable extends KScriptable {
         public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value) {
             KUser user = (KUser)value;
             where.append(user.makeWhereClauseForPermitRead(String.format("%1$s.%2$s", tableAlias, dbName)));
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+    private static class JsonField extends Field {
+        public JsonField(String name, Scriptable defn) {
+            super(name, defn);
+            if(this.indexed) {
+                throw new OAPIException("json fields cannot be indexed");
+            }
+        }
+
+        // NOTE: database.js handles all the JSON serialisation and deserialisation
+        // Might be nice to use postgresql jsonb at some point in the future?
+
+        @Override
+        public String sqlDataType() {
+            return "TEXT";
+        }
+
+        @Override
+        public int jdbcDataType() {
+            return java.sql.Types.CHAR;
+        }
+
+        @Override
+        public boolean jsObjectIsCompatibleForWhereClause(Object object) {
+            if(object != null) {
+                throw new OAPIException("json columns cannot be used in where clauses, except as a comparison to null.");
+            }
+            return super.jsObjectIsCompatibleForWhereClause(object);
+        }
+
+        @Override
+        public boolean jsNonNullObjectIsCompatible(Object object) {
+            return object instanceof CharSequence; // serialised
+        }
+
+        @Override
+        public int setStatementField(int parameterIndex, PreparedStatement statement, Scriptable values) throws java.sql.SQLException {
+            String serialised = JsGet.string(this.jsName, values);
+            checkForForbiddenNullValue(serialised);
+            if(serialised == null) {
+                statement.setNull(parameterIndex, java.sql.Types.CHAR);
+            } else {
+                statement.setString(parameterIndex, serialised);
+            }
+            return parameterIndex + 1;
+        }
+
+        @Override
+        public void setWhereNotNullValue(int parameterIndex, PreparedStatement statement, Object value) throws java.sql.SQLException {
+            statement.setString(parameterIndex, ((CharSequence)value).toString());
+        }
+
+        @Override
+        protected Object getValueFromResultSet(ResultSet results, ParameterIndicies indicies) throws java.sql.SQLException {
+            return results.getString(indicies.get());   // ConsString is checked
         }
     }
 }

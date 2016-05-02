@@ -69,18 +69,12 @@ public class KUploadedFile extends KBinaryData {
 
     // --------------------------------------------------------------------------------------------------------------
     @Override
-    public String jsFunction_readAsString(String charsetName) {
-        // This is necessary because of the way Rhino handles inheritance
-        return super.jsFunction_readAsString(charsetName);
-    }
-
-    @Override
     protected String convertToString(Charset charset) {
         return StringUtils.readFileAsStringWithJSChecking(this.file.getSavedPathname(), charset);
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public Scriptable jsFunction__createStoredFileFromUpload() {
+    public Scriptable jsFunction__createStoredFileFromData() {
         if(this.storedFile != null) {
             return this.storedFile;
         }
@@ -95,6 +89,16 @@ public class KUploadedFile extends KBinaryData {
         if(this.file == null || !this.file.wasUploaded()) {
             throw new OAPIException("File not available");
         }
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+    public boolean isAvailableInMemoryForResponse() {
+        return false;
+    }
+
+    public String getDiskPathnameForResponse() {
+        // Temporary file will have been deleted by the time it would be opened for responding
+        throw new OAPIException("Responding with uploaded file not supported");
     }
 
     // --------------------------------------------------------------------------------------------------------------

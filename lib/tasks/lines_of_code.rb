@@ -6,7 +6,7 @@
 
 
 DIRS = [
-    ['Server side', ['framework', 'app', 'lib', 'java/com']],
+    ['Server side', ['framework', 'app', 'lib', 'src']],
     ['Deployment', ['deploy']],
     ['Client side', ['static']],
     ['Tests', ['test']]

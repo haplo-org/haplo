@@ -29,6 +29,18 @@ module JSFileSupport
 
   # ------------------------------------------------------------------------------------------------------------
 
+  def self.newStoredFileFromData(data, filename, mimeType)
+    temp_pathname = "#{FILE_UPLOADS_TEMPORARY_DIR}/temp_js_genfile_#{Thread.current.object_id}.#{Time.now.to_f}.tmp"
+    begin
+      File.open(temp_pathname, "w:BINARY") { |f| f.write(data) }
+      StoredFile.move_file_into_store(temp_pathname, filename, mimeType)
+    ensure
+      File.unlink(temp_pathname) if File.exist?(temp_pathname)
+    end
+  end
+
+  # ------------------------------------------------------------------------------------------------------------
+
   def self.getFilePropertiesJSON(storedFile)
     properties = {}
     if (dimensions = storedFile.dimensions)

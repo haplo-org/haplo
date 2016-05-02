@@ -34,6 +34,10 @@ class JavascriptTemplateTest < Test::Unit::TestCase
     end
   end
 
+  def test_deferred_render_to_string
+    run_javascript_test(:file, 'unit/javascript/javascript_template/test_deferred_render_to_string.js');
+  end
+
   def test_template_is_deferred_render
     run_javascript_test(:file, 'unit/javascript/javascript_template/test_template_is_deferred_render.js');
   end

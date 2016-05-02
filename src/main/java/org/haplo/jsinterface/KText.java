@@ -108,6 +108,11 @@ public class KText extends KScriptable {
         return text.kTypecode();
     }
 
+    // Returns type of plugin defined text type, if this is one, or null
+    public String jsGet__pluginDefinedTextType() {
+        return rubyInterface.maybePluginDefinedTextType(this.text);
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     // Properties of file identifiers
     private AppText asFileIdentifier() {
@@ -183,8 +188,6 @@ public class KText extends KScriptable {
         return clone;
     }
 
-    ;
-
     // --------------------------------------------------------------------------------------------------------------
     // Interface to Ruby functions
     public interface Ruby {
@@ -193,6 +196,8 @@ public class KText extends KScriptable {
         public String convertToString(AppText text, String format);
 
         public String toFieldsJson(AppText text);
+
+        public String maybePluginDefinedTextType(AppText text);
     }
     private static Ruby rubyInterface;
 

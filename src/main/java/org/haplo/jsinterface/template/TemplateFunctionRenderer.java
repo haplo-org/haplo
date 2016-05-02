@@ -67,6 +67,8 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
             case "std:icon:object": std_icon_object(builder, b); break;
             case "std:icon:description": std_icon_description(builder, b); break;
 
+            case "NAME": name(builder, b); break;
+
             case "std:form":
             case "std:document":
             case "std:ui:notice":
@@ -240,6 +242,21 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
             ((Scriptable)rootView).put(name, (Scriptable)rootView, value);
         } else {
             throw new RenderException(b.getDriver(), "Can't set value for "+name+" in root view");
+        }
+    }
+
+    // ----------------------------------------------------------------------
+
+    private void name(StringBuilder builder, FunctionBinding b) throws RenderException {
+        String name = b.nextLiteralStringArgument(ArgumentRequirement.REQUIRED);
+        b.noMoreArgumentsExpected();
+
+        Runtime runtime = Runtime.getCurrentRuntime();
+        Scriptable rootScope = runtime.getJavaScriptScope();
+        Callable function = (Callable)rootScope.get("NAME", rootScope);
+        Object translated = function.call(runtime.getContext(), rootScope, rootScope, new Object[]{name}); // ConsString is checked
+        if(translated instanceof CharSequence) {
+            Escape.escape(translated.toString(), builder, b.getContext());
         }
     }
 

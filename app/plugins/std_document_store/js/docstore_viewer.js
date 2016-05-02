@@ -104,10 +104,7 @@ DocumentViewer.prototype.__defineGetter__("_viewerBody", function() {
 });
 
 DocumentViewer.prototype.__defineGetter__("_viewerDocumentDeferred", function() {
-    var viewer = this;
-    return new GenericDeferredRender(function() {
-        return viewer.instance._renderDocument(viewer.document);
-    });
+    return this.instance._renderDocument(this.document, true);
 });
 
 DocumentViewer.prototype.__defineGetter__("_viewerSelectedForm", function() {

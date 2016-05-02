@@ -114,6 +114,11 @@ TEST(function() {
         number: { type:"int" }
     });
 
+    db.table("json1", {
+        data: { type:"json", nullable:true },
+        number: { type:"int" }
+    });
+
     // Set up the storage
     $host._testCallback("");
 
@@ -841,6 +846,45 @@ TEST(function() {
     filenullable_select3[0].attachedFile2 = null;
     filenullable_select3[0].save();
     TEST.assert_equal(0, db.files2.select().where("attachedFile2","<>",null).length);
+
+    // =====================================================================================
+    // JSON data type
+    db.json1.create({number:4}).save();
+    db.json1.create({number:8,data:{a:1,b:2}}).save();
+    var jr1 = db.json1.select().where("number","=",4)[0];
+    TEST.assert_equal(null, jr1.data);
+    var jr2 = db.json1.select().where("number","=",8)[0];
+    TEST.assert_equal(2, jr2.data.b);
+    TEST.assert(_.isEqual({b:2,a:1}, jr2.data));
+    // Test that modifications to the deserialised object persist (ie cache is working, but not saved)
+    jr2.data.b = 3;
+    jr2.number = 9;
+    TEST.assert_equal(3, jr2.data.b);   // modifies cached value
+    jr2.save();
+    jr2 = db.json1.load(jr2.id);
+    TEST.assert_equal(2, jr2.data.b);   // NOT modified by save because data property was not assigned explicitly
+    TEST.assert_equal(9, jr2.number);
+    // Assign to property to actually change it
+    jr2.data = {b:4,c:8};
+    TEST.assert_equal(4, jr2.data.b);   // invalidated cache
+    jr2.save();
+    jr2 = db.json1.load(jr2.id);
+    TEST.assert_equal(4, jr2.data.b);
+    TEST.assert(_.isEqual({c:8,b:4}, jr2.data));
+    // Can't use them in where clauses...
+    TEST.assert_exceptions(function() {
+        db.json1.select().where("data","=",{a:2});
+    }, "json columns cannot be used in where clauses, except as a comparison to null.");
+    TEST.assert_exceptions(function() {
+        db.json1.select().where("data","=",'{"a":2}');  // even as JSON encoded text
+    }, "json columns cannot be used in where clauses, except as a comparison to null.");
+    // ... except when comparing to null.
+    var jqn1 = db.json1.select().where("data","=",null);
+    TEST.assert_equal(1, jqn1.length);
+    TEST.assert_equal(4, jqn1[0].number);
+    var jqn2 = db.json1.select().where("data","!=",null);
+    TEST.assert_equal(1, jqn2.length);
+    TEST.assert_equal(9, jqn2[0].number);
 
     // =====================================================================================
     // Very simple migration test

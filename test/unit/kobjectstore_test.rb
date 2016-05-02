@@ -2941,4 +2941,71 @@ _OBJS
 
   end
 
+  # ------------------------------------------------------------------------
+
+  def test_plugins_can_change_indexing
+    restore_store_snapshot("basic")
+    # Plugin which implements the hPreIndexObject hook
+    assert KPlugin.install_plugin("k_object_store_test/change_indexing")
+    Thread.current[:_change_indexing_plugin_calls] = 0
+
+    count_linked_to = Proc.new do |type|
+      KObjectStore.query_and.link(type, A_TYPE).execute().length
+    end
+    count_text_results = Proc.new do |text, desc|
+      KObjectStore.query_and.free_text(text, desc).execute().length
+    end
+
+    book = KObject.new()
+    book.add_attr(O_TYPE_BOOK, A_TYPE)
+    book.add_attr("Hello Book", A_TITLE)
+    book.add_attr("X1234Y", A_NOTES)
+    KObjectStore.create(book)
+    run_outstanding_text_indexing
+    assert_equal 2, Thread.current[:_change_indexing_plugin_calls] # object write, another for text indexing
+
+    assert_equal 1, count_linked_to.call(O_TYPE_BOOK)
+    assert_equal 0, count_linked_to.call(O_TYPE_PERSON)
+    assert_equal 1, count_text_results.call('X1234Y', A_NOTES)
+    assert_equal 0, count_text_results.call('ZZZ1111', A_NOTES)
+
+    Thread.current[:_change_indexing_plugin_change] = true
+    book = book.dup
+    book.add_attr("Subtitle", A_TITLE, Q_ALTERNATIVE)
+    KObjectStore.update(book)
+    run_outstanding_text_indexing
+    assert_equal 4, Thread.current[:_change_indexing_plugin_calls]
+
+    assert_equal 1, count_linked_to.call(O_TYPE_BOOK)
+    assert_equal 1, count_linked_to.call(O_TYPE_PERSON) # added by plugin
+    assert_equal 0, count_text_results.call('X1234Y', A_NOTES) # removed
+    assert_equal 1, count_text_results.call('ZZZ1111', A_NOTES) # added
+    assert_equal 0, count_text_results.call('MMM8877', A_NOTES) # not added yet
+
+    # Do a text reindex without an object update
+    KObjectStore.reindex_text_for_object(book.objref)
+    run_outstanding_text_indexing
+    assert_equal 5, Thread.current[:_change_indexing_plugin_calls] # not 6, only called for text indexing
+    assert_equal 0, count_text_results.call('ZZZ1111', A_NOTES) # not added
+    assert_equal 1, count_text_results.call('MMM8877', A_NOTES) # now added
+  ensure
+    KPlugin.uninstall_plugin("k_object_store_test/change_indexing")
+  end
+
+  class ChangeIndexingPlugin < KTrustedPlugin
+    _PluginName "Change Indexing Plugin"
+    _PluginDescription "Test"
+    def hPreIndexObject(result, object)
+      Thread.current[:_change_indexing_plugin_calls] += 1
+      if Thread.current[:_change_indexing_plugin_change]
+        r = object.dup
+        r.add_attr(KConstants::O_TYPE_PERSON, KConstants::A_TYPE)
+        r.delete_attrs!(KConstants::A_NOTES)
+        keyword = (Thread.current[:_change_indexing_plugin_calls] > 4) ? 'MMM8877' : "ZZZ1111"
+        r.add_attr(keyword, KConstants::A_NOTES)
+        result.replacementObject = r
+      end
+    end
+  end
+
 end

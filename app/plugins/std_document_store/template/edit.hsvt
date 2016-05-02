@@ -1,6 +1,6 @@
 std:plugin:resources("edit.css")
 
-unless(isSinglePage) {
+if(navigation) {
   <div class="z__docstore_nav_top"> render(navigation) </div>
 }
 
@@ -28,7 +28,7 @@ std:form(activePage.instance)
   </button>
 </div>
 
-unless(isSinglePage) {
+if(navigation) {
   <div class="z__docstore_nav_bottom">
     render(navigation)
   </div>

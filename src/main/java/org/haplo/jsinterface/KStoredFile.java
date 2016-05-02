@@ -187,6 +187,13 @@ public class KStoredFile extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+
+    public static KStoredFile newStoredFileFromData(byte[] data, String filename, String mimeType) {
+        AppStoredFile file = rubyInterface.newStoredFileFromData(data, filename, mimeType);
+        return fromAppStoredFile(file);
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
     // Interface to Ruby functions
     public interface Ruby {
         public AppText makeIdentifierForFile(AppStoredFile storedFile);
@@ -194,6 +201,8 @@ public class KStoredFile extends KScriptable {
         public AppStoredFile tryLoadFile(AppText fileIdentifier);
 
         public AppStoredFile tryFindFile(String digest, Number fileSizeMaybe);
+
+        public AppStoredFile newStoredFileFromData(byte[] data, String filename, String mimeType);
 
         public String fileIdentifierMakePathOrHTML(AppStoredFile storedFile, FileRenderOptions options, boolean html);
 

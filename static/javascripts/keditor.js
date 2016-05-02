@@ -209,7 +209,8 @@ _.extend(KEdValue.prototype, {
         // note that KAttrContainer depends on the construction here
         var h = '<div id="'+i+'" class="z__keyvalue_row">';
         if(!this.p__parentContainer.p__singleValue) {
-            h += '<div class="z__editor_value_buttons"><div id="'+i+'_dc" class="z__editor_delete_button"><a id="'+i+'_d" href="#"><img src="/images/clearbut.gif" height="14" width="14" alt="delete" title="delete"></a></div><div id="'+i+'_uc" class="z__editor_undo_button" style="display:none;"><a id="'+i+'_u" href="#"><img src="/images/clearbut.gif" height="14" width="14" alt="undelete" title="undelete"></a></div></div>';
+            // Include the _dragPosition in the handle, set by KAttrContainer
+            h += '<div class="z__editor_value_buttons"><div id="'+i+'_dc" class="z__editor_delete_button"><a id="'+i+'_d" href="#"><img src="/images/clearbut.gif" height="14" width="14" alt="delete" title="delete"></a></div><div id="'+i+'_uc" class="z__editor_undo_button" style="display:none;"><a id="'+i+'_u" href="#"><img src="/images/clearbut.gif" height="14" width="14" alt="undelete" title="undelete"></a></div><div data-kvalueposition="'+this._dragPosition+'" class="z__editor_value_order_drag_handle">drag</div></div>';
         }
         // Qualifiers?
         if(this.q__defn.p__chooseQualifier) {
@@ -771,6 +772,7 @@ _.extend(KEdObjRef.prototype, {
             // Looks good, set this item as the value of this control
             this.p__objref = l[item_num][0];
             this.p__objectTitle = l[item_num][1];
+            this.j__notifySelectionListener();
             var i = this.q__domId;
             // Display the link
             $('#'+i).html(this.j__htmlForLinkDisplay());
@@ -813,10 +815,17 @@ _.extend(KEdObjRef.prototype, {
         // Store info
         this.p__objref = objref;
         this.p__objectTitle = KApp.j__objectTitle(objref);
+        this.j__notifySelectionListener();
         // Show link on display
         this.q__domObj.innerHTML = this.j__htmlForLinkDisplay();
         // Hide UI
         $(this.p__keditorValueControl.j__getExtrasContainer()).hide();
+    },
+
+    j__notifySelectionListener: function() {
+        if(this.p__notifySelectionListener) {
+            this.p__notifySelectionListener(this.p__objref, this.p__objectTitle);
+        }
     },
 
     // --------------------------------------------------------------------------------------
@@ -2108,7 +2117,8 @@ _.extend(KEdPluginDefinedText.prototype, KControl.prototype, {
             // Create the UI using the registered adaptor
             var constructFn = this.q__pluginDataType ? KEditor.p__pluginTextTypeValueConstructor[this.q__pluginDataType] : undefined;
             if(constructFn) {
-                this.q__pluginUserInterface = constructFn(JSON.parse(this.q__json));
+                this.q__pluginUserInterface = constructFn(JSON.parse(this.q__json), this.p__keditorValueControl.q__desc);
+                this.q__pluginUserInterface.q__keditorPluginDefinedTextValueObject = this;
                 return this.q__pluginUserInterface.j__generateHtml2(i);
             } else {
                 return '<b>This value cannot be edited because the required plugin is not installed.</b>';
@@ -2196,6 +2206,8 @@ _.extend(KAttrContainer.prototype, {
             var valueControlConstructor = KEdClasses[val[VL_TYPE]];
             return new valueControlConstructor(container, container.q__desc, val);
         });
+        // Add in the current position so the order can be retrieved from the DOM later
+        _.each(this.q__values, function(value, index) { value._dragPosition = index; });
 
         // GENERATE HTML
         // Main div, with add button and header row with name of attr, and cataloguing example
@@ -2219,9 +2231,11 @@ _.extend(KAttrContainer.prototype, {
         }
 
         // Output all the values
+        h += '<div class="z__editor_attr_container_value_container">';
         _.each(this.q__values, function(v) {
             h += v.j__generateHtml();
         });
+        h += '</div>';
 
         // HTML from plugins, then divider and close the section div
         return h + this.p__bottom_html + '<div class="z__keyvalue_divider"></div></div>';
@@ -2234,13 +2248,34 @@ _.extend(KAttrContainer.prototype, {
         });
         // Attach add button
         $('#'+this.q__domId+'_a').click(_.bind(this.j__handleAdd, this));
+        // Make elements sortable
+        $('#'+i+' .z__editor_attr_container_value_container').sortable({
+            handle: '.z__editor_value_order_drag_handle',
+            axis: 'y'
+        });
     },
     j__value: function() {
-        // Read values
-        var a = [];
-        _.each(this.q__values, function(v) {var t=v.j__value(); if(t){a.push(t);}});
-        if(a.length === 0) {return 'A`'+this.q__desc;}// wipe all values - not including this just means nothing is changed
-        return 'A`'+this.q__desc+'`'+a.join('`');
+        // Copy values, will set elements to undefined as they're picked
+        var valueControls = Array.prototype.slice.call(this.q__values);
+        // Use order from DOM
+        var orderedValueControls = [];
+        $('.z__editor_value_order_drag_handle',this.q__domObj).each(function() {
+            var pos = this.getAttribute('data-kvalueposition');
+            if(pos) {
+                var i = pos*1;
+                if(valueControls[i]) {
+                    orderedValueControls.push(valueControls[i]);
+                    valueControls[i] = undefined;
+                }
+            }
+        });
+        // Any remaining? (being paranoid about not losing them)
+        orderedValueControls = orderedValueControls.concat(_.compact(valueControls));
+        // Get values from the controls, discarding anything falsey
+        var attributeValues = _.compact(_.map(orderedValueControls, function(c) { return c.j__value(); }));
+        // Serialize for the server
+        if(attributeValues.length === 0) {return 'A`'+this.q__desc;}// wipe all values - not including this just means nothing is changed
+        return 'A`'+this.q__desc+'`'+attributeValues.join('`');
     },
 
     // All values null (ie no data entered)
@@ -2290,10 +2325,11 @@ _.extend(KAttrContainer.prototype, {
         var t = KEdClasses[data_type];
         if(!t) {return;}
         var v = new t(this,this.q__desc,create_data || d.p__newCreationData);
+        v._dragPosition = this.q__values.length; // drag position of the new object
         this.q__values.push(v);
 
-        // Make the control HTML and insert it before the divider or any additional plugin UI, whichever comes first.
-        $('.z__keyvalue_divider,.z__attr_container_plugin_ui_bottom', this.q__domObj).first().before(v.j__generateHtml());
+        // Add the control HTML at the end of the values container
+        $('.z__editor_attr_container_value_container', this.q__domObj).append(v.j__generateHtml());
 
         // Attach control
         v.j__attach();
@@ -2858,6 +2894,7 @@ _.extend(KEditor.prototype, {
 KEditor.p__delegate_constructors = {};
 KEditor.p__pluginTextTypeValueConstructor = {};
 KEditor.p__KAttrContainer = KAttrContainer;
+KEditor.p__KEdObjRef = KEdObjRef;
 
 
 // ----------------------------------------------------------------------------------------------------

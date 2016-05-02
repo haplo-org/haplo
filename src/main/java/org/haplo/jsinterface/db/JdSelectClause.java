@@ -130,7 +130,7 @@ public class JdSelectClause extends KScriptable {
         }
 
         // Validate the value
-        if(!(field.jsObjectIsCompatible(value))) {
+        if(!(field.jsObjectIsCompatibleForWhereClause(value))) {
             throw new OAPIException("Comparison value for field '" + fieldName + "' "
                     + ((value == null) ? "must not be null as this field is not marked as nullable" : "is not a compatible data type."));
         }

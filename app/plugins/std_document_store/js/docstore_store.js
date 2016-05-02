@@ -53,8 +53,8 @@ DocumentStore.prototype._blankDocumentForKey = function(key) {
         undefined) || {};
 };
 
-DocumentStore.prototype._formsForKey = function(key) {
-    return this.delegate.formsForKey(key);
+DocumentStore.prototype._formsForKey = function(key, instance, proposedDocument) {
+    return this.delegate.formsForKey(key, instance, proposedDocument || instance.currentDocument);
 };
 
 DocumentStore.prototype._formIdFromRequest = function(request) {

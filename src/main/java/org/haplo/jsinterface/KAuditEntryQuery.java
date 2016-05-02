@@ -165,18 +165,6 @@ public class KAuditEntryQuery extends KScriptable {
         return jsFunction_latest();
     }
 
-    public static Scriptable jsFunction_table(Context cx, Scriptable thisObj, Object[] args, Function funObj) {
-        return ((KAuditEntryQuery)thisObj).table(args);
-    }
-
-    // --------------------------------------------------------------------------------------------------------------
-    private Scriptable table(Object[] fields) {
-        if(fields.length == 0) {
-            throw new OAPIException("Must specify at least one field for the table.");
-        }
-        return KAuditEntry.executeTable(this, fields);
-    }
-
     // --------------------------------------------------------------------------------------------------------------
     private void checkNotExecuted() {
         if(results != null) {

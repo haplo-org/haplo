@@ -493,6 +493,12 @@ __E
     assert_equal response.body.force_encoding(Encoding::UTF_8), File.open("test/fixtures/files/example8_utf8nobom.txt") { |f| f.read }
     assert_equal (1024*1024*16), Java::OrgHaploUtils::StringUtils.MAXIMUM_READ_FILE_AS_STRING_SIZE
 
+    # Binary data response
+    get '/do/plugin_test/binary_data_response'
+    assert_equal "Hello ☃", response.body.force_encoding(Encoding::UTF_8)
+    assert_equal "text/plain", response['content-type']
+    assert_equal 'attachment; filename="testbin.txt"', response['content-disposition']
+
     # HTML & paths for the file
     run_all_jobs({}) # make sure thumbnailing is done
     png_stored_file = StoredFile.from_upload(fixture_file_upload('files/example5.png', 'image/png'))
@@ -703,44 +709,6 @@ __E
     options
   end
 
-  def test_audit_table_querying
-    # Returning audit query tables
-    login
-    AuditEntry.delete_all
-    db_load_table_fixtures :audit_entries
-    begin
-      # Basic test
-      get "/do/plugin_test/audit_table/auditEntryType/ref"
-      assert_response :success
-      assert_equal "application/json", response['content-type']
-      data = JSON.parse(response.body)
-      assert_equal ["test:kind1","4x"], data[0]
-      assert_equal ["USER-LOGIN",nil], data[-1]
-      assert_equal 8, data.length
-
-      #Get all columns
-      all_columns = ['userId', 'authenticatedUserId', 'auditEntryType',
-                     'ref', 'entityId', 'displayable', 'data',
-                     'creationDate', 'remoteAddress']
-      get "/do/plugin_test/audit_table/#{all_columns.join('/')}"
-      assert_response :success
-      filtered_data = JSON.parse(response.body)
-      assert_equal 8, filtered_data.length
-      assert_equal([120, 121, 'test:kind1', '4x', nil, true, {"XX" => 8},
-                    '2013-06-27 09:54:57.691', '192.168.222.2'], filtered_data[0])
-
-      get "/do/plugin_test/audit_table/#{all_columns.join('/')}?all=true"
-      assert_response :success
-      data = JSON.parse(response.body)
-      assert_equal 9, data.length
-      assert_equal data[1..8], filtered_data
-      assert_equal([120, 121, 'test:kind9', '4x', nil, true, {"XX" => 9},
-                    '2013-06-27 09:55:57.691', '192.168.222.2'], data[0])
-    ensure
-      AuditEntry.delete_all
-    end
-  end
-
   def check_response_includes_javascript(name)
     if File.exist?('static/squishing_mappings.yaml')
       @@squishing_mappings ||= File.open('static/squishing_mappings.yaml') { |f| YAML::load(f.read) }
@@ -762,10 +730,8 @@ __E
   # -----------------------------------------------------------------------------------------------------------------------------------
 
   def test_string_encoding
-    restore_store_snapshot("basic")
-    AuditEntry.destroy_all
-    get '/do/plugin_test/test_string_encoding?output=table'
-    query_data = data = JSON.parse(response.body)
+    get '/do/plugin_test/test_string_encoding'
+    lines = response.body.force_encoding("UTF-8").split("\n")
     # This is a direct copy of the string in test_requests.js.  Copied manually because we're testing
     # String encoding, so can't pass these things around too easily.
     badStrings = ["Hello World", "κόσμε", "£10/€20", "\u0080", "\u8000", "\u0800",
@@ -773,12 +739,9 @@ __E
                   "\u0400\u0000", "\u0004\u0000", "\u007F", "\u7F00", "\u07FF",
                   "\uFF07", "\uFFFF", "\u001F\uFFFF", "\u1F00\uFFFF", "\u00FF", "\u00FF",
                   "\uFFFF\uFFFF", "Before\u0000After"];
-    assert_equal badStrings.length, query_data.length
-    query_data.zip(badStrings).each do |audit_row, expected_string|
-      _, audit_data = audit_row
-      assert_equal [expected_string], audit_data.keys
-      assert_equal [expected_string], audit_data.values
-    end
+    assert_equal lines.length, badStrings.length * 2
+    expected_lines = badStrings * 2
+    assert_equal expected_lines, lines
 
     title = "£45/€55 - κόσμε ಮಣ್ಣಾಗಿ"
     object = KObject.new

@@ -60,4 +60,17 @@ TEST(function() {
     // but arrays are allowed
     test_plugin.constructTestTextType1(["x"]);
 
+    // Value testing
+    TEST.assert_equal(false, O.isPluginTextValue());
+    TEST.assert_equal(false, O.isPluginTextValue(false, "abc"));
+    TEST.assert_equal(false, O.isPluginTextValue(123, "abc"));
+    TEST.assert_equal(false, O.isPluginTextValue("hello", "abc"));
+    TEST.assert_equal(false, O.isPluginTextValue(O.text(O.T_TEXT, "zyx"), "abc"));
+
+    TEST.assert_equal(true, O.isPluginTextValue(t0, "unknown:type"));
+    TEST.assert_equal(false, O.isPluginTextValue(t0, "not_unknown:type"));
+
+    TEST.assert_equal(true, O.isPluginTextValue(t1, "test:testtype"));
+    TEST.assert_equal(false, O.isPluginTextValue(t1, "unknown:type"));
+
 });

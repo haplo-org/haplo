@@ -8,6 +8,7 @@
 /* Adjust side of col2 for qualified values */
 .z__editor_container .z__keyvalue_col2 {
     width: 321px;
+    padding-bottom: 0px;
 }
 
 /* top of the editor for overall controls etc */
@@ -81,6 +82,8 @@
 .z__editor_value_buttons  /* the buttons to the right of the values */ {
     position: absolute;
     left: 103%;
+    width: 56px;
+    height: 24px;
     display: block;
 }
 
@@ -110,7 +113,7 @@
 .z__editor_delete_button {
     position: absolute;
     top: 5px;
-    right: -16px;
+    left: 0px;
     display: block;
     width: 16px;
     height: 16px;
@@ -148,6 +151,23 @@
     display: block;
 }
 
+.z__editor_value_order_drag_handle {
+    position: absolute;
+    top: 5px;
+    left: 24px;
+    color: transparent;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 10px;
+    line-height: 12px;
+    padding: 2px 4px;
+    border-radius: 2px;
+    cursor: move;
+}
+.z__editor_value_buttons:hover .z__editor_value_order_drag_handle {
+    color: #888;
+    background: #eee;
+}
 
 /* value when it's deleted with undo option */
 .z__editor_undoable_deleted_value {
@@ -164,6 +184,12 @@
 .z__editor_strikethrough .z__keyvalue_col1_qualifer {
     text-decoration: line-through;
     color: #888;
+}
+
+/* container for the row values (contains reorderable items) */
+.z__editor_attr_container_value_container {
+    position: relative;
+    clear: both;
 }
 
 /* container for extra things below the value row, hidden when item doesn't have focus */

@@ -58,6 +58,7 @@ class JavaScriptSyntaxTester
     @server_side_predefined_globals['$registry'] = true
     @server_side_predefined_globals['Handlebars'] = true # as it's created specially for each instance
     @server_side_predefined_globals['$HaploTemplate'] = true # in different JS package to other JS Host objects
+    @server_side_predefined_globals['NAME'] = true
     # Client side version
     @client_side_predefined_globals = {'_' => false, 'jQuery' => false, 'alert' => false}
     @client_side_predefined_globals_plugin = @client_side_predefined_globals.dup

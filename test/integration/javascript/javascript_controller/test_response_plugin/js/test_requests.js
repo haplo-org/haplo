@@ -322,22 +322,6 @@
         E.response.body = this.rewriteCSS("div {background: url(PLUGIN_STATIC_PATH/ping.png)} p {color:APPLICATION_COLOUR_MAIN}");
     });
 
-    P.respond("GET", "/do/plugin_test/audit_table", [
-        { parameter: "all", as: "string", optional: true }
-    ], function(E, all) {
-        var query = O.audit.query().displayable(null);
-        var data;
-        function getData() {
-            data = query.table.apply(query, E.request.extraPathElements);
-        }
-        if(all) {
-            O.impersonating(O.SYSTEM, getData);
-        } else {
-            getData();
-        }
-        E.response.body = data;
-    });
-
     P.respond("GET", "/do/plugin_test/special_arguments_to_templates", [
         {pathElement:"0", as:"string"}
     ], function(E, specialType) {
@@ -453,13 +437,6 @@
                 object.append(bad, ATTR.Title);
                 object.save();
                 objects.push(object.ref);
-                // Write an audit entry
-                var badData = {};
-                badData[bad] = bad;
-                O.audit.write({
-                    auditEntryType: "example:bad_string",
-                    data: badData
-                });
             });
 
             _.each(_.zip(objects, badStrings), function(pair) {
@@ -468,29 +445,12 @@
                 if (expected_title != new_object.firstTitle().toString()) {
                     output.push("Object title of '" + new_object.firstTitle() + "' doesn't match expected '" + expected_title + "'");
                 }
+                output.push(new_object.title);
             });
-
-            var query = O.audit.query().displayable(null).auditEntryType("example:bad_string").sortBy("creationDate_asc");
-            if(query.length !== badStrings.length) {
-                output.push("Audit entry count doesn't match bad string length: " + query.length);
-            }
-            _.each(_.zip(query, badStrings), function(pair) {
-                    var entry = pair[0];
-                    var expected_string = pair[1];
-                    if(entry.data[expected_string] !== expected_string){
-                        output.push("Audit entry data " + entry.data + " doesn't match '" + expected_string + "'");
-                    }
-                }
-            );
-            if(out_type == "table") {
-                E.response.body = query.table("auditEntryType", "data");
-            }
         });
 
-        if(out_type != "table") {
-            _.each(badStrings, function(string) { output.push(string); });
-            E.response.body = output.join("\n");
-        }
+        _.each(badStrings, function(string) { output.push(string); });
+        E.response.body = output.join("\n");
     });
 
     P.respond("GET", "/do/plugin_test/object_title_encoding", [
@@ -502,6 +462,11 @@
             var title = object.firstTitle().toString();
             E.response.body = ((title == expected) ? "PASS"  : "FAIL") + " " + title;
         });
+    });
+
+    P.respond("GET", "/do/plugin_test/binary_data_response", [
+    ], function(E) {
+        E.response.body = O.binaryData("Hello ☃", {filename:"testbin.txt", mimeType:"text/plain"})
     });
 
     P.respond("GET", "/do/plugin_test/layouts", [

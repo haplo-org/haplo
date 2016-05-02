@@ -465,6 +465,11 @@ WorkflowInstanceBase.prototype = {
         return flags;
     },
 
+    recalculateFlags: function() {
+        var f = this.$flags = this._calculateFlags();
+        return f;
+    },
+
     getStateDefinition: function(state) {
         return this.$states[state];
     }
@@ -506,6 +511,13 @@ WorkflowInstanceBase.prototype.__defineGetter__("$timeline", function() {
 
 // --------------------------------------------------------------------------
 
+var interpolateNAMEmatch = function(_, name) { return NAME(name); };
+P.interpolateNAME = function(_, text) { // must ignore first argument
+    return text.replace(/\bNAME\(([^\)]+?)\)/g, interpolateNAMEmatch);
+};
+
+// --------------------------------------------------------------------------
+
 // Other files add more fallback implementations of functions and handlers
 WorkflowInstanceBase.prototype.$fallbackImplementations = {
 
@@ -524,6 +536,8 @@ WorkflowInstanceBase.prototype.$fallbackImplementations = {
     $text: function(M, key) {
         return M.$textLookup[key];
     },
+
+    $textInterpolate: P.interpolateNAME,
 
     $getActionableBy: function(M, actionableBy, target) {
         if(actionableBy in GROUP) {

@@ -31,6 +31,10 @@ class AuthenticationControllerTest < IntegrationTest
     end
   end
 
+  def assert_hsts_header
+    assert_equal 'max-age=62208000; includeSubDomains', response['Strict-Transport-Security']
+  end
+
   # ===================================================================================================================
 
   def test_login_failure_throttle
@@ -153,18 +157,28 @@ class AuthenticationControllerTest < IntegrationTest
 
     about_to_create_an_audit_entry
 
+    get_302 "/"
+    assert_hsts_header
+
     # CSRF token
     get "/do/authentication/login"
+    assert_hsts_header
 
     # Check it doesn't work if you're not logged in
     post_302 "/do/authentication/change-password", {:old => 'pass1234', :pw1 => 'pants9872', :pw2 => 'pants9872'}
     assert_redirected_to '/do/authentication/login?rdr=%2Fdo%2Fauthentication%2Fchange-password'
     assert_no_more_audit_entries_written
+    assert_hsts_header
 
     # Log in
     post_302 "/do/authentication/login", {:email => 'authtest@example.com', :password => 'pass1234'}
     assert_redirected_to '/'
     about_to_create_an_audit_entry # ignore audit entry created
+    assert_hsts_header
+
+    # Home page doesn't redirect
+    get "/"
+    assert_hsts_header
 
     # Refresh CSRF token by fetching the form again
     get "/do/authentication/change-password"
@@ -206,6 +220,12 @@ class AuthenticationControllerTest < IntegrationTest
     assert_redirected_to '/'
     get "/do/authentication/change-password"
     assert_select 'h1', 'Change password'
+
+    # Check users with invalid password get a nice message, not an error
+    @_users[_TEST_APP_ID].set_invalid_password
+    @_users[_TEST_APP_ID].save!
+    get "/do/authentication/change-password"
+    assert_select 'h1', 'Password managed externally'
 
     without_application { teardown_in_app(_TEST_APP_ID) }
 

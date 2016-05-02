@@ -76,6 +76,10 @@ module JSKObjectSupport
     KObjectStore.relabel(obj_or_objref, label_changes)
   end
 
+  def self.reindexText(object)
+    KObjectStore.reindex_text_for_object(object.objref);
+  end
+
   def self.objectIsKindOf(object, objId)
     type_ref = KObjRef.new(objId)
     schema = KObjectStore.schema

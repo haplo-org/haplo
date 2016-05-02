@@ -32,6 +32,9 @@ Taking over object rendering
 Use render type of 'hide' or 'blank', use Element below to render whatever you want.
 For search results, plugin.renderSearchResult() and renderer object
 
+Plugin defined text types
+-------------------------
+P.implementTextType(), editor plugin, O.isPluginTextValue()
 
 Users & permissions
 -------------------

@@ -14,7 +14,6 @@ import org.haplo.appserver.FileUploads;
 
 import org.haplo.jsinterface.app.*;
 import org.haplo.jsinterface.db.JdNamespace;
-import org.haplo.jsinterface.generate.JSGeneratedFile;
 import org.haplo.jsinterface.template.TemplateIncludedRenderer;
 import org.haplo.jsinterface.template.TemplatePlatformFunctions;
 import org.haplo.template.driver.rhinojs.HaploTemplate;
@@ -275,7 +274,7 @@ public class KHost extends KScriptable {
             // Perhaps it's a generated file?
             Object body = response.get("body", response); // ConsString is checked
             if((body != null) &&
-                   ((body instanceof JSGeneratedFile) || (body instanceof KStoredFile))) {
+                   ((body instanceof KBinaryData) || (body instanceof KStoredFile))) {
                 // Send it to the Ruby side, which knows how to handle it
                 info[RESPONSE_BODY_INDEX] = body;
             } else if(body != UniqueTag.NOT_FOUND) {

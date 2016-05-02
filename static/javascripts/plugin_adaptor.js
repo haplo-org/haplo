@@ -1,4 +1,4 @@
-/*global KApp,escapeHTML,KTree,KTreeSource,KCtrlDropdownMenu,KEditor,KControl */
+/*global KApp,escapeHTML,KTree,KTreeSource,KCtrlDropdownMenu,KEditor,KEditorSchema,KControl */
 
 /* Haplo Platform                                     http://haplo.org
  * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
@@ -190,10 +190,47 @@ var ONEIS = Haplo;
             };
         };
 
+        // Wrapped editor lookup control
+        var RefLookupControl = KEditor.p__KEdObjRef;
+        setupBasicControlAliases(RefLookupControl.prototype);
+        Haplo.editor.createRefLookupControl = function(parent, desc, listener, ref, title) {
+            var control = new RefLookupControl(ref);
+            if(ref && title) {
+                control.p__objectTitle = title;
+                KApp.j__setObjectTitle(ref, title);
+            }
+            control.p__keditorValueControl = {
+                q__defn: KEditorSchema.j__attrDefn(desc),
+                p__parentContainer: parent.q__adaptor_editorValueControl.q__keditorPluginDefinedTextValueObject.p__keditorValueControl.p__parentContainer,
+                j__getExtrasContainer: function() { return parent.q__adaptor_editorValueControl.q__keditorPluginDefinedTextValueObject.p__keditorValueControl.j__getExtrasContainer(); }
+            };
+            if(listener) {
+                control.p__notifySelectionListener = function(ref, title) {
+                    var i = parent.q__adaptor_editorValueControl.q__keditorPluginDefinedTextValueObject.q__domId;
+                    listener($('#'+i), ref, title);
+                };
+            }
+            return control;
+        };
+
+        // Information
+        Haplo.editor.schema = {
+            unaliasedAttribute: function(desc) {
+                var defn = KEditorSchema.j__attrDefn(desc);
+                if(defn && defn.p__aliasOf) {
+                    return defn.p__aliasOf;
+                }
+                return desc;
+            }
+        };
+
         // Plugin defined text type editing registration function
         Haplo.editor.registerTextType = function(type, constructor) {
-            KEditor.p__pluginTextTypeValueConstructor[type] = function(value) {
-                return new EditorTextValueUI(constructor(value));
+            KEditor.p__pluginTextTypeValueConstructor[type] = function(value, desc) {
+                var pluginControl = constructor(value, desc);
+                var editorValueControl = new EditorTextValueUI(pluginControl);
+                pluginControl.q__adaptor_editorValueControl = editorValueControl;
+                return editorValueControl;
             };
         };
         var EditorTextValueUI = function(pluginInterface) {

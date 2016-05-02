@@ -12,7 +12,6 @@ import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
 
 import org.haplo.jsinterface.app.AppAuditEntry;
-import org.haplo.jsinterface.generate.KGeneratedBinaryData;
 
 public class KAuditEntry extends KScriptable {
     private AppAuditEntry auditEntry;
@@ -144,19 +143,6 @@ public class KAuditEntry extends KScriptable {
         return results;
     }
 
-    protected static KGeneratedBinaryData executeTable(KAuditEntryQuery query, Object[] fields) {
-        String fieldNames[] = new String[fields.length];
-        for(int i = 0; i < fields.length; ++i) {
-            if(!(fields[i] instanceof CharSequence)) {
-                throw new OAPIException("All arguments to executeTable must be a String");
-            }
-            String fieldName = ((CharSequence)fields[i]).toString();
-            KAuditEntry.checkValidField(fieldName);
-            fieldNames[i] = fieldName;
-        }
-        return rubyInterface.executeTable(query, fieldNames);
-    }
-
     // --------------------------------------------------------------------------------------------------------------
     // Interface to Ruby functions
 
@@ -164,8 +150,6 @@ public class KAuditEntry extends KScriptable {
         public AppAuditEntry write(String json);
 
         public AppAuditEntry[] executeQuery(KAuditEntryQuery query, boolean firstResultOnly);
-
-        public KGeneratedBinaryData executeTable(KAuditEntryQuery query, String[] fields);
 
         public String safeGetColumnFromField(String fieldName);
     }

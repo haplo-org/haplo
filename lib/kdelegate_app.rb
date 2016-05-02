@@ -18,6 +18,8 @@ class KObjectStoreApplicationDelegate
   include KConstants
   include KPlugin::HookSite
 
+  OBJECT_STORE_TEXTIDX_HEALTH_EVENTS = KFramework::HealthEventReporter.new('STORE_TEXTIDX')
+
   class AppUserPermissions < KObjectStore::UserPermissions
     def initialize(user, enforce_permissions = false)
       @user = user
@@ -103,6 +105,15 @@ class KObjectStoreApplicationDelegate
     # IMPORTANT: applying labelling policy must be the last action in this method
   end
 
+  # Called before the object indexes are updated, allowing replacement of the object when plugins
+  # want to adjust the indexed data.
+  def indexed_version_of_object(object)
+    call_hook(:hPreIndexObject) do |hooks|
+      object = hooks.run(object).replacementObject || object
+    end
+    object
+  end
+
   # Called after :create, :update and :delete operations in the store.
   # is_schema is true if the object is a schema object, either considered by the store or by the delegate
   def post_object_change(store, previous_obj, modified_obj, is_schema, schema_reload_delayed, operation)
@@ -123,5 +134,9 @@ class KObjectStoreApplicationDelegate
     return KSchemaApp.new
   end
 
+  # Health reporting for text indexing
+  def textidx_exception_indexing_object(object, exception)
+    OBJECT_STORE_TEXTIDX_HEALTH_EVENTS.log_and_report_exception(exception, "objectstore textidx of #{object.objref.to_presentation}")
+  end
 end
 

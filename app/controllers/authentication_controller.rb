@@ -6,6 +6,7 @@
 
 class AuthenticationController < ApplicationController
   include AuthenticationHelper
+  include Application_HstsHelper
   include HardwareOTPHelper
   include KPlugin::HookSite
 
@@ -26,14 +27,8 @@ class AuthenticationController < ApplicationController
     end
   end
 
-  # Include the Strict Transport Security header in the response.
-  # Only do it in the authentication controller, because it's a fairly large header to include for everything.
-  # The user will always pass through this controller, so the browser will always see the header at least once.
   def post_handle
-    if request.ssl?
-      # Set includeSubDomains, see RFC 6797 section 14.4
-      response.headers['Strict-Transport-Security'] = 'max-age=62208000; includeSubDomains' # 720 days
-    end
+    send_hsts_header
     super
   end
 
@@ -333,6 +328,10 @@ class AuthenticationController < ApplicationController
     change_enabled, @change_msg = is_password_feature_enabled?(:change_password, @request_user.email)
     unless change_enabled
       return render :action => 'change_password_disabled'
+    end
+
+    if @request_user.password_is_invalid?
+      return render :action => 'change_password_managed_elsewhere'
     end
 
     if request.post? && session[:uid] != nil

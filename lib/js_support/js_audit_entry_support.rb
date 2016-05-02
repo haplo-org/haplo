@@ -123,24 +123,6 @@ module JSAuditEntrySupport
     firstResultOnly ? [entries.first].compact : entries.to_a
   end
 
-  def self.executeTable(query, fieldNames)
-    columnNames = fieldNames.to_a.map { |f| safeGetColumnFromField f }
-    entries = constructQuery(query).select(columnNames.join(", "))
-    results = KApp.get_pg_database.perform(entries.to_sql).to_a
-    results.map! do |row|
-      columnNames.zip(row).map do |name, value|
-        if value.nil?
-          value
-        else
-          converter = DB_COLUMN_TYPE_MAPPINGS[name]
-          converter ? converter.call(value) : value
-        end
-      end
-    end
-    data = results.to_json.to_java_bytes
-    Java::OrgHaploJsinterfaceGenerate::KGeneratedBinaryData.new(nil, "application/json", data)
-  end
-
 end
 
 Java::OrgHaploJsinterface::KAuditEntry.setRubyInterface(JSAuditEntrySupport)

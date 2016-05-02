@@ -111,20 +111,30 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     todel1.add_attr("to del1", A_TITLE)
     todel2 = KObject.new()
     todel2.add_attr("to del2", A_TITLE)
+    reindexobj = KObject.new()
+    reindexobj.add_attr("text reindex", A_TITLE)
 
     KObjectStore.with_superuser_permissions do
       KObjectStore.create(todel1)
       KObjectStore.create(todel2)
+      KObjectStore.create(reindexobj)
     end
+
+    run_outstanding_text_indexing
 
     jsdefines = {
       'TODEL1_OBJID' => todel1.objref.obj_id,
       'TODEL2_OBJID' => todel2.objref.obj_id,
       'OBJ_OBJID' => obj.objref.obj_id,
+      'OBJ_TO_REINDEX' => reindexobj.objref.obj_id,
       'O_TYPE_BOOK_OBJID' => O_TYPE_BOOK.obj_id,
       'O_TYPE_BOOK_AS_STR' => O_TYPE_BOOK.to_presentation
     }
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_object_retrieval.js', jsdefines)
+
+    # Check a text reindex was requested for the test object
+    assert_equal 1, KApp.get_pg_database.exec("SELECT * FROM os_dirty_text WHERE app_id=#{_TEST_APP_ID} AND osobj_id=#{reindexobj.objref.obj_id}").result.length
+
     run_outstanding_text_indexing
 
     obj_mod = KObjectStore.read(obj.objref)
@@ -465,6 +475,14 @@ __E
 
   # ===============================================================================================
 
+  def test_binary_data
+    FileCacheEntry.destroy_all
+    StoredFile.destroy_all
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_binary_data.js');
+  end
+
+  # ===============================================================================================
+
   def test_label_primitives
     restore_store_snapshot("basic")
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_label_primitives.js') do |runtime|
@@ -627,6 +645,12 @@ __E
 
   # ===============================================================================================
 
+  def test_name_function
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_name_function.js')
+  end
+
+  # ===============================================================================================
+
   def run_audit_test(filename)
     restore_store_snapshot("basic")
     AuditEntry.delete_all
@@ -661,10 +685,6 @@ __E
       puts "Mac OS X has a humorously different case ordering, will fail sorting test (see http://stackoverflow.com/questions/13370051/ordering-differences-between-postgres-instances-on-different-machines-same-loca )" if _TEST_APP_ID == FIRST_TEST_APP_ID
     end
     run_audit_test 'test_audit_entry_querying'
-  end
-
-  def test_audit_query_misuse
-    run_audit_test 'test_audit_entry_misuse'
   end
 
   def test_audit_entry_permissions
@@ -919,10 +939,10 @@ __E
     collection = runtime.getHost().getDebugCollection()
     assert_equal 2, collection.length
     xls = collection.first
-    assert_equal "TestFilename.xls", xls.getProposedFilename()
-    assert_equal "application/vnd.ms-excel", xls.getMimeType()
+    assert_equal "TestFilename.xls", xls.jsGet_filename()
+    assert_equal "application/vnd.ms-excel", xls.jsGet_mimeType()
     assert_equal true, xls.haveData()
-    xls_data = String.from_java_bytes(xls.makeData())
+    xls_data = String.from_java_bytes(xls.getDataAsBytes())
     # File.open("test.xls", "w:BINARY") { |f| f.write xls_data }
     # TODO: Better test for output from xls JS interface
     [
@@ -932,10 +952,10 @@ __E
     end
     # XML version
     xlsx = collection[1]
-    assert_equal "XMLspreadsheet.xlsx", xlsx.getProposedFilename()
-    assert_equal "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", xlsx.getMimeType()
+    assert_equal "XMLspreadsheet.xlsx", xlsx.jsGet_filename()
+    assert_equal "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", xlsx.jsGet_mimeType()
     assert_equal true, xlsx.haveData()
-    xlsx_data = String.from_java_bytes(xlsx.makeData())
+    xlsx_data = String.from_java_bytes(xlsx.getDataAsBytes())
     # File.open("test.xlsx", "w:BINARY") { |f| f.write xlsx_data }
   end
 

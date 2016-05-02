@@ -373,8 +373,12 @@ class KObjectStore
 
     writer.start_transaction
 
-    schema = KObjectStore.schema
+    store = KObjectStore.store
+    schema = store.schema
+    delegate = store._delegate
     attr_weightings = schema.attr_weightings_for_indexing()
+
+    KApp.logger.info "Starting text indexing for application #{app_id}"
 
     # Cache of loaded objects -- worth doing as it's likely that the same objects
     # will be repeated when something linked to by a lot of other objects is updated.
@@ -395,62 +399,82 @@ class KObjectStore
       fetched_objs.each do |id_t,type_object_id_t,object_m|
         objids_updated << id_t.to_i
 
-        object = Marshal.load(PGconn.unescape_bytea(object_m))
+        raw_object = Marshal.load(PGconn.unescape_bytea(object_m))
 
-        obj_cache[object.objref] = object
+        KApp.logger.info "Indexing #{raw_object.objref.to_presentation} for application #{app_id}"
 
-        # If the caller is filtering, check to see if this object should be reindexed
-        next if block_given? && !yield(object)
+        started_document = false
+        begin
+          # Delegate may need to alter the indexed object
+          object = delegate.indexed_version_of_object(raw_object)
 
-        writer.start_document
+          # TODO: Should cache be the unaltered object, or the one modified by the plugin? If modified, the obj_cache needs to be updated too
+          obj_cache[object.objref] = raw_object
 
-        term_position = 1 # Position starts at 1 for Xapian terms - http://xapian.org/docs/quickstart.html ("preparing the document")
+          # If the caller is filtering, check to see if this object should be reindexed
+          next if block_given? && !yield(object)
 
-        object.each do |value,desc,qualifier_v|
+          writer.start_document
+          started_document = true
 
-          # No qualifier needs to be presented as null
-          qualifier = (qualifier_v == nil) ? 0 : qualifier_v
+          term_position = 1 # Position starts at 1 for Xapian terms - http://xapian.org/docs/quickstart.html ("preparing the document")
 
-          if value.kind_of? KObjRef
-            # Add terms from the linked object and parents
-            limit = TEXT_INDEX_MAX_PARENT_COUNT
-            scan = value
-            while limit > 0 && scan && scan.kind_of?(KObjRef)
-              # Don't let bad stores cause infinite loops
-              limit -= 1
-              # Get linked object from store or cache
-              linked_object = obj_cache[scan]
-              if linked_object
-                # Get instructions for which fields to include, and their weights, falling back to a default specification
-                term_inclusion_spec = nil
-                linked_type_desc = schema.type_descriptor(linked_object.first_attr(A_TYPE))
-                if linked_type_desc
-                  term_inclusion_spec = linked_type_desc.term_inclusion
-                end
-                term_inclusion_spec ||= KSchema::DEFAULT_TERM_INCLUSION_SPECIFICATION
-                # Include all terms, according to the spec
-                term_inclusion_spec.inclusions.each do |inclusion|
-                  linked_object.each(inclusion.desc) do |linked_value,d,q|
-                    # Don't index 'slow' text values, eg files
-                    if linked_value.k_is_string_type? && !(linked_value.to_terms_is_slow?)
-                      term_position = post_terms(writer, attr_weightings, desc, qualifier, term_position, linked_value, inclusion.relevancy_weight)
+          object.each do |value,desc,qualifier_v|
+
+            # No qualifier needs to be presented as null
+            qualifier = (qualifier_v == nil) ? 0 : qualifier_v
+
+            if value.kind_of? KObjRef
+              # Add terms from the linked object and parents
+              limit = TEXT_INDEX_MAX_PARENT_COUNT
+              scan = value
+              while limit > 0 && scan && scan.kind_of?(KObjRef)
+                # Don't let bad stores cause infinite loops
+                limit -= 1
+                # Get linked object from store or cache
+                linked_object = obj_cache[scan]
+                if linked_object
+                  # Get instructions for which fields to include, and their weights, falling back to a default specification
+                  term_inclusion_spec = nil
+                  linked_type_desc = schema.type_descriptor(linked_object.first_attr(A_TYPE))
+                  if linked_type_desc
+                    term_inclusion_spec = linked_type_desc.term_inclusion
+                  end
+                  term_inclusion_spec ||= KSchema::DEFAULT_TERM_INCLUSION_SPECIFICATION
+                  # Include all terms, according to the spec
+                  term_inclusion_spec.inclusions.each do |inclusion|
+                    linked_object.each(inclusion.desc) do |linked_value,d,q|
+                      # Don't index 'slow' text values, eg files
+                      if linked_value.k_is_string_type? && !(linked_value.to_terms_is_slow?)
+                        term_position = post_terms(writer, attr_weightings, desc, qualifier, term_position, linked_value, inclusion.relevancy_weight)
+                      end
                     end
                   end
+                  # Parent?
+                  scan = linked_object.first_attr(A_PARENT)
                 end
-                # Parent?
-                scan = linked_object.first_attr(A_PARENT)
+                # TODO: Optimise indexing of linked values by storing processed terms, rather than repeatedly converting values
               end
-              # TODO: Optimise indexing of linked values by storing processed terms, rather than repeatedly converting values
-            end
 
-          elsif value.k_is_string_type?
-            term_position = post_terms(writer, attr_weightings, desc, qualifier, term_position, value)
+            elsif value.k_is_string_type?
+              term_position = post_terms(writer, attr_weightings, desc, qualifier, term_position, value)
+
+            end
 
           end
 
-        end
+          writer.finish_document(id_t.to_i)
 
-        writer.finish_document(id_t.to_i)
+        rescue => e
+          # Exception happened, finish the document (not much else can be done)
+          if started_document
+            writer.finish_document(id_t.to_i)
+          end
+          KApp.logger.error "Exception during indexing, object text index will be incomplete for #{raw_object.objref.to_presentation}"
+          KApp.logger.log_exception(e)
+          # log let the delegate report this.
+          delegate.textidx_exception_indexing_object(raw_object, e)
+        end
 
       end
 
@@ -477,6 +501,8 @@ class KObjectStore
     ensure
       fetched_objs.clear
 
+      KApp.logger.info "Finished text indexing for application #{app_id}"
+      KApp.logger.flush_buffered
     end
 
   end

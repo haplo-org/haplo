@@ -23,6 +23,14 @@ public class HaploTemplateDeferredRender extends ScriptableObject implements Def
         this.deferredRender = deferredRender;
     }
 
+    public String jsFunction_toString() throws RenderException {
+        StringBuilder builder = new StringBuilder();
+        if(this.deferredRender != null) {
+            this.deferredRender.renderDeferred(builder, Context.TEXT);
+        }
+        return builder.toString();
+    }
+
     public void renderDeferred(StringBuilder builder, Context context) throws RenderException {
         if(this.deferredRender != null) {
             this.deferredRender.renderDeferred(builder, context);

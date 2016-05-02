@@ -1,0 +1,6 @@
+each(sections) {
+  <div id=unsafeAttributeValue(unsafeId)>
+    <h2> title </h2>
+    std:document(instance)
+  </div>
+}
