@@ -41,7 +41,10 @@ public class WorkUnitTags extends KScriptable {
         if(scriptable != null) {
             for(Object id : scriptable.getIds()) {
                 if(id instanceof CharSequence) {
-                    this.put(id.toString(), this, scriptable.get(id.toString(), scriptable)); // ConsString is checked
+                    String stringValue = valueToTagString(scriptable.get(id.toString(), scriptable)); // ConsString is checked
+                    if(stringValue != null) {
+                        this.put(id.toString(), this, stringValue);
+                    }
                 }
             }
         }
@@ -60,17 +63,26 @@ public class WorkUnitTags extends KScriptable {
     @Override
     public void put(String name, Scriptable start, Object value) {
         if(this.hasTags) {
-            if(value == null || value instanceof org.mozilla.javascript.Undefined) {
+            value = valueToTagString(value);
+            if(value == null) {
                 this.delete(name);
                 return;
-            } else if(value instanceof CharSequence) {
-                value = value.toString();
-            } else if(value instanceof KObjRef) {
-                value = ((KObjRef)value).jsFunction_toString();
-            } else {
-                throw new OAPIException("Only Strings can be set as WorkUnit tags.");
             }
         }
         super.put(name, start, value);
+    }
+
+    static public String valueToTagString(Object value) {
+        if(value == null || value instanceof org.mozilla.javascript.Undefined) {
+            return null;
+        } else if(value instanceof CharSequence) {
+            return value.toString();
+        } else if(value instanceof KObjRef) {
+            return ((KObjRef)value).jsFunction_toString();
+        } else if(value instanceof Number) {
+            return value.toString();
+        } else {
+            throw new OAPIException("Only Strings, numbers and Refs can be used as WorkUnit tags.");
+        }
     }
 }

@@ -35,6 +35,8 @@ public class KHost extends KScriptable {
     private TestCallback testCallback;
     private KSessionStore sessionStore;
     private Function renderSearchResultFunction;
+    private HashMap<String, KObjRef> behaviourRefCache;
+    private HashMap<Integer, String> refBehaviourCache;
 
     public KHost() {
         this.plugins = new HashMap<String, Scriptable>(8);
@@ -185,6 +187,25 @@ public class KHost extends KScriptable {
 
     public String jsFunction_getSchemaInfoTypesWithAnnotation(String annotation) {
         return this.supportRoot.getSchemaInfoTypesWithAnnotation(annotation);
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+
+    // The host object is a convenient place to keep the behaviour ref cache, as it needs to be per-Runtime
+    // as Ref objects shouldn't be shared between runtimes.
+
+    public HashMap<String, KObjRef> getBehaviourRefCache() {
+        if(this.behaviourRefCache == null) {
+            this.behaviourRefCache = new HashMap<String, KObjRef>();
+        }
+        return this.behaviourRefCache;
+    }
+
+    public HashMap<Integer, String> getRefBehaviourCache() {
+        if(this.refBehaviourCache == null) {
+            this.refBehaviourCache = new HashMap<Integer, String>();
+        }
+        return this.refBehaviourCache;
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -433,6 +454,14 @@ public class KHost extends KScriptable {
 
     public void jsFunction_addRightContent(String html) {
         this.supportRoot.addRightContent(html);
+    }
+
+    public Scriptable jsFunction_loadFileForPlugin(String pluginName, String pathname) {
+        KBinaryDataStaticFile data = (KBinaryDataStaticFile)Runtime.createHostObjectInCurrentRuntime("$BinaryDataStaticFile");
+        if(!this.supportRoot.loadFileForPlugin(pluginName, pathname, data)) {
+            throw new OAPIException("Cannot load plugin data file "+pathname);
+        }
+        return data;
     }
 
     public boolean jsFunction_isDeferredRender(Object object) {

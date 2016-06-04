@@ -5,17 +5,20 @@
   "displayName": "Workflow",
   "displayDescription": "Standard Workflow support for use by other plugins.",
   "apiVersion": 4,
-  "privilegesRequired": ["pBackgroundProcessing"],
+  "depend": ["std_action_panel"],
+  "privilegesRequired": ["pBackgroundProcessing", "pSendEmail"],
   "loadPriority": 1001,
   "load": [
       "js/std_workflow.js",
       "js/std_workflow_ui.js",
       "js/std_workflow_entities.js",
+      "js/std_workflow_emails.js",
       "js/std_workflow_auto_move_user.js",
       "js/std_workflow_entity_replacement.js",
       "js/std_workflow_notes.js",
       "js/std_workflow_transition_form.js",
       "js/std_workflow_dashboard.js",
+      "js/std_workflow_permissions.js",
       "js/std_workflow_admin.js"
     ],
   "respond": ["/do/workflow"]

@@ -188,9 +188,6 @@ module KAppInit
       KPlugin.install_plugin('std_display_elements')
       KPlugin.install_plugin('std_home_page_elements')
 
-      # TODO: Remove installation of all the standard plugins when dependent plugin installation is implemented (and uninstall in test.rb)
-      KPlugin.install_plugin(['std_action_panel','std_workflow','std_reporting','std_document_store'])
-
       # Set up the template application
       application_template.implement(app, app_title, additional_info)
 

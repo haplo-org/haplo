@@ -45,7 +45,7 @@ module KDynamicFiles
 
       elsif filename =~ /\A([a-z]+)\/(.+)\z/
         # File from a plugin
-        response = KPlugin.generate_plugin_file_response(filename)
+        response = KPlugin.generate_plugin_static_file_response(filename)
 
       elsif filename =~ /\.css/
         css = nil
@@ -120,7 +120,7 @@ module KDynamicFiles
   def self.get_plugin_pathnames(app_id)
     pathnames = nil
     KApp.in_application(app_id) do
-      pathnames = KPlugin.get_all_plugin_file_pathnames
+      pathnames = KPlugin.get_all_plugin_static_file_pathnames
     end
     pathnames
   end

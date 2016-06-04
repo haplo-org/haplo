@@ -192,7 +192,7 @@ NotificationView.prototype = {
         if(!this.title)     { this.title = M._call('$taskTitle'); }
         if(!this.subject)   { this.subject = this.title; }
         if(!this.action)    { this.action = M._call('$taskUrl'); }
-        if(!this.template)  { this.template = 'std:email-template:workflow-notification'; }
+        if(!this.template)  { this.template = M.$emailTemplate; }
         if(!this.status) {
             var statusText = M._getTextMaybe(['notification-status', 'status'], [M.state]);
             if(statusText) { this.status = statusText; }

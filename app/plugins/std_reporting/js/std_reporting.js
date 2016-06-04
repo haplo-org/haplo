@@ -655,6 +655,12 @@ P.hook('hPostObjectChange', function(response, object, operation, previous) {
 
 // --------------------------------------------------------------------------
 
+P.implementService("std:reporting:update_entire_collection", function(collectionName) {
+    var collection = getCollection(collectionName);
+    if(!collection) { return; }
+    collection.collectAllFactsInBackground();
+});
+
 // Assumes that only objects which should be in the collection are passed to this service
 P.implementService("std:reporting:update_required", function(collectionName, updates) {
     if(!getCollection(collectionName)) { return; }

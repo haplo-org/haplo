@@ -47,4 +47,27 @@ class PluginTest < Test::Unit::TestCase
     end
   end
 
+  def test_plugin_file_security_regexp
+    # This regular expression is used to whitelist allowed filenames.
+    # Check it allows resonable things, and not bad names.
+    [
+      "qwerty.zyx", "a_b-c.zyx", "_abc.zyx",
+      "abc/def.zyx", "abc/ping/def.zyx"
+    ].each do |allowed|
+      assert allowed =~ KPlugin::PLUGIN_BUNDLED_PATHNAME_ALLOWED_REGEX
+    end
+    [
+      "abc", "_abc",
+      "hello.txt ", " hello.txt",
+      ".hello.txt", "dir/.hello.txt",
+      "*ping.sds", "~/file.ext",
+      "../ping.txt", "something/../hello.txt",
+      ".", "..", "./", "../",
+      "a/.", "b/..",
+      "/", "/b.txt", "/../b.txt"
+    ].each do |not_allowed|
+      assert not_allowed !~ KPlugin::PLUGIN_BUNDLED_PATHNAME_ALLOWED_REGEX
+    end
+  end
+
 end

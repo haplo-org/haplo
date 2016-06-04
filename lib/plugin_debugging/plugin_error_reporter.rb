@@ -82,12 +82,6 @@ module PluginDebugging
         end
       end
 
-      # In development mode, prefer the full stace trace rather than the truncated plugin version if it's not
-      # completely obvious that it came from a plugin.
-      if (KFRAMEWORK_ENV == 'development') && backtrace.empty?
-        return nil
-      end
-
       # Clean up filename in message?
       message.gsub!(/\(p\/([^\)]+\.js)\#([0-9-]+)\)\s*\z/i) do
         loc = "#{$1} (line #{$2})"

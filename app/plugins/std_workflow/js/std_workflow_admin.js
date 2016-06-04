@@ -5,19 +5,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
-var canChangeWorkflowVisibility = function(user) {
-    return user.isMemberOf(Group.Administrators) || user.isMemberOf(Group.WorkflowVisibility);
-};
+var CanAdminWorkflow = O.action("std:workflow:admin:can-administrate-workflow").
+    title("Workflow: Make administrative changes and override workflow").
+    allow("group", Group.Administrators).
+    allow("group", Group.WorkflowOverride);
 
-var canAdminWorkflow = function(user) {
-    return user.isMemberOf(Group.Administrators) || user.isMemberOf(Group.WorkflowOverride);
-};
+var CanChangeWorkflowVisibility = O.action("std:workflow:admin:change-workflow-visibility").
+    title("Workflow: Change workflow visibility").
+    allow("group", Group.Administrators).
+    allow("group", Group.WorkflowVisibility);
 
 // --------------------------------------------------------------------------
 
 P.WorkflowInstanceBase.prototype._addAdminActionPanelElements = function(builder) {
-    var admin = canAdminWorkflow(O.currentUser),
-        visibility = admin || canChangeWorkflowVisibility(O.currentUser);
+    var admin = O.currentUser.allowed(CanAdminWorkflow),
+        visibility = admin || O.currentUser.allowed(CanChangeWorkflowVisibility);
     if(!(visibility || admin)) { return; }
 
     var panel = builder.panel(8888888).
@@ -38,8 +40,8 @@ P.WorkflowInstanceBase.prototype._addAdminActionPanelElements = function(builder
 
 // --------------------------------------------------------------------------
 
-var getCheckedInstanceForAdmin = function(workUnit, checkfn) {
-    if(!(checkfn || canAdminWorkflow)(O.currentUser)) { O.stop("Not authorised."); }
+var getCheckedInstanceForAdmin = function(workUnit, action) {
+    (action || CanAdminWorkflow).enforce();
     var workflow = P.allWorkflows[workUnit.workType];
     if(!workflow) { O.stop("Workflow not implemented"); }
     return workflow.instance(workUnit);
@@ -121,7 +123,7 @@ P.respond("GET,POST", "/do/workflow/administration/move-state", [
 P.respond("GET,POST", "/do/workflow/administration/visibility", [
     {pathElement:0, as:"workUnit", allUsers:true}
 ], function(E, workUnit) {
-    var M = getCheckedInstanceForAdmin(workUnit, canChangeWorkflowVisibility);
+    var M = getCheckedInstanceForAdmin(workUnit, CanChangeWorkflowVisibility);
     var currentVisible = workUnit.visible;
     if(E.request.method === "POST") {
         workUnit.visible = !currentVisible;

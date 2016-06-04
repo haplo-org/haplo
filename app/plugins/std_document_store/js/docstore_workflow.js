@@ -189,7 +189,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             if(complete && spec.onFinishPage) {
                 return E.response.redirect(spec.onFinishPage(instance.key));
             }
-            if(complete && !(instance.key.transitions.empty)) {
+            if(complete && !(instance.key.transitions.empty) && instance.key.workUnit.isActionableBy(O.currentUser)) {
                 E.response.redirect("/do/workflow/transition/"+instance.key.workUnit.id);
             } else {
                 E.response.redirect(instance.key.url);

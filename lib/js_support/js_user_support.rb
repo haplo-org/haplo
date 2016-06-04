@@ -76,6 +76,10 @@ module JSUserSupport
     user.direct_groups_ids.to_java(Java::JavaLang::Integer)
   end
 
+  def self.isSuperUser(user)
+    user.permissions.is_superuser?
+  end
+
   def self.getUserDataJSON(user)
     user.get_user_data(UserData::NAME_JAVASCRIPT_JSON)
   end

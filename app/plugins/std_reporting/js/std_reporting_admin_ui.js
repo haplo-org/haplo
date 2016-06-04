@@ -5,11 +5,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
-var ensurePermitted = function() {
-    if(!O.currentUser.isMemberOf(Group.Administrators)) {
-        O.stop("Not permitted");
-    }
-};
+var CanAdminReporting = O.action("std:reporting:admin:can-administrate-reporting").
+    title("Reporting: Use administrative interface for collections").
+    allow("group", Group.Administrators);
 
 var validCollectionName = function(name) {
     P.ensureCollectionsDiscovered();
@@ -19,14 +17,14 @@ var validCollectionName = function(name) {
 // --------------------------------------------------------------------------
 
 P.hook('hGetReportsList', function(response) {
-    if(O.currentUser.isMemberOf(Group.Administrators)) {
+    if(O.currentUser.allowed(CanAdminReporting)) {
         response.reports.push(["/do/reporting/admin", "Reporting administration"]);
     }
 });
 
 P.respond("GET", "/do/reporting/admin", [
 ], function(E) {
-    ensurePermitted();
+    CanAdminReporting.enforce();
     P.ensureCollectionsDiscovered();
     var collections = [];
     _.each(P._collections, function(collection, name) {
@@ -44,7 +42,7 @@ P.respond("GET", "/do/reporting/admin", [
 P.respond("POST", "/do/reporting/admin/rebuild-collection", [
     {parameter:"collection", as:"string", validate:validCollectionName}
 ], function(E, name) {
-    ensurePermitted();
+    CanAdminReporting.enforce();
     var collection = P.getCollection(name);
     collection.collectAllFactsInBackground();
     E.response.redirect("/do/reporting/admin");
@@ -55,7 +53,7 @@ P.respond("POST", "/do/reporting/admin/rebuild-collection", [
 P.respond("GET", "/do/reporting/admin/collection-facts", [
     {pathElement:0, as:"string", validate:validCollectionName}
 ], function(E, name) {
-    ensurePermitted();
+    CanAdminReporting.enforce();
     var collection = P.getCollection(name);
     var facts = [];
     _.each(collection.$factDescription, function(description, name) {
@@ -77,7 +75,7 @@ P.respond("GET", "/do/reporting/admin/collection-fact-lookup", [
     {pathElement:0, as:"string", validate:validCollectionName},
     {parameter:"ref", as:"string"}
 ], function(E, name, refStr) {
-    ensurePermitted();
+    CanAdminReporting.enforce();
     var collection = P.getCollection(name);
     var object, ref = O.ref(refStr);
     if(!ref || !(object = ref.load())) {

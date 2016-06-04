@@ -41,3 +41,7 @@ std:plugin:resources("replacements-overview.js")
 
   <input type="submit" value="Apply selection" id="z__workflow_apply_selection">
 </form>
+
+each(deferredRenders) {
+  render(.)
+}

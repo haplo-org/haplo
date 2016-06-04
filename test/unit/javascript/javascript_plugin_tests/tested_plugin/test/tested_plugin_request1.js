@@ -10,8 +10,11 @@ t.test(function() {
     t.login("user1@example.com");
 
     t.get("/do/tested_plugin/handler1/2445");
-    t.assert(t.last.body === "i=2445");
+    t.assert(t.last.body === "i=2445 u=41");
     t.assert(t.last.view === undefined);
+
+    t.get("/do/tested_plugin/handler1/2446");
+    t.assert(t.last.body === "i=2446 u=41");
 
     t.get("/do/tested_plugin/handler2", {z:"Ping"});
     t.assert(t.last.method === "GET");

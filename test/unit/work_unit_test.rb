@@ -302,6 +302,25 @@ class WorkUnitTest < Test::Unit::TestCase
       body = EmailTemplate.test_deliveries.last.body.last.body.unpack("M*").first
       assert ! body.include?('ALTERNATIVE TEMPLATE')
 
+      # Don't send notifications for objects with opened_at significantly in the future
+      [
+        [-2073600, 1],
+        [-3600, 1],
+        [0, 1],
+        [3600, 1], # 1 hour in future, 1 email expected to be sent
+        [39600, 1],
+        [46800, 0],
+        [2073600, 0]
+      ].each do |future, expected|
+        open_in_future = Time.now + future
+        AuthContext.with_user(User.cache[42]) do
+          WorkUnit.new({:work_type => NOTIFY_TYPE, :opened_at => open_in_future, :actionable_by_id => 41, :created_by_id => 41,
+            :data => {"notify"=>{}}
+          }).save!
+        end
+        assert_equal (email_del_size+=expected), EmailTemplate.test_deliveries.size
+      end
+
     ensure
       KPlugin.uninstall_plugin("work_unit_notifications")
       email_template.destroy

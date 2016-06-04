@@ -58,6 +58,7 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
             case "std:plugin:resources": pluginResources(owner, b); break;
             case "pageTitle": pageTitle(b); break;
             case "backLink": backLink(b); break;
+            case "emailSubject": emailSubject(b); break;
             case "std:layout:standard": layout(b, "std:standard"); break;
             case "std:layout:minimal": layout(b, "std:minimal"); break;
             case "std:layout:wide": layout(b, "std:wide"); break;
@@ -228,6 +229,13 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
         if(label.length() > 0) {
             setValueInRootView(b, "backLinkText", label.toString());
         }
+    }
+
+    public void emailSubject(FunctionBinding b) throws RenderException {
+        StringBuilder emailSubject = new StringBuilder(224);
+        b.getNextArgument(ArgumentRequirement.REQUIRED).
+          renderWithNextNodes(emailSubject, b.getDriver(), b.getView(), Context.UNSAFE); // escaping done by platform
+        setValueInRootView(b, "emailSubject", emailSubject.toString());
     }
 
     public void layout(FunctionBinding b, Object layoutValue) throws RenderException {

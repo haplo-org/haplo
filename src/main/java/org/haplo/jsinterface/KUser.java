@@ -51,8 +51,11 @@ public class KUser extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public static Scriptable jsStaticFunction_getUserById(int id) {
-        AppUser user = rubyInterface.getUserById(id);
+    public static Scriptable jsStaticFunction_getUserById(Object id) {
+        if(!(id instanceof Number)) {
+            throw new OAPIException("Argument is not a number.");
+        }
+        AppUser user = rubyInterface.getUserById(((Number)id).intValue());
         return (user == null) ? null : KUser.fromAppUser(user);
     }
 
@@ -120,6 +123,10 @@ public class KUser extends KScriptable {
 
     public Scriptable jsGet_directGroupIds() {
         return JsConvert.integerArrayToJs(rubyInterface.getDirectGroupIds(this.user));
+    }
+
+    public boolean jsGet_isSuperUser() {
+        return rubyInterface.isSuperUser(this.user);
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -332,6 +339,8 @@ public class KUser extends KScriptable {
         public Integer[] getGroupIds(AppUser user);
 
         public Integer[] getDirectGroupIds(AppUser user);
+
+        public boolean isSuperUser(AppUser user);
 
         public String getUserDataJSON(AppUser user);
 

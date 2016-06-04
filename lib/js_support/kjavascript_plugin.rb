@@ -81,6 +81,10 @@ class KJavaScriptPlugin < KPlugin
     @plugin_load_priority
   end
 
+  def plugin_depend
+    @plugin_json['depend'] || []
+  end
+
   def has_privilege?(privilege)
     # Plugin has all the privileges requested in the plugin.json file, checks done on install.
     (@plugin_json["privilegesRequired"] || []).include?(privilege)
@@ -429,6 +433,7 @@ class KJavaScriptPlugin < KPlugin
       PluginJSONVerify.new("displayName", true, String),
       PluginJSONVerify.new("displayDescription", true, String),
       PluginJSONVerify.new("apiVersion", true, Fixnum),
+      PluginJSONVerifyArray.new("depend", false, String),
       PluginJSONVerify.new("loadPriority", false, Fixnum),
       PluginJSONVerify.new("installSecret", false, String),
       PluginJSONVerifyLocals.new("locals", false),

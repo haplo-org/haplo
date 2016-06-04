@@ -36,6 +36,7 @@ TEST(function() {
     TEST.assert_equal("Hello there", obj.firstTitle().s());
     TEST.assert_equal("Hello there", obj.firstTitle().toString());
     TEST.assert_equal("Hello there", obj.title);
+    TEST.assert_equal("Alt title", obj.shortestTitle);
     TEST.assert_equal('Alt title', obj.firstTitle(QUAL["dc:qualifier:alternative"]).s());
     TEST.assert_equal(null, obj.firstTitle(QUAL["std:qualifier:mobile"]));
     TEST.assert_equal(false, obj.has(null));
@@ -349,6 +350,18 @@ TEST(function() {
     TEST.assert(preobj2);
     TEST.assert_equal("PREALLOC", preobj2.firstTitle().toString());
     TEST.assert(preobj_ref, preobj2);
+
+    // Shortest title
+    var titles = O.object();
+    TEST.assert_equal('', titles.shortestTitle);
+    titles.appendTitle("ABC DEF");
+    TEST.assert_equal('ABC DEF', titles.shortestTitle);
+    titles.appendTitle("XYZ 123456789");
+    TEST.assert_equal('ABC DEF', titles.shortestTitle);
+    titles.appendTitle("PQW");
+    TEST.assert_equal('PQW', titles.shortestTitle);
+    titles.appendTitle("PQW 2");
+    TEST.assert_equal('PQW', titles.shortestTitle);
 
     // FINALLY request a text reindex
     O.ref(OBJ_TO_REINDEX).load().reindexText();

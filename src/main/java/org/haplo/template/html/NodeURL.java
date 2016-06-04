@@ -120,6 +120,12 @@ final class NodeURL extends NodeListBase {
         }
     }
 
+    protected Object valueForFunctionArgument(Driver driver, Object view) throws RenderException {
+        StringBuilder builder = new StringBuilder();
+        this.render(builder, driver, view, Context.UNSAFE);
+        return builder.toString();
+    }
+
     public void dumpToBuilder(StringBuilder builder, String linePrefix) {
         super.dumpToBuilder(builder, linePrefix);
         if(this.parametersHead != null) {

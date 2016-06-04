@@ -8,6 +8,7 @@ package org.haplo.jsinterface.app;
 
 import org.haplo.appserver.FileUploads;
 import org.haplo.jsinterface.template.TemplatePlatformFunctions;
+import org.haplo.jsinterface.KBinaryDataStaticFile;
 import java.sql.Connection;
 
 public interface AppRoot {
@@ -62,6 +63,9 @@ public interface AppRoot {
     void addRightContent(String html);
 
     String userTimeZone();
+
+    // Files
+    boolean loadFileForPlugin(String pluginName, String pathname, KBinaryDataStaticFile data);
 
     // Plugin functions
     String pluginStaticDirectoryUrl(String pluginName);

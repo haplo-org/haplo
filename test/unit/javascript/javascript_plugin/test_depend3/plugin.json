@@ -1,0 +1,11 @@
+{
+  "pluginName": "test_depend3",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test Plugin Depend 3",
+  "displayDescription": "For testing -- forms a loop by being dependent on test_depend1",
+  "installSecret": "ABC123",
+  "apiVersion": 4,
+  "depend": ["test_depend1"],
+  "load": []
+}

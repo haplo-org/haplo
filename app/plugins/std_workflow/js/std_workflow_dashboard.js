@@ -4,13 +4,25 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
+var CanViewAllDashboards = O.action("std:workflow:admin:view-all-dashboards").
+    title("Workflow: View all dashboards").
+    allow("group", Group.Administrators);
+
+// --------------------------------------------------------------------------
 
 var DashboardBase = function() { };
 DashboardBase.prototype = {
 
     setup: function(E) {
+        this._queryFilters = [];
+        // Update spec?
+        if(this.spec.configurationService) {
+            var configuredSpec = _.clone(this.spec);
+            O.service(this.spec.configurationService, configuredSpec);
+            this.spec = configuredSpec;
+        }
         // Permissions
-        var canView = O.currentUser.isMemberOf(Group.Administrators);
+        var canView = O.currentUser.allowed(CanViewAllDashboards);
         if(!canView && this.spec.canViewDashboard) {
             if(this.spec.canViewDashboard(this, O.currentUser)) { canView = true; }
         }
@@ -34,6 +46,11 @@ DashboardBase.prototype = {
         return this;
     },
 
+    addQueryFilter: function(fn) {
+        this._queryFilters.push(fn);
+        return this;
+    },
+
     // Override title for a particular dashboard with particular options
     setTitle: function(instanceTitle) {
         this.$instanceTitle = instanceTitle;
@@ -48,6 +65,38 @@ DashboardBase.prototype = {
         return P.interpolateNAME(undefined, text);
     },
 
+    _mergeStatesInCounts: function(counts) {
+        var mergeStates = this.spec.mergeStates;
+        if(!mergeStates) { return; }
+        _.each(mergeStates, function(sourceStates, destState) {
+            if(!(destState in counts)) { counts[destState] = 0; }
+            sourceStates.forEach(function(s) {
+                if(s in counts) {
+                    counts[destState] = counts[destState] + counts[s];
+                    delete counts[s];
+                }
+            });
+        });
+    },
+
+    _mergeStatesInCountsWithColumnTag: function(counts) {
+        var mergeStates = this.spec.mergeStates;
+        if(!mergeStates) { return; }
+        _.each(mergeStates, function(sourceStates, destState) {
+            if(!(destState in counts)) { counts[destState] = {}; }
+            var d = counts[destState];
+            sourceStates.forEach(function(s) {
+                if(s in counts) {
+                    _.each(counts[s], function(v,col) {
+                        if(!(col in d)) { d[col] = 0; }
+                        d[col] += v;
+                    });
+                    delete counts[s];
+                }
+            });
+        });
+    },
+
     _generateCounts: function() {
         var dashboard = this;
         var counts, columns, rows = [];
@@ -55,18 +104,18 @@ DashboardBase.prototype = {
         if("columnTag" in this.spec) {
             // Break down counts by a particular tag
             var columnTag = this.spec.columnTag;
-            counts = this.query.countByTags("state", columnTag);
+            counts = this._makeQuery().countByTags("state", columnTag);
+            dashboard._mergeStatesInCountsWithColumnTag(counts);
             var columnTagValues = {};
             _.each(counts, function(counts, state) {
                 _.each(counts, function(value, key) {
                     columnTagValues[key] = true;
                 });
             });
-            var columnTagToName = this.spec.columnTagToName ? this.spec.columnTagToName : function(v) { return v; };
             columns = _.map(_.keys(columnTagValues), function(value) {
                 return {
                     value: value,
-                    name: columnTagToName(value)
+                    name: dashboard._columnTagToName(value)
                 };
             });
             columns = view.columns = _.sortBy(columns, "name");
@@ -76,7 +125,12 @@ DashboardBase.prototype = {
                 var countsForState = _.map(columns, function(column) {
                     var count = rowCounts[column.value] || 0;
                     total += count;
-                    var countParams = {}; countParams[columnTag] = column.value;
+                    var countParams = {};
+                    if(column.value) {
+                        countParams[columnTag] = column.value;
+                    } else {
+                        countParams.__empty_tag = "1";
+                    }
                     return {
                         count: count,
                         countParams: countParams
@@ -92,7 +146,8 @@ DashboardBase.prototype = {
             view.hasHeaderRow = true; // can't just rely on columns being non-empty
         } else {
             // Just the total for each state
-            counts = this.query.countByTags("state");
+            counts = this._makeQuery().countByTags("state");
+            this._mergeStatesInCounts(counts);
             this.spec.states.forEach(function(state) {
                 rows.push({
                     state: state,
@@ -104,18 +159,27 @@ DashboardBase.prototype = {
             });
         }
         return view;
-    }
+    },
 
+    _columnTagToName: function(tagValue) {
+        return this.spec.columnTagToName ? this.spec.columnTagToName(tagValue) : tagValue;
+    },
+
+    _makeQuery: function() {
+        var q = O.work.query(this.workflow.fullName).isEitherOpenOrClosed();
+        this._queryFilters.forEach(function(fn) { fn(q); });
+        return q;
+    }
 };
 
 DashboardBase.prototype.__defineGetter__("_displayableTitle", function() {
     return this.$instanceTitle || this.spec.title;
 });
 
+// TODO: Remove query property when we're sure it's not used
 DashboardBase.prototype.__defineGetter__("query", function() {
-    if(this.$query) { return this.$query; }
-    var q = this.$query = O.work.query(this.workflow.fullName).isEitherOpenOrClosed();
-    return q;
+    console.log("Warning: Dashboard query property is deprecated");
+    return this._makeQuery();
 });
 
 DashboardBase.prototype.__defineGetter__("_counts", function() {
@@ -180,20 +244,34 @@ P.registerWorkflowFeature("std:dashboard:states", function(workflow, spec) {
         E.setResponsiblePlugin(P);  // template source etc
         var dashboard = (new Dashboard()).setup(E);
         // Filter work units
-        dashboard.query.tag("state", state);
-        if("columnTag" in spec) {
-            var columnTagValue = E.request.parameters[spec.columnTag];
-            if(columnTagValue) { dashboard.query.tag(spec.columnTag, columnTagValue); }
+        var states = [state];
+        if(dashboard.spec.mergeStates && (state in dashboard.spec.mergeStates)) {
+            states = states.concat(dashboard.spec.mergeStates[state]);
         }
-        // Get information about each work unit matching the criteria
-        var list = _.map(dashboard.query, function(workUnit) {
-            var M = workflow.instance(workUnit);
-            return {
-                M: M
-            };
+        var list = [];
+        var tagDisplayableName;
+        states.forEach(function(queryState) {
+            var query = dashboard._makeQuery();
+            query.tag("state", queryState);
+            if("columnTag" in spec) {
+                var columnTagValue = E.request.parameters[spec.columnTag];
+                if(columnTagValue) {
+                    query.tag(spec.columnTag, columnTagValue);
+                    if(!tagDisplayableName) { tagDisplayableName = dashboard._columnTagToName(columnTagValue); }
+                } else if(E.request.parameters.__empty_tag) {
+                    // Empty column values have a special URL parameter
+                    query.tag(spec.columnTag, null);
+                }
+            }
+            // Get information about each work unit matching the criteria
+            _.each(query, function(workUnit) {
+                var M = workflow.instance(workUnit);
+                if(M) { list.push(M); }
+            });
         });
         E.render({
             stateName: dashboard._displayableStateName(state),
+            tagDisplayableName: tagDisplayableName,
             spec: spec,
             dashboard: dashboard,
             list: list

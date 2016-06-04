@@ -164,7 +164,7 @@ public class JdSelect extends JdSelectClause {
             throw new OAPIException("Group by field name must be a String");
         }
         // Security: Validate field and function names
-        JdTable.Field field = this.table.getField(fieldName);
+        JdTable.Field field = this.table.getFieldOrGenericIdField(fieldName);
         if(field == null) {
             throw new OAPIException("Unknown field '"+fieldName+"' passed to aggregate()");
         }

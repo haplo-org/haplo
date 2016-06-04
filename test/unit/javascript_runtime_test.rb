@@ -183,6 +183,32 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
 
   # ===============================================================================================
 
+  def test_configured_behaviour_queries
+    restore_store_snapshot("basic")
+    refs = {}
+    jsdefines = {}
+    [
+      [:foo,        'test:behaviour:foo',       nil],
+      [:bar,        'test:behaviour:bar',       nil],
+      [:foochild,   nil,                        :foo],
+      [:foochild2,  nil,                        :foochild],
+      [:foochild3,  'test:behaviour:foochild3', :foo],
+      [:barchild,   'test:behaviour:barchild',  :bar],
+      [:nothing,    nil,                        nil]
+    ].each do |sym, behaviour, parent|
+      o = KObject.new
+      o.add_attr(sym.to_s, A_TITLE)
+      o.add_attr(KIdentifierConfigurationName.new(behaviour), A_CONFIGURED_BEHAVIOUR) if behaviour
+      o.add_attr(refs[parent], A_PARENT) if parent
+      KObjectStore.create(o)
+      refs[sym] = o.objref
+      jsdefines[sym.to_s.upcase] = o.objref.obj_id
+    end
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_configured_behaviour_queries.js', jsdefines)
+  end
+
+  # ===============================================================================================
+
   def test_queries
     restore_store_snapshot("basic")
     db_reset_test_data
@@ -950,6 +976,7 @@ __E
     ].each do |string|
       assert xls_data.include?(string), "#{string} not found in generated spreadsheet"
     end
+    assert !(xls_data.include?('Undefined'))  # undefined should be treated like null
     # XML version
     xlsx = collection[1]
     assert_equal "XMLspreadsheet.xlsx", xlsx.jsGet_filename()

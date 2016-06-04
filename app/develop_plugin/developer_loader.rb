@@ -168,7 +168,7 @@ class DeveloperLoader
   class Controller < ApplicationController
     REQUIRED_POLICY = KPolicyRegistry.to_bitmask(:not_anonymous, :setup_system)
 
-    ALLOWED_PLUGIN_DIRECTORIES = ['js', 'template', 'static', 'test', 'data']
+    ALLOWED_PLUGIN_DIRECTORIES = ['js', 'template', 'static', 'test', 'file']
 
     # Implement very minimal pre- and post-handle checks. These avoid anything implemented by a plugin,
     # so even if the plugin uplaoded breaks everything, the loader will still work so the corrected version
@@ -372,6 +372,8 @@ class DeveloperLoader
           # Report failures and warnings
           [installation.failure, installation.warnings].compact.each { |m| error_messages << m }
         rescue => e
+          KApp.logger.error("Exception during plugin loader apply")
+          KApp.logger.log_exception(e)
           error_messages << (KFramework.reportable_exception_error_text(e, :text) || GENERIC_FAILURE_MESSAGE)
         end
       end

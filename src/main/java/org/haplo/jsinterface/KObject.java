@@ -156,6 +156,10 @@ public class KObject extends KScriptable {
         return rubyInterface.objectTitleAsString(this.appObject);
     }
 
+    public String jsGet_shortestTitle() {
+        return rubyInterface.objectTitleAsStringShortest(this.appObject);
+    }
+
     public String jsGet_descriptiveTitle() {
         // Cached as a little expensive to generate
         if(this.descriptiveTitle == null) {
@@ -509,6 +513,8 @@ public class KObject extends KScriptable {
         public boolean objectIsKindOf(AppObject object, int objId);
 
         public String objectTitleAsString(AppObject object);
+
+        public String objectTitleAsStringShortest(AppObject object);
 
         public String objectDescriptiveTitle(AppObject object);
 

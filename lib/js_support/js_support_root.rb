@@ -13,7 +13,7 @@ require 'js_support/javascript_api_version'
 require 'js_support/js_template'
 require 'js_support/js_ruby_templates'
 # Interfaces to Ruby code for JavaScript
-require 'js_support/js_interface_support'
+require 'js_support/js_objref_support'
 require 'js_support/js_datetime_support'
 require 'js_support/js_label_support'
 require 'js_support/js_kobject_support'
@@ -251,6 +251,15 @@ class JSSupportRoot
     c = controller
     raise JavaScriptAPIError, "Can only use renderIntoSidebar() when a request is being processed" unless c
     c.in_right_column(html)
+  end
+
+  def loadFileForPlugin(pluginName, pathname, binaryData)
+    plugin = KPlugin.get(pluginName)
+    return false if plugin == nil
+    disk_pathname, filename, mime_type = plugin.get_plugin_data_file(pathname)
+    return false if disk_pathname == nil
+    binaryData.setFile(disk_pathname, filename, mime_type)
+    true
   end
 
   def pluginStaticDirectoryUrl(pluginName)

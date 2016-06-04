@@ -12,6 +12,7 @@ import org.haplo.javascript.Runtime;
 import org.haplo.jsinterface.app.*;
 
 import java.util.regex.Pattern;
+import java.util.HashMap;
 
 // NOTE: Be careful about making KObjRef hold references to any other objects.
 // If it were to contain a reference to anything in a KObject, it will affect the weak refs used for caching objects.
@@ -92,6 +93,32 @@ public class KObjRef extends KScriptable {
 
     public String jsFunction_toString() {
         return idToString(objId);
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+
+    // Behaviours are cached because there shouldn't be very many refs with behaviours in the code, and it is
+    // nice to avoid too many database lookups in code which doesn't look like it should hit the database.
+
+    public String jsGet_behaviour() {
+        HashMap<Integer, String> cache = Runtime.getCurrentRuntime().getHost().getRefBehaviourCache();
+        Integer objIDobj = new Integer(this.objId);
+        String cachedBehaviour = cache.get(objIDobj); // ConsString is checked (not a JS string)
+        if(cachedBehaviour != null) { return cachedBehaviour; }
+        String behaviour = rubyInterface.behaviourOfObjRef(objIDobj);
+        if(behaviour != null) { cache.put(objIDobj, behaviour); }
+        return behaviour;
+    }
+
+    public static KObjRef jsStaticFunction_behaviourRef(String behaviour) {
+        HashMap<String, KObjRef> cache = Runtime.getCurrentRuntime().getHost().getBehaviourRefCache();
+        KObjRef cachedRef = cache.get(behaviour);
+        if(cachedRef != null) { return cachedRef; }
+        Integer objId = rubyInterface.refOfBehaviour(behaviour);
+        if(objId == null) { return null; }
+        KObjRef ref = fromId(objId);
+        cache.put(behaviour, ref);
+        return ref;
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -177,6 +204,10 @@ public class KObjRef extends KScriptable {
     // Interface to Ruby functions
     public interface Ruby {
         public AppObjRef constructObjRef(int objID);
+
+        public String behaviourOfObjRef(Integer objID);
+
+        public Integer refOfBehaviour(String behaviour);
     }
     private static Ruby rubyInterface;
 

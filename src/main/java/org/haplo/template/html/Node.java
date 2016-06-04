@@ -32,7 +32,7 @@ abstract public class Node {
         return null;
     }
 
-    protected Object valueForFunctionArgument(Driver driver, Object view) {
+    protected Object valueForFunctionArgument(Driver driver, Object view) throws RenderException {
         return this.value(driver, view);
     }
 

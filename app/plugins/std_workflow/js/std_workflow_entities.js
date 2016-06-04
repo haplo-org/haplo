@@ -92,7 +92,7 @@ var setupEntities = function(object, entityDefinitions, setupPrototype) {
         this.$M = M;    // TODO: Remove this backwards compatibility property
     };
     Entities.prototype = object.$entitiesBase = new EntitiesBase();
-    Entities.prototype.$entityDefinitions = entityDefinitions;
+    Entities.prototype.$entityDefinitions = _.clone(entityDefinitions); // may be modified by std:entities:add_entities
     if(setupPrototype) { setupPrototype(Entities.prototype); }
 
     object.constructEntitiesObject = function(o, M) {

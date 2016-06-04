@@ -17,6 +17,7 @@ TEST(function() {
     TEST.assert_equal("user1@example.com", u1.email);
     TEST.assert_equal(false, u1.isGroup);
     TEST.assert_equal(true, u1.isActive);
+    TEST.assert_equal(false, u1.isSuperUser);
     TEST.assert(null !== u1.ref);
     TEST.assert_equal(USER1_REF_OBJID, u1.ref.objId);
     // Load it by ref
@@ -31,6 +32,7 @@ TEST(function() {
     TEST.assert_equal("user3@example.com", u3.email);
     TEST.assert_equal(false, u3.isGroup);
     TEST.assert_equal(true, u3.isActive);
+    TEST.assert_equal(false, u3.isSuperUser);
     TEST.assert_equal(null, u3.ref);
 
     // Blocked user
@@ -48,6 +50,9 @@ TEST(function() {
     TEST.assert_exceptions(function() {
         O.user(101);
     }, "The user requested does not exist.");
+    TEST.assert_exceptions(function() {
+        O.user({});
+    }, "Argument is not a number.");
     // Lookups by bad email address/ref return null
     TEST.assert_equal(null, O.user("nobody@example.com"));
     TEST.assert_equal(null, O.user(O.ref(348734)));
@@ -179,5 +184,11 @@ TEST(function() {
     TEST.assert_equal(true, ptestuser.canRead(book.ref));
     TEST.assert_exceptions(function() { ptestuser.can("read", "hello"); }, "User can() functions must be passed a Ref, StoreObject or LabelList");
     TEST.assert_exceptions(function() { ptestuser.can("pants", book); }, "Bad operation 'pants'");
+
+    // Superuser
+    TEST.assert_equal("SYSTEM", O.user(0).name);
+    TEST.assert_equal(true, O.user(0).isSuperUser);
+    TEST.assert_equal("SUPPORT", O.user(3).name);
+    TEST.assert_equal(true, O.user(3).isSuperUser);
 
 });

@@ -35,4 +35,13 @@ TEST(function() {
     var data3 = O.binaryData("str☃");
     TEST.assert_equal("str☃", data3.readAsString("UTF-8"));
 
+    // readAsJSON utility function
+    var data4 = O.binaryData('{"testKey":"testValue"}');
+    var data4_decoded = data4.readAsJSON();
+    TEST.assert_equal("testValue", data4_decoded.testKey);
+    var data5 = O.binaryData('{"testKey":"invalidJSON', {filename:"invalid.json"});
+    TEST.assert_exceptions(function() {
+        data5.readAsJSON();
+    }, "Couldn't JSON decode BinaryData invalid.json");
+
 });

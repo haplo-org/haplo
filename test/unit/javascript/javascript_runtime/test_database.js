@@ -556,6 +556,7 @@ TEST(function() {
     var selectForAggregate = db.numbers.select();   // for reuse a few times
     TEST.assert_equal(238,      selectForAggregate.aggregate("SUM", "small"));
     TEST.assert_equal(2,        selectForAggregate.aggregate("COUNT", "big"));   // only 2 non-NULL
+    TEST.assert_equal(6,        selectForAggregate.aggregate("COUNT", "id"));    // id useful for "all"
     TEST.assert_equal(39.666666666666664, selectForAggregate.aggregate("AVG", "small"));
     TEST.assert_equal(242847,   selectForAggregate.aggregate("SUM", "big"));   // some NULL values in SUM
     TEST.assert_equal(35,       db.numbers.select().where("small","<",30).aggregate("SUM", "small"));

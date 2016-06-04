@@ -220,18 +220,26 @@ WorkflowInstanceBase.prototype = {
         if(data) { timelineRow.json = JSON.stringify(data); }
         this.$timeline.create(timelineRow).save();
         transitionComplete(); // Handlers selected before anything changed
+        if(O.serviceImplemented("std:workflow:notify:transition")) {
+            O.service("std:workflow:notify:transition", this, transition, previousState);
+        }
         return this;
     },
 
     _forceMoveToStateFromTimelineEntry: function(entry) {
-        this.workUnit.tags.state = entry.state;
-        if(entry.target === null) { delete this.workUnit.tags.target; } else { this.workUnit.tags.target = entry.target; }
-        var stateDefinition = this.$states[entry.state];
-        if("actionableBy" in stateDefinition) {
-            this._updateWorkUnitActionableBy(stateDefinition.actionableBy, entry.target);
+        this._setPendingTransition(entry.action);
+        try {
+            this.workUnit.tags.state = entry.state;
+            if(entry.target === null) { delete this.workUnit.tags.target; } else { this.workUnit.tags.target = entry.target; }
+            var stateDefinition = this.$states[entry.state];
+            if("actionableBy" in stateDefinition) {
+                this._updateWorkUnitActionableBy(stateDefinition.actionableBy, entry.target);
+            }
+            if(this.workUnit.closed) { this.workUnit.reopen(O.currentUser); }
+        } finally {
+            this._setPendingTransition(undefined);
         }
-        if(this.workUnit.closed) { this.workUnit.reopen(O.currentUser); }
-        this._callHandler('$observeEnter', entry.transition, entry.previousState);
+        this._callHandler('$observeEnter', entry.action, entry.previousState);
         this._saveWorkUnit();
         this.$timeline.create({
             workUnitId: this.workUnit.id,
@@ -442,17 +450,23 @@ WorkflowInstanceBase.prototype = {
         };
         // Get state changes from timeline, which all have non-null previousState.
         var timeline = this.timelineSelect().where("previousState", "!=", null);
-        var timelineLength = timeline.length;
-        var entry;
-        for(var i = 0; i < timelineLength; ++ i) {
-            entry = timeline[i];
-            stateDefinition = this.$states[entry.state];
+        var states = _.map(timeline, function(row) { return row.state; });
+        // Make sure the current state is the last entry (eg if in the middle of a transition)
+        if((states.length === 0) || (states[states.length-1] !== this.state)) {
+            states.push(this.state);
+        }
+        // Iterate through states
+        var statesLength = states.length;
+        var state;
+        for(var i = 0; i < statesLength; ++ i) {
+            state = states[i];
+            stateDefinition = this.$states[state];
             if(stateDefinition) { // to be tolerant of code changing and states no longer existing
                 // Enter flags
                 change('flagsSetOnEnter', true);
                 change('flagsUnsetOnEnter', false);
                 // Exit flags, if entry doesn't refer to the current state
-                if(i < (timelineLength - 1)) {
+                if(i < (statesLength - 1)) {
                     change('flagsSetOnExit', true);
                     change('flagsUnsetOnExit', false);
                 }
@@ -706,14 +720,18 @@ P.workflowFeatureFunctions = {
     // More functions added in other files.
 };
 
+var implementWorkflow = function(plugin) {
+    return function(name, description) {
+        var workflow = new Workflow(plugin, name, description);
+        P.allWorkflows[workflow.fullName] = workflow;
+        return workflow;
+    };
+};
+
 P.provideFeature("std:workflow", function(plugin) {
     plugin.workflow = _.extend({
 
-        implement: function(name, description) {
-            var workflow = new Workflow(plugin, name, description);
-            P.allWorkflows[workflow.fullName] = workflow;
-            return workflow;
-        }
+        implement: implementWorkflow(plugin)
 
     }, P.workflowFeatureFunctions);
 });
@@ -727,3 +745,4 @@ P.implementService("std:workflow:for_ref", function(fullName, ref) {
     }
     return workflow.instanceForRef(ref);
 });
+

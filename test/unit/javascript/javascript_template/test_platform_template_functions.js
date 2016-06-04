@@ -97,6 +97,11 @@ TEST(function() {
     TEST.assert_equal(template.render({d:"left",l:"/abc<"}), '<div><a class="z__plugin_ui_nav_arrow" href="/abc%3C">&#xE016;</a></div>');
     TEST.assert_equal(template.render({d:"right",l:"/ping"}), '<div><a class="z__plugin_ui_nav_arrow" href="/ping">&#xE005;</a></div>');
     TEST.assert_equal(template.render({d:"left"}), '<div><span class="z__plugin_ui_nav_arrow">&#xE016;</span></div>');
+    // Test arrows and empty URLs, as it's a useful way of doing navigation with minimal templates
+    template = new $HaploTemplate('<div> std:ui:navigation:arrow("left" url(?year=year)) </div>');
+    TEST.assert_equal(template.render({}), '<div><span class="z__plugin_ui_nav_arrow">&#xE016;</span></div>');
+    TEST.assert_equal(template.render({year:null}), '<div><span class="z__plugin_ui_nav_arrow">&#xE016;</span></div>');
+    TEST.assert_equal(template.render({year:"2016"}), '<div><a class="z__plugin_ui_nav_arrow" href="?year=2016">&#xE016;</a></div>');
 
     // std:icon:*
     template = new $HaploTemplate('<div> std:icon:type(type "large") " ! " std:icon:object(ref "medium") " ! " std:icon:object(obj "small") " ! " std:icon:description(desc "medium") </div>');
@@ -133,4 +138,23 @@ TEST(function() {
             TEST.assert_equal(datetemplate.render({x:date}), '<span>'+expected+'</span>');
         });
     });
+
+    // pageTitle
+    template = new $HaploTemplate('pageTitle("test " value) <div> </div>');
+    var pageTitleView = {value:"abc"};
+    TEST.assert_equal(template.render(pageTitleView), "<div></div>");
+    TEST.assert_equal("test abc", pageTitleView.pageTitle);
+
+    // emailSubject
+    template = new $HaploTemplate('emailSubject("subject " value) <div> </div>');
+    var emailSubjectView = {value:"xyz"};
+    TEST.assert_equal(template.render(emailSubjectView), "<div></div>");
+    TEST.assert_equal("subject xyz", emailSubjectView.emailSubject);
+
+    // backLink
+    template = new $HaploTemplate('backLink("/abc" ? x=value) { "text " name } <div> </div>');
+    var backLinkView = {value:"pqz", name:"T1"};
+    TEST.assert_equal(template.render(backLinkView), "<div></div>");
+    TEST.assert_equal("/abc?x=pqz", backLinkView.backLink);
+    TEST.assert_equal("text T1", backLinkView.backLinkText);
 });

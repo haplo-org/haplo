@@ -15,7 +15,6 @@ class KJSPluginRuntime
   # Use buffering so that when something requiring an invalidation happens when the runtime is in use,
   # the notification is delayed until the nested stack of runtime invocations has exited.
   @@invalidate_notification_buffer = KNotificationCentre.when_each([
-    [:jspluginruntime_internal, :label_mapping_changed],
     [:jspluginruntime_internal, :invalidation_requested],
     [:os_schema_change],
     [:app_global_change, :javascript_config_data],
@@ -24,13 +23,6 @@ class KJSPluginRuntime
     [:user_modified,     :group]
   ], {:deduplicate => true, :max_arguments => 0}) do # max arguments set to zero so every notification counts the same
     KApp.cache_invalidate(RUNTIME_CACHE)
-  end
-  KNotificationCentre.when(:os_object_change) do |name, operation, previous_obj, modified_obj, is_schema|
-    # TODO: When SCHEMA mapping implemented, remove this (and corresponding notification listener line above)
-    if KConstants::O_TYPE_LABEL == modified_obj.first_attr(KConstants::A_TYPE)
-      # Trigger a runtime invalidation (via buffered notifications) so SCHEMA.O_LABEL_* constants will be updated
-      KNotificationCentre.notify(:jspluginruntime_internal, :label_mapping_changed)
-    end
   end
 
   def self.invalidate_all_runtimes

@@ -41,8 +41,8 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
     });
 
     _.each(specification.replacements, function(info, name) {
-        var unreplacedName = info.entity;
 
+        var unreplacedName = info.entity;
         entityDefinitions[name] = function(context) {
             // Build replacements map
             var replacements = O.refdict();
@@ -200,6 +200,7 @@ var makeEntityReplacementForm = function(formName, dataSource) {
         formTitle: "Entity Replacement",
         elements: [
             {
+                name: "replacement",
                 type: "lookup",
                 path: "replacement",
                 dataSource: dataSource
@@ -236,7 +237,7 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
         });
         M.addTimelineEntry('ENTITY_SELECT', {});
         M._calculateFlags();
-        E.response.redirect("/do/workflow/entity-replacement/"+workUnit.id);
+        return E.response.redirect("/do/workflow/entity-replacement/"+workUnit.id);
     }
 
     var dbQuery = workflow.plugin.db[dbName].select().where('workUnitId', '=', workUnit.id);
@@ -262,19 +263,23 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
             });
         });
     });
-    if("onFinishPage" in specification) {
-        var link = specification.onFinishPage(M);
-        if(link) {
-            E.renderIntoSidebar({
-                elements: [{ href: link, label: "Continue", indicator: "primary" }]
-            }, "std:ui:panel");
-        }
+    var deferredRenders = [];
+    if("onRenderUI" in specification) {
+        specification.onRenderUI(M, {
+            addDeferredRender: function(deferred) { deferredRenders.push(deferred); },
+            addSidebarButton: function(link, label, indicator) {
+                E.renderIntoSidebar({
+                    elements: [{ href: link, label: label || "Continue", indicator: indicator || "primary" }]
+                }, "std:ui:panel");
+            }
+        });
     }
     E.render({
         pageTitle: M._getTextMaybe(['entity-replacement:ui:page-title'], ['summary']) || "Replacements summary",
         backLink: M.entities.object.url(),
         data: data,
-        neverSelectable: neverSelectable
+        neverSelectable: neverSelectable,
+        deferredRenders: deferredRenders
     }, "entity-replacements/overview");
 });
 
@@ -329,6 +334,5 @@ P.respond("GET,POST", "/do/workflow/replace", [
         entityDisplayName: M._getText(['entity-replacement:display-name'], [entityName]),
         originalEntityTitle: original.title,
         form: form
-    }, "entity-replacements/form");    
+    }, "entity-replacements/form");
 });
-

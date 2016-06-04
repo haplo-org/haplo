@@ -42,6 +42,10 @@ class KPlugin
     DEFAULT_PLUGIN_LOAD_PRIORITY
   end
 
+  def plugin_depend
+    []
+  end
+
   def uses_database
     false
   end
@@ -86,38 +90,61 @@ class KPlugin
   end
 
   # -----------------------------------------------------------------------------------------------------------------
-  # Plugin file handling
-  # Plugin files are non-private files served through the dynamic file interface, like app CSS files.
+  # Plugin bundled file support
+
+  PLUGIN_BUNDLED_PATHNAME_ALLOWED_REGEX = /\A([a-zA-Z0-9_-]+\/)*([a-zA-Z0-9_-]+)\.([a-zA-Z0-9]+)\z/
+
+  def get_bundled_file_pathname(directory, pathname, restricted_mime_type_choice = true)
+    # Security check, to make sure it's a filename without any traversal attempts
+    return nil unless pathname =~ PLUGIN_BUNDLED_PATHNAME_ALLOWED_REGEX
+    extension = $3
+    # Make the pathname within the directory
+    full_pathname = "#{plugin_path}/#{directory}/#{pathname}"
+    return nil unless File.exists?(full_pathname)
+    mime_type = KFramework::STATIC_MIME_TYPES[extension] # includes charset, because plugins must use UTF-8
+    mime_type = KMIMETypes.type_from_extension(extension) unless mime_type || restricted_mime_type_choice
+    mime_type ||= 'application/octet-stream'
+    [full_pathname, extension,  mime_type]
+  end
+
+  # -----------------------------------------------------------------------------------------------------------------
+  # Plugin data files -- files which are available to the JS runtime
+
+  def get_plugin_data_file(pathname)
+    pathname, extension, mime_type = get_bundled_file_pathname(:file, pathname, false)
+    return nil if pathname == nil
+    [pathname, File.basename(pathname), mime_type]
+  end
+
+  # -----------------------------------------------------------------------------------------------------------------
+  # Plugin static file handling
+  # Plugin static files are non-private files served through the dynamic file interface, like app CSS files.
   # Served as /~<serial>/<plugin path_component>/<plugin filename>
   # IMPORTANT: Use a controller for generating anything which might change regularly, be per-user, or need authentication.
 
-  PLUGIN_STATIC_FILENAME_ALLOWED_REGEX = /\A([a-zA-Z0-9_-]+)\.([a-zA-Z0-9]+)\z/
-
-  # Get an array of plugin files
-  def get_allowed_plugin_filenames
+  # Get an array of plugin static filenames
+  def get_allowed_plugin_static_filenames
     static_files_dir = "#{plugin_path}/static"
     return nil unless File.directory?(static_files_dir)
-    Dir.entries(static_files_dir).select do |n|
-      n =~ PLUGIN_STATIC_FILENAME_ALLOWED_REGEX && n !~ /\A\./ # extra paranoid check to avoid starting with .
+    allowed = []
+    without_dir = (static_files_dir.length+1) .. -1
+    Dir.glob("#{static_files_dir}/**/*.*").each do |fullpath|
+      n = fullpath[without_dir]
+      allowed << n if n =~ PLUGIN_BUNDLED_PATHNAME_ALLOWED_REGEX && n !~ /(\A|\/)\./ # extra paranoid check to avoid starting with .
     end
+    allowed
   end
 
   # Return a plugin file from the static dir - override this for more interesting functionality.
   # Return [:file, pathname] for a file on disc, [:data, string] for static data, or nil for not found.
   # MIME type is automatically generated from the file extension
-  def get_plugin_file(filename)
-    # Security check, to make sure it's a filename without any traversal attempts
-    # TODO: Allow subdirectories in static files
-    # TODO: Test for plugin files security check to avoid traversal of filesystem (low risk as there's a filter on allowed filenames)
-    return nil unless filename =~ PLUGIN_STATIC_FILENAME_ALLOWED_REGEX
-    extension = $2
-    # Make the pathname within the static files directory
-    pathname = "#{plugin_path}/static/#{filename}"
-    return nil unless File.exists?(pathname)
+  def get_plugin_static_file(filename)
+    pathname, extension, mime_type = get_bundled_file_pathname(:static, filename)
+    return nil unless pathname
     if extension == 'css'
-      [:data, plugin_rewrite_css(File.open(pathname) { |f| f.read })]
+      [:data, plugin_rewrite_css(File.open(pathname) { |f| f.read }), mime_type]
     else
-      [:file, pathname]
+      [:file, pathname, mime_type]
     end
   end
 
@@ -321,7 +348,24 @@ class KPlugin
   
   def self.install_plugin_returning_checks(names, reason = :install)
     install_check = InstallChecks.new
-    names = [names] unless names.kind_of?(Enumerable)
+    names = names.kind_of?(Enumerable) ? names.to_a.dup : [names]
+    # Expand names to include dependents
+    dependent_check_start = 0
+    while true
+      start_check_length = names.length
+      dependent_check_start.upto(names.length-1) do |i|
+        proposed_plugin = get_plugin_without_installation(names[i])
+        if proposed_plugin
+          proposed_plugin.plugin_depend.each do |depend|
+            names.push(depend) unless names.include?(depend)              
+          end
+        else
+          KApp.logger.info("Plugin not registered during dependency resolution: #{names[i]}")
+        end
+      end
+      break if names.length == dependent_check_start # no additions made
+      dependent_check_start = start_check_length
+    end
     # Generate a new list of plugins, checking that all requestred plugins can be installed
     new_plugin_names = KApp.cache(PLUGINS_CACHE).plugins.map { |plugin| plugin.name }
     new_plugin_names.concat(names).uniq!
@@ -426,12 +470,12 @@ class KPlugin
 
   # -----------------------------------------------------------------------------------------------------------------
 
-  # Get all the possible plugin file pathnames
-  def self.get_all_plugin_file_pathnames
+  # Get all the possible plugin static file pathnames
+  def self.get_all_plugin_static_file_pathnames
     pathnames = Java::OrgHaploFramework::Application::PluginFilePathnames.new
     plugins_for_app = KApp.cache(PLUGINS_CACHE)
     plugins_for_app.plugins.each do |plugin|
-      allowed_pathnames = plugin.get_allowed_plugin_filenames
+      allowed_pathnames = plugin.get_allowed_plugin_static_filenames
       path_component = plugins_for_app.get_path_component_by_name(plugin.name)
       if allowed_pathnames != nil
         allowed_pathnames.each { |n| pathnames.addAllowedPathname("#{path_component}/#{n}") }
@@ -440,19 +484,14 @@ class KPlugin
     pathnames
   end
 
-  # Generate a response given a plugin filename
-  def self.generate_plugin_file_response(pathname)
-    return nil unless pathname =~ /\A([a-z]+)\/(.+)\.(\w+?)\z/
-    plugin_path_component = $1
-    plugin_file_pathname = $2
-    plugin_file_extension = $3
+  # Generate a response given a plugin static filename
+  def self.generate_plugin_static_file_response(pathname)
+    plugin_path_component, file_pathname = pathname.split('/',2)
     # Find the plugin
     plugin = KApp.cache(PLUGINS_CACHE).get_plugin_by_path_component(plugin_path_component)
     return nil unless plugin
-    # MIME type
-    mime_type = (KFramework::STATIC_MIME_TYPES[plugin_file_extension] || 'application/octet-stream')
     # Get the file and generate a response
-    kind, info = plugin.get_plugin_file("#{plugin_file_pathname}.#{plugin_file_extension}")
+    kind, info, mime_type = plugin.get_plugin_static_file(file_pathname)
     if kind == :file
       Java::OrgHaploAppserver::StaticFileResponse.new(info, mime_type, mime_type !~ /\Aimage/i)
     elsif kind == :data

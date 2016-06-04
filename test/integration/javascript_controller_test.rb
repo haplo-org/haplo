@@ -291,9 +291,10 @@ class JavaScriptControllerTest < IntegrationTest
 
     # Use of plugin static resources
     get "/do/plugin_test/client_side_resources"
-    assert response.body =~ /<link href="\/~\d+\/\w+\/teststyle.css" rel="stylesheet" type="text\/css">/
-    assert response.body =~ /<script src="\/~\d+\/\w+\/testscript.js"><\/script>/
+    assert response.body =~ /<link href="\/~\d+\/\w+\/teststyle\.css" rel="stylesheet" type="text\/css">/
+    assert response.body =~ /<script src="\/~\d+\/\w+\/testscript\.js"><\/script>/
     assert_equal 1, response.body.scan(/testscript\.js/).length  # check it was deduplicated
+    assert response.body =~ /<script src="\/~\d+\/\w+\/directory\/static_in_dir\.js"><\/script>/
 
     # Use of plugin static resources and includes via templates
     get "/do/plugin_test/client_side_resources_templates"
@@ -421,15 +422,19 @@ class JavaScriptControllerTest < IntegrationTest
     assert response['X-staticDirectoryUrl'] !~ /\/\z/ # make sure it doesn't end with a /
     # CSS 'static' files get rewriting too
     get "#{KPlugin.get('test_response_plugin').static_files_urlpath}/teststyle.css"
+    assert_equal "text/css; charset=utf-8", response['Content-Type']
     assert_equal <<__E, response.body
 div {background:url(#{KPlugin.get('test_response_plugin').static_files_urlpath}/hello.gif)}
 p {color:#000077}
 b {color:#0000ff}
 i {color:#ff0000}
 __E
-    # Other static files don't geyt rewritten
+    # Static files can be retrieved, and non-CSS don't get rewritten
     get "#{KPlugin.get('test_response_plugin').static_files_urlpath}/testscript.js"
+    assert_equal "text/javascript; charset=utf-8", response['Content-Type']
     assert_equal '(function() { return "APPLICATION_COLOUR_MAIN"; })();', response.body
+    get "#{KPlugin.get('test_response_plugin').static_files_urlpath}/directory/static_in_dir.js"
+    assert_equal '// test file in directory', response.body
 
     # Null and undefined arguments to templates
     get '/do/plugin_test/special_arguments_to_templates/null'
@@ -450,6 +455,12 @@ __E
       end
       assert found_ok
     end
+
+    # Bundled files
+    get '/do/plugin_test/plugin_file_response'
+    assert_equal %Q!{\n    "hello": "world"\n}!, response.body
+    assert_equal %Q!application/json; charset=utf-8!, response["Content-Type"]
+    assert_equal %Q!attachment; filename="res.json"!, response["Content-Disposition"]
 
     # File uploads
     multipart_post '/do/plugin_test/file_upload', {:testfile => fixture_file_upload('files/example.pages','application/x-iwork-pages-sffpages')}

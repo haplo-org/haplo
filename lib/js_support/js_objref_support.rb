@@ -5,12 +5,19 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# Provide utility functions to various JavaScript objects
-
 module JSObjRefSupport
 
   def self.constructObjRef(objID)
     KObjRef.new(objID)
+  end
+
+  def self.behaviourOfObjRef(objID)
+    KObjectStore.behaviour_of(KObjRef.new(objID))
+  end
+
+  def self.refOfBehaviour(behaviour)
+    objref = KObjectStore.behaviour_ref(behaviour.to_s)
+    objref ? objref.obj_id : nil
   end
 
 end

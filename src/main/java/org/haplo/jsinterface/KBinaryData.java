@@ -7,6 +7,7 @@
 package org.haplo.jsinterface;
 
 import org.haplo.javascript.OAPIException;
+import org.haplo.javascript.Runtime;
 
 import org.haplo.utils.StringUtils;
 
@@ -47,6 +48,19 @@ public class KBinaryData extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+    protected String getConsoleClassName() {
+        return "BinaryData";    // display same console log for all subclasses
+    }
+
+    protected String getConsoleData() {
+        try {
+            return this.jsGet_filename()+", "+this.jsGet_fileSize()+" bytes, "+this.jsGet_mimeType();
+        } catch(Exception e) {
+            return "?";
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
     public String jsGet_filename() {
         throw new OAPIException("Attempt to use base class");
     }
@@ -73,6 +87,15 @@ public class KBinaryData extends KScriptable {
 
     final public String jsFunction_readAsString(String charsetName) {
         return convertToString(StringUtils.charsetFromStringWithJSChecking(charsetName));
+    }
+
+    final public Object jsFunction_readAsJSON() {
+        String json = convertToString(StringUtils.charsetFromStringWithJSChecking("UTF-8"));
+        try {
+            return Runtime.getCurrentRuntime().makeJsonParser().parseValue(json);
+        } catch(org.mozilla.javascript.json.JsonParser.ParseException e) {
+            throw new OAPIException("Couldn't JSON decode BinaryData "+jsGet_filename(), e);
+        }
     }
 
     protected String convertToString(Charset charset) {

@@ -58,6 +58,14 @@ public class KGenerateTable extends KBinaryData {
         return "$GenerateTable";
     }
 
+    protected String getConsoleClassName() {
+        return "GenerateTable/BinaryData";
+    }
+
+    protected String getConsoleData() {
+        return this.getFileExtension();
+    }
+
     protected void setFilename(String filename) {
         this.filename = filename;
     }
@@ -147,6 +155,7 @@ public class KGenerateTable extends KBinaryData {
     }
 
     public void put(int index, Scriptable start, Object value) {
+        if(value instanceof Undefined) { value = null; }
         if(index > MAX_CELLS) {
             throw new OAPIException("Too many cells in generated table");
         }
@@ -161,6 +170,7 @@ public class KGenerateTable extends KBinaryData {
 
     // Intention is that options is a string or hash, which is intepreted according to the type of the cell
     public Scriptable jsFunction_cell(Object value, Object options) {
+        if(value instanceof Undefined) { value = null; }
         if(this.row.size() >= MAX_CELLS) {
             throw new OAPIException("Too many cells in generated table");
         }

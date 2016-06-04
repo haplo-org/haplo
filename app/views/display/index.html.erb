@@ -1,5 +1,5 @@
 <%
-  @page_title = h(@obj.first_attr(KConstants::A_TITLE).to_s)
+  @page_title = h(@obj_display.first_attr(KConstants::A_TITLE).to_s)
 
   unless @obj_is_deleted
     # Tell the layout (navigation etc) what object this page represents
@@ -21,7 +21,7 @@
 
 <% if @obj_is_deleted %><div class="z__deleted_object"><% end %>
 
-<%= rendered_object = render_obj(@obj, params.has_key?(:noaliasing) ? :noaliasing : :generalview, @render_options) %>
+<%= rendered_object = render_obj(@obj_display, params.has_key?(:noaliasing) ? :noaliasing : :generalview, @render_options) %>
 
 <% if @obj_is_deleted %>
   </div>

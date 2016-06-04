@@ -99,6 +99,7 @@ private
   end
 
   def run_test_script(pathname, name, prefix, suffix, hide_name = false)
+    AuthContext.set_as_system
     @output << "** Running #{@plugin_name}/#{name} ...\n" unless hide_name
     success = false
     begin

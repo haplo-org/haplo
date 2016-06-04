@@ -224,16 +224,6 @@ __E
 
   # -----------------------------------------------------------------------------------------------------------------
 
-  def get_plugin_file(filename)
-    unless filename == 'banner.css'
-      return super
-    end
-    css = File.open("#{plugin_path}/static/banner.css") { |f| f.read }
-    [:data, plugin_rewrite_css(css)]
-  end
-
-  # -----------------------------------------------------------------------------------------------------------------
-
   def decode_options(options)
     return {} if options.empty?
     o = nil

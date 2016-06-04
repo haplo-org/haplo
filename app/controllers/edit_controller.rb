@@ -348,10 +348,6 @@ private
 
       KEditor.apply_tokenised_to_obj(params[:obj], @object_to_edit)
 
-      # Now that the object has been decoded, create the labelled to apply the labels received from the
-      # client side UI.
-      editor_working_set_up_labelling()
-
       if for_action == :preview
         # Don't do anything other than updating the object in @object_to_edit
         return_code = :preview
@@ -367,6 +363,11 @@ private
           @object_to_edit = r.replacementObject if r.replacementObject
           @post_edit_redirect = r.redirectPath
         end
+
+        # Now that the object has been decoded and potentially modified by plugins, create the labeller to apply
+        # the labels received from the client side UI.
+        editor_working_set_up_labelling()
+
         # Label object given serialised labelling information from client side
         label_changes = KLabelChanges.new()
         @labeller.update_label_changes(params[:labelling], label_changes)

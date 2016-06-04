@@ -90,8 +90,8 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     assert_equal true, groups['std:group:administrators'].save_called
     assert_equal [
         "test_plugin line 9: bad-line",
-        "Unknown key 'unknown-key' for 'std:group:administrators'",
-        "Unknown kind 'unknown-kind'"
+        "Unknown kind 'unknown-kind'",
+        "Unknown key 'unknown-key' for 'std:group:administrators'"
       ], applier.errors # which includes the parser errors
     # Try with a group being renamed because of the REMOVE statement
     groups['std:group:administrators'] = TestGroup.new('std:group:administrators', 'Administrators')
@@ -509,6 +509,16 @@ type std:type:book as Book
 
 __E
     assert_equal "attribute std:attribute:telephone as TelephoneNumber\n", context.generate_requirements_definition(KObjectStore.read(KObjRef.new(A_TELEPHONE_NUMBER)), true)
+
+    # Check that the attribute search for unknown attributes doesn't break anything
+    aliased_attr_search_parser = parser_for <<-__E
+    type test:type:operation as Operation
+         title: Operation
+         search-name: operation
+         # This next line is the problematic one
+         attribute unknown:attribute:hello
+    __E
+    SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, aliased_attr_search_parser, SchemaRequirements::AppContext.new(aliased_attr_search_parser)).apply.commit
 
     # Install a plugin and check that the requirements are applied
     begin

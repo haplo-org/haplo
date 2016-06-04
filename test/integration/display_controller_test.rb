@@ -28,7 +28,8 @@ class DisplayControllerTest < IntegrationTest
       assert_login_as('user1@example.com', 'password')
 
       get object_urlpath(no_redirect_obj)
-      assert_select('h1', 'no redirect')
+      assert_select('h1', 'no rdr modified')
+      assert(response.body =~ /alt title/)
 
       get_302 object_urlpath(redirect_obj)
       assert_redirected_to "/do/redirected-away"
@@ -39,11 +40,19 @@ class DisplayControllerTest < IntegrationTest
   end
 
   class DisplayControllerTestPlugin < KTrustedPlugin
+    include KConstants
     _PluginName "Display Controller Test Plugin"
     _PluginDescription "Test"
     def hPreObjectDisplay(response, object)
-      if object.first_attr(KConstants::A_TITLE).to_s == 'redirect'
+      if object.first_attr(A_TITLE).to_s == 'redirect'
         response.redirectPath = "/do/redirected-away"
+      end
+      if object.first_attr(A_TITLE).to_s == 'no redirect'
+        r = object.dup
+        r.delete_attrs!(A_TITLE)
+        r.add_attr("no rdr modified", A_TITLE)
+        r.add_attr("alt title", A_TITLE, Q_ALTERNATIVE)
+        response.replacementObject = r
       end
     end
   end

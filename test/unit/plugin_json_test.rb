@@ -26,6 +26,11 @@ class PluginJsonTest < Test::Unit::TestCase
     d_fails(d.merge("badKey" => "hello"))
     d_fails(d.merge("apiVersion" => "not a fixnum"))
 
+    d_fails(d.merge("depend" => 1))
+    d_fails(d.merge("depend" => "plugin"))
+    d_passes(d.merge("depend" => []))
+    d_passes(d.merge("depend" => ["plugin", "plugin2"]))
+
     d_fails("Pants")
     d_fails(["pluginVersion", 45])
 

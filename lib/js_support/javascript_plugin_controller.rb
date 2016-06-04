@@ -131,13 +131,12 @@ class JavaScriptPluginController < ApplicationController
       end
       exchange.response = r
     else
-      raise JavaScriptAPIError, "Sending file based binary data not implemented yet"
-      # disk_pathname = binary_data.getDiskPathnameForResponse()
-      # raise JavaScriptAPIError, "File not available" unless disk_pathname && File.exist?(disk_pathname)
-      # render_send_file disk_pathname,
-      #   :type => binary_data.jsGet_mimeType() || 'application/octet-stream',
-      #   :filename => binary_data.jsGet_filename() || 'data.bin',
-      #   :disposition => 'attachment'
+      disk_pathname = binary_data.getDiskPathnameForResponse()
+      raise JavaScriptAPIError, "File not available" unless disk_pathname && File.exist?(disk_pathname)
+      render_send_file disk_pathname,
+        :type => binary_data.jsGet_mimeType() || 'application/octet-stream',
+        :filename => binary_data.jsGet_filename() || 'data.bin',
+        :disposition => 'attachment'
     end
     true
   end

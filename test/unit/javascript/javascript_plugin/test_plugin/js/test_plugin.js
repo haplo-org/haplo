@@ -178,6 +178,28 @@ P.hook("hLabelUpdatedObject", function(response, object) {
 
 // --------------------------------------------------------------------
 
+// Literal form specification
+P.testFormLiteral = P.form({
+    "specificationVersion": 0, "formId": "test-form-id", "formTitle": "Test",
+    "elements": [{type:"text", label:"Test text", path:"test"}]
+});
+
+// Form specification from JSON file
+P.testFormJSON = P.form("test-form-one", "form/testform1.json");
+
+// Replaceable form
+P.testFormReplace = P.replaceableForm("test-form-2", "form/testform2.json");
+// ... and a service to test replacement
+P.implementService("std:form:replace", function(form, document) {
+    if((form.formId === "test-form-2") && (form.plugin.pluginName === "test_plugin")) {
+        if(document.useOtherForm) {
+            return P.testFormJSON;
+        }
+    }
+});
+
+// --------------------------------------------------------------------
+
 // Store which user is active when plugin code is evaluated
 P.data.currentUserCodeEvaluate = O.currentUser.id;
 

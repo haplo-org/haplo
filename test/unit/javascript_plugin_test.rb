@@ -12,6 +12,7 @@ class JavascriptPluginTest < Test::Unit::TestCase
 
   RuntimeException = Java::JavaLang::RuntimeException
 
+  1.upto(3) { |i| KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_plugin/test_depend#{i}") }
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_plugin/test_plugin")
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_plugin/test_plugin3")
 
@@ -30,6 +31,20 @@ class JavascriptPluginTest < Test::Unit::TestCase
     KPlugin.uninstall_plugin("test_plugin2")
     # Check in all the caches
     KApp.cache_checkin_all_caches
+  end
+
+  # -------------------------------------------------------------------------------------------------------------
+
+  def test_plugin_install_depend
+    1.upto(3) { |i| KPlugin.uninstall_plugin("test_depend#{i}")}
+    assert_equal(true, KPlugin.install_plugin("test_depend1"))
+    plugin_list = KPlugin.get_plugin_names_for_current_app
+    # Check dependent plugins installed (dependencies form a cycle)
+    assert plugin_list.include?("test_depend1")
+    assert plugin_list.include?("test_depend2")
+    assert plugin_list.include?("test_depend3")
+  ensure
+    1.upto(3) { |i| KPlugin.uninstall_plugin("test_depend#{i}")}
   end
 
   # -------------------------------------------------------------------------------------------------------------
@@ -279,6 +294,20 @@ class JavascriptPluginTest < Test::Unit::TestCase
     restore_store_snapshot("basic")
     assert_equal(true, KPlugin.install_plugin("test_plugin"))
     run_javascript_test(:file, 'unit/javascript/javascript_plugin/test_plugin_templates.js')
+  end
+
+  # -------------------------------------------------------------------------------------------------------------
+
+  def test_plugin_data_file
+    assert_equal(true, KPlugin.install_plugin("test_plugin"))
+    run_javascript_test(:file, 'unit/javascript/javascript_plugin/test_plugin_data_file.js')
+  end
+
+  # -------------------------------------------------------------------------------------------------------------
+
+  def test_plugin_forms
+    assert_equal(true, KPlugin.install_plugin("test_plugin"))
+    run_javascript_test(:file, 'unit/javascript/javascript_plugin/test_plugin_forms.js')
   end
 
   # -------------------------------------------------------------------------------------------------------------

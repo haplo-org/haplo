@@ -199,7 +199,7 @@ module KConstants
   A_EXCLUDE_LABEL               = 2127
   A_INCLUDE_TYPE                = 2128
 
-  # ============================ 2130 -- 213039 used above in Types section ============================
+  # ============================ 2130 -- 2139 used above in Types section ============================
 
   # Taxonomy
   A_TAXONOMY_RELATED_TERM       = 2160      # TODO: Can this be done with DC elements instead?

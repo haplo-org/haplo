@@ -28,6 +28,24 @@ t.test(function() {
     t.assert(O.isHandlingRequest);
     t.assert(O.tray.length === 0);
 
+    // Check that logged in user is restored after changes in AuthContext
+    O.impersonating(O.SYSTEM, function() {
+        t.assert(O.currentUser.id === 0);
+    });
+    t.assert(O.currentUser.id === 41);
+    O.impersonating(O.user(42), function() {
+        t.assert(O.currentUser.id === 42);
+    });
+    t.assert(O.currentUser.id === 41);
+    O.withoutPermissionEnforcement(function() {
+        t.assert(O.currentUser.id === 41);  // user doesn't change
+    });
+    t.assert(O.currentUser.id === 41);
+
+    // Test login works with user object
+    t.login(O.user(43));
+    t.assert(O.currentUser.id === 43);
+
     t.loginAnonymous();
     t.assert(O.currentUser.id === 2);
 

@@ -9,7 +9,7 @@ P.respond("GET", "/do/tested_plugin/handler1", [
     {pathElement:0, as:"int"}
 ], function(E, number) {
     E.response.kind = 'text';
-    E.response.body = "i="+number;
+    E.response.body = "i="+number+" u="+O.currentUser.id;
 });
 
 P.respond("GET", "/do/tested_plugin/handler2", [

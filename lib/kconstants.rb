@@ -67,7 +67,6 @@ module KConstants
   Q_NULL                    = 0
 
   # ID base values for application objects
-  BASE_COMPOUND_ATTR_DESC_OBJID = 5000  # need to go somewhere predictable, here is good enough
   BASE_APP_LABEL_DEFINITIONS= 7500
   BASE_APP_TYPE_DEFINITIONS = 8000      # App defined object definitions go here
   BASE_APP_WELL_KNOWN_OBJS  = 12000     # App defined well known objects after here

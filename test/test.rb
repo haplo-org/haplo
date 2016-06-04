@@ -213,9 +213,6 @@ class TestApplicationInit
       # Make snapshots
       Thread.current[:_test_app_id] = test_app_id
 
-      # TODO: Remove uninstallation of all the standard plugins for tests when dependent plugin installation is implemented (and install in kappinit.rb)
-      ['std_action_panel','std_workflow','std_reporting','std_document_store'].each { |n| KPlugin.uninstall_plugin(n) }
-
       KObjectStore::TEXTIDX_FLAG_GENERAL.clearFlag()
       KObjectStore::TEXTIDX_FLAG_REINDEX.clearFlag()
       run_outstanding_text_indexing(:expected_work => false)

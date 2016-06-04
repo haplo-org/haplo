@@ -248,20 +248,10 @@ var SimpleColumn = makeColumnType({type:"simple"});
 
 // --------------------------------------------------------------------------
 
-var REF_COLUMN_LOAD_TITLE_FN = function(r) {
-    return _.escape(r.load().title);
-};
-var REF_COLUMN_LOAD_SHORTEST_TITLE_FN = function(r) {
-    var obj = r.load();
-    if(!obj) { return ''; }
-    var title;
-    obj.everyTitle(function(t) {
-        t = t.toString();
-        if(!title || (t.length < title.length)) {
-            title = t;
-        }
-    });
-    return _.escape(title);
+var refColumnEscapedTitleFn = function(property) {
+    return function(r) {
+        return _.escape(r.load()[property]);
+    };
 };
 
 var RefColumn = makeColumnType({
@@ -269,7 +259,7 @@ var RefColumn = makeColumnType({
     construct: function(collection, colspec) {
         this.link = colspec.link;
         this.escapedTitles = O.refdict(
-            colspec.shortestTitle ? REF_COLUMN_LOAD_SHORTEST_TITLE_FN : REF_COLUMN_LOAD_TITLE_FN
+            refColumnEscapedTitleFn(colspec.shortestTitle ? "shortestTitle" : "title")
         );
     }
 });
@@ -602,6 +592,36 @@ var JsonColumn = makeColumnType({
     type:"json",
     construct: function(collection, colspec) {
         this.valueProperty = colspec.valueProperty;
+        // Does this JSON column delegate to another column for display?
+        if("column" in colspec) {
+            if(typeof(colspec.column.type) !== "string") {
+                throw new Error("When using the column property for json columns, you must specify a column type");
+            }
+            var innerColspec = _.clone(colspec.column);
+            innerColspec.fact = "_FAKEFACTVALUE";
+            var column = makeColumn(collection, innerColspec);
+            // Values need converting
+            var valueConversion = function(v) { return (v === undefined) ? null : v; };
+            // Dates need special handling
+            if(colspec.column.type.indexOf("date") !== -1) {
+                valueConversion = function(v) {
+                    return v ? (new XDate(v, true)).toDate() : null;
+                };
+            } else if(column instanceof NumberColumn) {
+                // Paranoid about numbers
+                valueConversion = function(v) { return (typeof(v) !== "number") ? (v ? v*1 : null) : v; };
+            }
+            // Delegate this object to the column
+            this.renderCell = function(row) {
+                var obj = row[this.fact];
+                return column.renderCell({_FAKEFACTVALUE:(obj ? valueConversion(obj[this.valueProperty]) : null)});
+            };
+            this.exportCell = function(row, xls) {
+                var obj = row[this.fact];
+                column.exportCell({_FAKEFACTVALUE:(obj ? valueConversion(obj[this.valueProperty]) : null)}, xls);
+            };
+            this.__defineGetter__("exportWidth", function() { return column.exportWidth; });
+        }
     }
 });
 
@@ -628,4 +648,31 @@ JsonColumn.prototype.renderCellInner = function(row) {
 JsonColumn.prototype.exportCell = function(row, xls) {
     var obj = row[this.fact];
     xls.cell((obj === null) ? null : obj[this.valueProperty]);
+};
+
+// --------------------------------------------------------------------------
+
+var LookupColumn = makeColumnType({
+    type:"lookup",
+    construct: function(collection, colspec) {
+        var lookup = colspec.lookup;
+        switch(typeof(lookup)) {
+            case "function":   this.lookup = lookup;                                break;
+            case "object":     this.lookup = function(v) { return lookup[v]; };     break;
+            default: throw new Error("Bad lookup passed to lookup column; must be function or object to use as dictionary");
+        }
+    }
+});
+
+LookupColumn.prototype.renderCellInner = function(row) {
+    var value = this.lookup(row[this.fact], row);
+    if((value === null) || (value === undefined)) {
+        return '';
+    } else {
+        return _.escape(""+value);
+    }
+};
+
+LookupColumn.prototype.exportCell = function(row, xls) {
+    xls.cell(this.lookup(row[this.fact], row));
 };

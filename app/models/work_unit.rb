@@ -12,7 +12,10 @@ class WorkUnit < ActiveRecord::Base
   belongs_to :actionable_by,  :class_name => 'User', :foreign_key => 'actionable_by_id'
   belongs_to :closed_by,      :class_name => 'User', :foreign_key => 'closed_by_id'
 
+  MAX_OPENED_AT_IN_FUTURE_FOR_NOTIFICATION = (12*60*60)
+
   WHERE_TAG = '(tags -> ?) = ?'.freeze
+  WHERE_TAG_IS_EMPTY_STRING_OR_NULL = "COALESCE((tags -> ?),'') = ''".freeze
 
   # Hide work units when the object becomes unreadable or deleted, if they're set for
   # automatic visibilty changes.
@@ -181,6 +184,8 @@ class WorkUnit < ActiveRecord::Base
   }
   def auto_notify
     return if self.is_closed?
+    min_opened_at = Time.new + MAX_OPENED_AT_IN_FUTURE_FOR_NOTIFICATION
+    return if self.opened_at > min_opened_at
     deliver_to = User.cache[self.actionable_by_id] # Don't use self.actionable_by, might use user cached in object
     return unless deliver_to.is_active && deliver_to.email
     # Ask JS plugins (only) for the info about the notification

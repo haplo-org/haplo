@@ -100,6 +100,15 @@ module JSKObjectSupport
     (object.first_attr(A_TITLE) || '').to_s
   end
 
+  def self.objectTitleAsStringShortest(object)
+    title = nil
+    object.each(A_TITLE) do |v,d,q|
+      t = v.to_s
+      title = t if title.nil? || (title.length > t.length)
+    end
+    title || ''
+  end
+
   def self.objectDescriptiveTitle(object)
     KObjectUtils.title_of_object(object, :full)
   end

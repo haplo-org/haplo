@@ -19,10 +19,14 @@ TEST(function() {
     unit1.tags["tag2"] = O.ref('8800z');
     unit1.tags["x"] = "y";
     TEST.assert_equal("y", unit1.tags["x"]);
+    unit1.tags["x"] = "";
+    TEST.assert_equal("", unit1.tags["x"]);
     unit1.tags["x"] = null;
     TEST.assert_equal(undefined, unit1.tags["x"]);
     unit1.tags["x"] = "y";
     TEST.assert_equal("y", unit1.tags["x"]);
+    unit1.tags["x"] = 42;
+    TEST.assert_equal("42", unit1.tags["x"]);
     unit1.tags["x"] = undefined;
     TEST.assert_equal(undefined, unit1.tags["x"]);
     unit1.save();
@@ -63,28 +67,69 @@ TEST(function() {
 
     // --------------------------------------------------------------------------------------------
 
+    var TEST_REF = O.ref(1623434);
+
     _.each([
-        ["a", "b", null],
-        ["a", "e", null],
-        ["a", "e", ""], // "a","e" so it matches the line above, and gets summed together
-        ["b", "d", "x"],
-        ["a", "e", "x"],
-        ["a", "b", "y"],
-        ["a", "b", "x"]
+        [0, "a", "b", null],
+        [1, "a", "e", null],
+        [2, "a", "e", ""], // "a","e" so it matches the line above, and gets summed together
+        [3, "b", "d", "x"],
+        [4, "a", "e", "x"],
+        [5, "a", "b", "y"],
+        [6, "a", "b", "x"],
+        [7, TEST_REF, "X", "Y"],
+        [8, 123, 456, "Y"]
     ], function(x) {
         var wu = O.work.create({
             workType: "test:tags",
             createdBy: 21,
             actionableBy: 22,
-            tags: {"t0":x[0], "t1":x[1]}
+            data: {n:x[0]},
+            tags: {"t0":x[1], "t1":x[2]}
         });
         TEST.assert(wu.tags instanceof $WorkUnitTags);
-        if(x[2]) {
-            wu.tags.t2 = x[2];
+        if(x[3]) {
+            wu.tags.t2 = x[3];
         }
         wu.save();
     });
 
+    // --------------------------------------------------------------------------------------------
+
+    // Query by tags
+    var test_tag_query = function(q, a) {
+        var cc = _.map(q, function(wu) { return wu.data.n; });
+        TEST.assert(_.isEqual(cc.sort(), a));
+    };
+
+    test_tag_query(O.work.query("test:tags").tag("t2","x"), [3,4,6]);
+    test_tag_query(O.work.query("test:tags").tag("t2",null), [0,1,2]);  // null or ''
+    test_tag_query(O.work.query("test:tags").tag("t2",""), [0,1,2]);    // also null or ''
+    test_tag_query(O.work.query("test:tags").tag("t2",null).tag("t1","e"), [1,2]);
+    test_tag_query(O.work.query("test:tags").tag("t0","a").tag("t1","e"), [1,2,4]);
+    test_tag_query(O.work.query("test:tags").tag("t0",TEST_REF), [7]);
+    test_tag_query(O.work.query("test:tags").tag("t1",456), [8]);
+
+    TEST.assert_exceptions(function() {
+        O.work.query("test:tags").tag("t1",{});
+    }, "Only Strings, numbers and Refs can be used as WorkUnit tags.");
+    TEST.assert_exceptions(function() {
+        O.work.query("test:tags").tag("t1",[]);
+    }, "Only Strings, numbers and Refs can be used as WorkUnit tags.");
+    TEST.assert_exceptions(function() {
+        O.work.query("test:tags").tag("t1",undefined);
+    }, "undefined cannot be used with WorkUnitQuery tag()");
+    TEST.assert_exceptions(function() {
+        O.work.query("test:tags").tag("t1");
+    }, "undefined cannot be used with WorkUnitQuery tag()");
+
+    // Tidy up extra work units
+    O.work.query("test:tags").tag("t0",TEST_REF)[0].deleteObject();
+    O.work.query("test:tags").tag("t1",456)[0].deleteObject();
+
+    // --------------------------------------------------------------------------------------------
+
+    // Count by tags
     TEST.assert_exceptions(function() {
         O.work.query("test:tags").countByTags();
     }, "countByTags() requires at least one tag.");

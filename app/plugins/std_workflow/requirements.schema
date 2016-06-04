@@ -3,15 +3,24 @@
 
 group std:group:administrators as Administrators
 
+# Can override workflow progress & other administration
+# via action std:workflow:admin:can-administrate-workflow
 group std:group:workflow-override as WorkflowOverride
     title: Workflow override
 
+# Can control workflow visibility
+# via action std:workflow:admin:change-workflow-visibility
 group std:group:workflow-visibility as WorkflowVisibility
     title: Workflow visibility
 
+# If actionableBy can't be determined, this group is used as a fallback
 group std:group:workflow-fallback as WorkflowFallback
     title: Workflow fallback
 
+# A group intended for use as actionableBy when a workflow is 'paused'
+# There should not be anyone in this group.
+group std:group:workflow-on-hold as WorkflowOnHold
+	title: Workflow on hold
 
 # -------- Email templates -------------------------
 

@@ -102,7 +102,11 @@ module JSWorkUnitSupport
 
     if tagValues != nil
       tagValues.each do |kv|
-        units = units.where(WorkUnit::WHERE_TAG, kv.key, kv.value)
+        if kv.value.nil?
+          units = units.where(WorkUnit::WHERE_TAG_IS_EMPTY_STRING_OR_NULL, kv.key)
+        else
+          units = units.where(WorkUnit::WHERE_TAG, kv.key, kv.value)
+        end
       end
     end
 

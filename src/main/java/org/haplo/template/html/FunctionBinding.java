@@ -40,7 +40,7 @@ final public class FunctionBinding {
 
     // ----------------------------------------------------------------------
 
-    public Object[] allValueArguments() {
+    public Object[] allValueArguments() throws RenderException {
         int count = 0;
         Node argument = this.function.getArgumentsHead();
         while(argument != null) {

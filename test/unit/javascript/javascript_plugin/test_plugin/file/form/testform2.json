@@ -1,0 +1,8 @@
+{
+    "specificationVersion": 0,
+    "formId": "test-form-2",
+    "formTitle": "Test 2",
+    "elements": [
+        {"type":"text", "label":"Test text", "path":"test3"}
+    ]
+}

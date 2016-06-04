@@ -449,20 +449,21 @@ module SchemaRequirements
     attr_reader :parser, :changes, :errors
     def apply
       @parser.apply_templates
-      @parser.requirements.each do |kind,requirements|
-        kind_applier = @kinds[kind]
-        unless kind_applier
+      @parser.requirements.each_key do |kind|
+        unless @kinds.has_key?(kind)
           @errors << "Unknown kind '#{kind}'"
-        else
-          requirements.each_value do |requirement|
-            next unless requirement.declared_as_non_optional
-            object_applier = kind_applier.call(kind, requirement.code, @context)
-            if object_applier
-              object_applier.apply(requirement, @errors, @context)
-              @changes << object_applier if object_applier.has_changes?
-            else
-              @errors << "Unknown requirement for #{kind} #{requirement.code}"
-            end
+        end
+      end
+      @kinds.each do |kind, kind_applier|
+        requirements = @parser.requirements[kind]
+        requirements.each_value do |requirement|
+          next unless requirement.declared_as_non_optional
+          object_applier = kind_applier.call(kind, requirement.code, @context)
+          if object_applier
+            object_applier.apply(requirement, @errors, @context)
+            @changes << object_applier if object_applier.has_changes?
+          else
+            @errors << "Unknown requirement for #{kind} #{requirement.code}"
           end
         end
       end

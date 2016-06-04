@@ -30,7 +30,8 @@ TEST(function() {
     xls[2] = 'Heading Three';
     TEST.assert_equal(3, xls.length);
     xls[1] = 'Two';
-    TEST.assert_equal(3, xls.length);
+    xls[4] = undefined;
+    TEST.assert_equal(5, xls.length);
     xls.nextRow();
     TEST.assert_equal(1, xls.rowIndex);
     TEST.assert_equal(0, xls.length);
@@ -47,8 +48,10 @@ TEST(function() {
     xls.push(new Date(2011, 3, 10, 12, 34));
     xls.push(new DBTime(13, 23));
     TEST.assert_equal(7, xls.push("pants"));    // for being like Array
+    xls.push(undefined);
     TEST.assert_equal(xls, xls.cell("ping"));   // for chaining
     xls.cell(O.user(41));
+    xls.cell(undefined);
 
     // Bad ref, which will fail when it's loaded
     xls.cell(O.ref(2398547));

@@ -1,6 +1,11 @@
-pageTitle(dashboard._displayableTitle ": " stateName)
+pageTitle(
+    dashboard._displayableTitle ": " stateName
+    if(tagDisplayableName) {
+        " (" tagDisplayableName ")"
+    }
+)
 backLink(spec.path ? *dashboard._linkParameters) { "Dashboard" }
 
 each(list) {
-  <p> <a href=M.url> M.title </a> </p>
+  <p> <a href=url> title </a> </p>
 }

@@ -3008,4 +3008,38 @@ _OBJS
     end
   end
 
+  # ------------------------------------------------------------------------
+
+  def test_configured_behaviour_queries
+    restore_store_snapshot("basic")
+    refs = {}
+    [
+      [:foo,        'test:behaviour:foo',       nil],
+      [:bar,        'test:behaviour:bar',       nil],
+      [:foochild,   nil,                        :foo],
+      [:foochild2,  nil,                        :foochild],
+      [:foochild3,  'test:behaviour:foochild3', :foo],
+      [:barchild,   'test:behaviour:barchild',  :bar],
+      [:nothing,    nil,                        nil]
+    ].each do |sym, behaviour, parent|
+      o = KObject.new
+      o.add_attr(sym.to_s, A_TITLE)
+      o.add_attr(KIdentifierConfigurationName.new(behaviour), A_CONFIGURED_BEHAVIOUR) if behaviour
+      o.add_attr(refs[parent], A_PARENT) if parent
+      KObjectStore.create(o)
+      refs[sym] = o.objref
+    end
+    assert_equal('test:behaviour:foo', KObjectStore.behaviour_of(refs[:foo]))
+    assert_equal('test:behaviour:foo', KObjectStore.behaviour_of(refs[:foochild]))
+    assert_equal('test:behaviour:foo', KObjectStore.behaviour_of(refs[:foochild2]))
+    assert_equal('test:behaviour:foo', KObjectStore.behaviour_of(refs[:foochild3]))
+    assert_equal('test:behaviour:bar', KObjectStore.behaviour_of(refs[:bar]))
+    assert_equal('test:behaviour:bar', KObjectStore.behaviour_of(refs[:barchild]))
+    assert_equal(nil, KObjectStore.behaviour_of(refs[:nothing]))
+    assert_equal(refs[:foo], KObjectStore.behaviour_ref('test:behaviour:foo'))
+    assert_equal(refs[:bar], KObjectStore.behaviour_ref('test:behaviour:bar'))
+    assert_equal(refs[:foochild3], KObjectStore.behaviour_ref('test:behaviour:foochild3'))
+    assert_equal(nil, KObjectStore.behaviour_ref('test:behaviour:BAR'))
+  end
+
 end

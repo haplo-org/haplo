@@ -63,10 +63,10 @@ class DisplayController < ApplicationController
 
     # Ask plugins if they'd like to modify the object display, but keep a copy of the original
     # unmodified object so that other calls to plugins get the original one. This avoids surprises.
-    @obj_unmodified = @obj
+    @obj_display = @obj
     call_hook(:hPreObjectDisplay) do |hooks|
       h = hooks.run(@obj)
-      @obj = h.replacementObject if h.replacementObject != nil
+      @obj_display = h.replacementObject if h.replacementObject != nil
       # Plugins can redirect away from object display
       if h.redirectPath
         redirect_to h.redirectPath
@@ -75,7 +75,7 @@ class DisplayController < ApplicationController
     end
 
     # Type descriptor
-    type = @obj.first_attr(A_TYPE)
+    type = @obj_display.first_attr(A_TYPE)
     @type_desc = (type == nil) ? nil : KObjectStore.schema.type_descriptor(type)
 
     # Search for linked objects
@@ -143,7 +143,7 @@ class DisplayController < ApplicationController
     @render_options[:file_identifier_menu] = proc do |file_identifier, file_link|
       m = [['Download',"#{file_link}?attachment=1",'z__file_extra_action_link_open']]
       if user_can_see_file_versions
-        m << ['Versions',"/do/file-version/of/#{@obj.objref.to_presentation}/#{file_identifier.tracking_id}",'z__file_extra_action_link_versions']
+        m << ['Versions',"/do/file-version/of/#{@objref.to_presentation}/#{file_identifier.tracking_id}",'z__file_extra_action_link_versions']
       end
       preview_url = file_url_path(file_identifier, :preview)
       if preview_url != nil
@@ -172,7 +172,7 @@ class DisplayController < ApplicationController
       end
 
       call_hook(:hObjectDisplay) do |hooks|
-        @plugin_object_display_behaviour = hooks.run(@obj_unmodified)
+        @plugin_object_display_behaviour = hooks.run(@obj)
         @title_bar_buttons.merge!(@plugin_object_display_behaviour.buttons)
         if @plugin_object_display_behaviour.backLink
           @breadcrumbs = [[@plugin_object_display_behaviour.backLink, @plugin_object_display_behaviour.backLinkText || 'Return']]
@@ -181,7 +181,7 @@ class DisplayController < ApplicationController
 
       # Render Elements
       unless @type_desc == nil
-        @elements = elements_make_renderer(@type_desc.display_elements || '', @obj_urlpath, @obj_unmodified)
+        @elements = elements_make_renderer(@type_desc.display_elements || '', @obj_urlpath, @obj)
         # Make sure work units are rendered for non-anonymous users
         unless @request_user.policy.is_anonymous?
           unless @elements.has_element?('std:object_tasks')

@@ -465,6 +465,35 @@ class KObjectStore
 
   # ----------------------------------------------------------------------------------------------------------
 
+  # Configured behaviours are a way to avoid plugins having hard code or do complicated queries for
+  # well known objects, eg in Lists of classification objects. Although this could be looked up
+  # using the normal queries and object traversal, this is such an important use it's worth having
+  # a special 'efficient' API for it.
+
+  # Return the configured behaviour of the object; if it has a parent, the behaviour is the
+  # configured behaviour of the root object.
+  def behaviour_of(ref)
+    # Get the path of the object to find the root object, which may be this object
+    path = full_obj_id_path(ref)
+    # Then lookup the behaviour in the identifier index table
+    result = KApp.get_pg_database.perform(
+      "SELECT value FROM os_index_identifier WHERE id=#{path.first.to_i} AND identifier_type=#{T_IDENTIFIER_CONFIGURATION_NAME} AND attr_desc=#{A_CONFIGURED_BEHAVIOUR} LIMIT 1"
+    )
+    result.length > 0 ? result.first.first.to_s : nil
+  end
+
+  # Return the ref of the object with the given behaviour, may return non-root objects
+  # so child behaviours can be addressed. 
+  def behaviour_ref(behaviour)
+    result = KApp.get_pg_database.perform(
+      "SELECT id FROM os_index_identifier WHERE value=$1 AND identifier_type=#{T_IDENTIFIER_CONFIGURATION_NAME} AND attr_desc=#{A_CONFIGURED_BEHAVIOUR} ORDER BY id LIMIT 1",
+      behaviour.to_s
+    )
+    result.length > 0 ? KObjRef.new(result.first.first.to_i) : nil
+  end
+
+  # ----------------------------------------------------------------------------------------------------------
+
   # Handy but very specific query for filtering label lists
   def self.filter_id_list_to_ids_of_type(list, types)
     sql = "SELECT id FROM os_objects WHERE id IN (#{list.map(&:to_i).join(',')}) AND type_object_id IN (#{types.map(&:to_i).join(',')}) ORDER BY id";

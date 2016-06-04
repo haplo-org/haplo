@@ -250,6 +250,7 @@
         E.response.useStaticResource("teststyle.css");
         E.response.useStaticResource("testscript.js");
         E.response.useStaticResource("testscript.js");  // check deduplication
+        E.response.useStaticResource("directory/static_in_dir.js");
         E.render({randomStuff:"ping", pageTitle:"TEST TITLE"}, "test1");
     });
 
@@ -320,6 +321,11 @@
         E.response.kind = 'text';
         E.response.headers['X-staticDirectoryUrl'] = this.staticDirectoryUrl;
         E.response.body = this.rewriteCSS("div {background: url(PLUGIN_STATIC_PATH/ping.png)} p {color:APPLICATION_COLOUR_MAIN}");
+    });
+
+    P.respond("GET", "/do/plugin_test/plugin_file_response", [
+    ], function(E) {
+        E.response.body = P.loadFile("subdir/res.json")
     });
 
     P.respond("GET", "/do/plugin_test/special_arguments_to_templates", [
