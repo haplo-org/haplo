@@ -1,5 +1,5 @@
 
-<p> "Dear " toUser.nameFirst "," </p>
+<p> "Dear " toUser.nameFirst </p>
 
 <p> "The following notification has been sent to " <b> $std_workflow.sentUser.name </b> " and is copied below for your information." </p>
 

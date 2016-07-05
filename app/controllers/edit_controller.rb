@@ -346,7 +346,9 @@ private
     return_code = :display
     if request.post? && params[:obj] != nil
 
-      KEditor.apply_tokenised_to_obj(params[:obj], @object_to_edit)
+      KEditor.apply_tokenised_to_obj(params[:obj], @object_to_edit, {
+        :read_only_attributes => read_only_attributes
+      })
 
       if for_action == :preview
         # Don't do anything other than updating the object in @object_to_edit

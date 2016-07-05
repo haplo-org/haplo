@@ -31,11 +31,10 @@
 
             if(lastSelector === selector) { return; }
             if(selector) {
-                $('#z__std_reporting_list_filterable_table tr').hide();
-                $('#z__std_reporting_list_filterable_table tr:first').show();
-                $('#z__std_reporting_list_filterable_table tr'+selector).show();
+                $('#z__std_reporting_list_filterable_table tbody tr').hide();
+                $('#z__std_reporting_list_filterable_table tbody tr'+selector).show();
             } else {
-                $('#z__std_reporting_list_filterable_table tr').show();
+                $('#z__std_reporting_list_filterable_table tbody tr').show();
             }
             lastSelector = selector;
         };

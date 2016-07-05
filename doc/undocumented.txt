@@ -73,5 +73,5 @@ Server side support as O.editor.* functions (interface needs a little bit of tid
 Access remote services
 ----------------------
 O.remote.collaboration.* functions.
-O.remote.authentication.* functions.
+O.remote.authentication.* functions for authenticating and searching.
 O.remote.authentication.urlToStartOAuth(data, name) and pStartOAuth

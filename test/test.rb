@@ -213,9 +213,8 @@ class TestApplicationInit
       # Make snapshots
       Thread.current[:_test_app_id] = test_app_id
 
-      KObjectStore::TEXTIDX_FLAG_GENERAL.clearFlag()
-      KObjectStore::TEXTIDX_FLAG_REINDEX.clearFlag()
-      run_outstanding_text_indexing(:expected_work => false)
+      KObjectStore.reindex_all_objects
+      run_outstanding_text_indexing(:expected_reindex => true)
       snapshot_store("app", test_app_id)
 
       reset_objectstore_to_minimal()
@@ -223,6 +222,9 @@ class TestApplicationInit
 
       load_basic_schema_objects()
       snapshot_store("basic", test_app_id)
+
+      KObjectStore::TEXTIDX_FLAG_GENERAL.clearFlag()
+      KObjectStore::TEXTIDX_FLAG_REINDEX.clearFlag()
     end
   end
 end

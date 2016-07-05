@@ -70,7 +70,17 @@ public class KAuthenticationService extends KScriptable {
         if(username == null || password == null) {
             throw new OAPIException("Username and password required for authenticate function.");
         }
-        String json = this.service.authenticate(username, password);
+        return decodingJSONResult(this.service.authenticate(username, password));
+    }
+
+    public Object jsFunction_search(String criteria) {
+        if(criteria == null) {
+            throw new OAPIException("Criteria required for search function.");
+        }
+        return decodingJSONResult(this.service.search(criteria));
+    }
+
+    private Object decodingJSONResult(String json) {
         Object decoded;
         try {
             decoded = Runtime.getCurrentRuntime().makeJsonParser().parseValue(json);

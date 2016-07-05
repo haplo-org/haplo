@@ -43,6 +43,17 @@ class JavascriptRemoteAuthenticationTest < Test::Unit::TestCase
 
   # ---------------------------------------------------------------------------------------------------
 
+  # Configure very small test page size for LDAP searches
+  raise "Was expecting a different page size" unless JSRemoteAuthenticationServiceSupport::LDAPAuthenticationService::LDAP_SEARCH_RESULT_PAGE_SIZE == 2048
+  begin
+    old_verbosity = $VERBOSE
+    $VERBOSE = nil # prevent warning about changing constant being displayed
+    JSRemoteAuthenticationServiceSupport::LDAPAuthenticationService.const_set(:LDAP_SEARCH_RESULT_PAGE_SIZE, 1)
+    $VERBOSE = old_verbosity
+  end
+
+  # ---------------------------------------------------------------------------------------------------
+
   # Test LDAP server
 
   @@test_ldap_server_started = false

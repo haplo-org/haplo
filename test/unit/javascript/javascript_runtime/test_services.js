@@ -47,6 +47,12 @@ TEST(function() {
     TEST.assert(undefined === r);
     TEST.assert(_.isEqual(['fn3','call2'], callOrder));
 
+    // O.serviceMaybe() does the same when it's defined
+    callOrder = [];
+    r = O.serviceMaybe("service3", "call2");
+    TEST.assert(undefined === r);
+    TEST.assert(_.isEqual(['fn3','call2'], callOrder));
+
     // Test that returning a result from a service stops the chain and returns that result
     callOrder = [];
     r = O.service("service1", "do return");
@@ -55,5 +61,8 @@ TEST(function() {
 
     // Test unregistered service exceptions when a call is attempted
     TEST.assert_exceptions(function() { O.service("carrots"); }, "No provider registered for service 'carrots' (or attempt to use service during plugin loading)");
+
+    // But O.serviceMaybe() just returns undefined
+    TEST.assert_equal(undefined, O.serviceMaybe("carrots"));
 
 });

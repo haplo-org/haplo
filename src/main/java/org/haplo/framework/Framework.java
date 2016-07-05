@@ -32,6 +32,9 @@ public interface Framework {
     // Application info
     long getCurrentApplicationId();
 
+    // Installation properties
+    String getInstallProperty(String name, String defaultValue);
+
     // Development mode support
     boolean devmodeCheckReload();
 

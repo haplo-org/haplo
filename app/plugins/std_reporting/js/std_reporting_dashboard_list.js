@@ -42,6 +42,36 @@ DashboardList.prototype._makeRenderableColumnList = function() {
 DashboardList.prototype._makeDashboardView = function(hideExport) {
     var columns = this._makeRenderableColumnList();
 
+    // Generate grouping header rows
+    var groupHeaderRows = [];
+    var groupIndex = 0;
+    while(groupIndex < 32) {
+        var lastCell = {colspan:0};
+        var cells = [lastCell];
+        var haveGroup = false;
+        for(var c = 0; c < columns.length; ++c) {
+            // Attempt to find a group ID and title of this column.
+            // groups property of column is array of two element arrays, each of which is [id,title]
+            var col = columns[c];
+            var gs = col.groups;
+            var ginfo = gs ? gs[groupIndex] : undefined;
+            if(ginfo) { haveGroup = true; } else { ginfo = []; }
+            var gid = ginfo[0];
+            var gtitle = ginfo[1];
+            // If ID is the same, extend previous group, otherwise create a new cell
+            if(gid === lastCell.gid) {
+                lastCell.colspan++;
+            } else {
+                lastCell = {gid:gid, title:gtitle, colspan:1};
+                cells.push(lastCell);
+            }
+        }
+        if(!haveGroup) { break; }
+        if(cells[0].colspan === 0) { cells.shift(); } // delete zero width column if first was in group
+        groupHeaderRows.unshift(cells);
+        groupIndex++;
+    }
+
     // Locally scoped copy of row attribute generator functions
     var rowAttributeFns = this.$rowAttributeFns;
 
@@ -67,6 +97,7 @@ DashboardList.prototype._makeDashboardView = function(hideExport) {
         layout: "std:wide",
         dashboard: this,
         widgetsTop: _.map(this.$uiWidgetsTop, function(f) { return f(); }),
+        groupHeaderRows: groupHeaderRows,
         columns: columns,
         rowsHTML: rowsHTML
     };
@@ -89,7 +120,7 @@ DashboardList.prototype._respondWithExport = function() {
     var xls = O.generate.table.xlsx(this.specification.title);
     xls.newSheet(this.specification.title, true);
     _.each(columns, function(c) {
-        xls.cell(c.heading);
+        xls.cell(c.exportHeading);
         // Blank heading cells required?
         var w = c.exportWidth;
         while((--w) > 0) { xls.cell(''); }
@@ -212,6 +243,8 @@ var makeColumnType = function(info) {
     var t = function(collection, colspec) {
         this.fact = colspec.fact;
         this.heading = colspec.heading || '????';
+        this.exportHeading = colspec.exportHeading || this.heading;
+        this.groups = colspec.groups;
         this.columnStyle = colspec.style;
         if(info.construct) { info.construct.call(this, collection, colspec); }
     };
@@ -272,6 +305,52 @@ RefColumn.prototype.renderCellInner = function(row) {
                           this.escapedTitles.get(value);
     } else {
         return '';
+    }
+};
+
+// --------------------------------------------------------------------------
+
+var refPersonNameColumnFieldsFn = function(r) {
+    var object = r.load();
+    if(!object) { return null; }
+    var title = object.firstTitle();
+    if(O.typecode(title) === O.T_TEXT_PERSON_NAME) {
+        var fields = title.toFields();
+        fields.url = object.url();
+        return fields;
+    } else {
+        return {url:object.url(), last:title.toString()};
+    }
+};
+
+var RefPersonNameColumn = makeColumnType({
+    type: "ref-person-name",
+    construct: function(collection, colspec) {
+        this.link = colspec.link;
+        this.objectFields = O.refdict(refPersonNameColumnFieldsFn);
+    }
+});
+
+RefPersonNameColumn.prototype.renderCellInner = function(row) {
+    var value = row[this.fact];
+    if(value) {
+        var fields = this.objectFields.get(value);
+        var escapedName = _.escape(fields.first ? (''+fields.last+', '+fields.first) : fields.last);
+        return this.link ? '<a href="'+_.escape(fields.url)+'">'+escapedName+'</a>' : escapedName;
+    } else {
+        return '';
+    }
+};
+
+RefPersonNameColumn.prototype.exportWidth = 3;
+
+RefPersonNameColumn.prototype.exportCell = function(row, xls) {
+    var value = row[this.fact];
+    if(value) {
+        var fields = this.objectFields.get(value);
+        xls.cell(fields.last).cell(fields.first).cell(fields.title);
+    } else {
+        xls.cell().cell().cell();
     }
 };
 

@@ -99,8 +99,9 @@ module TestStoreHelper
     KObjectStore::TEXTIDX_FLAG_REINDEX.clearFlag()
     # Initialise the store
     KObjectLoader.load_store_initialisation
-    # Do any text indexing required
-    run_outstanding_text_indexing :expected_reindex => false, :expected_work => true
+    # Do text indexing
+    KObjectStore.reindex_all_objects
+    run_outstanding_text_indexing :expected_reindex => true, :expected_work => true
   end
 
   class NoVaccumingObjHandler < KObjectLoader::DefaultObjectHandler

@@ -179,6 +179,10 @@ module KEditor
     # Transform object using aliases, ignoring non-editable fields
     # This also puts things in the right order according to the type description
     obj_values = KAttrAlias.attr_aliasing_transform(obj, schema) do |v,desc,q,is_alias|
+      if is_alias
+        td = schema.aliased_attribute_descriptor(desc)
+        next false if td && read_only_attributes.include?(td.alias_of)
+      end
       !(read_only_attributes.include?(desc))
     end
 
@@ -199,7 +203,10 @@ module KEditor
       descriptor = toa.descriptor
       values = toa.attributes
 
-      next if read_only_attributes && read_only_attributes.include?(descriptor.desc)
+      if read_only_attributes
+        next if descriptor.alias_of && read_only_attributes.include?(descriptor.alias_of)
+        next if read_only_attributes.include?(descriptor.desc)
+      end
 
       if descriptor.data_type == T_TEXT_PLUGIN_DEFINED
         plugin_types_used << descriptor.data_type_options
@@ -307,7 +314,7 @@ module KEditor
   # opts
   #   :attrs_present -> Array to fill with descs used
   #
-  def self.apply_tokenised_to_obj(tokenised, obj, opts = nil)
+  def self.apply_tokenised_to_obj(tokenised, obj, opts = {})
     unedited_object = obj.dup
 
     # Need schema for aliased attributes
@@ -316,8 +323,9 @@ module KEditor
     # Find the current type of the object in case the user deletes all the types
     original_type = obj.first_attr(A_TYPE)
 
-    attrs_present = (opts == nil) ? nil : opts[:attrs_present]
-    no_aliasing = (opts == nil) ? false : opts[:no_aliasing]
+    attrs_present = opts[:attrs_present]
+    no_aliasing = !!(opts[:no_aliasing])
+    read_only_attributes = (opts[:read_only_attributes] || [])
 
     # Split the string into an array of tokens, then unescape them in place
     tokens = tokenised.split(/`/)
@@ -337,26 +345,26 @@ module KEditor
     attrs_decoded = Array.new
 
     # Read data
+    omit_value = nil # for enforcing the read only attributes (which may be used for security)
     while(i < len && !decode_error)
       case tokens[i]
       when 'A'  # attribute starts
         desc = tokens[i+KE_A_DESC].to_i
         null_qualifier_rewrite = Q_NULL
+        omit_value = read_only_attributes.include?(desc) # potentially aliased
 
         # Does this refer to a aliased attribute?
         alias_descriptor = no_aliasing ? nil : schema.aliased_attribute_descriptor(desc)
         if alias_descriptor != nil
           # Rewrite desc
           desc = alias_descriptor.alias_of
+          omit_value = true if read_only_attributes.include?(desc) # unaliased
           # Need to adjust the qualifier?
           sq = alias_descriptor.specified_qualifiers
           null_qualifier_rewrite = sq.first if sq.length == 1
-          # Mark the underlying desc replacement
-          descs_replaced[alias_descriptor.alias_of] = true
-        else
-          # NOT alias - mark the desc as needing replacement
-          descs_replaced[desc] = true
         end
+        # Mark the underlying desc replacement (has been unaliased above)
+        descs_replaced[desc] = true unless omit_value
 
         # Move to next bit
         i += KE_A__LEN
@@ -372,7 +380,7 @@ module KEditor
           if inc != nil
             i += inc + KE_V__DATA
             # Add the attribute
-            attrs_decoded << [val, desc, qualifier]
+            attrs_decoded << [val, desc, qualifier] unless omit_value
             ok = true
           end
         end

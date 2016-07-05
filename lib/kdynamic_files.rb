@@ -47,7 +47,7 @@ module KDynamicFiles
         # File from a plugin
         response = KPlugin.generate_plugin_static_file_response(filename)
 
-      elsif filename =~ /\.css/
+      elsif filename =~ /\.css\z/
         css = nil
         css_method = STYLESHEET_FILENAME_TO_METHOD[filename]
         css = evaluator.send(css_method) if css_method != nil

@@ -146,7 +146,7 @@ td.z__std_workflow_success {
     cursor: pointer;
 }
 
-.tablesort th:hover {
+.tablesort th:hover:not(.z__std_reporting_list_group_header_cell) {
     background: #bbb !important;
 }
 

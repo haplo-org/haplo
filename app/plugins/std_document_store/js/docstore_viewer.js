@@ -40,11 +40,11 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
             var selectedFormId = this.selectedFormId = E.request.parameters.form;
             var tabs = this.tabs = [];
             _.each(instance.forms, function(form, index) {
-                var selected = (!selectedFormId && index === 0) || (selectedFormId === form.specification.formId);
+                var selected = (!selectedFormId && index === 0) || (selectedFormId === form.formId);
                 tabs.push({
                     href: instance.keyId,
-                    parameters: {form: form.specification.formId},
-                    label: form.specification.formTitle,
+                    parameters: {form: form.formId},
+                    label: form.formTitle,
                     selected: selected
                 });
             });

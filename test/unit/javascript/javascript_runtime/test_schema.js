@@ -37,12 +37,13 @@ TEST(function() {
     TEST.assert(o2.isKindOf(TYPE["std:type:book"])); // second type
     TEST.assert(!(o2.isKindOf(TYPE["std:type:intranet-page"])));
 
-    // Check schema queries
+    // Check attribute queries
     var titleInfo = SCHEMA.getAttributeInfo(ATTR["dc:attribute:title"]);
     TEST.assert_equal("Title", titleInfo.name);
     TEST.assert_equal("dc:attribute:title", titleInfo.code);
     TEST.assert_equal("title", titleInfo.shortName);
     TEST.assert_equal(O.T_TEXT, titleInfo.typecode);
+    TEST.assert(_.isEqual([QUAL["std:qualifier:null"],QUAL["dc:qualifier:alternative"]], titleInfo.allowedQualifiers));
     var clientInfo = SCHEMA.getAttributeInfo(ATTR["std:attribute:client"]);
     TEST.assert_equal("Client", clientInfo.name);
     TEST.assert_equal("std:attribute:client", clientInfo.code);
@@ -51,6 +52,7 @@ TEST(function() {
     TEST.assert_equal(1, clientInfo.types.length);
     TEST.assert(clientInfo.types[0] instanceof $Ref);
     TEST.assert(TYPE["std:type:organisation"] == clientInfo.types[0]);
+    TEST.assert(_.isEqual([QUAL["std:qualifier:null"]], clientInfo.allowedQualifiers));
 
     // Check qualifier queries
     var altInfo = SCHEMA.getQualifierInfo(QUAL["dc:qualifier:alternative"]);

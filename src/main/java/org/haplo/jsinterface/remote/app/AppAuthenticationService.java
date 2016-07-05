@@ -16,4 +16,6 @@ public interface AppAuthenticationService {
     public void disconnect();
 
     public String authenticate(String username, String password);
+
+    public String search(String criteria);
 }

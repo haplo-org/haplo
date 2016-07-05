@@ -136,6 +136,11 @@ class KFramework
     @start_time
   end
 
+  # Installation properties
+  def get_install_property(name, default_value)
+    KInstallProperties.get(name.to_sym, default_value)
+  end
+
   def devmode_setup
     # Empty for production mode (overridden in kframework_devmode)
   end

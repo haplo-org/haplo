@@ -96,7 +96,10 @@ class KPlugin
 
   def get_bundled_file_pathname(directory, pathname, restricted_mime_type_choice = true)
     # Security check, to make sure it's a filename without any traversal attempts
-    return nil unless pathname =~ PLUGIN_BUNDLED_PATHNAME_ALLOWED_REGEX
+    unless pathname =~ PLUGIN_BUNDLED_PATHNAME_ALLOWED_REGEX
+      KApp.logger.error("Possible attempted file traversal attack when reading plugin bundled file in #{directory}: #{pathname}")
+      return nil
+    end
     extension = $3
     # Make the pathname within the directory
     full_pathname = "#{plugin_path}/#{directory}/#{pathname}"

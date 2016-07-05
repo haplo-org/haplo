@@ -27,3 +27,27 @@ ou: Department X
 uid: testuser
 userPassword: testpassword1111
 description: "Test user for testing"
+
+dn: uid=testy,ou=Department Y,dc=example,dc=com
+objectClass: person
+objectClass: organizationalPerson
+objectClass: uidObject
+objectClass: top
+sn: User
+cn: Test Y
+ou: Department Y
+uid: testy
+userPassword: passtest9876
+description: "Second test user"
+
+dn: uid=testy2,ou=Department Y,dc=example,dc=com
+objectClass: person
+objectClass: organizationalPerson
+objectClass: uidObject
+objectClass: top
+sn: User
+cn: Test Y2
+ou: Department Y
+uid: testy2
+userPassword: ping238734
+description: "Third test user"

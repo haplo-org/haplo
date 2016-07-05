@@ -34,9 +34,20 @@ if(widgetsTop) {
 
 each(dashboard.$displays.above-table) { render(.) }
 
-<table id="z__std_reporting_list_filterable_table" class="tablesort z__std_reporting_dashboard_table_no_wrapping">
+<table id="z__std_reporting_list_filterable_table" class=[
+      "tablesort"
+      // TODO: Work out how to lay out tables with grouping headers a bit better
+      unless(groupHeaderRows){"z__std_reporting_dashboard_table_no_wrapping"}
+]>
   <thead>
     <tr>
+      each(groupHeaderRows) {
+        <tr>
+          each(.) {
+            <th colspan=colspan class="z__std_reporting_list_group_header_cell"> title </th>
+          }
+        </tr>
+      }
       each(columns) {
         <th class=switch(columnStyle) {}
                     wide   { "z__std_reporting_list_column_wide" }

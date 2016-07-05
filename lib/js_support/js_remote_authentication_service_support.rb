@@ -84,6 +84,14 @@ module JSRemoteAuthenticationServiceSupport
       KApp.logger.info("JS remote authentication result was #{auth_info["result"]}, full info returned: #{json}")
       json
     end
+    def search(criteria)
+      results = do_search(criteria) || []
+      KApp.logger.info("JS remote search for #{criteria} returned #{results.length} results")
+      JSON.generate(results)
+    end
+    def do_search(criteria)
+      []
+    end
   end
 
   # -----------------------------------------------------------------------------------------------------------
@@ -126,10 +134,12 @@ module JSRemoteAuthenticationServiceSupport
 
   class LDAPAuthenticationService < ConnectionlessService
     EXTERNAL_TIMEOUT = 4000 # 4 seconds
+    EXTERNAL_TIMEOUT_SEARCH = 30000 # 30 seconds
+    LDAP_SEARCH_RESULT_PAGE_SIZE = 2048
     DEFAULT_TRUSTED_ROOTS_KEYSTORE = "#{java.lang.System.getProperty('java.home')}/lib/security/cacerts"
 
     # Which attributes should be extracted for the user info?
-    ATTRS_SINGLE = ['distinguishedName', 'personalTitle', 'mail', 'uid', 'name', 'uidNumber', 'sn', 'cn', 'givenName', 'displayName', 'userPrincipalName', 'sAMAccountName']
+    ATTRS_SINGLE = ['distinguishedName', 'personalTitle', 'mail', 'uid', 'name', 'uidNumber', 'sn', 'cn', 'givenName', 'displayName', 'userPrincipalName', 'sAMAccountName', 'description']
     ATTRS_MULTIPLE = ['memberOf']
     ATTRS_REQUESTED = ATTRS_SINGLE.concat(ATTRS_MULTIPLE).map {|a| a.to_java_string}
 
@@ -139,12 +149,10 @@ module JSRemoteAuthenticationServiceSupport
     def getName
       @credential.name
     end
-    def do_authenticate(username, password)
-      auth_info = nil
 
-      return {"result" => "failure", "failureInfo" => "Usernames cannot contain whitespace"} if username =~ /\s/
-      return {"result" => "error", "errorInfo" => "Search string from keychain cannot contain whitespace"} if @credential.account["Search"] =~ /\s/
+    # -----------------------------------------------------------------------
 
+    def with_configured_server
       server = URI(@credential.account['URL'])
       raise "Protocol '#{server.scheme}' not supported" unless server.scheme == "ldaps"
 
@@ -152,7 +160,6 @@ module JSRemoteAuthenticationServiceSupport
       # throughout the remote authentication process because the Unbound SDK reads it at an unhelpful point in time.
       # TODO: Rewrite LDAP SSL connections using raw Java APIs to have more control over lifetimes, and cache socket factories.
       tempfile = nil
-      auth_info = nil
       begin
         # Determine the CA trust manager
         trustCA = nil
@@ -192,25 +199,15 @@ module JSRemoteAuthenticationServiceSupport
         socketFactory = sslUtil.createSSLSocketFactory()
 
         # Rest of the authentication process
-        auth_info = do_authenticate_with_socket_factory(username, password, server, socketFactory)
+        yield server, socketFactory
       ensure
         tempfile.unlink if tempfile
       end
-      auth_info
     end
 
-    def do_authenticate_with_socket_factory(username, password, server, socketFactory)
-      # Since this is using a Java interface, use a Java-ish style of coding.
-      # Use the Java::... names inline, rather than making nice constants, so the code is only loaded
-      # when it's actually used.
-
-      # Interpolate the username into the search filter
-      # Don't use gsub as the \ back references confict with the escaping mechanism
-      searchFilter = @credential.account["Search"].dup
-      searchFilter['{0}'] = Java::ComUnboundidLdapSdk::Filter.encodeValue(username.to_java_string)
-
+    def with_search_connection_for_each_search_path(server, socketFactory)
+      search_succeeded = true
       searchConnection = nil
-      result = nil
       begin
         # Log into server
         searchConnection = Java::ComUnboundidLdapSdk::LDAPConnection.new(socketFactory)
@@ -220,52 +217,90 @@ module JSRemoteAuthenticationServiceSupport
         # Search each of the configured paths...
         searchPaths = @credential.account["Path"].split(/\s+:\s+/)
         searchPaths.each do |path|
-          searchResults = searchConnection.search(
-              path, # baseDN to search
-              Java::ComUnboundidLdapSdk::SearchScope::SUB, # search the entire subtree
-              Java::ComUnboundidLdapSdk::DereferencePolicy::SEARCHING,  # resolve aliases in the search,
-              1,  # max entries to return
-              EXTERNAL_TIMEOUT / 1000,  # in seconds
-              false,  # values as well as types
-              searchFilter,
-              *ATTRS_REQUESTED
-            )
-
-          if searchResults.getEntryCount() > 0
-            result = searchResults.getSearchEntries().first
-            break
-          end
-        end
-        # If nothing found, report failure
-        unless result
-          KApp.logger.info("Couldn't find user when searching LDAP directory")
-          auth_info = {"result" => "failure"}
+          break unless yield searchConnection, path
         end
       rescue => e
         KApp.logger.error("Exception when attempting to search LDAP server")
         KApp.logger.log_exception(e)
-        auth_info = {"result" => "error"}
+        search_succeeded = false
       ensure
         searchConnection.close() if searchConnection
       end
+      search_succeeded
+    end
 
-      return auth_info if auth_info
-
-      # Collect all the interesting information from the user
+    def get_ldap_user_information(ldap_user)
       user = {}
       ATTRS_SINGLE.each do |attrName|
-        value = result.getAttribute(attrName)
+        value = ldap_user.getAttribute(attrName)
         user[attrName] = value.getValue() if value
       end
       ATTRS_MULTIPLE.each do |attrName|
-        value = result.getAttribute(attrName)
+        value = ldap_user.getAttribute(attrName)
         user[attrName] = (value ? value.getValues() : []).map {|v| v.to_s} # note getValues(), with an 's'
       end
-
       unless user['distinguishedName']
-        user['distinguishedName'] = result.getDN()
+        user['distinguishedName'] = ldap_user.getDN()
+      end
+      user
+    end
+
+    # -----------------------------------------------------------------------
+
+    def do_authenticate(username, password)
+      auth_info = nil
+
+      return {"result" => "failure", "failureInfo" => "Usernames cannot contain whitespace"} if username =~ /\s/
+      return {"result" => "error", "errorInfo" => "Search string from keychain cannot contain whitespace"} if @credential.account["Search"] =~ /\s/
+
+      with_configured_server do |server, socketFactory|
+        auth_info = do_authenticate_with_server(username, password, server, socketFactory)
       end
 
+      auth_info
+    end
+
+    def do_authenticate_with_server(username, password, server, socketFactory)
+      # Since this is using a Java interface, use a Java-ish style of coding.
+      # Use the Java::... names inline, rather than making nice constants, so the code is only loaded
+      # when it's actually used.
+
+      # Interpolate the username into the search filter
+      # Don't use gsub as the \ back references confict with the escaping mechanism
+      searchFilter = @credential.account["Search"].dup
+      searchFilter['{0}'] = Java::ComUnboundidLdapSdk::Filter.encodeValue(username.to_java_string)
+
+      result = nil
+      search_succeeded = with_search_connection_for_each_search_path(server, socketFactory) do |searchConnection, path|
+        searchResults = searchConnection.search(
+            path, # baseDN to search
+            Java::ComUnboundidLdapSdk::SearchScope::SUB, # search the entire subtree
+            Java::ComUnboundidLdapSdk::DereferencePolicy::SEARCHING,  # resolve aliases in the search,
+            1,  # max entries to return
+            EXTERNAL_TIMEOUT / 1000,  # in seconds
+            false,  # values as well as types
+            searchFilter,
+            *ATTRS_REQUESTED
+          )
+
+        if searchResults.getEntryCount() > 0
+          result = searchResults.getSearchEntries().first
+          false
+        else
+          true  # continue with search
+        end
+      end
+
+      return {"result" => "error"} unless search_succeeded
+
+      # If nothing found, report failure
+      unless result
+        KApp.logger.info("Couldn't find user when searching LDAP directory")
+        return {"result" => "failure"}
+      end
+
+      # Collect all the interesting information from the user
+      user = get_ldap_user_information(result)
       KApp.logger.info("LDAP search for '#{username}' found distinguishedName of #{user['distinguishedName']}")
 
       # Attempt to log into the LDAP server using the user's DN and given password
@@ -291,6 +326,43 @@ module JSRemoteAuthenticationServiceSupport
 
       auth_info
     end
+
+    # -----------------------------------------------------------------------
+
+    def do_search(criteria)
+      results = []
+      with_configured_server do |server, socketFactory|
+        with_search_connection_for_each_search_path(server, socketFactory) do |searchConnection, path|
+          resumeCookie = nil
+          searchRequest = Java::ComUnboundidLdapSdk::SearchRequest.new(
+              path, # baseDN to search
+              Java::ComUnboundidLdapSdk::SearchScope::SUB, # search the entire subtree
+              Java::ComUnboundidLdapSdk::DereferencePolicy::SEARCHING,  # resolve aliases in the search,
+              0,  # return all results
+              EXTERNAL_TIMEOUT_SEARCH / 1000,  # in seconds
+              false,  # values as well as types
+              criteria,
+              *ATTRS_REQUESTED
+            )
+          while true
+            searchRequest.setControls(Java::ComUnboundidLdapSdkControls::SimplePagedResultsControl.new(LDAP_SEARCH_RESULT_PAGE_SIZE, resumeCookie))
+            searchResults = searchConnection.search(searchRequest)
+            searchResults.getSearchEntries().each do |ldap_user|
+              results.push get_ldap_user_information(ldap_user)
+            end
+            responseControl = Java::ComUnboundidLdapSdkControls::SimplePagedResultsControl.get(searchResults)
+            if responseControl.moreResultsToReturn()
+              resumeCookie = responseControl.getCookie()
+            else
+              break
+            end
+          end
+          true # continue with search
+        end
+      end
+      results
+    end
+
   end
 
 end

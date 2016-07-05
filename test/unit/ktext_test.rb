@@ -120,6 +120,7 @@ __E
 
   def test_doc_html
     assert_equal "<ul><li>Item 1</li><li>Item 2</li></ul>", KTextDocument.new('<doc><li>Item 1</li><li>Item 2</li></doc>').to_html
+    assert_equal "<ul><li>Item 1</li><li>Item 2</li></ul>", KTextDocument.new("<doc>\n    <li>Item 1</li>\n    <li>Item 2</li>\n</doc>").to_html
     assert_equal "<h1>Heading</h1><ul><li>Item 1</li><li>Item 2</li></ul><p>Hello</p>", KTextDocument.new('<doc><h1>Heading</h1><li>Item 1</li><li>Item 2</li><p>Hello</p></doc>').to_html
     assert_equal "<p>Text</p><p>abc</p>", KTextDocument.new(%Q!<doc><p>Text</p><p>abc</p></doc>!).to_html
     assert_equal "<h1>Pants</h1><p>Text</p>", KTextDocument.new(%Q!<doc><h1>Pants</h1><widget type="W"><v name="attr">val</v></widget><p>Text</p></doc>!).to_html

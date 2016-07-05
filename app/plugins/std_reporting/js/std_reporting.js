@@ -42,9 +42,9 @@ var PROHIBITED_DATA_TYPES = ['link', 'user', 'file'];
 
 // Fields required for the implementation of the collection. Prefixed with xImpl to minimise naming collisions.
 var IMPL_COLLECTION_FIELDS = Object.seal({
-    ref: {type:"ref"},
     xImplValidFrom: {type:"datetime"},
     xImplValidTo: {type:"datetime", nullable:true, indexedWith:['xImplValidFrom']}
+    // also, a required 'ref' fact is created in _ensureSpecGathered()
 });
 
 var collectionNameToDatabaseTableFragment = function(name) {
@@ -128,9 +128,12 @@ var Collection = function(name, description, categories) {
 // Do minimal work to get enough enough info about the collection info so hooks execute as quickly as possible
 Collection.prototype._ensureSpecGathered = function() {
     if(this.$factFieldDefinition) { return this; }
-    this.$factFieldDefinition = {};
-    this.$factType = {};
-    this.$factDescription = {};
+
+    // Initialise the fact definitions with the required 'ref' fact
+    this.$factFieldDefinition = {ref:{type:"ref"}};
+    this.$factType = {ref:"ref"};
+    this.$factDescription = {ref:"Reporting object"};
+
     this.$filters = {"$DEFAULT":[],"$ALL":[]};
     this.$statistics = {"count": {
         name: "count",

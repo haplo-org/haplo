@@ -219,7 +219,7 @@ class KTextDocument < KText
     def initialize(max_chars = nil, widget_renderer = nil)
       @output = []
       @tag_level = 0
-      @block_element = 0
+      @block_element = nil
       @chars_left = max_chars # for truncation
       @widget_renderer = widget_renderer
     end

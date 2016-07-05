@@ -46,4 +46,9 @@ TEST(function() {
         new $HaploTemplate('<div> NAME(something) </div>', 'test').render();
     }, "When rendering template 'test': Literal string argument expected for NAME()");
 
+    // Simulate calling NAME() during plugin load
+    $registry.services = {};
+    TEST.assert_equal("trans during load X", NAME("trans during load"));
+    TEST.assert_equal("during load", NAME("during load"));
+
 });
