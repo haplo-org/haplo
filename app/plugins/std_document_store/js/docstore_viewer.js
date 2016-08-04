@@ -76,6 +76,12 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
             this.version = requestedVersion[0].version;
         }
     }
+
+    // Get any additional UI to display
+    var delegate = this.instance.store.delegate;
+    if(delegate.getAdditionalUIForViewer) {
+        this.additionalUI = delegate.getAdditionalUIForViewer(this.instance.key, this.instance, this.document);
+    }
 };
 
 // ----------------------------------------------------------------------------
@@ -97,6 +103,10 @@ DocumentViewer.prototype.__defineGetter__("sidebarHTML", function() {
 });
 
 // ----------------------------------------------------------------------------
+
+DocumentViewer.prototype.__defineGetter__("_viewerForms", function() {
+    return this.instance._displayForms(this.document);
+});
 
 DocumentViewer.prototype.__defineGetter__("_viewerBody", function() {
     var viewerBodyTemplate = this.style ? "viewer_body_"+this.style : "viewer_body";

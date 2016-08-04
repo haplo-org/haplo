@@ -103,6 +103,7 @@ class KObject
   end
 
   def add_attr(value, desc, qualifier = Q_NULL)
+    raise "Restricted objects are read-only" if @restricted
     value = convert_attr_value(value)
     @attrs << [desc.to_i, qualifier.to_i, value]
     value
@@ -121,7 +122,7 @@ class KObject
   end
   def _comparison_values(desc, qualifier)
     if desc == nil
-      raise "qualifier can't be nil if desc == nil" if qualifier != nil
+      raise "qualifier must be nil if desc == nil" if qualifier != nil
       # No desc specified, so values need sorting by desc, but preserve the order within them
       by_desc = Hash.new { |h,k| h[k] = [] }
       @attrs.each { |d,q,v| by_desc[d].push([d,q,v]) }
@@ -135,6 +136,7 @@ class KObject
   end
 
   def delete_attrs!(desc, qualifier = nil)
+    raise "Restricted objects are read-only" if @restricted
     @attrs.delete_if { |i| i[0] == desc && (qualifier == nil || i[1] == qualifier) }
   end
 
@@ -277,6 +279,89 @@ class KObject
       raise "Bad value" if value == nil
       self.add_attr(value, dd.desc, (qd == nil) ? Q_NULL : qd.desc)
     end
+  end
+
+  # =============================================================================================================
+  #   Attribute restrictions
+  # =============================================================================================================
+  def _test_set_restrictions(hidden, readonly)
+    self.store._test_set_restrictions_for_type(first_attr(A_TYPE), hidden, readonly)
+  end
+
+  def hidden_attrs
+    self.store.attribute_restrictions_for_type(first_attr(A_TYPE))
+  end
+
+  def read_only_attrs
+    self.store.attribute_readonly_for_type(first_attr(A_TYPE))
+  end
+
+  def can_read?(desc, labels)
+    ha = hidden_attrs()
+    if not ha.has_key?(desc)
+      true
+    else
+      (ha[desc] & labels).length > 0
+    end
+  end
+
+  def hidden_restricted_attributes(labels)
+    _find_restricted_attributes(labels, hidden_attrs)
+  end
+
+  def read_only_restricted_attributes(labels)
+    _find_restricted_attributes(labels, read_only_attrs)
+  end
+
+  def _find_restricted_attributes(labels, attrs)
+    a = []
+    attrs.each do |desc, attr_labels|
+      a << desc if (attr_labels & labels).length == 0
+    end
+    a.uniq
+  end
+
+  def can_modify?(desc, labels)
+    ra = read_only_attrs()
+    if not ra.has_key?(desc)
+      true
+    else
+      (ra[desc] & labels).length > 0
+    end
+  end
+
+  def restricted?()
+    @restricted
+  end
+
+  # Duplicate the object, only including attritbutes not hidden to holders of the given labels
+  def dup_restricted(labels)
+    raise "Already restricted" if @restricted
+    obj = self.dup
+    obj.restrict_to(labels)
+    obj
+  end
+
+  def restrict_to(labels)
+    raise "Already restricted" if @restricted
+    new_attrs = Array.new
+    @attrs.each do |attr|
+      desc = attr[0]
+      if hidden_attrs.has_key?(desc)
+        if (hidden_attrs[desc] & labels).length > 0
+          # Hidden, but not from these labels
+          new_attrs << attr
+        else
+          # Hidden, and we don't have the labels to view it, so don't pass this value on
+        end
+      else
+        # Not hidden at all
+        new_attrs << attr
+      end
+    end
+    @restricted = true
+    @attrs = new_attrs
+    self.freeze
   end
 
   # =============================================================================================================

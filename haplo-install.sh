@@ -19,7 +19,7 @@
 # The following assumptions are made:
 #
 # that we're running Ubuntu 14.04LTS or later
-#   (14.04LTS or 15.10 are the tested configurations)
+#   (14.04LTS, 15.10, 16.04 are the tested configurations)
 # that the system architecture is 64-bit
 # that the system is dedicated to Haplo
 # that the current user can use sudo to manage the system
@@ -56,6 +56,7 @@ echo ""
 echo " *** Haplo installing packages ***"
 PG_VERSION=9.3
 FIX_MAVEN=Y
+XAPIAN_PKG=libxapian22v5
 if [ -f /etc/os-release ]; then
     LNAME=`grep '^NAME=' /etc/os-release | awk -F= '{print $2}' | sed 's:"::g'`
     if [ "X$LNAME" != "XUbuntu" ]; then
@@ -66,12 +67,17 @@ if [ -f /etc/os-release ]; then
     case $UVER in
 	'14.04')
 	    PG_VERSION=9.3
+	    XAPIAN_PKG=libxapian22
 	    ;;
 	'15.04')
 	    PG_VERSION=9.4
 	    ;;
 	'15.10')
 	    PG_VERSION=9.4
+	    FIX_MAVEN=N
+	    ;;
+	'16.04')
+	    PG_VERSION=9.5
 	    FIX_MAVEN=N
 	    ;;
 	'*')
@@ -112,7 +118,7 @@ sudo apt-get update
 #  patch to apply patches
 #  git to check out our source code
 #
-sudo apt-get -y install g++ make openjdk-8-jdk maven avahi-daemon uuid-dev curl patch git
+sudo apt-get -y install g++ make openjdk-8-jdk maven avahi-daemon uuid-dev curl patch git ${XAPIAN_PKG}
 sudo apt-get -y install postgresql-${PG_VERSION} postgresql-server-dev-${PG_VERSION} postgresql-contrib-${PG_VERSION}
 #
 # supervisord is used by the application to control worker processes
@@ -375,7 +381,7 @@ case $# in
 1)
     if [ ! -f /haplo/sslcerts/server.crt ]; then
 	echo " *** Haplo creating server certificate ***"
-	./deploy/make_cert $1 > /dev/null
+	./deploy/make_cert.sh $1 > /dev/null
 	sudo su haplo -c 'cd /tmp/haplo-sslcerts ; cp server.crt  server.crt.csr  server.key /haplo/sslcerts'
 	rm -fr /tmp/haplo-sslcerts
 	echo " *** Haplo server certificate created and installed ***"
@@ -399,6 +405,9 @@ if [ -f /haplo/sslcerts/server.crt ]; then
 	    sudo systemctl start haplo.service
 	    sleep 5
 	    echo " *** Haplo startup enabled ***"
+	else
+	    sudo systemctl start haplo.service
+	    sleep 5
 	fi
     else
 	if [ ! -f /etc/init.d/haplo ]; then

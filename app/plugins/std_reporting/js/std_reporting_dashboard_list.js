@@ -174,7 +174,7 @@ P.registerReportingFeature("std:row_object_filter", function(dashboard, spec) {
         throw new Error("std:row_object_filter needs a fact specified, which must exist and be a ref.");
     }
     // Add attributes to the rows
-    var attrName = 'data-'+fact;
+    var attrName = 'data-'+fact.toLowerCase();
     dashboard.$rowAttributeFns.push(function(row, attrs) {
         var value = row[fact];
         if(value !== null) {
@@ -197,7 +197,7 @@ P.registerReportingFeature("std:row_object_filter", function(dashboard, spec) {
         }
         // Render!
         return P.template("dashboard/list/widget_object_filter").deferredRender({
-            fact: fact,
+            fact: fact.toLowerCase(),
             placeholder: placeholder,
             objects: objects
         });

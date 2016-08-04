@@ -54,6 +54,7 @@ CREATE TABLE os_index_int (
     id INT NOT NULL,
     attr_desc INT NOT NULL,     -- Attribute Descriptor, as int (can't use 'desc' as name)
     qualifier INT NOT NULL,     -- Attribute Qualifier, as int
+    restrictions INT[],         -- Restriction labels, or NULL for none
     value INT NOT NULL
 );
 CREATE INDEX os_index_int_idx ON os_index_int(id,attr_desc,qualifier);
@@ -63,6 +64,7 @@ CREATE TABLE os_index_link (
     id INT NOT NULL,
     attr_desc INT NOT NULL,     -- Attribute Descriptor, as int (can't use 'desc' as name)
     qualifier INT NOT NULL,     -- Attribute Qualifier, as int
+    restrictions INT[],         -- Restriction labels, or NULL for none
     value int[] NOT NULL,
     object_id INT NOT NULL      -- os_objects(id) of the object linked to
 );
@@ -73,18 +75,11 @@ CREATE INDEX os_index_link_v_idx ON os_index_link using gist (value gist__int_op
 --CREATE INDEX os_index_link_v_idx ON os_index_link using gin (value);    -- GIN performs better than GiST on ints
 CREATE INDEX os_index_link_i_idx ON os_index_link(object_id,attr_desc,qualifier);
 
-CREATE TABLE os_index_link_pending ( -- if links are created to objects which don't exist yet, they go here
-    id INT NOT NULL,
-    attr_desc INT NOT NULL,     -- Attribute Descriptor, as int (can't use 'desc' as name)
-    qualifier INT NOT NULL,     -- Attribute Qualifier, as int
-    link_to_obj_id INT NOT NULL
-);
-CREATE INDEX idx_os_index_link_pending ON os_index_link_pending(link_to_obj_id);
-
 CREATE TABLE os_index_identifier (
     id INT NOT NULL,
     attr_desc INT NOT NULL,     -- Attribute Descriptor, as int (can't use 'desc' as name)
     qualifier INT NOT NULL,     -- Attribute Qualifier, as int
+    restrictions INT[],         -- Restriction labels, or NULL for none
     identifier_type INT NOT NULL, -- k_typecode
     value TEXT NOT NULL         -- Text of identifier value
 );
@@ -95,6 +90,7 @@ CREATE TABLE os_index_datetime (
     id INT NOT NULL,
     attr_desc INT NOT NULL,     -- Attribute Descriptor, as int (can't use 'desc' as name)
     qualifier INT NOT NULL,     -- Attribute Qualifier, as int
+    restrictions INT[],         -- Restriction labels, or NULL for none
     value TIMESTAMP NOT NULL,   -- Beginning of range (inclusive)
     value2 TIMESTAMP NOT NULL   -- End of range (exclusive)
 );

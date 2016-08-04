@@ -102,6 +102,8 @@ class KObjectStore
     @statistics = Statistics.new
     # Create a delegate object -- TODO: Don't hardcode this.
     @delegate = KObjectStoreApplicationDelegate.new
+    @hidden_attrs_for_type = {}
+    @readonly_attrs_for_type = {}
   end
 
   def _delegate
@@ -618,13 +620,37 @@ class KObjectStore
 
   # ----------------------------------------------------------------------------------------------------------
 
+  # Attribute restriction cache, used by KObject
+  def attribute_restrictions_for_type(type)
+    @hidden_attrs_for_type[type] ||= (_restrictions_for_type(type) { |td| td.attributes_restrictions })
+  end
+
+  def attribute_readonly_for_type(type)
+    @readonly_attrs_for_type[type] ||= (_restrictions_for_type(type) { |td| td.attributes_read_only })
+  end
+
+  def _restrictions_for_type(type)
+    td = schema.type_descriptor(type)
+    td = schema.type_descriptor(td.root_type) if td != nil
+    (td ? yield(td) : nil) || {}
+  end
+
+  def _test_set_restrictions_for_type(type, hidden, readonly)
+    @hidden_attrs_for_type[type] = hidden
+    @readonly_attrs_for_type[type] = readonly
+  end
+
+  # ----------------------------------------------------------------------------------------------------------
+
 private
+
   # Types for index tables
   ALL_INDEX_TABLES = %w(int link datetime identifier) # update next line too
 
   # Store changes in the database
   def create_or_update(create_operation, obj, label_changes, obj_id_required = nil)
     raise "Object is frozen" if obj.frozen? # only mutable objects can be saved
+    raise "Object is restricted" if obj.restricted?
     obj_id = nil
     operation = (create_operation ? :create : :update)
     label_changes ||= KLabelChanges.new # default to making no changes
@@ -702,24 +728,26 @@ private
       unless obj.version == previous_version_of_obj.version
         raise "Not updating the correct version of an object"
       end
+    end
 
-      # When updating, it's necessary to check that the parent of the object doesn't change
-      r = pg.exec("SELECT value FROM os_index_link WHERE id=#{obj_id} AND attr_desc=#{A_PARENT} LIMIT 1").result
-      old_parent_path = (r.length > 0) ? decode_intarray(r.first[0]) : nil
-      if parent_path != old_parent_path
-        # Update indicies with the new parent path
-        oldpp = old_parent_path || []
-        newpp = parent_path || []
-        oldp = oldpp.dup << obj_id
-        newp = newpp.dup << obj_id
-        # start with this clause so that the pg index can be used as an initial filter
-        # Now of course we should be able to use just obj_id to filter, but let's be 'safe'.
-        ppclauses = ["value @> '{#{oldp.join(',')}}'"]
-        # then confirm with positional statements, again, this is belts and braces
-        1.upto(oldp.length) {|i| ppclauses << "value[#{i}] = #{oldp[i-1]}"}
-        parent_path_update_sql = %Q!UPDATE os_index_link SET value = '{#{newpp.join(',')}}' + (value - '{#{oldpp.join(',')}}') WHERE #{ppclauses.join(' AND ')};!
-        # SQL executed later
-      end
+    # Parent paths may need to be updated on both create and update operations so hierarchical queries work:
+    #   create - to set the correct path for objects which linked to it before it was created.
+    #   update - for when the parent path changes.
+    r = pg.exec("SELECT value FROM os_index_link WHERE id=#{obj_id} AND attr_desc=#{A_PARENT} LIMIT 1").result
+    old_parent_path = (r.length > 0) ? decode_intarray(r.first[0]) : nil
+    if parent_path != old_parent_path
+      # Update indicies with the new parent path
+      oldpp = old_parent_path || []
+      newpp = parent_path || []
+      oldp = oldpp.dup << obj_id
+      newp = newpp.dup << obj_id
+      # start with this clause so that the pg index can be used as an initial filter
+      # Now of course we should be able to use just obj_id to filter, but let's be 'safe'.
+      ppclauses = ["value @> '{#{oldp.join(',')}}'"]
+      # then confirm with positional statements, again, this is belts and braces
+      1.upto(oldp.length) {|i| ppclauses << "value[#{i}] = #{oldp[i-1]}"}
+      parent_path_update_sql = %Q!UPDATE os_index_link SET value = '{#{newpp.join(',')}}' + (value - '{#{oldpp.join(',')}}') WHERE #{ppclauses.join(' AND ')};!
+      # SQL executed later
     end
 
     obj.update_responsible_user_id(self.external_user_id)
@@ -802,9 +830,6 @@ private
     if create_operation
       # ----- CREATE OBJECT ------------------------------------------------------------
       sql << "INSERT INTO os_objects (id,version,labels,creation_time,created_by,updated_by,type_object_id,sortas_title,object) VALUES(#{obj_id},#{obj.version.to_i},'#{obj_labels._to_sql_value}','#{PGconn.escape_string(creation_time)}',#{self.external_user_id},#{self.external_user_id},#{type_object_id},'#{PGconn.escape_string(obj_title_sortas)}',E'#{PGconn.escape_bytea(data)}');"
-      # Update any objects which linked to this when it didn't exist, moving pending values into the real link table
-      pids = ((parent_path == nil) ? [obj_id] : parent_path + [obj_id]).join(',')
-      sql << "INSERT INTO os_index_link SELECT id,attr_desc,qualifier,'{#{pids}}'::int[] AS value,#{obj_id} AS object_id FROM os_index_link_pending WHERE link_to_obj_id=#{obj_id}; DELETE FROM os_index_link_pending WHERE link_to_obj_id=#{obj_id};"
     else
       # ----- UPDATE OBJECT ------------------------------------------------------------
       # Add the (old) current version to the object history
@@ -819,27 +844,41 @@ private
       sql << parent_path_update_sql
     end
     # -----------------------------------------------------------------------------------
+
     # Basic fragement for SQL generation
     sql_fragment1 = ' (id,attr_desc,qualifier,value'
-    sql_fragment2 = ") VALUES (#{obj_id},"
+    sql_fragment2 = ",restrictions) VALUES (#{obj_id},"
     sql_fragment = sql_fragment1 + sql_fragment2
     # Flag for text
     has_text_to_index = false
     # Write new index entries. Delegate may want to alter the object which is indexed.
     obj_indexable = @delegate.indexed_version_of_object(obj)
+
+    td = KObjectStore.schema.type_descriptor(obj_indexable.first_attr(A_TYPE))
+
+    if td != nil
+      td = schema.type_descriptor(td.root_type)
+    end
+
+    if td != nil
+      restrictions = td.attributes_restrictions
+    else
+      restrictions = {}
+    end
+
     obj_indexable.each do |value,desc,qualifier_v|
+      if restrictions.has_key?(desc)
+        restriction_labels = "'{" + restrictions[desc].map {|l|l.to_i}.join(",") + "}'::int[]" # map to_i for safety when generating SQL
+      else
+        restriction_labels = "NULL" # All public
+      end
       qualifier = (qualifier_v == nil) ? 0 : qualifier_v
       if value.class == Fixnum || value.class == Bignum
-        sql << "INSERT INTO os_index_int"+sql_fragment+"#{desc},#{qualifier},#{value});"
+        sql << "INSERT INTO os_index_int"+sql_fragment+"#{desc},#{qualifier},#{value},#{restriction_labels});"
       elsif value.class == KObjRef
-        if _temp_does_object_exist?(value.obj_id)
-          # Insert full path of link into the index
-          pids = full_obj_id_path(value).join(',')
-          sql << %Q!INSERT INTO os_index_link #{sql_fragment1},object_id#{sql_fragment2}#{desc},#{qualifier},'{#{pids}}'::int[],#{value.obj_id});!
-        else
-          # Insert pending link
-          sql << %Q!INSERT INTO os_index_link_pending (id,attr_desc,qualifier,link_to_obj_id #{sql_fragment2}#{desc},#{qualifier},#{value.obj_id});!
-        end
+        # Insert full path of link into the index
+        pids = full_obj_id_path(value).join(',')
+        sql << %Q!INSERT INTO os_index_link #{sql_fragment1},object_id#{sql_fragment2}#{desc},#{qualifier},'{#{pids}}'::int[],#{value.obj_id},#{restriction_labels});!
       elsif value.k_is_string_type?
         # Mark this field as requiring text indexing
         has_text_to_index = true
@@ -850,12 +889,12 @@ private
           unless identifier_index_str.kind_of?(String) && identifier_index_str.length > 0
             raise "Bad indexed form for identifier"
           end
-          sql << "INSERT INTO os_index_identifier#{sql_fragment1},identifier_type#{sql_fragment2}#{desc},#{qualifier},#{PGconn.quote(identifier_index_str)},#{value.k_typecode});"
+          sql << "INSERT INTO os_index_identifier#{sql_fragment1},identifier_type#{sql_fragment2}#{desc},#{qualifier},#{PGconn.quote(identifier_index_str)},#{value.k_typecode},#{restriction_labels});"
         end
       elsif value.class == KDateTime
         # Store the range in the datetime index
         dtr1, dtr2 = value.range_pg
-        sql << "INSERT INTO os_index_datetime#{sql_fragment1},value2#{sql_fragment2}#{desc},#{qualifier},'#{dtr1}','#{dtr2}');"
+        sql << "INSERT INTO os_index_datetime#{sql_fragment1},value2#{sql_fragment2}#{desc},#{qualifier},'#{dtr1}','#{dtr2}',#{restriction_labels});"
       end
     end
 
@@ -1049,10 +1088,6 @@ public
     r
   end
 
-  def _temp_does_object_exist?(obj_id)
-    0 != KApp.get_pg_database.exec("SELECT id FROM os_objects WHERE id=#{obj_id}").result.length
-  end
-
   def decode_intarray(ia)
     return nil unless ia =~ /\A\{(.+)\}\z/
     $1.split(',').map {|e| e.to_i}
@@ -1159,6 +1194,28 @@ public
 
   def self.get_current_weightings_file_pathname_for_id(app_id)
     "#{KOBJECTSTORE_WEIGHTING_BASE}/#{app_id.to_i}.yaml"
+  end
+
+  def get_viewing_user_labels
+    if @user_permissions
+      # We need to grant superusers full powers explicitly rather than
+      # asking the user object for their labels, to avoid
+      # bootstrapping issues with calling hooks while loading plugins
+      # (caused in turn by plugin loading causing objectstore queries
+      # to find out if the current user [which will be SYSTEM]) is
+      # allowed to see things)
+      if @act_as_superuser || @user_permissions.permissions.is_superuser?
+        :superuser
+      else
+        @user_permissions.attribute_restriction_labels
+      end
+    else
+      []
+    end
+  end
+
+  def get_all_restriction_labels
+    schema.all_restriction_labels
   end
 end
 

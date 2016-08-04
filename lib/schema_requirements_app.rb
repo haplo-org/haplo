@@ -166,6 +166,16 @@ module SchemaRequirements
 
   # ---------------------------------------------------------------------------------------------------------------
 
+  RESTRICTION_RULES = {
+    "title"             => StoreObjectRuleSingle.new(A_TITLE),
+    "restrict-type"     => StoreObjectRuleMulti.new(A_RESTRICTION_TYPE, *mappers_for(O_TYPE_APP_VISIBLE)),
+    "label-unrestricted" => StoreObjectRuleMulti.new(A_RESTRICTION_LABEL, *mappers_for(O_TYPE_LABEL)),
+    "attribute-restricted" => StoreObjectRuleMulti.new(A_RESTRICTION_ATTR_RESTRICTED, *mappers_for(O_TYPE_ATTR_DESC)),
+    "attribute-read-only" => StoreObjectRuleMulti.new(A_RESTRICTION_ATTR_READ_ONLY, *mappers_for(O_TYPE_ATTR_DESC))
+  }
+
+  # ---------------------------------------------------------------------------------------------------------------
+
   GENERIC_OBJECT_RULES = {
     "title"             => StoreObjectRuleSingle.new(A_TITLE),
     "type"              => StoreObjectRuleSingle.new(A_TYPE, *mappers_for(O_TYPE_APP_VISIBLE)),
@@ -398,7 +408,8 @@ module SchemaRequirements
     O_TYPE_ATTR_DESC => 'attribute',
     O_TYPE_ATTR_ALIAS_DESC => 'aliased-attribute',
     O_TYPE_QUALIFIER_DESC => 'qualifier',
-    O_TYPE_APP_VISIBLE => 'type'
+    O_TYPE_APP_VISIBLE => 'type',
+    O_TYPE_RESTRICTION => 'restriction'
   }
 
   APPLY_APP = {
@@ -410,7 +421,8 @@ module SchemaRequirements
     "attribute" => Proc.new { |kind, code, context| context.apply_for_code(code, O_TYPE_ATTR_DESC, ATTRIBUTE_RULES) },
     "aliased-attribute" => Proc.new { |kind, code, context| context.apply_for_code(code, O_TYPE_ATTR_ALIAS_DESC, ALIASED_ATTRIBUTE_RULES) },
     "qualifier" => Proc.new { |kind, code, context| context.apply_for_code(code, O_TYPE_QUALIFIER_DESC, QUALIFIER_RULES) },
-    "type" => Proc.new { |kind, code, context| context.apply_for_code(code, O_TYPE_APP_VISIBLE, TYPE_RULES) }
+    "type" => Proc.new { |kind, code, context| context.apply_for_code(code, O_TYPE_APP_VISIBLE, TYPE_RULES) },
+    "restriction" => Proc.new { |kind, code, context| context.apply_for_code(code, O_TYPE_RESTRICTION, RESTRICTION_RULES) }
   }
 
   # ---------------------------------------------------------------------------------------------------------------
@@ -478,7 +490,7 @@ module SchemaRequirements
 
   # ---------------------------------------------------------------------------------------------------------------
 
-  SCHEMA_TYPES = [O_TYPE_APP_VISIBLE, O_TYPE_ATTR_DESC, O_TYPE_ATTR_ALIAS_DESC, O_TYPE_QUALIFIER_DESC, O_TYPE_LABEL]
+  SCHEMA_TYPES = [O_TYPE_APP_VISIBLE, O_TYPE_ATTR_DESC, O_TYPE_ATTR_ALIAS_DESC, O_TYPE_QUALIFIER_DESC, O_TYPE_LABEL, O_TYPE_RESTRICTION]
 
   class AppContext < Context
     include KConstants

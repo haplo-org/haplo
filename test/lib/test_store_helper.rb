@@ -76,7 +76,7 @@ module TestStoreHelper
   def reset_objectstore_to_minimal
     # Reset store (not done automatically)
     pg = KObjectStore.get_pgdb
-    %w(os_objects os_objects_old os_index_int os_index_link os_index_link_pending os_index_datetime os_index_identifier).each do |table|
+    %w(os_objects os_objects_old os_index_int os_index_link os_index_datetime os_index_identifier).each do |table|
       pg.perform('DELETE FROM '+table)
     end
     # Clear the dirty text objects table for this store, clear the reindexing table, close all the Xapian indexes

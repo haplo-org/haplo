@@ -9,11 +9,12 @@ backLink(M.url)
       <td>
         <form method="POST"> std:form:token()
           <input type="hidden" name="entry" value=entry.id>
+          <input type="hidden" name="target" value=target> // not the target from entry
           <input type="submit" value="Move">
         </form>
       </td>
       <td> entry.state </td>
-      <td> entry.target </td>
+      <td> target </td>
       <td> stateText </td>
     </tr>
   }

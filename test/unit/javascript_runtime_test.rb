@@ -8,6 +8,8 @@
 class JavascriptRuntimeTest < Test::Unit::TestCase
   include JavaScriptTestHelper
 
+  #KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_plugin/test_plugin")
+
   # ===============================================================================================
 
   def test_handlebars_js_has_been_modified_for_oneis
@@ -984,6 +986,30 @@ __E
     assert_equal true, xlsx.haveData()
     xlsx_data = String.from_java_bytes(xlsx.getDataAsBytes())
     # File.open("test.xlsx", "w:BINARY") { |f| f.write xlsx_data }
+  end
+
+  # ===============================================================================================
+
+  def test_keychain_read
+    KeychainCredential.delete_all
+    KApp.get_pg_database.perform("SELECT setval('keychain_credentials_id_seq', 1)"); # as ID is tested in the tests
+    KeychainCredential.new({
+      :kind => 'other-test', :instance_kind => 'Test Two', :name => 'credential.test.TWO',
+      :account_json => '{"x":"y123","d":"QWERTY"}', :secret_json => '{"s2":"confidential_2"}'
+    }).save!
+    KeychainCredential.new({
+      :kind => 'test', :instance_kind => 'Test One', :name => 'credential.test.1',
+      :account_json => '{"a":"b","c":"d"}', :secret_json => '{"s1":"confidential1"}'
+    }).save!
+    install_grant_privileges_plugin_with_privileges()
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_keychain_read1.js', nil, "grant_privileges_plugin")
+    install_grant_privileges_plugin_with_privileges('pKeychainRead')
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_keychain_read2.js', nil, "grant_privileges_plugin")
+    install_grant_privileges_plugin_with_privileges('pKeychainRead', 'pKeychainReadSecret')
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_keychain_read3.js', nil, "grant_privileges_plugin")
+  ensure
+    uninstall_grant_privileges_plugin
+    KeychainCredential.delete_all
   end
 
   # ===============================================================================================

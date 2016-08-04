@@ -29,9 +29,17 @@ module Application_RenderHelper
   # ========================================================================================================
   # Rendering objects as HTML
 
-  def render_obj(obj, style = :generic, render_options = nil, recursion_limit = 16)
-    if KOBJECT_REPRESENTING_UNAUTHORISED_READ.equal?(obj)
+  def render_obj(render_object, style = :generic, render_options = nil, recursion_limit = 16)
+    if KOBJECT_REPRESENTING_UNAUTHORISED_READ.equal?(render_object)
       return RENDER_OBJ_FOR_UNAUTHORISED_READ
+    end
+
+    # Actually work with a version of the object with all the
+    # restricted attributes taken away.
+    if @request_user.kind == User::KIND_SUPER_USER
+      obj = render_object
+    else
+      obj = render_object.dup_restricted(@request_user.attribute_restriction_labels)
     end
 
     # Make a new options structure, so it can be modified by rendering to pass data around.

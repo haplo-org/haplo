@@ -177,10 +177,11 @@ P.Dashboard.prototype.summaryStatistic = function(sort, statistic, displayOption
         var groupJSON;
         if(calculated.groups) {
             groupJSON = JSON.stringify(_.map(calculated.groups, function(g) {
+                if(!g.title) { g.title = "Not specified"; }
                 return [g.value,g.title];
             }));
         }
-        return P.template("dashboard/common/summary-statistic").deferredRender({calculated:calculated, groupJSON:groupJSON});
+        return P.template("dashboard/common/summary-statistic").deferredRender({calculated:calculated, title: calculated.statistic.description, groupJSON:groupJSON});
     });
 };
 

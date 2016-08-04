@@ -37,6 +37,9 @@ class KObjectStoreApplicationDelegate
     def has_permission?(operation, object)
       @enforce_permissions ? @user.policy.has_permission?(operation, object) : true
     end
+    def attribute_restriction_labels
+      @user.attribute_restriction_labels
+    end
   end
 
   KNotificationCentre.when(:auth_context, :change) do |name, detail, old_state, new_state|

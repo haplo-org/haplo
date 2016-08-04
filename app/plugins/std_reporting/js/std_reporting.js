@@ -351,7 +351,7 @@ Collection.prototype.calculateStatistic = function(statistic, sample, filterName
                 value += g.value;
                 // Add in a display title to the group
                 var gv = g.group;
-                g.title = O.isRef(gv) ? gv.load().title : ""+gv;
+                g.title = O.isRef(gv) ? gv.load().title : ((gv === null) ? null : ""+gv);
             });
         } else {
             // Simple case

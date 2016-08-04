@@ -3,7 +3,7 @@
   @breadcrumbs = [[object_urlpath(@object), 'Back']]
   client_side_resources(:file_versions)
 
-  if @request_user.policy.has_permission?(:update, @object)
+  if @allow_file_upload
     client_side_controller_js("file_version")
     %>
       <div id="z__upload_target"></div>
@@ -29,6 +29,9 @@
       </div>
     <%
   end
+
+  # Plugins can add extra UI
+  %><%= @plugin_extra_html %><%
 
   # Make sure required data is sent -- render_value_identifier_file doesn't currently use them, so check for future
   raise "logic error" unless @object && @attr_desc

@@ -196,6 +196,12 @@ body#z__management_layout .z__management_page {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+/* but list items in help text aren't truncated */
+#z__management_layout #z__mng_help_text li {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: ellipsis;
+}
 
 #z__management_layout li a {
     width: 100%;

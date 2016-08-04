@@ -63,6 +63,12 @@ module KConstants
   A_TERM_INCLUSION_SPEC     = 2014
   A_ATTR_CONTAINED          = 2019
 
+  # Restrictions
+  A_RESTRICTION_TYPE        = 2020
+  A_RESTRICTION_LABEL       = 2021
+  A_RESTRICTION_ATTR_RESTRICTED = 2022
+  A_RESTRICTION_ATTR_READ_ONLY  = 2023
+
   # Qualifiers
   Q_NULL                    = 0
 
@@ -76,6 +82,7 @@ module KConstants
   O_TYPE_ATTR_DESC          = KObjRef.new(6)
   O_TYPE_QUALIFIER_DESC     = KObjRef.new(7)
   # KObjRef.new(8) was O_TYPE_SECTION_DESC
+  O_TYPE_RESTRICTION        = KObjRef.new(9)
 end
 
 # Utility functions for Object

@@ -419,6 +419,7 @@ public class Runtime {
             defineSealedHostClass(scope, KJob.class);
             defineSealedHostClass(scope, KFilePipelineResult.class);
             defineSealedHostClass(scope, KSessionStore.class);
+            defineSealedHostClass(scope, KKeychainCredential.class);
 
             // HaploTemplate created earlier as required by some of the setup
             defineSealedHostClass(scope, HaploTemplateDeferredRender.class);

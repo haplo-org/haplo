@@ -516,6 +516,13 @@ class User < ActiveRecord::Base
     @policy_bitmask
   end
 
+  def attribute_restriction_labels()
+    @attribute_restriction_label_cache ||=
+      call_hook(:hUserAttributeRestrictionLabels) do |hooks|
+      hooks.run(self).labels._to_internal
+    end || []
+  end
+
   def policy
     @cached_policy ||= UserPolicy.new(self)
   end

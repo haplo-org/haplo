@@ -41,6 +41,51 @@ class KObjectTest < Test::Unit::TestCase
     assert_raises(RuntimeError) { obj_clone.delete_attrs!(4) }
   end
 
+  def test_object_restrictions
+    obj = KObject.new()
+    obj.add_attr('Pants', 1);
+    obj.add_attr("a", 3)
+    obj.add_attr("c", 4)
+    # Attribute 1 is hidden apart from holders of label 100
+    # Attribute 3 is read-only apart from holders of labels 100 or 200, and hidden apart from holders of label 200
+    obj._test_set_restrictions({1 => [100], 3 => [200]}, {3 => [100,200]})
+
+    assert obj.can_read?(1, [100])
+    assert obj.can_read?(3, [200])
+    assert obj.can_read?(1, [100,200])
+    assert obj.can_read?(3, [100,200])
+    assert (not obj.can_read?(1, [200]))
+    assert (not obj.can_read?(3, [100]))
+
+    assert obj.can_read?(4, [100])
+    assert obj.can_read?(4, [200])
+    assert obj.can_read?(4, [100,200])
+    assert obj.can_read?(4, [])
+
+    assert (not obj.can_read?(1, []))
+    assert (not obj.can_read?(1, [300]))
+
+    assert obj.can_modify?(3, [100])
+    assert obj.can_modify?(3, [200])
+    assert obj.can_modify?(3, [100,200])
+    assert (not obj.can_modify?(3, [300]))
+    assert (not obj.can_modify?(3, []))
+
+    assert obj.can_modify?(4, [100])
+    assert obj.can_modify?(4, [200])
+    assert obj.can_modify?(4, [100,200])
+    assert obj.can_modify?(4, [])
+
+    # See the object as a user with label 200 only; attribute 1 disappears, but 3 and 4 remain
+    robj = obj.dup_restricted([200])
+    assert (not obj.restricted?)
+    assert robj.restricted?
+    assert_equal "a", robj.first_attr(3).to_s
+    assert_equal nil, robj.first_attr(1)
+    assert_raises(RuntimeError) { robj.add_attr("b", 2) } # Restricted object is read only
+    assert_equal "c", robj.first_attr(4).to_s
+  end
+
   # --------------------------------------------------------------------------------------------------------
 
   def test_object_values_equal?

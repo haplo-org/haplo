@@ -19,6 +19,9 @@
 // The unstemmed word prefix
 #define UNSTEMMED_WORD_PREFIX       "_"
 
+// The label separator prefix
+#define LABEL_SEPARATOR_PREFIX      "#"
+
 // ---------------------------------------------------------------------------------------------------------------------
 //    Writer handles
 // ---------------------------------------------------------------------------------------------------------------------
@@ -167,7 +170,7 @@ void KXapianWriter::StartDocument() {
 }
 
 // Terms is a UTF-8 encoded string
-int KXapianWriter::PostTerms(const char *Terms, const char *Prefix1, const char *Prefix2, int TermPositionStart, int Weight) {
+int KXapianWriter::PostTerms(const char *Terms, std::set<const char *> &Labels, const char *Prefix1, const char *Prefix2, int TermPositionStart, int Weight) {
     CheckIsOpen();
     if(mpFullDoc == 0 || mpFieldsDoc == 0) {
         throw std::runtime_error("Haven't started a document before calling post terms");
@@ -180,6 +183,7 @@ int KXapianWriter::PostTerms(const char *Terms, const char *Prefix1, const char 
 
     // Make a string containing the unstemmed word prefix -- don't want to create lots of temporary strings
     std::string unstemmedWordPrefix(UNSTEMMED_WORD_PREFIX);
+    std::string labelSeparatorPrefix(LABEL_SEPARATOR_PREFIX);
 
     // Setup prefix
     std::string p1, p1_us, p2, p2_us;
@@ -202,21 +206,41 @@ int KXapianWriter::PostTerms(const char *Terms, const char *Prefix1, const char 
                 std::string term(Terms + m + 1, std::min(p - (m + 1), MAX_TERM_LENGTH_UTF8));
                 bool haveTerm = (term.length() > 0);
 
-                // Add to documents
-                if(haveWord) { mpFullDoc->add_posting(unstemmedWordPrefix + word, termPosition, Weight); }
-                if(haveTerm) { mpFullDoc->add_posting(term, termPosition, Weight); }
-                if(Prefix1 != 0) {
-                    if(haveWord) { mpFieldsDoc->add_posting(p1_us + word, termPosition, Weight); }
-                    if(haveTerm) { mpFieldsDoc->add_posting(p1 + term, termPosition, Weight); }
-                }
-                if(Prefix2 != 0) {
-                    if(haveWord) { mpFieldsDoc->add_posting(p2_us + word, termPosition, Weight); }
-                    if(haveTerm) { mpFieldsDoc->add_posting(p2 + term, termPosition, Weight); }
-                }
+                if(Labels.empty()) {
+                    // Add to public documents
+                    if(haveWord) { mpFullDoc->add_posting(labelSeparatorPrefix + unstemmedWordPrefix + word, termPosition, Weight); }
+                    if(haveTerm) { mpFullDoc->add_posting(labelSeparatorPrefix + term, termPosition, Weight); }
+                    if(Prefix1 != 0) {
+                        if(haveWord) { mpFieldsDoc->add_posting(p1_us + word, termPosition, Weight); }
+                        if(haveTerm) { mpFieldsDoc->add_posting(p1 + term, termPosition, Weight); }
+                    }
+                    if(Prefix2 != 0) {
+                        if(haveWord) { mpFieldsDoc->add_posting(p2_us + word, termPosition, Weight); }
+                        if(haveTerm) { mpFieldsDoc->add_posting(p2 + term, termPosition, Weight); }
+                    }
 
-                // Add spelling to database for spelling suggestions in searches.
-                // Note that this is not strictly correct: edits will increment the frequency count, and deletes don't remove words.
-                mpFullDatabase->add_spelling(word);
+                    // Add spelling to database for spelling suggestions in searches,
+                    // but only if it's public (no restriction labels).
+                    // Note that this is not strictly correct: edits will increment the frequency count, and deletes don't remove words.
+
+                    mpFullDatabase->add_spelling(word);
+                } else {
+                    // Only add to label-restricted documents
+                    for(std::set<const char *>::iterator it = Labels.begin(); it != Labels.end(); ++it) {
+                        const char *label(*it);
+                        if(haveWord) { mpFullDoc->add_posting(labelSeparatorPrefix + label + labelSeparatorPrefix + unstemmedWordPrefix + word, termPosition, Weight); }
+                        if(haveTerm) { mpFullDoc->add_posting(labelSeparatorPrefix + label + labelSeparatorPrefix + term, termPosition, Weight); }
+                        if(Prefix1 != 0) {
+                            if(haveWord) { mpFieldsDoc->add_posting(labelSeparatorPrefix + label + labelSeparatorPrefix + p1_us + word, termPosition, Weight); }
+                            if(haveTerm) { mpFieldsDoc->add_posting(labelSeparatorPrefix + label + labelSeparatorPrefix + p1 + term, termPosition, Weight); }
+                        }
+                        if(Prefix2 != 0) {
+                            if(haveWord) { mpFieldsDoc->add_posting(labelSeparatorPrefix + label + labelSeparatorPrefix + p2_us + word, termPosition, Weight); }
+                            if(haveTerm) { mpFieldsDoc->add_posting(labelSeparatorPrefix + label + labelSeparatorPrefix + p2 + term, termPosition, Weight); }
+                        }
+                    }
+
+                }
 
                 ++termPosition;
             }

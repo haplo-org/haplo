@@ -9,6 +9,7 @@
 #define KXAPIAN_WRITER__H
 
 #include <vector>
+#include <set>
 
 class KXapianWriter {
 public:
@@ -30,7 +31,7 @@ public:
     void Close();
     void StartTransaction();
     void StartDocument();
-    int  PostTerms(const char *Terms, const char *Prefix1, const char *Prefix2, int TermPositionStart, int Weight);
+    int  PostTerms(const char *Terms, std::set<const char *> &Labels, const char *Prefix1, const char *Prefix2, int TermPositionStart, int Weight);
     void FinishDocument(int DocID);
     void DeleteDocument(int DocID);
     void CancelTransaction();

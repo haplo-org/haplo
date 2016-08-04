@@ -32,6 +32,13 @@
       end
     end
   %></td></tr>
+  <% unless @type_desc.parent_type %>
+    <%= render :partial => 'setup/restriction/relevant_restrictions', :data_for_template => {
+      :th => 'Restrictions',
+      :objref => @type_desc.objref,
+      :desc => KConstants::A_RESTRICTION_TYPE
+    } %>
+  <% end %>
   <tr><th>Attributes</th><td><%
     @type_desc.attributes.each do |adesc|
       attr_desc = @schema.attribute_descriptor(adesc) || @schema.aliased_attribute_descriptor(adesc)

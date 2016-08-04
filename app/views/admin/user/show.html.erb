@@ -207,6 +207,23 @@
 <%= (is_active && show_access_buttons) ? sys_mng_edit_button("/do/admin/user/permission_rules/#{@user.id}") : sys_mng_edit_button_disabled() %>
 <div data-url="/do/admin/user/permission_rules_calc/<%= @user.id %>" id="z__mng_permission_display_calculated"><p><a href="#">Show calculated permission label sets...</a></p></div>
 
+<!-- ------------------ RESTRICTION LABELS -------------- -->
+
+<% if @is_user %>
+  <h1>Restriction labels</h1>
+  <%
+    restriction_labels = @user.attribute_restriction_labels
+    if restriction_labels.empty?
+      %><p><i>(no restriction labels have been set for this user)</i></p><%
+    else
+      %><p><% restriction_labels.each do |label_id| %>
+        <%= label_html(label_id) %><br>
+      <% end %></p><%
+    end
+  %>
+  <p>Restriction labels are set by plugins and cannot be edited.</p>
+<% end %>
+
 <!-- ------------------ LATEST UPDATES ------------------ -->
 
 <h1><%= h(KApp.global(:name_latest).capitalize) %> settings</h1>

@@ -302,6 +302,15 @@ private
         replacementObject.each { |v,d,q| @object_to_edit.add_attr(v,d,q) }
       end
     end
+
+    # Hidden restricted attributes and read only attributes are read only in the editor
+    # SUPPORT user ignores this, as it hinders support work
+    unless @request_user.kind == User::KIND_SUPER_USER
+      user_labels = @request_user.attribute_restriction_labels
+      read_only_attributes.concat(@object_to_edit.read_only_restricted_attributes(user_labels))
+      read_only_attributes.concat(@object_to_edit.hidden_restricted_attributes(user_labels))
+    end
+
     if plugin_redirect != nil
       redirect_to plugin_redirect
       return :cancelled

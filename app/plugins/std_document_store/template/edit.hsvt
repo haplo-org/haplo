@@ -1,5 +1,7 @@
 std:plugin:resources("edit.css")
 
+if(additionalUI.top) { render(additionalUI.top) }
+
 if(navigation) {
   <div class="z__docstore_nav_top"> render(navigation) </div>
 }
@@ -8,7 +10,11 @@ if(showFormError) {
   std:ui:notice("Please complete all the required fields.")
 }
 
+if(additionalUI.formTop) { render(additionalUI.formTop) }
+
 std:form(activePage.instance)
+
+if(additionalUI.formBottom) { render(additionalUI.formBottom) }
 
 <div class="z__docstore_save">
   <input type="submit" value=
@@ -33,3 +39,5 @@ if(navigation) {
     render(navigation)
   </div>
 }
+
+if(additionalUI.bottom) { render(additionalUI.bottom) }

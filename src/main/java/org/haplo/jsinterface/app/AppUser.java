@@ -24,4 +24,6 @@ public interface AppUser {
     public String email();
 
     public AppObjRef objref();
+
+    public int[] attribute_restriction_labels();
 }

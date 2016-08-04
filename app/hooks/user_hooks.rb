@@ -28,4 +28,8 @@ module KHooks
     h.result      :showEditProperties,  "bool", "true", "Show edit buttons for editing user properties"
   end
 
+  define_hook :hUserAttributeRestrictionLabels do |h|
+    h.argument    :user,   User,             "SecurityPrincipal being queried"
+    h.result      :labels, KLabelList, nil, "Labels enabling the user to view or edit restricted attributes"
+  end
 end

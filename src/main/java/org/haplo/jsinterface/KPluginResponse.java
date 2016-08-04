@@ -179,6 +179,10 @@ public class KPluginResponse extends KScriptable {
             fieldsBuild.add(new KLabelChangesFieldDescription(name));
         }
 
+        public void labelListField(String name) {
+            fieldsBuild.add(new KLabelListFieldDescription(name));
+        }
+
         public void labelStatementsField(String name) {
             fieldsBuild.add(new KLabelStatementsFieldDescription(name));
         }
@@ -266,6 +270,17 @@ public class KPluginResponse extends KScriptable {
 
         public boolean checkValue(Object value) {
             return (value == null) || (value instanceof KLabelChanges);
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+    static private class KLabelListFieldDescription extends FieldDescription {
+        public KLabelListFieldDescription(String name) {
+            super(name);
+        }
+
+        public boolean checkValue(Object value) {
+            return (value == null) || (value instanceof KLabelList);
         }
     }
 

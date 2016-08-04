@@ -26,6 +26,10 @@
 //    alwaysShowNavigation(key, instance, document) - return true to always show navigation, regardless of whether the editor thinks it's useful
 //    onSetCurrentDocument(instance, document, isComplete) - called when current document is set
 //    onCommit(instance, user) - called when a new version is committed
+//    getAdditionalUIForViewer(key, instance, document) - called when a document is rendered, return object with
+//          optional properties 'top' and 'bottom' of deferred renders to display
+//    getAdditionalUIForEditor(key, instance, document, form) - called when a form for a document is edited, return object with
+//          optional properties 'top', 'formTop', 'formBottom' and 'bottom' of deferred renders to display
 
 P.provideFeature("std:document_store", function(plugin) {
     var DocumentStore = P.DocumentStore;

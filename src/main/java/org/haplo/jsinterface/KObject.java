@@ -103,7 +103,16 @@ public class KObject extends KScriptable {
 
     // --------------------------------------------------------------------------------------------------------------
     public Scriptable jsFunction_mutableCopy() {
+        if(this.appObject.restricted()) throw new OAPIException("Restricted objects cannot be made mutable.");
         return KObject.fromAppObject(this.appObject.dup(), true /* mutable */);
+    }
+
+    public Scriptable jsFunction_restrictedCopy(Scriptable user) {
+        if(this.appObject.restricted()) throw new OAPIException("Restricted objects cannot be restricted again.");
+        if(!(user instanceof KUser)) throw new OAPIException("restrictedCopy must be passed a user object");
+        return KObject.fromAppObject(this.appObject.dup_restricted
+                                     ((((KUser)user).toRubyObject().attribute_restriction_labels())),
+                                      false /* immutable */);
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -117,6 +126,36 @@ public class KObject extends KScriptable {
 
     public boolean jsFunction_isMutable() {
         return this.isMutable;
+    }
+
+    public boolean jsFunction_isRestricted() {
+        return this.appObject.restricted();
+    }
+
+    public boolean jsFunction_canRead(Object desc, Scriptable user) {
+        KUser kuser = (KUser)user;
+        if (kuser.jsGet_isSuperUser()) {
+            return true;
+        } else {
+            int[] labels = (kuser.toRubyObject().attribute_restriction_labels());
+            Object result = this.withCheckedArgs("canRead", desc, true, null, null, false,
+                                                 (d,q,i) ->
+                                                 this.appObject.can_read(d, labels));
+            return ((Boolean)result).booleanValue();
+        }
+    }
+
+    public boolean jsFunction_canModify(Object desc, Scriptable user) {
+        KUser kuser = (KUser)user;
+        if (kuser.jsGet_isSuperUser()) {
+            return true;
+        } else {
+            int[] labels = (kuser.toRubyObject().attribute_restriction_labels());
+            Object result = this.withCheckedArgs("canModify", desc, true, null, null, false,
+                                                 (d,q,i) ->
+                                                 this.appObject.can_modify(d, labels));
+            return ((Boolean)result).booleanValue();
+        }
     }
 
     public KLabelList jsGet_labels() {

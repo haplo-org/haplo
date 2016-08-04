@@ -128,6 +128,39 @@ class JavascriptPluginTest < Test::Unit::TestCase
     end
   end
 
+  # ===============================================================================================
+
+  def test_attribute_restrictions
+    restore_store_snapshot("basic")
+    db_reset_test_data
+    # Apply some requirements to the schema
+    parser = SchemaRequirements::Parser.new()
+    parser.parse("test_javascript_schema", StringIO.new(<<__E))
+restriction test:restriction:hide-book-titles
+    title: Restrict view of titles of books
+    restrict-type std:type:book
+    label-unrestricted std:label:common
+    attribute-restricted dc:attribute:title
+restriction test:restriction:lock-book-titles
+    title: Restrict modification of titles of books
+    restrict-type std:type:book
+    label-unrestricted std:label:common
+    attribute-read-only dc:attribute:title
+__E
+    SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new(parser)).apply.commit
+
+    assert_equal(true, KPlugin.install_plugin("test_plugin"))
+
+    run_javascript_test(:file, 'unit/javascript/javascript_plugin/test_attribute_restrictions.js') do |runtime|
+      runtime.host.setTestCallback(proc { |email|
+                                     start_test_request(nil, User.find_first_by_email(email))
+                                     ""
+                                   })
+    end
+
+    KPlugin.uninstall_plugin("test_plugin")
+  end
+
   # -------------------------------------------------------------------------------------------------------------
 
   def test_basics

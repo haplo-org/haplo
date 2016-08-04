@@ -44,6 +44,7 @@ class ApplicationNamespace
           "classification" => [:controller, {}, Setup_ClassificationController],
           "taxonomy"       => [:controller, {}, Setup_TaxonomyController],
           "labels"         => [:controller, {}, Setup_LabelsController],
+          "restriction"    => [:controller, {}, Setup_RestrictionController],
           "navigation"     => [:controller, {}, Setup_NavigationController],
           "subset"         => [:controller, {}, Setup_SubsetController],
           "keychain"       => [:controller, {}, Setup_KeychainController],

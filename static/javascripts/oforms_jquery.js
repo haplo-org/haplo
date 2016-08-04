@@ -14,7 +14,7 @@
  *
  * ********************************************* */
 
-/*! oForms | (c) ONEIS Ltd 2012 | MIT License */
+/*! oForms | (c) Haplo Services Ltd 2012 - 2016 | MIT License */
 
 /////////////////////////////// jquery_preamble.js ///////////////////////////////
 

@@ -81,14 +81,14 @@ void OXPController::PgOpen(unsigned int Slot, const char *Pathname) {
     mDatabaseSlots[Slot] = pdb;
 }
 
-void OXPController::PgSimpleQuery(unsigned int Slot, const char *Query, const char *Prefix, std::vector<int> &rResultsOut) {
+void OXPController::PgSimpleQuery(unsigned int Slot, const char *Query, std::set<const char *>Prefixes, std::vector<int> &rResultsOut) {
     Xapian::Database &db = GetDatabase(Slot);
 
     int attempts = 32;
     while(true) {
         try {
             // Try the query
-            ImplSimpleQuery(db, Query, Prefix, rResultsOut);
+            ImplSimpleQuery(db, Query, Prefixes, rResultsOut);
             break;
         }
         catch(Xapian::DatabaseModifiedError &e) {
@@ -105,20 +105,45 @@ void OXPController::PgSimpleQuery(unsigned int Slot, const char *Query, const ch
     }
 }
 
-void OXPController::ImplSimpleQuery(Xapian::Database &db, const char *Query, const char *Prefix, std::vector<int> &rResultsOut) {
+void OXPController::ImplSimpleQuery(Xapian::Database &db, const char *Query, std::set<const char *>Prefixes, std::vector<int> &rResultsOut) {
     // Parse the query
     Xapian::QueryParser parser;
     parser.set_default_op(Xapian::Query::OP_AND);
     parser.set_stemming_strategy(Xapian::QueryParser::STEM_NONE);
     parser.set_stopper(NULL);
     parser.set_database(db);
-    Xapian::Query query(parser.parse_query(std::string(Query),
-        Xapian::QueryParser::FLAG_PHRASE | Xapian::QueryParser::FLAG_BOOLEAN | Xapian::QueryParser::FLAG_LOVEHATE | Xapian::QueryParser::FLAG_WILDCARD,
-        std::string(Prefix)));
+
+    // Repeat the rest for every prefix supplied, and UNION the results
+    std::set<Xapian::Query *> queries;
+    Xapian::Query *rootQuery = NULL;
+    for(std::set<const char *>::iterator it = Prefixes.begin(); it != Prefixes.end(); ++it) {
+        Xapian::Query *q =
+            new Xapian::Query(parser.parse_query(std::string(Query),
+                              Xapian::QueryParser::FLAG_PHRASE | Xapian::QueryParser::FLAG_BOOLEAN | Xapian::QueryParser::FLAG_LOVEHATE | Xapian::QueryParser::FLAG_WILDCARD,
+                              std::string(*it)));
+        queries.insert(q);
+
+        if(rootQuery != NULL) {
+            rootQuery = new Xapian::Query(Xapian::Query::OP_OR,
+                                          *q,
+                                          *rootQuery);
+            queries.insert(rootQuery);
+        } else {
+            rootQuery = q;
+        }
+    }
+
+    if(rootQuery == NULL) {
+        // No prefixes specified, so use no prefix
+        rootQuery =
+            new Xapian::Query(parser.parse_query(std::string(Query),
+                                                 Xapian::QueryParser::FLAG_PHRASE | Xapian::QueryParser::FLAG_BOOLEAN | Xapian::QueryParser::FLAG_LOVEHATE | Xapian::QueryParser::FLAG_WILDCARD,
+                                                 std::string("")));
+    }
 
     // Do the query
     Xapian::Enquire enquire(db);
-    enquire.set_query(query);
+    enquire.set_query(*rootQuery);
     Xapian::MSet matches = enquire.get_mset(0, db.get_doccount());
     Xapian::MSetIterator i;
     for(i = matches.begin(); i != matches.end(); ++i) {
@@ -127,6 +152,11 @@ void OXPController::ImplSimpleQuery(Xapian::Database &db, const char *Query, con
             // Add in relevancy score
             mRelevancy[*i] += i.get_percent();
         }
+    }
+
+    // Deallocate query parts
+    for(std::set<Xapian::Query *>::iterator it = queries.begin(); it != queries.end(); ++it) {
+        delete (*it);
     }
 }
 

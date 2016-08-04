@@ -20,6 +20,7 @@
             // Generate grouped info table
             var table = ['<table style="width:60%">'];
             var colours = $.data(this, "reporting-colours");
+            table.push('<caption><b>'+_.escape(statistic[0].getAttribute('data-groups-title'))+'</b></caption>');
             _.each(_.sortBy(groups, "1"), function(g, index) {
                 table.push('<tr><td><span class="z__std_reporting_summary_display_groupedresults_blob" style="width:', w, 'px; height:', h, 'px; background:', colours[index], '"></span>',
                     _.escape(g[1]),'</td><td>',_.escape(""+g[0]),

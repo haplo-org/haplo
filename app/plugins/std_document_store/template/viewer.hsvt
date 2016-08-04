@@ -1,5 +1,7 @@
 std:plugin:resources("viewer.css")
 
+if(additionalUI.top) { render(additionalUI.top) }
+
 unless(document) {
   std:ui:notice("The form has not yet been completed.")
 } else {
@@ -10,3 +12,5 @@ unless(document) {
   }
   render(_viewerBody)
 }
+
+if(additionalUI.bottom) { render(additionalUI.bottom) }

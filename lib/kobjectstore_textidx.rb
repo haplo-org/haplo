@@ -41,8 +41,9 @@ class KXapianWriter
     @pg.exec("SELECT oxp_w_start_document($1)", @handle)
     nil
   end
-  def post_terms(terms, prefix1, prefix2, term_position_start, weight)
-    r = @pg.exec("SELECT oxp_w_post_terms($1,$2,$3,$4,$5,$6)", @handle, terms, prefix1, prefix2, term_position_start, weight).result
+  def post_terms(terms, restriction_labels, prefix1, prefix2, term_position_start, weight)
+    restriction_labels_str = restriction_labels.map { |l| KObjRef.new(l.to_i).to_presentation } .join(',')
+    r = @pg.exec("SELECT oxp_w_post_terms($1,$2,$3,$4,$5,$6,$7)", @handle, terms, restriction_labels_str, prefix1, prefix2, term_position_start, weight).result
     tp = r.first.first.to_i
     r.clear
     tp
@@ -408,6 +409,16 @@ class KObjectStore
           # Delegate may need to alter the indexed object
           object = delegate.indexed_version_of_object(raw_object)
 
+          td = KObjectStore.schema.type_descriptor(object.first_attr(A_TYPE))
+          if td != nil
+            td = schema.type_descriptor(td.root_type)
+          end
+          if td != nil
+            restrictions = td.attributes_restrictions
+          else
+            restrictions = {}
+          end
+
           # TODO: Should cache be the unaltered object, or the one modified by the plugin? If modified, the obj_cache needs to be updated too
           obj_cache[object.objref] = raw_object
 
@@ -423,6 +434,8 @@ class KObjectStore
 
             # No qualifier needs to be presented as null
             qualifier = (qualifier_v == nil) ? 0 : qualifier_v
+
+            restriction_labels = restrictions[desc] || []
 
             if value.kind_of? KObjRef
               # Add terms from the linked object and parents
@@ -446,7 +459,11 @@ class KObjectStore
                     linked_object.each(inclusion.desc) do |linked_value,d,q|
                       # Don't index 'slow' text values, eg files
                       if linked_value.k_is_string_type? && !(linked_value.to_terms_is_slow?)
-                        term_position = post_terms(writer, attr_weightings, desc, qualifier, term_position, linked_value, inclusion.relevancy_weight)
+                        # We use the restriction labels of the link
+                        # attribute, not those of the attributes on
+                        # the linked object. TODO: Look into avoiding
+                        # this minor information leak.
+                        term_position = post_terms(writer, attr_weightings, desc, qualifier, restriction_labels, term_position, linked_value, inclusion.relevancy_weight)
                       end
                     end
                   end
@@ -457,7 +474,7 @@ class KObjectStore
               end
 
             elsif value.k_is_string_type?
-              term_position = post_terms(writer, attr_weightings, desc, qualifier, term_position, value)
+              term_position = post_terms(writer, attr_weightings, desc, qualifier, restriction_labels, term_position, value)
 
             end
 
@@ -508,7 +525,7 @@ class KObjectStore
   end
 
   # Post terms to database, converting text values to terms
-  def self.post_terms(writer, attr_weightings, desc, qualifier, term_position, text_value, relevancy_weight_multipler = nil)
+  def self.post_terms(writer, attr_weightings, desc, qualifier, restriction_labels, term_position, text_value, relevancy_weight_multipler = nil)
     # Determine weight of this text
     weight = if attr_weightings.has_key?(desc)
       attr_weightings[desc][qualifier] || attr_weightings[desc][0] || TEXTIDX_WEIGHT_MULITPLER
@@ -541,7 +558,7 @@ class KObjectStore
       p2 = (qualifier == 0) ? nil : "#{desc.to_s(36)}_#{qualifier.to_s(36)}:"
 
       # Post terms into documents and record new position
-      term_position = writer.post_terms(terms, p1, p2, term_position, weight)
+      term_position = writer.post_terms(terms, restriction_labels, p1, p2, term_position, weight)
     end
 
     # Return updated term position for starting term position of next value

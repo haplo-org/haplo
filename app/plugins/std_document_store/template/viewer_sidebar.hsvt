@@ -3,7 +3,7 @@ std:plugin:resources("viewer.css")
 if(_showFormNavigation) {
   <div class="z__docstore_nav_box">
     <div class="z__docstore_nav_title"> "Sections" </div>
-    each(instance.forms) {
+    each(_viewerForms) {
       <div> <a href=["#" formId] > formTitle </a> </div>
     }
   </div>

@@ -9,6 +9,7 @@
 #define OXPCONTROLLER__H
 
 #include <map>
+#include <set>
 
 class OXPController {
 public:
@@ -25,13 +26,13 @@ public:
     void PgResetAll();
     void PgReset();
     void PgOpen(unsigned int Slot, const char *Pathname);
-    void PgSimpleQuery(unsigned int Slot, const char *Query, const char *Prefix, std::vector<int> &rResultsOut);
+    void PgSimpleQuery(unsigned int Slot, const char *Query, std::set<const char *>Prefixes, std::vector<int> &rResultsOut);
     void PgDisableRelevancy();
     int PgGetRelevancy(unsigned int Docid);
     std::string PgSpelling(unsigned int Slot, const char *Word);
 
     // Implementation stuff
-    void ImplSimpleQuery(Xapian::Database &db, const char *Query, const char *Prefix, std::vector<int> &rResultsOut);
+    void ImplSimpleQuery(Xapian::Database &db, const char *Query, std::set<const char *>Prefixes, std::vector<int> &rResultsOut);
 
     // Handy functions
     Xapian::Database &GetDatabase(unsigned int Slot);

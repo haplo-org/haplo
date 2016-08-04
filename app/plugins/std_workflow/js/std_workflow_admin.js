@@ -98,23 +98,32 @@ P.respond("GET", "/do/workflow/administration/timeline", [
 
 P.respond("GET,POST", "/do/workflow/administration/move-state", [
     {pathElement:0, as:"workUnit", allUsers:true}, // Security check below
-    {parameter:"entry", as:"int", optional:true}
-], function(E, workUnit, timelineId) {
+    {parameter:"entry", as:"int", optional:true},
+    {parameter:"target", as:"string", optional:true}
+], function(E, workUnit, timelineId, calculatedTarget) {
     var M = getCheckedInstanceForAdmin(workUnit);
     if(E.request.method === "POST" && timelineId) {
         var entry = M.$timeline.load(timelineId);
         if(entry.workUnitId !== M.workUnit.id) { O.stop("Wrong workflow"); }
-        M._forceMoveToStateFromTimelineEntry(entry);
+        M._forceMoveToStateFromTimelineEntry(entry, calculatedTarget || null);
         return E.response.redirect(M.url);
+    }
+    var timeline = _.map(M.timelineSelect().where("previousState","!=",null), function(entry) {
+        return {
+            entry: entry,
+            stateText: M._getText(['status'], [entry.state])
+        };
+    });
+    // Fix up targets - target in timeline entry is the target the transition went to
+    var target = M.target;
+    for(var l = timeline.length-1; l >= 0; --l) {
+        var v = timeline[l];
+        v.target = target;
+        target = v.entry.target;
     }
     E.render({
         M: M,
-        timeline: _.map(M.timelineSelect().where("previousState","!=",null), function(entry) {
-            return {
-                entry: entry,
-                stateText: M._getText(['status'], [entry.state])
-            };
-        })
+        timeline: timeline
     }, "admin/move-state");
 });
 

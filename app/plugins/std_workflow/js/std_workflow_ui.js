@@ -88,6 +88,16 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
 
 _.extend(P.WorkflowInstanceBase.prototype, {
 
+    // extraParameters may include "target" key to specify next target
+    transitionUrl: function(transition, extraParameters) {
+        // Use HSVT for safe generation of URL
+        return P.template("transition-url").render({
+            id: this.workUnit.id,
+            transition: transition,
+            extraParameters: extraParameters
+        });
+    },
+
     getWorkflowProcessName: function() {
         return this._getTextMaybe(["workflow-process-name"], [this.state]) || 'Workflow';
     },
@@ -218,8 +228,9 @@ NotificationView.prototype = {
 
 P.respond("GET,POST", "/do/workflow/transition", [
     {pathElement:0, as:"workUnit", allUsers:true},  // Security check below
-    {parameter:"transition", as:"string", optional:true}
-], function(E, workUnit, transition) {
+    {parameter:"transition", as:"string", optional:true},
+    {parameter:"target", as:"string", optional:true}
+], function(E, workUnit, transition, requestedTarget) {
     if(!workUnit.isActionableBy(O.currentUser)) {
         return E.render({}, "transition-not-actionable");
     }
@@ -239,7 +250,7 @@ P.respond("GET,POST", "/do/workflow/transition", [
     }
 
     try {
-        var ui = new TransitionUI(M, transition);
+        var ui = new TransitionUI(M, transition, requestedTarget);
 
         if(transition && M.transitions.has(transition)) {
 
@@ -251,8 +262,17 @@ P.respond("GET,POST", "/do/workflow/transition", [
                         return E.response.redirect(ui._redirect);
                     }
                 } else {
+                    // Workflow must validate any targets passed in to this UI, as otherwise
+                    // user can pass in anything they want and mess things up.
+                    var overrideTarget;
+                    if(requestedTarget) {
+                        if(M._callHandler('$transitionUIValidateTarget', requestedTarget) === true) {
+                            overrideTarget = requestedTarget;
+                        }
+                    }
+
                     M._callHandler('$transitionFormPreTransition', E, ui);
-                    M.transition(transition, ui._getTransitionDataMaybe());
+                    M.transition(transition, ui._getTransitionDataMaybe(), overrideTarget);
                     var redirectTo = ui._redirect || M._call('$taskUrl');
                     return E.response.redirect(redirectTo);
                 }
@@ -263,8 +283,16 @@ P.respond("GET,POST", "/do/workflow/transition", [
             M._callHandler('$transitionUI', E, ui);
 
         } else {
-            // The transitions list will be used for the std:ui:choose template.
-            ui.options = M.transitions.list;
+            // Generate std:ui:choose template options from the transition
+            var urlExtraParameters = requestedTarget ? {target:requestedTarget} : undefined;
+            ui.options = _.map(M.transitions.list, function(transition) {
+                return {
+                    action: M.transitionUrl(transition.name, urlExtraParameters),
+                    label: transition.label,
+                    notes: transition.notes,
+                    indicator: transition.indicator
+                };
+            });
         }
 
         if(ui._redirect) {
@@ -282,9 +310,10 @@ P.respond("GET,POST", "/do/workflow/transition", [
 // --------------------------------------------------------------------------
 
 // Represents the built in UI, and act as the view for rendering.
-var TransitionUI = function(M, transition) {
+var TransitionUI = function(M, transition, target) {
     this.M = M;
     this.requestedTransition = transition;
+    this.requestedTarget = target;
 };
 TransitionUI.prototype = {
     backLinkText: "Cancel",

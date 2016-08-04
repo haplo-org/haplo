@@ -9,6 +9,7 @@ unless(transition) {
 
   <form method="POST"> std:form:token()
     <input type="hidden" name="transition" value=transition>
+    if(requestedTarget) { <input type="hidden" name="target" value=requestedTarget> }
 
     each(topFormDeferreds) { render(.) }
 

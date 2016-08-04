@@ -1,4 +1,4 @@
-<div class="z__std_reporting_summary_display_statistic" data-groups=groupJSON>
+<div class="z__std_reporting_summary_display_statistic" data-groups=groupJSON data-groups-title=title>
   <div class="z__std_reporting_summary_display_statistic_number">
     if(groupJSON) {
       std:plugin:resources("summary-statistic.js")

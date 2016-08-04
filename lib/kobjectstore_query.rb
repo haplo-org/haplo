@@ -507,13 +507,19 @@ class KObjectStore
       PGconn.escape_string(date.strftime(OBJECTSTORE_PG_TIMESTAMP_FORMAT))
     end
     def sub_query_constraints
+      user_labels = store.get_viewing_user_labels
+      if user_labels == :superuser
+        attribute_restriction_sql = ""
+      else
+        attribute_restriction_sql = " AND (restrictions IS NULL OR restrictions && '{#{user_labels.join(',')}}'::int[])"
+      end
       if @desc == nil
-        ''
+        attribute_restriction_sql
       else
         if @qualifier == nil
-          " AND attr_desc = #{@desc.to_i}"
+          " AND attr_desc = #{@desc.to_i} #{attribute_restriction_sql}"
         else
-          " AND attr_desc = #{@desc.to_i} AND qualifier = #{@qualifier.to_i}"
+          " AND attr_desc = #{@desc.to_i} AND qualifier = #{@qualifier.to_i} #{attribute_restriction_sql}"
         end
       end
     end
@@ -824,18 +830,21 @@ class KObjectStore
     end
 
     def generate_subquery(query, store)
-      if @desc == nil && @qualifier == nil
-        # Use full index as field not specified
-        "(SELECT oxp_simple_query(0, #{PGconn.quote(make_oxp_search_query(@info))}, ''))"
-      else
-        # Use fields index
-        prefix = if @qualifier == nil
-          "#{(@desc || 0).to_s(36)}:"
+      labels = store.get_viewing_user_labels
+      sql =
+        if @desc == nil && @qualifier == nil
+          # Use full index as field not specified
+          "(SELECT oxp_simple_query(0, #{PGconn.quote(make_oxp_search_query(@info))}, #{PGconn.quote(make_oxp_search_prefixes(labels,'',store,true))}))"
         else
-          "#{(@desc || 0).to_s(36)}_#{@qualifier.to_s(36)}:"
+          # Use fields index
+          prefix = if @qualifier == nil
+            "#{(@desc || 0).to_s(36)}:"
+          else
+            "#{(@desc || 0).to_s(36)}_#{@qualifier.to_s(36)}:"
+          end
+          "(SELECT oxp_simple_query(1, #{PGconn.quote(make_oxp_search_query(@info))}, #{PGconn.quote(make_oxp_search_prefixes(labels,prefix,store,false))}))"
         end
-        "(SELECT oxp_simple_query(1, #{PGconn.quote(make_oxp_search_query(@info))}, '#{prefix}'))"
-      end
+      sql
     end
 
   private
@@ -883,6 +892,22 @@ class KObjectStore
         "#{pr}#{us ? $2 : $1}#{$3}"
       end
       quoting + x.join(join_string) + quoting
+    end
+
+    def make_oxp_search_prefixes(labels, prefix, store, is_full_index)
+      if prefix != ''
+        result = [prefix] # Unlabelled prefix
+      else
+        result = is_full_index ? ["#"] : []
+      end
+
+      if labels == :superuser
+        labels = store.get_all_restriction_labels
+      end
+      labels.each do |label|
+        result << '#' + KObjRef.new(label.to_i).to_presentation + '#' + prefix
+      end
+      return result.join(',')
     end
   end
 

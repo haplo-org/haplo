@@ -174,6 +174,9 @@ class Test::Unit::TestCase
       @policy ||= UserPolicy.new(self)
     end
     def policy_bitmask; 0xffffff; end
+    def attribute_restriction_labels
+      []
+    end
   end
   def set_mock_objectstore_user(id, permissions = nil)
     mock_user = ObjectStorePermissionsTestUser.new(id, (permissions || KLabelStatements.super_user).freeze)

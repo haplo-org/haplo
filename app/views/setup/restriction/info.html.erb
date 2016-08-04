@@ -1,0 +1,36 @@
+<% @page_title = 'Restriction: '+h(@restriction.first_attr(KConstants::A_TITLE).to_s) %>
+<%= sys_mng_header %>
+
+<%
+  schema = KObjectStore.schema
+%>
+
+<table class="z__mangement_kv_table">
+  <tr><th>Name</th><td><%= h(@restriction.first_attr(KConstants::A_TITLE).to_s) %></td></tr>
+
+  <tr><th>Restrict on types</th><td><%
+    @restriction.each(KConstants::A_RESTRICTION_TYPE) do |type_ref,d,q|
+      td = schema.type_descriptor(type_ref)
+      if td
+        %><%= h(td.printable_name.to_s) %><br><%
+      end
+    end
+  %></td></tr>
+
+  <tr><th>Unrestricted with labels</th><td><% @restriction.each(KConstants::A_RESTRICTION_LABEL) do |label_ref,d,q| %><%= label_html(label_ref) %><br><% end %></td></tr>
+
+  <% [
+    [KConstants::A_RESTRICTION_ATTR_RESTRICTED, 'Restricted attributes'],
+    [KConstants::A_RESTRICTION_ATTR_READ_ONLY, 'Read only attributes']
+  ].each do |desc, th| %>
+    <tr><th><%= th %></th><td><%
+      @restriction.each(desc) do |attr_ref,d,q|
+        ad = schema.attribute_descriptor(attr_ref)
+        if ad
+          %><%= h(ad.printable_name.to_s) %><br><%
+        end
+      end
+    %></td></tr>
+  <% end %>
+
+</table>

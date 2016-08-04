@@ -18,6 +18,15 @@ class FileVersionController < ApplicationController
     @objref = KObjRef.from_presentation(objref_s)
     @obj = KObjectStore.read(@objref)
     permission_denied unless @request_user.policy.can_view_history_of?(@obj)
+    @plugin_extra_html = ''
+    @allow_file_upload = @request_user.policy.has_permission?(:update, @obj)
+    if @allow_file_upload
+      call_hook(:hFileVersionUI) do |hooks|
+        r = hooks.run(@obj, @tracking_id)
+        @allow_file_upload = false unless r.allow
+        @plugin_extra_html = r.html
+      end
+    end
     @file_history, @object, @attr_desc = read_file_version_history(@objref, @tracking_id)
   end
 
@@ -61,6 +70,10 @@ class FileVersionController < ApplicationController
         end
       end
       raise "Couldn't find old version of identifier to replace" unless found_value
+      # Plugins must permit this modified version of the object
+      call_hook(:hFileVersionPermitNewVersion) do |hooks|
+        permission_denied unless hooks.run(obj, tracking_id).allow
+      end
       KObjectStore.update(obj)
     end
     redirect_to "/do/file-version/of/#{objref.to_presentation}/#{url_encode(tracking_id)}"

@@ -1,0 +1,12 @@
+<% @page_title = 'Restrictions' %>
+<%= sys_mng_header %>
+
+<ul>
+  <% @restrictions.each do |restriction| %>
+    <li><a href="/do/setup/restriction/info/<%= restriction.objref.to_presentation %>" target="workspace"><%= h(restriction.first_attr(KConstants::A_TITLE).to_s) %></a></li>
+  <% end %>
+</ul>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/restriction/about" target="workspace">About Restrictions</a></li>
+</ul>

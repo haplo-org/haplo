@@ -74,7 +74,7 @@ DocumentInstance.prototype.__defineGetter__("committedDocumentIsComplete", funct
 
 DocumentInstance.prototype._notifyDelegate = function(fn) {
     var delegate = this.store.delegate;
-    if(fn in delegate) {
+    if(delegate[fn]) {
         var functionArguments = Array.prototype.slice.call(arguments, 0);
         functionArguments[0] = this;
         delegate[fn].apply(delegate, functionArguments);
@@ -157,15 +157,24 @@ DocumentInstance.prototype.commit = function(user) {
 
 // ----------------------------------------------------------------------------
 
+DocumentInstance.prototype._displayForms = function(document) {
+    var delegate = this.store.delegate;
+    var key = this.key;
+    var unfilteredForms = this.store._formsForKey(this.key, this);
+    if(!delegate.shouldDisplayForm) { return unfilteredForms; }
+    return _.filter(unfilteredForms, function(form) {
+        return (delegate.shouldDisplayForm(key, form, document));
+    });
+};
+
 // Render as document
 DocumentInstance.prototype._renderDocument = function(document, deferred) {
     var html = [];
     var delegate = this.store.delegate;
     var key = this.key;
     var sections = [];
-    var forms = this.store._formsForKey(key, this, document);
+    var forms = this._displayForms(document);
     _.each(forms, function(form) {
-        if(delegate.shouldDisplayForm && !delegate.shouldDisplayForm(key, form, document)) { return; }
         var instance = form.instance(document);
         if(delegate.prepareFormInstance) {
             delegate.prepareFormInstance(key, form, instance, "document");
@@ -308,11 +317,16 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
     if(!isSinglePage || (delegate.alwaysShowNavigation && delegate.alwaysShowNavigation(this.key, this, cdocument))) {
         navigation = P.template("navigation").deferredRender({pages:pages});
     }
+    var additionalUI;
+    if(delegate.getAdditionalUIForEditor) {
+        additionalUI = delegate.getAdditionalUIForEditor(instance.key, instance, cdocument, activePage.form);
+    }
     actions.render(this, E, P.template("edit").deferredRender({
         isSinglePage: isSinglePage,
         navigation: navigation,
         pages: pages,
         showFormError: showFormError,
+        additionalUI: additionalUI,
         activePage: activePage
     }));
 };

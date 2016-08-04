@@ -139,6 +139,9 @@ obj [O_LABEL_STRUCTURE] O_TYPE_ATTR_DESC
 obj [O_LABEL_STRUCTURE] O_TYPE_QUALIFIER_DESC
   A_TITLE   "$ Attribute Qualifier Type"
 
+obj [O_LABEL_STRUCTURE] O_TYPE_RESTRICTION
+  A_TITLE   "$ Restriction Type"
+
 obj [O_LABEL_STRUCTURE] Q_NULL
   A_TITLE   "$ Null Qualifier"
   A_CODE    KIdentifierConfigurationName.new("std:qualifier:null")

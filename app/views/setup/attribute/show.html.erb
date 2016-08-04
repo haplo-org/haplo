@@ -37,6 +37,16 @@
   </td></tr>
   <% end -%>
   <tr><th>Types using this attribute</th><td><%= used_in_types_display_list() %></td></tr>
+  <%= render :partial => 'setup/restriction/relevant_restrictions', :data_for_template => {
+    :th => 'Restrictions',
+    :objref => @obj.objref,
+    :desc => KConstants::A_RESTRICTION_ATTR_RESTRICTED
+  } %>
+  <%= render :partial => 'setup/restriction/relevant_restrictions', :data_for_template => {
+    :th => 'Read only restrictions',
+    :objref => @obj.objref,
+    :desc => KConstants::A_RESTRICTION_ATTR_READ_ONLY
+  } %>
 </table>
 
 <% if @data_type == KConstants::T_OBJREF && @control_by_types.empty? && !(@is_type_attr || @is_parent_attr) %>

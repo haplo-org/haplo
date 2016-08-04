@@ -13,4 +13,19 @@ module KHooks
     h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of downloading the file"
   end
 
+  define_hook :hFileVersionUI do |h|
+    h.private_hook
+    h.argument    :object,      KObject,  "The object containing the file version"
+    h.argument    :trackingId,  String,   "The tracking ID for the file"
+    h.result      :allow,       "bool",   true, "Whether to allow the file version to be updated"
+    h.result      :html,        String,   '""', "Extra HTML to display at the top of the page"
+  end
+
+  define_hook :hFileVersionPermitNewVersion do |h|
+    h.private_hook
+    h.argument    :object,      KObject,  "The object containing the file version, updated with a new version"
+    h.argument    :trackingId,  String,   "The tracking ID for the file"
+    h.result      :allow,       "bool",   true, "Whether to allow the file version to be updated"
+  end
+
 end

@@ -1,0 +1,13 @@
+<%
+  th, objref, desc = [:th, :objref, :desc].map { |k| data_for_template[k] }
+%>
+<tr><th><%= th %></th><td><%
+  restrictions = KObjectStore.query_and.link(KConstants::O_TYPE_RESTRICTION,KConstants::A_TYPE).link(objref,desc).execute(:all,:title)
+  if restrictions.length == 0
+    %><i>(no restrictions)</i><%
+  else
+    restrictions.each do |restriction|
+      %><%= restriction.first_attr(KConstants::A_TITLE).to_s %><br><%
+    end
+  end
+%></td></tr>

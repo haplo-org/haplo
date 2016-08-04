@@ -94,6 +94,10 @@ module KHooks
         @response_fields.labelChangesField(name)
         @response_in << "j.putR('#{name}',Java::OrgHaploJsinterface::KLabelChanges.fromAppLabelChanges(r.#{name})) if r.#{name} != nil\n"
         @response_out << "v = j.getR('#{name}'); r.#{name} = (v == nil) ? nil : v.toRubyObject()\n"
+      elsif klass.equal?(KLabelList)
+        @response_fields.labelListField(name)
+        @response_in << "j.putR('#{name}',Java::OrgHaploJsinterface::KLabelList.fromAppLabelList(r.#{name})) if r.#{name} != nil\n"
+        @response_out << "v = j.getR('#{name}'); r.#{name} = (v == nil) ? nil : v.toRubyObject()\n"
       elsif klass.equal?(KLabelStatements)
         @response_fields.labelStatementsField(name)
         @response_in << "j.putR('#{name}',Java::OrgHaploJsinterface::KLabelStatements.fromAppLabelStatements(r.#{name})) if r.#{name} != nil\n"

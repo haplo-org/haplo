@@ -13,6 +13,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <dirent.h>
+#include <string>
+#include <strings.h>
+#include <stdlib.h>
 
 // Make PG interface C compatible
 extern "C" {
@@ -87,7 +90,7 @@ Datum oxp_open(PG_FUNCTION_ARGS) {
         :args => [
             ['integer', 'slot'],        # which database to use
             ['cstring', 'query'],       # the query string
-            ['cstring', 'prefix']       # the prefix to use
+            ['cstring', 'prefixes']     # the prefixes to use, single string with , separator
         ],
         :returns => 'SETOF integer'
     OXP_FN_END
@@ -105,12 +108,31 @@ Datum oxp_simple_query(PG_FUNCTION_ARGS) {
 
         int32 slot = PG_GETARG_INT32(0);
         const char *query = PG_GETARG_CSTRING(1);
-        const char *prefix = PG_GETARG_CSTRING(2);
+        std::string prefixes (PG_GETARG_CSTRING(2));
+
+        std::set<const char *>prefix_set;
+
+        // Split prefixes on , into prefix_set
+        unsigned int start = 0;
+        unsigned int i = 0;
+        while(i < prefixes.length()) {
+            if(prefixes[i] == ',') {
+                if(i != start) {
+                    prefix_set.insert(strdup(prefixes.substr(start, i-start).c_str()));
+                    start = i+1;
+                }
+            }
+            i++;
+        }
+        if(i != start) {
+            prefix_set.insert(strdup(prefixes.substr(start, i-start).c_str()));
+            start = i+1;
+        }
 
         OXP_WRAP_CPP_BEGIN
             presults = new std::vector<int>;
             try {
-                OXPController::GetController().PgSimpleQuery(slot, query, prefix, *presults);
+                OXPController::GetController().PgSimpleQuery(slot, query, prefix_set, *presults);
             }
             catch(...) {
                 delete presults;
@@ -416,6 +438,7 @@ Datum oxp_w_start_document(PG_FUNCTION_ARGS) {
         :args => [
             ['integer', 'handle'],
             ['cstring', 'terms'],
+            ['cstring', 'labels'],
             ['cstring', 'prefix1'],
             ['cstring', 'prefix2'],             # may be NULL
             ['integer', 'term_position_start'],
@@ -429,16 +452,42 @@ PG_FUNCTION_INFO_V1(oxp_w_post_terms);
 Datum oxp_w_post_terms(PG_FUNCTION_ARGS) {
     int32 handle = PG_GETARG_INT32(0);
     const char *terms = PG_GETARG_CSTRING(1);
-    const char *prefix1 = PG_GETARG_CSTRING(2);
-    const char *prefix2 = (PG_ARGISNULL(3)) ? 0 : (PG_GETARG_CSTRING(3));
-    int32 term_position_start = PG_GETARG_INT32(4);
-    int32 weight = PG_GETARG_INT32(5);
+    std::string labels(PG_GETARG_CSTRING(2));
+    const char *prefix1 = PG_GETARG_CSTRING(3);
+    const char *prefix2 = (PG_ARGISNULL(4)) ? 0 : (PG_GETARG_CSTRING(4));
+    int32 term_position_start = PG_GETARG_INT32(5);
+    int32 weight = PG_GETARG_INT32(6);
     int32 final_term_position = 0;
 
+    std::set<const char *>label_set;
+    // Split labels on , into label_set
+    unsigned int start = 0;
+    unsigned int i = 0;
+    while(i < labels.length()) {
+        if(labels[i] == ',') {
+            if(i != start) {
+                label_set.insert(strdup(labels.substr(start, i-start).c_str()));
+                start = i+1;
+            }
+        }
+        i++;
+    }
+    if(i != start) {
+        label_set.insert(strdup(labels.substr(start, i-start).c_str()));
+        start = i+1;
+    }
     OXP_WRAP_CPP_BEGIN
         KXapianWriter &writer(KXapianWriter::FromHandle(handle));
-        final_term_position = writer.PostTerms(terms, prefix1, prefix2, term_position_start, weight);
+        final_term_position = writer.PostTerms(terms, label_set, prefix1, prefix2, term_position_start, weight);
     OXP_WRAP_CPP_END
+
+    // Deallocate strdup() strings
+    for(std::set<const char *>::iterator it = label_set.begin(); it != label_set.end(); ++it) {
+        const char *label = *it;
+        if (label) {
+            free((void*)(*it));
+        }
+    }
 
     PG_RETURN_INT32(final_term_position);
 }
