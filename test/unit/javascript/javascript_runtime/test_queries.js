@@ -16,6 +16,8 @@ TEST(function() {
     qpush( O.query().freeText("Hello there", ATTR.Title, QUAL["dc:qualifier:alternative"]).link(TYPE["std:type:book"], ATTR.Type) );
     qpush( O.query().freeText("Hello there", ATTR.Title, QUAL["dc:qualifier:alternative"]).link(TYPE["std:type:book"], ATTR.Type, QUAL["std:qualifier:mobile"]) );
 
+    qpush( O.query().exactTitle("Hello there") );
+
     qpush( O.query().or(function(container) {
             container.freeText("Ping").freeText("Pong");
         }).link(TYPE["std:type:news"])

@@ -9,6 +9,7 @@ class Setup_RestrictionController < ApplicationController
   include KConstants
   policies_required :setup_system
   include SystemManagementHelper
+  include Setup_CodeHelper
 
   def render_layout
     'management'

@@ -1,0 +1,10 @@
+<div class="z__general_alert">
+  message
+</div>
+
+if(__STOP_STACK) {
+  <div id="plugin_debugging_stop_stack" style="border:2px solid red;margin:32px 16px;padding:2px 8px">
+    <h2> "O.stop() stack trace" </h2>
+    <pre style="font-size:10px"> __STOP_STACK </pre>
+  </div>
+}

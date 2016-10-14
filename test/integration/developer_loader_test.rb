@@ -13,6 +13,7 @@ class DeveloperLoaderTest < IntegrationTest
 
   # Developer loader has it's own minimal authentication code
   def test_developer_loader_authentication
+    return unless should_test_plugin_debugging_features?
     # Test assumptions about test data
     user41 = User.cache[41]
     user42 = User.cache[42]
@@ -38,6 +39,7 @@ class DeveloperLoaderTest < IntegrationTest
   end
 
   def make_auth_test_request(api_key, should_pass)
+    return unless should_test_plugin_debugging_features?
     post '/api/development-plugin-loader/find-registration',
           {'name' => 'test_plugin_loader_notexist'},
           {'X-ONEIS-Key' => api_key, :expected_response_codes => [200, 403]}

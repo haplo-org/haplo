@@ -89,6 +89,10 @@ public class KQueryClause extends KScriptable {
         this.clause.free_text(text, hasDesc ? desc : null, hasQual ? qual : null);
     }
 
+    public void jsFunction_exactTitle(String title) {
+        this.clause.exact_title(title);
+    }
+
     public void jsFunction_link(KObjRef ref, int desc, boolean hasDesc, int qual, boolean hasQual) {
         this.clause.link((AppObjRef)ref.toRubyObject(), hasDesc ? desc : null, hasQual ? qual : null);
     }

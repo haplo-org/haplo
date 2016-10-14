@@ -1,0 +1,15 @@
+
+For day-to-day development testing, just run
+
+     script/test
+
+For a full run of all possible tests,
+
+    script/test
+
+    env DISABLE_TEST_PLUGIN_DEBUGGING=yes script/test
+
+    # with a script/op-worker-process running...
+    env DISABLE_IN_PROCESS_WORKERS=yes script/test
+
+    script/deployment-test

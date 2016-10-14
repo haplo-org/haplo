@@ -31,12 +31,14 @@ class JavaScriptDebugReportingTest < IntegrationTest
     KApp.cache_checkin_all_caches
   end
 
+
   def test_reporting
     # This isn't a test which can be done in parallel
     return unless Thread.current[:_test_app_id] == FIRST_TEST_APP_ID
 
     # Make sure the plugin debugging support code has been loaded
-    assert PLUGIN_DEBUGGING_SUPPORT_LOADED
+    testing_with_debugging_support = should_test_plugin_debugging_features?
+    assert_equal testing_with_debugging_support, PLUGIN_DEBUGGING_SUPPORT_LOADED
 
     # Log in
     assert_login_as('authtest@example.com', 'pass1234')
@@ -45,38 +47,44 @@ class JavaScriptDebugReportingTest < IntegrationTest
     multipart_post '/do/test_error/no_file_upload',
       {:ping => 'yes', :testfile => fixture_file_upload('files/example3.pdf','application/pdf')},
       {:expected_response_codes => [500]}
-    assert response.body.include?("File upload received, but no arguments for the handler function are files.")
+    if testing_with_debugging_support
+      assert response.body.include?("File upload received, but no arguments for the handler function are files.")
+    end
 
-    # Call all the errors to see if they're reported properly
-    TEST_CALLS.each do |path, error, location, syntax_error_plugin|
-      # Need to install another plugin to provoke the final error
-      if syntax_error_plugin
-        # Will exception because it's got a syntax error, however, it will still be installed
-        assert_raise Java::OrgMozillaJavascript::EvaluatorException do
-          KPlugin.install_plugin("syntax_error_plugin")
+    if testing_with_debugging_support
+      # Call all the errors to see if they're reported properly
+      TEST_CALLS.each do |path, error, location, syntax_error_plugin|
+        # Need to install another plugin to provoke the final error
+        if syntax_error_plugin
+          # Will exception because it's got a syntax error, however, it will still be installed
+          assert_raise Java::OrgMozillaJavascript::EvaluatorException do
+            KPlugin.install_plugin("syntax_error_plugin")
+          end
         end
+        # Make request
+        get path, nil, {:expected_response_codes => [500]}
+        # Extract bits from the body
+        body = response.body
+        assert body =~ /<h1>(.+?)<\/h1>/
+        title = $1
+        assert body =~ /<h2>(.+?)<\/h2>/
+        message = $1
+        assert body =~ /<pre>\s*([^\n]+)/m
+        first_line_in_backtrace = $1
+        # Check against expected values
+        assert_equal "Plugin error", title
+        assert_equal error, message
+        if path == '/do/test_error/stackoverflow'
+          # Sometimes JRuby throws a Ruby SystemStackError instead, which doesn't have a backtrace
+          assert((location == first_line_in_backtrace) || ("</pre>" == first_line_in_backtrace))
+        else
+          assert_equal location, first_line_in_backtrace
+        end
+        # Check the special header is set
+        assert_equal "yes", response["X-Haplo-Reportable-Error"]
       end
-      # Make request
-      get path, nil, {:expected_response_codes => [500]}
-      # Extract bits from the body
-      body = response.body
-      assert body =~ /<h1>(.+?)<\/h1>/
-      title = $1
-      assert body =~ /<h2>(.+?)<\/h2>/
-      message = $1
-      assert body =~ /<pre>\s*([^\n]+)/m
-      first_line_in_backtrace = $1
-      # Check against expected values
-      assert_equal "Plugin error", title
-      assert_equal error, message
-      if path == '/do/test_error/stackoverflow'
-        # Sometimes JRuby throws a Ruby SystemStackError instead, which doesn't have a backtrace
-        assert((location == first_line_in_backtrace) || ("</pre>" == first_line_in_backtrace))
-      else
-        assert_equal location, first_line_in_backtrace
-      end
-      # Check the special header is set
-      assert_equal "yes", response["X-Haplo-Reportable-Error"]
+    else
+      do_test_generic_error_message()
     end
 
     # Disable the reporter so it's like a normal live installation
@@ -85,6 +93,10 @@ class JavaScriptDebugReportingTest < IntegrationTest
     # Uninstall the second plugin so it's not breaking everything
     KPlugin.uninstall_plugin("syntax_error_plugin")
 
+    do_test_generic_error_message()
+  end
+
+  def do_test_generic_error_message
     # Make sure each error has the generic failure message
     TEST_CALLS.each do |path, error, location, syntax_error_plugin|
       if syntax_error_plugin

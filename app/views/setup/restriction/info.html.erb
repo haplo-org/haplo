@@ -7,6 +7,7 @@
 
 <table class="z__mangement_kv_table">
   <tr><th>Name</th><td><%= h(@restriction.first_attr(KConstants::A_TITLE).to_s) %></td></tr>
+  <%= code_show_in_table((@restriction.first_attr(KConstants::A_CODE) || '').to_s) %>
 
   <tr><th>Restrict on types</th><td><%
     @restriction.each(KConstants::A_RESTRICTION_TYPE) do |type_ref,d,q|

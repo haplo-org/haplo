@@ -70,6 +70,7 @@ public class Escape {
         // except if we're encoding literals, in which case Reserved Characters are not escaped
         // https://tools.ietf.org/html/rfc3986#section-2.2
         // Unicode is convert to UTF-8 bytes first, then encode those bytes
+        // If leaveReserved == true, then be careful not to re-encode valid % escape sequences
         int pos = 0, start = 0, len = input.length();
         for(; pos < len; pos++) {
             char c = input.charAt(pos);
@@ -78,7 +79,7 @@ public class Escape {
                 ((c >= 'a') && (c <= 'z')) ||
                 ((c >= '0') && (c <= '9')) ||
                 (c == '-') || (c == '.') || (c == '_') || (c == '~') ||
-                (leaveReserved && isURLReservedCharacter(c))
+                (leaveReserved && (isURLReservedCharacter(c) || ((c == '%') && checkValidEscape(input, pos))))
             )) {
                 // Needs encoding
                 builder.append(input, start, pos);
@@ -106,6 +107,18 @@ public class Escape {
             (c == '!') || (c == '$') || (c == '&') || (c == '\'') || (c == '(') || (c == ')') ||
             (c == '*') || (c == '+') || (c == ',') || (c == ';') || (c == '=');
     }
+
+    static private boolean checkValidEscape(CharSequence input, int pos) {
+        // pos is the index of the % character
+        if((pos + 2) >= input.length()) { return false; } // too short
+        return isHexChar(input.charAt(pos+1)) && isHexChar(input.charAt(pos+2));
+    }
+
+    static private boolean isHexChar(char c) {
+        return ((c >= '0') && (c <= '9')) ||
+               ((c >= 'a') && (c <= 'f')) ||
+               ((c >= 'A') && (c <= 'F'));
+    };
 
     static private void urlHexChar(StringBuilder builder, int c) {
         builder.append('%');

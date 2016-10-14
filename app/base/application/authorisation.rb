@@ -36,8 +36,9 @@
 
 
 class ApplicationController
+  API_KEY_AUTHORIZATION_HEADER_NAME = KFramework::Headers::AUTHORIZATION
+  API_KEY_AUTHORIZATION_BASIC = /\ABasic aGFwbG86([A-Za-z0-9\+\/]+=*)\z/ # aGFwbG86 -> 'haplo:'
   API_KEY_HEADER_NAME = 'X-Oneis-Key' # has been normalised to lower case 'IS'
-  API_KEY_COOKIE_NAME = '_ak'
   API_KEY_PARAM_NAME = '_ak'
 
   # NOTE: _ak parameter filtered with KFRAMEWORK_LOGGING_PARAM_FILTER in environment.rb
@@ -76,7 +77,14 @@ class ApplicationController
     authenticating_user = nil # when impersonation is active
 
     # Is there an API key?
-    api_key = request.cookies[API_KEY_COOKIE_NAME] || params[:_ak] || request.headers[API_KEY_HEADER_NAME] # X-ONEIS-Key HTTP header
+    api_key = nil
+    authorization_header = request.headers[API_KEY_AUTHORIZATION_HEADER_NAME]
+    if authorization_header
+      authorization_header_m = API_KEY_AUTHORIZATION_BASIC.match(authorization_header)
+      api_key = authorization_header_m[1].unpack('m*').first if authorization_header_m
+    else
+      api_key = params[:_ak] || request.headers[API_KEY_HEADER_NAME] # X-ONEIS-Key HTTP header
+    end
     if api_key != nil
       # ================ API Key authentication ================
       device = nil

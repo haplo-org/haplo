@@ -1,10 +1,11 @@
 <%
   @page_title = 'New credential'
+  sorted_models = KeychainCredential::MODELS.sort_by {|m| [m[:kind],m[:instance_kind]]}
 %>
 <%= sys_mng_header %>
 
 <p>&nbsp;</p>
 
-<% KeychainCredential::MODELS.each do |model| %>
+<% sorted_models.each do |model| %>
   <p><a href="?kind=<%= ERB::Util.url_encode(model[:kind]) %>&instance_kind=<%= ERB::Util.url_encode(model[:instance_kind]) %>"><%= h(model[:kind]) %> / <%= h(model[:instance_kind]) %></a></p>
 <% end %>

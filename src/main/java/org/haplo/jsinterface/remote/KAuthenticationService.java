@@ -92,9 +92,16 @@ public class KAuthenticationService extends KScriptable {
 
     // --------------------------------------------------------------------------------------------------------------
     // Start of the OAuth stuff, because this is a good a place as any to put it
-    public static String jsStaticFunction_urlToStartOAuth(boolean haveData, String data, boolean haveName, String name) {
+    public static String jsStaticFunction_urlToStartOAuth(boolean haveData, String data, boolean haveName, String name,
+            boolean haveExtraConfiguration, Scriptable extraConfiguration) {
         Runtime.privilegeRequired("pStartOAuth", "start OAuth");
-        return rubyInterface.urlToStartOAuth(haveData, data, haveName, name);
+        String json;
+        if(haveExtraConfiguration) {
+            json  = Runtime.getCurrentRuntime().jsonStringify(extraConfiguration);
+        } else {
+            json = "{}";
+        }
+        return rubyInterface.urlToStartOAuth(haveData, data, haveName, name, json);
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -102,7 +109,7 @@ public class KAuthenticationService extends KScriptable {
     public interface Ruby {
         public AppAuthenticationService createServiceObject(boolean searchByName, String serviceName);
 
-        public String urlToStartOAuth(boolean haveData, String data, boolean haveName, String name);
+        public String urlToStartOAuth(boolean haveData, String data, boolean haveName, String name, String extraConfiguration);
     }
     private static Ruby rubyInterface;
 

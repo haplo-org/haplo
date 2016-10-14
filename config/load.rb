@@ -140,6 +140,7 @@ require 'kappimporter'
 require 'schema_requirements'
 require 'schema_requirements_app'
 require 'js_support/js_support_root'
+require 'httpclient'
 require 'oauth_client'
 
 # Load plugin debugging support?

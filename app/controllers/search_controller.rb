@@ -30,6 +30,16 @@ class SearchController < ApplicationController
       # Send notification for auditing
       KNotificationCentre.notify(:display, :search, @search_spec)
 
+      # Allow plugins to take over
+      call_hook(:hPreSearchUI) do |hooks|
+        h = hooks.run(@search_spec[:q], @search_spec[:subset])
+        # Plugins can redirect away from search results
+        if h.redirectPath
+          redirect_to h.redirectPath
+          return
+        end
+      end
+
       @search_results = perform_search_for_rendering(@search_spec)
     end
 

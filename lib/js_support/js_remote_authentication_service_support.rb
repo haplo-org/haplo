@@ -8,12 +8,13 @@
 module JSRemoteAuthenticationServiceSupport
 
   # Start OAuth
-  def self.urlToStartOAuth(haveData, data, haveName, name)
+  def self.urlToStartOAuth(haveData, data, haveName, name, extraConfiguration)
     begin
       # Info for OAuth
       details = {}
       details[:service_name] = name if haveName
       details[:user_data] = data if haveData
+      details[:extra_configuration] = JSON.parse(extraConfiguration)
       # Create client, and generate the redirect URL
       rc = KFramework.request_context
       raise JavaScriptAPIError, "Request not in progress" unless rc

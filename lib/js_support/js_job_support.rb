@@ -35,6 +35,7 @@ module JSKJobSupport
     end
 
     def run(context)
+      # NOTE: std_reporting support also uses this interface (until replaced by callback)
       call_hook(:hPlatformInternalJobRun) do |hooks|
         hooks.run(@name, @data)
       end

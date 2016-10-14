@@ -77,6 +77,12 @@ public class KKeychainCredential extends KScriptable {
     }
 
     // ---------------------------------------------------------------------
+    public String jsFunction_encode(String encoding) {
+        Runtime.privilegeRequired("pKeychainReadSecret", "call encode() on a KeychainCredential object");
+        return rubyInterface.encode(this.credential, encoding);
+    }
+
+    // ---------------------------------------------------------------------
     public static String jsStaticFunction_query(Object kindQuery) {
         Runtime.privilegeRequired("pKeychainRead", "call O.keychain.query()");
         String kind = null;
@@ -112,6 +118,7 @@ public class KKeychainCredential extends KScriptable {
     public interface Ruby {
         String query(String kind);
         AppKeychainCredential load(long id, String name);
+        String encode(AppKeychainCredential credential, String encoding);
     }
     private static Ruby rubyInterface;
 

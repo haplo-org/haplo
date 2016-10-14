@@ -183,6 +183,11 @@ TEST(function() {
     // And check work type too
     TEST.assert_equal(0, O.work.query("x:y").ref(O.ref(70)).length);
 
+    // Check test for argument to ref()
+    TEST.assert_exceptions(function() { O.work.query().ref(undefined); }, "Ref object expected as argument to ref()");
+    TEST.assert_exceptions(function() { O.work.query().ref(1234); }, "Ref object expected as argument to ref()");
+    TEST.assert_exceptions(function() { O.work.query().ref("1234"); }, "Ref object expected as argument to ref()");
+
     // Create a work unit, then delete it
     var dt1 = O.work.create({workType:"plugin:deltest", createdBy: USER2_ID, actionableBy: USER2_ID});
     dt1.save();

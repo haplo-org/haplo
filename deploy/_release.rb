@@ -267,7 +267,7 @@ end
 
 # For removing unnecessary quotes in HTML elements
 def html_quote_minimisation(html)
-  html.gsub(/\<([a-zA-Z0-9="_ \.\/%#-]+)?\>/) do
+  html.gsub(/\<([a-zA-Z0-9="_ \?\.\/%#-]+)?\>/) do
     "<#{$1.gsub(/\=\"([a-zA-Z0-9]+)\"(\s|\z)/,'=\\1\\2')}>"
   end
 end
@@ -503,7 +503,7 @@ begin
   Dir.glob("#{export_dir}/app/**/*.css").each { |f| css << f }
   puts " (#{css.length} files)"
 
-  css.each do |filename|
+  css.sort.each do |filename|
     out = nil
     protected_substrings = Hash.new
     File.open(filename) do |file|
@@ -554,7 +554,7 @@ begin
 end
 
 # CSS files in components get minimal processing for IDs
-Dir.glob("#{export_dir}/components/**/*.css").each do |filename|
+Dir.glob("#{export_dir}/components/**/*.css").sort.each do |filename|
   rewrite_file(filename) do |contents|
     change_css_ids_and_classes(contents, filename)
   end
@@ -743,6 +743,7 @@ puts "Renaming controller specific JavaScript files..."
 client_side_controller_js_done = {}
 client_side_controller_js_scan = Dir.glob("#{export_dir}/app/views/**/*.erb")
 client_side_controller_js_scan += Dir.glob("#{export_dir}/app/helpers/**/*.rb")
+client_side_controller_js_scan.sort!
 client_side_controller_js_scan.each do |filename|
   rewrite_file(filename) do |contents|
     contents.gsub(/client_side_controller_js\s*\(?\s*["'](\w+)["']\s*\)?/) do

@@ -23,6 +23,7 @@ public class KWorkUnitQuery extends KScriptable {
     private Integer actionableById;
     private Integer closedById;
     private Integer objId;
+    private Integer _temp_refPermitsReadByUserId; // TODO: Remove _temp_refPermitsReadByUserId and/or replace by proper interface
     private ArrayList<TagKeyValue> tagValues;
 
     private static final String DEFAULT_STATUS = "open";
@@ -117,13 +118,23 @@ public class KWorkUnitQuery extends KScriptable {
         return this;
     }
 
-    public Scriptable jsFunction_ref(KObjRef value) {
+    public Scriptable jsFunction_ref(Object value) {
         checkNotExecuted();
         if(value == null) {
             this.objId = null;
         } else {
-            this.objId = value.jsGet_objId();
+            if(!(value instanceof KObjRef)) {
+                throw new OAPIException("Ref object expected as argument to ref()");
+            }
+            this.objId = ((KObjRef)value).jsGet_objId();
         }
+        return this;
+    }
+
+    // TODO: Remove _temp_refPermitsReadByUserId and/or replace by proper interface
+    public Scriptable jsFunction__temp_refPermitsReadByUser(Object user) {
+        if(!(user instanceof KUser)) { throw new OAPIException("User object expected"); }
+        this._temp_refPermitsReadByUserId = ((KUser)user).jsGet_id();
         return this;
     }
 
@@ -269,6 +280,11 @@ public class KWorkUnitQuery extends KScriptable {
 
     public Integer getObjId() {
         return this.objId;
+    }
+
+    // TODO: Remove _temp_refPermitsReadByUserId and/or replace by proper interface
+    public Integer get_temp_refPermitsReadByUserId() {
+        return this._temp_refPermitsReadByUserId;
     }
 
     public TagKeyValue[] getTagValues() {

@@ -171,8 +171,9 @@ P.registerWorkflowFeature("std:entities", function(workflow, entityDefinitions, 
 
 P.registerWorkflowFeature("std:entities:roles", function(workflow) {
     if(!("constructEntitiesObject" in workflow)) {
-        throw new Error('You must use("entities", {...}) before using the std:entities:roles workflow feature');
+        throw new Error('You must use("std:entities", {...}) before using the std:entities:roles workflow feature');
     }
+    workflow.$stdEntitiesRolesInUse = true;
 
     workflow.getActionableBy(function(M, actionableBy) {
         if(!(actionableBy in workflow.$entitiesBase.$entityDefinitions)) { return; }

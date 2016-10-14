@@ -116,7 +116,9 @@ class JavaScriptControllerTest < IntegrationTest
 
     # Test invalid response
     get '/do/plugin_test/invalid_response', nil, {:expected_response_codes => [500]}
-    assert_select('h2', "The response body (usually E.response.body) set by test_response_plugin is not valid, must be a String, StoredFile, or a generator (O.generate) object. JSON responses should be encoded using JSON.stringify by the request handler.")
+    if should_test_plugin_debugging_features?
+      assert_select('h2', "The response body (usually E.response.body) set by test_response_plugin is not valid, must be a String, StoredFile, or a generator (O.generate) object. JSON responses should be encoded using JSON.stringify by the request handler.")
+    end
     # ... but make sure it's happy with nothing being returned.
     get '/do/plugin_test/no_response_at_all_was_called'
     assert_equal 'no', response.body
@@ -133,6 +135,11 @@ class JavaScriptControllerTest < IntegrationTest
     assert response.body.include? "<title>Error"
     assert (not response.body.include? "should not be seen")
     assert response.body.include? "Haplo Test Application"
+    if should_test_plugin_debugging_features?
+      assert response.body.include?("plugin_debugging_stop_stack")
+    else
+      assert !(response.body.include?("plugin_debugging_stop_stack"))
+    end
 
     get '/do/plugin_test/stop/dont_stop'
     assert_equal '200', response.code
@@ -140,7 +147,7 @@ class JavaScriptControllerTest < IntegrationTest
 
     get '/do/plugin_test/stop/text'
     assert_equal '200', response.code
-    assert response.body =~ /\A\<div class="?z__general_alert"?\>Stop called\<\/div\>\z/ # written as regexp so test can be run after deployment processing
+    assert response.body =~ /\A\<div class="?z__general_alert"?\>Stop called\<\/div\>/ # written as regexp so test can be run after deployment processing
 
     # Test failures of argument validation return a consise but understandable message
     [
@@ -171,10 +178,15 @@ class JavaScriptControllerTest < IntegrationTest
 
     # Test argument reading
     ref1 = KObjRef.new(9274)
+    assert_equal nil, KObjectStore.read(ref1) # doesn't exist
     obj = KObject.new()
     obj.add_attr(O_TYPE_BOOK, A_TYPE)
     obj.add_attr('TEST OBJECT', A_TITLE)
     KObjectStore.create(obj)
+    # Will fail because the object doesn't exist
+    argtest_url = "/do/plugin_test/arg_test/something/-HELLO-/#{ref1.to_presentation}?a1=345&load=#{ref1.to_presentation}"
+    get_400 argtest_url
+    assert_equal 'Bad request (failed validation)', response.body
     # Will fail because the anonymous user isn't allowed to read the object just created
     argtest_url = "/do/plugin_test/arg_test/something/-HELLO-/#{ref1.to_presentation}?a1=345&load=#{obj.objref.to_presentation}"
     get_400 argtest_url
@@ -188,6 +200,10 @@ class JavaScriptControllerTest < IntegrationTest
     get "/do/plugin_test/arg_test/something/HELLO?a1=2345&load=#{obj.objref.to_presentation}&pingpong=2356"
     assert_equal '200', response.code
     assert_equal 'P[HELLO] N[2345/number] R[none] OT[TEST OBJECT]', response.body
+    # Will still fail because the object doesn't exist
+    argtest_url = "/do/plugin_test/arg_test/something/-HELLO-/#{ref1.to_presentation}?a1=345&load=#{ref1.to_presentation}"
+    get_400 argtest_url
+    assert_equal 'Bad request (failed validation)', response.body
 
     # Current user
     get "/do/plugin_test/current_user"

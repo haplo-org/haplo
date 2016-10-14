@@ -48,6 +48,7 @@ class KFramework
     CONTENT_DISPOSITION = 'Content-Disposition'
     IF_NONE_MATCH = 'If-None-Match'
     IF_MODIFIED_SINCE = 'If-Modified-Since'
+    AUTHORIZATION = 'Authorization'
 
     def initialize
       @headers = Hash.new

@@ -100,6 +100,16 @@ module JSWorkUnitSupport
     closed_by_id = query.getClosedById()
     units = units.where(:closed_by_id => closed_by_id) if closed_by_id != nil
 
+    # TODO: Remove _temp_refPermitsReadByUserId and/or replace by proper interface
+    _temp_refPermitsReadByUserId = query.get_temp_refPermitsReadByUserId()
+    if _temp_refPermitsReadByUserId
+      ruser = User.cache[_temp_refPermitsReadByUserId]
+      raise JavaScriptAPIError, "user doesn't exist" unless ruser
+      # This breaks the separation between database and object store, which should really have been maintained
+      # Also the SQL will repeat the SELECT statement many times, so let's hope the pg optimiser is good.
+      units = units.where("(obj_id IS NOT NULL AND #{ruser.permissions._sql_condition(:read, '(SELECT labels FROM os_objects WHERE os_objects.id=obj_id)')})")
+    end
+
     if tagValues != nil
       tagValues.each do |kv|
         if kv.value.nil?

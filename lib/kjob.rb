@@ -195,7 +195,12 @@ class KJob
         return true   # did something
       end
 
-      log_info = "id=#{job_id}, app=#{application_id}, retries_left=#{retries_left}, job=#{job.description_for_log}"
+      # Log the start of a job run and flush the logs, so that something is in
+      # the logs while the job is running. Otherwise all the logging information
+      # only appears after the job has completed.
+      log_info = "id=#{job_id}, app=#{application_id}, retries_left=#{retries_left}, job=#{job.description_for_log}, queue=#{@queue}"
+      KApp.logger.info "Running job: #{log_info} (full logs later)"
+      KApp.logger.flush_buffered
       KApp.logger.info "Run job: #{log_info}"
 
       context = Context.new

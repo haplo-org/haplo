@@ -15,6 +15,7 @@
       "js/std_workflow_emails.js",
       "js/std_workflow_auto_move_user.js",
       "js/std_workflow_entity_replacement.js",
+      "js/std_workflow_entity_shared_role.js",
       "js/std_workflow_notes.js",
       "js/std_workflow_transition_form.js",
       "js/std_workflow_dashboard.js",

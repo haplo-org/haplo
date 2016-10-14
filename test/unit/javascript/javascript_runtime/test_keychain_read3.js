@@ -12,5 +12,19 @@ TEST(function() {
     TEST.assert_equal("credential.test.1", credential3.name);
     TEST.assert_equal("b", credential3.account.a);  // account still readable
     TEST.assert_equal("confidential1", credential3.secret.s1);  // but can now read secrets too
+    TEST.assert_equal("Basic dXNlcm9uZTpleGFtcGxl", credential3.encode("http-authorization"));
+
+    TEST.assert_exceptions(function() {
+        credential3.encode("hello");
+    }, "Unknown encoding hello");
+    TEST.assert_exceptions(function() {
+        credential3.encode();
+    }, "Unknown encoding undefined");
+
+    var credential2 = O.keychain.credential(2);
+    TEST.assert_equal("credential.test.TWO", credential2.name);
+    TEST.assert_exceptions(function() {
+        credential2.encode("http-authorization");
+    }, "Credential does not contain Username and Password");
 
 });

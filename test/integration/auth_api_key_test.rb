@@ -121,11 +121,11 @@ private
   end
 
   def check_api_key(api_key, user_id, expected_body = nil, path = nil)
-    [:param,:cookie,:header].each do |type|
+    [:param,:basic,:header].each do |type|
       session = open_session
       url_path = path || '/api/test/uid'
       opts = {}
-      opts = {:cookies => {'_ak' => api_key}} if type == :cookie
+      opts = {'Authorization' => "Basic #{["haplo:"+api_key].pack('m').gsub("\n",'')}"} if type == :basic
       opts = {'X-ONEIS-Key' => api_key} if type == :header
       opts[:expected_response_codes] = [200, 403]
       if type == :param

@@ -9,6 +9,7 @@
   "privilegesRequired": ["pDatabase", "pDatabaseDynamicTable", "pBackgroundProcessing", "pReportHealthEvent"],
   "load": [
       "js/std_reporting.js",
+      "js/std_reporting_api.js",
       "js/std_reporting_dashboards.js",
       "js/std_reporting_dashboard_list.js",
       "js/std_reporting_dashboard_summary_statistics.js",

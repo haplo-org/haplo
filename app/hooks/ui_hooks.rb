@@ -22,4 +22,10 @@ module KHooks
     h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of viewing the built-in help pages"
   end
 
+  define_hook :hPreSearchUI do |h|
+    h.argument    :query,       String,   "Search query"
+    h.argument    :subset,      KObjRef,  "Selected search subset"
+    h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of viewing the search results"
+  end
+
 end

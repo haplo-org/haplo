@@ -7,33 +7,48 @@
 
 class OAuthClient
 
+  COMMON_ACCOUNT_PROPERTIES = {
+    "auth_url" => "https://accounts.google.com/o/oauth2/auth",
+      # The URL to redirect the user to, to allow authentication
+    "token_url" => "https://accounts.google.com/o/oauth2/token",
+     # The URL that Haplo should use to verify the authentication token against the provider.
+    "ssl_ciphers" => "",
+      # Optional override of the SSL cipher suites
+    "domain" => "example.com",
+      # The email domain to allow logins under
+    "client_id" => "CLIENT_ID",
+      # This is provided by the authentication provider, and should be copied exactly
+    "max_auth_age" => "0",
+      # Ask the auth provider to require the user to re-enter their password if the last time
+      # they did this was more than X minutes ago.  (Note there is usually a minimum time of a
+      # few minutes enforced by the server).
+  }
+  COMMON_SECRET_PROPERTIES = {
+    "client_secret" => ""
+      # This is provided by the authentication provider
+  }
+
   KNotificationCentre.when(:server, :starting) do
     KeychainCredential::MODELS.push({
       :kind => 'OAuth Identity Provider',
       :instance_kind => 'OAuth2',
-      :account => {
-        "auth_url" => "https://accounts.google.com/o/oauth2/auth",
-          # The URL to redirect the user to, to allow authentication
-        "token_url" => "https://accounts.google.com/o/oauth2/token",
-          # The URL that Haplo should use to verify the authentication token against the provider.
+      :account => COMMON_ACCOUNT_PROPERTIES,
+      :secret => COMMON_SECRET_PROPERTIES
+    })
+
+    KeychainCredential::MODELS.push({
+      :kind => 'OAuth Identity Provider',
+      :instance_kind => 'Google Apps',
+      :account => COMMON_ACCOUNT_PROPERTIES.merge({
         "cert_url" => "https://www.googleapis.com/oauth2/v1/certs",
           # In google-flavoured OAuth, the token response contains a JWT signed message,
           # this URL should return a dictionary of PEM encoded keys used to sign the JWT.
-        "domain" => "example.com",
-          # The email domain to allow logins under
         "issuer" => "accounts.google.com",
           # Check that the identity token has been provided by this issuer
-        "client_id" => "XXXXXXXXXXX.apps.googleusercontent.com",
+        "client_id" => "XXXXXXXXXXX.apps.googleusercontent.com"
           # This is provided by the authentication provider, and should be copied exactly
-        "max_auth_age" => "0",
-          # Ask the auth provider to require the user to re-enter their password if the last time
-          # they did this was more than X minutes ago.  (Note there is usually a minimum time of a
-          # few minutes enforced by the server).
-      },
-      :secret => {
-        "client_secret" => ""
-          # This is provided by the authentication provider
-      }
+      }),
+      :secret => COMMON_SECRET_PROPERTIES
     })
   end
 
@@ -64,6 +79,16 @@ class OAuthClient
     return_url = "#{KApp.url_base(:logged_in)}/do/authentication/oauth-rtx"
 
     @config = @credential.account.merge(@credential.secret).merge({'return_url' => return_url})
+    @extra_configuration = details[:extra_configuration]
+    @account_kind =
+      case @credential.instance_kind
+      when "Google Apps"
+        :google
+      when "OAuth2"
+        :plain
+      else
+        raise OAuthError.new('bad_kind')
+      end
 
     self
   end
@@ -91,10 +116,16 @@ class OAuthClient
   def redirect_url
     state_details = {"n" => @credential.name}
     state_details["d"] = @user_data if @user_data
+    case @account_kind
+    when :google
+      scope = 'openid email'
+    when :plain
+      scope = @extra_configuration['scope']
+    end
     query = URI.encode_www_form({
       'client_id' => @config['client_id'],
       'response_type' => 'code',
-      'scope' => 'openid email',
+      'scope' => scope,
       'redirect_uri' => @config['return_url'],
       'state' => encode_state(state_details),
       'hd' => @config['domain'],
@@ -115,6 +146,9 @@ class OAuthClient
       request = Net::HTTP::Get.new(uri.to_s)
     end
     http = Net::HTTP.new(uri.host, uri.port)
+    if @config['ssl_ciphers']
+      http.ciphers = @config['ssl_ciphers']
+    end
     http.use_ssl = true
     http.verify_mode = OpenSSL::SSL::VERIFY_PEER
     http.ca_file = SSL_CERTIFICATE_AUTHORITY_ROOTS_FILE
@@ -191,9 +225,28 @@ class OAuthClient
     }
     response = perform_https_request(:POST, @config['token_url'], params)
     body = JSON.parse(response)
-    raise OAuthError.new('invalid_response') unless body['token_type'] == 'Bearer'
+    raise OAuthError.new('invalid_response') unless (body.has_key? 'token_type') && (body['token_type'].downcase == 'bearer')
     raise OAuthError.new('invalid_response') unless body.has_key? 'access_token'
-    id_token = parse_and_validate_jwt(body['id_token'])
+    case @account_kind
+    when :google
+      # Google token bodies contain an id_token field, which is a JWT-signed
+      # user profile.
+
+      id_token = parse_and_validate_jwt(body['id_token'])
+
+      # To be compatible with existing users of the OAuth API to
+      # perform logins against google apps, while still allowing
+      # future uses of the OAuth client to access stuff in the
+      # response body such as access tokens, we embed the body in the
+      # returned ID token.
+      id_token["$$token_response_body"] = body
+      
+      id_token
+    when :plain
+      # Just return the body, and the invoking plugin will rummage in there
+      # for anything they need
+      body
+    end
   end
 
   def authenticate(params)
@@ -201,8 +254,13 @@ class OAuthClient
     raise OAuthError.new(params['error']) unless params['error'].nil?
 
     id_token = get_id_token_from_server(params)
-    raise OAuthError.new('invalid_issuer') if id_token['iss'] != @config['issuer']
-    raise OAuthError.new('invalid_client_id') if id_token['aud'] != @config['client_id']
+    case @account_kind
+    when :google
+      raise OAuthError.new('invalid_issuer') if id_token['iss'] != @config['issuer']
+      raise OAuthError.new('invalid_client_id') if id_token['aud'] != @config['client_id']
+    when :plain
+      # No extra rules to check
+    end
 
     # Return the verified details
     auth_info = {
@@ -243,9 +301,10 @@ class OAuthClient
                                    to the client via an HTTP redirect.)',
       'no_pubkey' => 'Could not retrieve the authentication provider\'s public key to verify token',
       'no_config' => 'No stored OAuth provider configuration could be found in the Keychain',
+      'bad_kind' => 'The OAuth provider configuration in the Keychain did not have a valid instance kind',
       'invalid_response' => 'The response from the OAuth provider could not be parsed',
       'invalid_issuer' => 'The issuer indicated in the ID token does not match the configured issuer',
-      'invalid_client_id' => 'The client ID in the ID token does not match out ID.
+      'invalid_client_id' => 'The client ID in the ID token does not match our ID.
                               This authentication is for a different app.',
       'unexpected_status_code' => 'The provider returned an unexpected status code to an HTTP request',
       'bad_sign' => 'The ID token signature verification failed',

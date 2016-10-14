@@ -1,8 +1,9 @@
-if(object) {
-  std:object:link(object) <br>
-} else {
-  if(taskTitle) {
-    <b> taskTitle </b> <br>
-  }
+if(taskTitle) {
+    if(fullInfo) {
+        <a href=fullInfo> taskTitle </a>
+    } else {
+        taskTitle
+    }
+    <br>
 }
 status

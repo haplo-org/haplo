@@ -17,8 +17,10 @@ class JavaScriptPluginLoadingTest < IntegrationTest
   def test_plugin_setup_and_dirs
     # Make sure the test script has copied the test plugin to the directory
     assert File.directory?("#{PLUGINS_LOCAL_DIRECTORY}/test/thirdparty_plugin")
-    # Make sure the developer_loader plugin has created it's directory
-    assert File.directory?("#{PLUGINS_LOCAL_DIRECTORY}/loader.dev")
+    if should_test_plugin_debugging_features?
+      # Make sure the developer_loader plugin has created it's directory
+      assert File.directory?("#{PLUGINS_LOCAL_DIRECTORY}/loader.dev")
+    end
     # And there should be a versions file there too
     assert File.exists?("#{PLUGINS_LOCAL_DIRECTORY}/versions.yaml")
   end

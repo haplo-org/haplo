@@ -221,6 +221,9 @@ WorkflowInstanceBase.prototype = {
             this._updateWorkUnitActionableBy(stateDefinition.actionableBy, destinationTarget);
         }
         this._callHandler('$observeEnter', transition, previousState);
+        if(stateDefinition.finish === true) {
+            this._callHandler('$observeFinish');
+        }
         this._saveWorkUnit();
         // Add timeline entry
         var timelineRow = {
@@ -709,6 +712,7 @@ implementHandlerList('preWorkUnitSave');
 implementHandlerList('setWorkUnitProperties');
 implementHandlerList('observeEnter');
 implementHandlerList('observeExit');
+implementHandlerList('observeFinish');
 implementHandlerList('transitionComplete');
 implementHandlerList('renderWork');
 implementHandlerList('renderWorkList');
@@ -724,6 +728,7 @@ implementHandlerList('transitionUI');
 implementHandlerList('transitionFormSubmitted');
 implementHandlerList('transitionFormPreTransition');
 implementHandlerList('transitionUIValidateTarget');
+implementHandlerList('transitionUIPostTransitionRedirectForActionableUser');
 
 // --------------------------------------------------------------------------
 

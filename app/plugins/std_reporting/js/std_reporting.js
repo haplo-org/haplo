@@ -28,6 +28,11 @@
 
 // --------------------------------------------------------------------------
 
+var REPORT_UNEXPECTED_CHANGES = !!(O.application.config["std_reporting:report_unexpected_changes"]);
+var reportNextExceptionFromUpdates = true; // for limiting number of reports from same runtime
+
+// --------------------------------------------------------------------------
+
 P.REPORTING_API = {}; // appears as P.reporting in plugins using the std:reporting feature
 
 // --------------------------------------------------------------------------
@@ -54,6 +59,7 @@ var collectionNameToDatabaseTableFragment = function(name) {
 
 // --------------------------------------------------------------------------
 
+// NOTE: Platform support requires this table name
 P.db.table("rebuilds", {
     collection: {type:"text"},
     requested: {type:"datetime"},
@@ -272,7 +278,7 @@ Collection.prototype.collectAllFactsInBackground = function() {
         object: null,
         changesNotExpected: false
     }).save();
-    O.background.run("std_reporting:update_collections", {});
+    $StdReporting.signalUpdatesRequired();
 };
 
 Collection.prototype.__defineGetter__("isUpdatingFacts", function() {
@@ -391,6 +397,11 @@ var factValueComparisonFunctions = {
 };
 
 var updateFacts = function(collection, object, existingRow, timeNow) {
+    if($StdReporting.shouldStopUpdating()) {
+        var e = new Error("Updates interrupted");
+        e.$isPlatformStopUpdating = true;
+        throw e;
+    }
     if(!timeNow) { timeNow = new Date(); }
     if(!existingRow) {
         // Attempt to load existing row if it wasn't passed into this functon
@@ -515,9 +526,11 @@ var doFullRebuildOfCollection = function(collectionName, changesExpected) {
             }
         });
         if(!changesExpected && (updated > 0)) {
-            O.reportHealthEvent("Unexpected update in std_reporting collection: "+collectionName,
-                "Expected 0 updated, got "+updated+". This implies that plugins are not updating facts when they should.\n\nObjects updated: "+
-                _.map(updatedRefs, function(r) { return r.toString(); }).join(' '));
+            if(REPORT_UNEXPECTED_CHANGES) {
+                O.reportHealthEvent("Unexpected update in std_reporting collection: "+collectionName,
+                    "Expected 0 updated, got "+updated+". This implies that plugins are not updating facts when they should.\n\nObjects updated: "+
+                    _.map(updatedRefs, function(r) { return r.toString(); }).join(' '));
+            }
         }
         console.log("Updated:", updated);
     });
@@ -540,8 +553,8 @@ var doUpdateFactsForObjects = function(collectionName, updates) {
     });
 };
 
-// TODO: (Correctly) assumes only one plugin job is active at any time. Adjust platform to allow multiple jobs but still control concurrency.
-P.backgroundCallback("update_collections", function() {
+// NOTE: Platform runs this callback in a special thread, and requires this name.
+P.backgroundCallback("update", function() {
     // Determine what needs to be rebuilt
     var rebuilds = P.db.rebuilds.select();
     var fullRebuilds = {};
@@ -556,19 +569,34 @@ P.backgroundCallback("update_collections", function() {
             updateForObject[row.collection].set(row.object, true);
         }
     });
-    // Do full updates
-    _.each(fullRebuilds, function(changesExpected, collectionName) {
-        doFullRebuildOfCollection(collectionName, changesExpected);
-    });
-    // Do partial updates
-    _.each(updateForObject, function(refs, collectionName) {
-        if(!fullRebuilds[collectionName]) { // as it will have just be done
-            var updates = [];
-            refs.each(function(ref,t) { updates.push(ref); });
-            doUpdateFactsForObjects(collectionName, updates);
+    try {
+        // Do full updates
+        _.each(fullRebuilds, function(changesExpected, collectionName) {
+            doFullRebuildOfCollection(collectionName, changesExpected);
+        });
+        // Do partial updates
+        _.each(updateForObject, function(refs, collectionName) {
+            if(!fullRebuilds[collectionName]) { // as it will have just be done
+                var updates = [];
+                refs.each(function(ref,t) { updates.push(ref); });
+                doUpdateFactsForObjects(collectionName, updates);
+            }
+        });
+    } catch(e) {
+        if("$isPlatformStopUpdating" in e) {
+            console.log("Reporting update terminated early, updates not cleared and will be rerun");
+        } else {
+            console.log("Updating, caught error: "+e.message);
+            if(reportNextExceptionFromUpdates) {
+                O.reportHealthEvent("Exception in std_reporting collection update",
+                    "Exception thrown when updating facts for an object. NOTE: Future exceptions in this runtime will not be reporting. Check server logs.\n\nException: "+e.message);
+                reportNextExceptionFromUpdates = false; // don't send too many, just one per runtime gives the right idea
+            }
         }
-    });
+        return; // prevent clearing of update in table
+    }
     // Delete all the rebuild row used to determine data AFTER they've been completed.
+    // But if reporting updates stopped early or there was an error, then the table won't be cleared so it'll retry.
     _.each(rebuilds, function(row) {
         row.deleteObject();
     });
@@ -652,7 +680,7 @@ P.hook('hPostObjectChange', function(response, object, operation, previous) {
         });
     });
     if(haveUpdates) {
-        O.background.run("std_reporting:update_collections", {});
+        $StdReporting.signalUpdatesRequired();
     }
 });
 
@@ -677,7 +705,7 @@ P.implementService("std:reporting:update_required", function(collectionName, upd
             }).save();
         }
     });
-    O.background.run("std_reporting:update_collections", {});
+    $StdReporting.signalUpdatesRequired();
 });
 
 // --------------------------------------------------------------------------
@@ -695,7 +723,7 @@ var rebuildAllToCheckFactsHaveBeenKeptUpToDate = function() {
             changesNotExpected: true    // because this is a scheduled update
         }).save();
     });
-    O.background.run("std_reporting:update_collections", {});
+    $StdReporting.signalUpdatesRequired();
 };
 
 P.hook('hScheduleDailyMidnight', function(response, year, month, dayOfMonth, hour, dayOfWeek) {

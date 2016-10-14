@@ -21,10 +21,22 @@ P.WorkflowInstanceBase.prototype.$emailTemplate = "std:email-template:workflow-n
 //      to - list of recipients
 //      cc - CC list, only sent if the to list includes at least one entry
 //      except - list of recipients to *not* send stuff to
+//      toExternal - list of external recipients, as objects with at least
+//          email, nameFirst & name properties. Note that external recipients don't
+//          get de-duplicated or respect the 'except' property.
+//          If a list entry if a function, that function will be called with
+//          a M argument, and should return an object or a list of objects
+//          as above.
+//      ccExternal - external CC list, objects as toExternal
 //
 // view is copied and additional properties added:
 //      M - workflow instance
 //      toUser - the user the email is being sent to
+//
+// Recipients lists can be specified directly, or as a function which is called
+// with M as a single argument. The function version of the specification is
+// useful when passing sendEmail() specifications as configuration to workflow
+// components.
 //
 // Recipients lists can contains:
 //      Strings as actionableBy names resolved by M.getActionableBy()
@@ -44,6 +56,10 @@ P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
     var except = this._generateEmailRecipientList(specification.except, []).map(toId);
     var to =     this._generateEmailRecipientList(specification.to,     except);
     var cc =     this._generateEmailRecipientList(specification.cc,     except.concat(to.map(toId)));
+
+    // Add in any external recipients
+    if("toExternal" in specification) { to = to.concat(this._externalEmailRecipients(specification.toExternal)); }
+    if("ccExternal" in specification) { cc = cc.concat(this._externalEmailRecipients(specification.ccExternal)); }
 
     // Obtain the message template
     var template = specification.template;
@@ -86,6 +102,9 @@ P.WorkflowInstanceBase.prototype.sendEmail = function(specification) {
 
 P.WorkflowInstanceBase.prototype._generateEmailRecipientList = function(givenList, except) {
     var M = this;
+    if(typeof(givenList) === "function") {
+        givenList = givenList(M);
+    }
     var outputList = [];
     var pushRecipient = function(r) {
         if(r && (-1 === except.indexOf(r.id)) && r.email) {
@@ -117,4 +136,18 @@ P.WorkflowInstanceBase.prototype._generateEmailRecipientList = function(givenLis
         }
     });
     return outputList;
+};
+
+P.WorkflowInstanceBase.prototype._externalEmailRecipients = function(givenList) {
+    var M = this;
+    var outputList = [];
+    _.flatten([givenList || []]).forEach(function(recipient) {
+        if(typeof(recipient) === "function") {
+            recipient = recipient(M);   // may return a list of recipients
+        }
+        if(recipient) {
+            outputList.push(recipient);
+        }
+    });
+    return _.flatten(outputList);
 };

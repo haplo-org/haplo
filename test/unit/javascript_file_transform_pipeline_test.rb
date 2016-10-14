@@ -54,7 +54,7 @@ __E
         pipeline.file("input", wordFile);
         pipeline.transform("std:convert", {mimeType:"application/pdf"});
         pipeline.urlForWaitThenRedirect("/do/one", {});
-        pipeline.urlForOuputWaitThenDownload("output", "output.pdf", {});
+        pipeline.urlForOutputWaitThenDownload("output", "output.pdf", {});
         pipeline.execute();
         var pdfFile;
         O.$registerFileTransformPipelineCallback("testconvert", this, {

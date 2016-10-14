@@ -28,6 +28,9 @@ TEST(function() {
     TEST.assert_exceptions(function() {
         credential2.secret;
     }, "Cannot read secret property of a KeychainCredential object without the pKeychainReadSecret privilege. Add it to privilegesRequired in plugin.json");
+    TEST.assert_exceptions(function() {
+        credential2.encode("something");
+    }, "Cannot call encode() on a KeychainCredential object without the pKeychainReadSecret privilege. Add it to privilegesRequired in plugin.json");
 
     var credentialTest = O.keychain.credential("credential.test.1");
     TEST.assert_equal(3, credentialTest.id);

@@ -42,7 +42,7 @@ KInstallProperties.load_from("#{KFRAMEWORK_ROOT}/tmp/properties-test", {
   :register_mdns_hostnames => 'no',
   :domainname => 'local',
   :management_server_url => "https://#{ENV['KSERVER_HOSTNAME'].chomp}.local",
-  :plugin_debugging_support => 'yes'
+  :plugin_debugging_support => ENV['DISABLE_TEST_PLUGIN_DEBUGGING'] ? 'no' : 'yes'
 })
 
 # Plugins

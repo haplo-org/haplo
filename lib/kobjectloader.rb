@@ -133,6 +133,10 @@ module KObjectLoader
   # Define the very basic objects to initialise the store
   STORE_INITIALISATION = <<__INIT
 
+obj [O_LABEL_STRUCTURE] O_STORE_OPTIONS
+  A_TITLE   "$ Store Options"
+  A_OPTION  "ktextpersonname_western_sortas=last_first"
+
 obj [O_LABEL_STRUCTURE] O_TYPE_ATTR_DESC
   A_TITLE   "$ Attribute Descriptor Type"
 

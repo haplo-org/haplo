@@ -499,6 +499,7 @@ module SchemaRequirements
       @parser = parser # needed to look up existence of requirements to resolve ambiguity
       KObjectStore.with_superuser_permissions do
         @new_objects = []
+        @new_objects_generic = []
         @objects = {}
         SCHEMA_TYPES.each do |type_ref|
           @objects[type_ref] = lookup = {}
@@ -563,7 +564,7 @@ module SchemaRequirements
           q[0].dup
         else
           o = KObject.new()
-          @new_objects << o
+          @new_objects_generic << o
           o.add_attr(KIdentifierConfigurationName.new(code), A_CONFIGURED_BEHAVIOUR)
           KObjectStore.preallocate_objref(o)
         end
@@ -684,13 +685,13 @@ module SchemaRequirements
       end
     end
 
-    def post_commit_handle_new_objects(applier)
+    def post_commit_handle_new_objects(applier, objects)
       # Fix and then create any objects which are:
       #  * created but not committed by the object appliers because no requirements were set for them.
       #  * a new generic object, creation of which which needs to be delayed until new schema is in place
       #    so the right labels are applied.
       # Any commited objects will have been fixed before saving.
-      @new_objects.each do |object|
+      objects.each do |object|
         unless object.is_stored?
           PlatformRequirements.fix(object)
           KObjectStore.create(object)
@@ -708,10 +709,13 @@ module SchemaRequirements
     def post_commit(applier)
       # Check any new objects creating during the application process. Make any changes with superuser and
       # schema changes delayed to avoid reloading plugin runtimes during indeterminate states.
-      unless @new_objects.empty?
-        KObjectStore.with_superuser_permissions do
-          KObjectStore.delay_schema_reload_during(:force_schema_reload) do
-            post_commit_handle_new_objects(applier)
+      # Do schema objects first, then generic objects, allowing the schema to be reloaded in the meantime.
+      [@new_objects, @new_objects_generic].each do |objects|
+        unless objects.empty?
+          KObjectStore.with_superuser_permissions do
+            KObjectStore.delay_schema_reload_during(:force_schema_reload) do
+              post_commit_handle_new_objects(applier, objects)
+            end
           end
         end
       end

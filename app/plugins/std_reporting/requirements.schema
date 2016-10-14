@@ -1,2 +1,7 @@
 
 group std:group:administrators as Administrators
+
+group std:group:reporting-api as ReportingAPI
+    title: Reporting API
+
+attribute std:attribute:configured-behaviour as ConfiguredBehaviour

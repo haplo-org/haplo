@@ -556,6 +556,7 @@ __E
   # -------------------------------------------------------------------------------------------------------------
 
   def test_plugin_tests
+    return unless should_test_plugin_debugging_features?
     KPlugin.install_plugin("test_plugin")
     tester = JSPluginTests.new(KApp.current_application, "test_plugin", nil)
     tester.run # in another thread

@@ -19,7 +19,9 @@ class SessionController < ApplicationController
       response.set_cookie({
         'name' => CLIENT_AJAX_AND_WINDOW_SIZE_COOKIE_NAME,
         'value' => dimensions,
-        'path' => '/'
+        'path' => '/',
+        'secure' => exchange.request.ssl?
+        # NOTE: Can't be 'http_only' because it's used by client side JS
       })
     end
     render :text => 'K_UPDATED', :kind => :text

@@ -35,7 +35,7 @@ DashboardList.prototype._makeRenderableColumnList = function() {
     _.each(_.sortBy(this.columnGroups, "priority"), function(group) {
         columns = columns.concat(group.columns);
     });
-    columns.forEach(function(c) { c.prepare(dashboard); });
+    columns.forEach(function(c) { c._prepare(dashboard); });
     return columns;
 };
 
@@ -216,6 +216,14 @@ var CELL_STYLE_TO_ATTRS = {
 
 var ColumnBase = function() { };
 
+ColumnBase.prototype._prepare = function(dashboard) {
+    this.prepare(dashboard);
+    // Export heading defaults to the column heading.
+    if(!this.exportHeading) {
+        this.exportHeading = this.heading || '????';
+    }
+};
+
 ColumnBase.prototype.prepare = function(dashboard) {
 };
 
@@ -243,7 +251,7 @@ var makeColumnType = function(info) {
     var t = function(collection, colspec) {
         this.fact = colspec.fact;
         this.heading = colspec.heading || '????';
-        this.exportHeading = colspec.exportHeading || this.heading;
+        this.exportHeading = colspec.exportHeading;
         this.groups = colspec.groups;
         this.columnStyle = colspec.style;
         if(info.construct) { info.construct.call(this, collection, colspec); }
@@ -606,6 +614,7 @@ var LinkedColumn = makeColumnType({
         }
         this.column = makeColumn(collection, colspec.column);
         this.heading = this.column.heading;
+        this.exportHeading = this.column.exportHeading;
         // TODO: Default object accessor is a bit slow if it's to be executed on every row, maybe optimistic loading needed in row object?
         this.link = colspec.link || function(row) {
             return row.object.url();

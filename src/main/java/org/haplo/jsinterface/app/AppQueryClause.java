@@ -12,6 +12,8 @@ public interface AppQueryClause {
 
     public void free_text(String text, Integer desc, Integer qual);
 
+    public void exact_title(String title);
+
     public void link(AppObjRef ref, Integer desc, Integer qual);
 
     public void link_exact(AppObjRef ref, Integer desc, Integer qual);

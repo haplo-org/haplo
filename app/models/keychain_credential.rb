@@ -7,7 +7,20 @@
 
 class KeychainCredential < ActiveRecord::Base
 
-  MODELS = []
+  MODELS = [
+      {
+        :kind => 'Generic',
+        :instance_kind => "Username and password",
+        :account => {"Username" => ""},
+        :secret => {"Password" => ""}
+      },
+      {
+        :kind => 'Generic',
+        :instance_kind => "Secret",
+        :account => {},
+        :secret => {"Secret" => ""}
+      }
+    ]
 
   def account
     JSON.parse(self.account_json)

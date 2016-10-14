@@ -21,6 +21,7 @@ import org.haplo.jsinterface.db.*;
 import org.haplo.jsinterface.generate.*;
 import org.haplo.jsinterface.remote.*;
 import org.haplo.jsinterface.util.*;
+import org.haplo.jsinterface.stdplugin.*;
 import org.haplo.jsinterface.template.TemplateParserConfiguration;
 import org.haplo.jsinterface.template.TemplateIncludedRenderer;
 import org.haplo.jsinterface.template.TemplateFunctionRenderer;
@@ -296,7 +297,7 @@ public class Runtime {
      * Initialize the shared JavaScript environment. Loads libraries and removes
      * methods of escaping the sandbox.
      */
-    public static void initializeSharedEnvironment(String frameworkRoot) throws java.io.IOException {
+    public static void initializeSharedEnvironment(String frameworkRoot, boolean pluginDebuggingEnabled) throws java.io.IOException {
         // Don't allow this to be called twice
         if(sharedScope != null) {
             return;
@@ -331,6 +332,12 @@ public class Runtime {
                 script.close();
             }
             bootScriptsFile.close();
+
+            // Insert plugin debugging flag
+            if(pluginDebuggingEnabled) {
+                Scriptable o = (Scriptable)scope.get("O", scope);
+                o.put("PLUGIN_DEBUGGING_ENABLED", o, true);
+            }
 
             // Load the list of allowed globals
             FileReader globalsWhitelistFile = new FileReader(frameworkRoot + "/lib/javascript/globalswhitelist.txt");
@@ -453,6 +460,8 @@ public class Runtime {
             defineSealedHostClass(scope, KCollaborationItem.class);
 
             defineSealedHostClass(scope, KAuthenticationService.class);
+
+            defineSealedHostClass(scope, StdReporting.class);
 
             // Seal the root now everything has been added
             scope.sealObject();

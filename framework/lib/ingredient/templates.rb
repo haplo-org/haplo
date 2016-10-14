@@ -25,7 +25,7 @@ module Ingredient
       templates_module.const_set(:KINDS, Hash.new)
 
       # Find all templates
-      template_filenames = Dir.glob("#{path}/**/*.erb").map { |n| n.slice(path.length + 1, n.length) }
+      template_filenames = Dir.glob("#{path}/**/*.erb").map { |n| n.slice(path.length + 1, n.length) } .sort
 
       # Acceptable method names and mapping names
       acceptable_template_methods = Hash.new

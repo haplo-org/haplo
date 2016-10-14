@@ -21,6 +21,15 @@ module JSKKeychainCredentialSupport
     KeychainCredential.where((id > 0) ? {:id=>id} : {:name=>name}).first()
   end
 
+  def self.encode(credential, encoding)
+    raise JavaScriptAPIError, "Unknown encoding #{encoding}" unless encoding == "http-authorization"
+    username = credential.account['Username']
+    password = credential.secret['Password']
+    raise JavaScriptAPIError, "Credential does not contain Username and Password" unless username && password
+    auth = ["#{username}:#{password}".encode(Encoding::UTF_8)].pack('m').gsub(/[\r\n]+/,'')
+    "Basic #{auth}"
+  end
+
 end
 
 Java::OrgHaploJsinterface::KKeychainCredential.setRubyInterface(JSKKeychainCredentialSupport)

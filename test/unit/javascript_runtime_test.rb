@@ -237,6 +237,8 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     tqg_query(queries, KObjectStore.query_and.free_text('Hello there', A_TITLE, Q_ALTERNATIVE).link(O_TYPE_BOOK, A_TYPE))
     tqg_query(queries, KObjectStore.query_and.free_text('Hello there', A_TITLE, Q_ALTERNATIVE).link(O_TYPE_BOOK, A_TYPE, Q_MOBILE))
 
+    tqg_query(queries, KObjectStore.query_and.exact_title('Hello there'))
+
     q1 = KObjectStore.query_and
     q1or = q1.or
     q1or.free_text("Ping").free_text("Pong")
@@ -453,6 +455,24 @@ __E
     end
   end
 
+  def test_workunit_read_by_user
+    restore_store_snapshot("app")
+    db_reset_test_data
+    o1, o2 = [[O_LABEL_CONFIDENTIAL],[]].map do |labels|
+      o = KObject.new(labels)
+      o.add_attr(O_TYPE_BOOK, A_TYPE)
+      o.add_attr("labels #{labels}", A_TITLE)
+      KObjectStore.create(o)
+      o
+    end
+    PermissionRule.new_rule!(:deny, 41, O_LABEL_CONFIDENTIAL.obj_id, :read)
+    begin
+      run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_workunit_read_by_user.js', {:OBJECT1 => o1.objref.obj_id, :OBJECT2 => o2.objref.obj_id})
+    ensure
+      WorkUnit.delete_all()
+    end
+  end
+
   # ===============================================================================================
 
   def test_stored_files
@@ -600,6 +620,16 @@ __E
     assert nil == KJSPluginRuntime.current_if_active  # runtime was invalidated
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_app_info2.js')
     KApp.set_global(:javascript_config_data, '{}')
+  end
+
+  # ===============================================================================================
+
+  def test_plugin_debugging_runtime_flag
+    if should_test_plugin_debugging_features?
+      run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_plugin_debugging_runtime_flag_yes.js')
+    else
+      run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_plugin_debugging_runtime_flag_no.js')
+    end
   end
 
   # ===============================================================================================
@@ -946,15 +976,20 @@ __E
     namespaces = KJSPluginRuntime::DatabaseNamespaces.new
     allocated_namespaces = {}
     0.upto(128) do |n|
+      assert_equal nil, namespaces["plugin_n#{n}"]
+      namespaces.ensure_namespace_for("plugin_n#{n}")
       ns = namespaces["plugin_n#{n}"]
+      assert !ns.nil?
       assert !(allocated_namespaces.has_key?(ns))
       allocated_namespaces[ns] = n
     end
     namespaces2 = KJSPluginRuntime::DatabaseNamespaces.new
-    0.upto(128) do |n|
-      ns2 = namespaces2["plugin_n#{n}"]
-      assert allocated_namespaces.has_key?(ns2)
-      assert_equal n, allocated_namespaces[ns2]
+    assert_equal nil, namespaces2["plugin_n10"]
+    namespaces.commit_if_changed!
+    namespaces3 = KJSPluginRuntime::DatabaseNamespaces.new
+    assert nil != namespaces3["plugin_n10"]
+    allocated_namespaces.each do |ns,index|
+      assert_equal ns, namespaces3["plugin_n#{index}"]
     end
   end
 
@@ -999,7 +1034,7 @@ __E
     }).save!
     KeychainCredential.new({
       :kind => 'test', :instance_kind => 'Test One', :name => 'credential.test.1',
-      :account_json => '{"a":"b","c":"d"}', :secret_json => '{"s1":"confidential1"}'
+      :account_json => '{"a":"b","c":"d","Username":"userone"}', :secret_json => '{"s1":"confidential1","Password":"example"}'
     }).save!
     install_grant_privileges_plugin_with_privileges()
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_keychain_read1.js', nil, "grant_privileges_plugin")

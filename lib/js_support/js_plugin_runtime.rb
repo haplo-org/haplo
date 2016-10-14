@@ -94,7 +94,11 @@ class KJSPluginRuntime
             using_runtime do
               # Go through each plugin, and ask it to load the JavaScript code
               KPlugin.get_plugins_for_current_app.each do |plugin|
-                database_namespace = plugin.uses_database ? db_namespaces[plugin.name] : nil
+                database_namespace = nil
+                if plugin.uses_database
+                  database_namespace = db_namespaces[plugin.name]
+                  raise "Logic error; plugin db namespace should have been allocated" unless database_namespace
+                end
                 # This check prevents unexpected registrations by plugin code, and sets the database namespace for the plugin.
                 @runtime.host.setNextPluginToBeRegistered(plugin.name, database_namespace)
                 plugin.javascript_load(@runtime, schema_for_js_runtime)
@@ -117,24 +121,42 @@ class KJSPluginRuntime
     end
   end
 
+  KNotificationCentre.when(:plugin_pre_install, :allocations) do |name, detail, will_install_plugin_names, plugins|
+    # Allocate database namespaces for any plugins which might need them
+    db_namespaces = DatabaseNamespaces.new
+    plugins.each do |plugin|
+      if plugin.kind_of?(KJavaScriptPlugin) && plugin.uses_database
+        db_namespaces.ensure_namespace_for(plugin.name)
+      end
+    end
+    db_namespaces.commit_if_changed!
+  end
+
   class DatabaseNamespaces
     def initialize
       @namespaces = YAML::load(KApp.global(:plugin_db_namespaces) || '') || {}
     end
     def [](plugin_name)
-      namespace = @namespaces[plugin_name]
-      return namespace if namespace
+      @namespaces[plugin_name]
+    end
+    def ensure_namespace_for(plugin_name)
+      return if @namespaces.has_key?(plugin_name)
       safety = 256
       while safety > 0
         safety -= 1
         r = KRandom.random_hex(3)
         unless @namespaces.has_value?(r)
           @namespaces[plugin_name] = r
-          KApp.set_global(:plugin_db_namespaces, YAML::dump(@namespaces))
-          return r
+          @changed = true
+          return
         end
       end
       raise "Couldn't allocate database namespace"
+    end
+    def commit_if_changed!
+      if @changed
+        KApp.set_global(:plugin_db_namespaces, YAML::dump(@namespaces))
+      end
     end
   end
 

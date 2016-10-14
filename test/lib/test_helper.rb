@@ -9,6 +9,15 @@ class Test::Unit::TestCase
   include KConstants
   include TestStoreHelper
 
+  def should_test_plugin_debugging_features?
+    if ENV['DISABLE_TEST_PLUGIN_DEBUGGING']
+      puts "NOTE: Skipping plugging debugging test"
+      false
+    else
+      true
+    end
+  end
+
   TEST_JOBS_LOCK = Mutex.new
   def run_all_jobs(options)
     TEST_JOBS_LOCK.synchronize do

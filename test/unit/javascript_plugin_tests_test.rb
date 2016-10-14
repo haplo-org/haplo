@@ -10,6 +10,7 @@ class JavascriptPluginTestsTest < Test::Unit::TestCase
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_plugin_tests/tested_plugin")
 
   def test_one
+    return unless should_test_plugin_debugging_features?
     db_reset_test_data
     restore_store_snapshot("basic")
     KPlugin.install_plugin("tested_plugin")

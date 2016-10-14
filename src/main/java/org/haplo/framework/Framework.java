@@ -34,6 +34,7 @@ public interface Framework {
 
     // Installation properties
     String getInstallProperty(String name, String defaultValue);
+    boolean pluginDebuggingEnabled();
 
     // Development mode support
     boolean devmodeCheckReload();

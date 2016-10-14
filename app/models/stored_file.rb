@@ -202,6 +202,10 @@ class StoredFile < ActiveRecord::Base
     if File.exists?(thumbnail_pathname)
       File.unlink(thumbnail_pathname)
     end
+    render_text_pathname = self.disk_pathname_render_text
+    if File.exists?(render_text_pathname)
+      File.unlink(render_text_pathname)
+    end
   end
 
   def disk_pathname

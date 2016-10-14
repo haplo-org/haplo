@@ -8,6 +8,7 @@
 class PluginToolSetupAuthTest < IntegrationTest
 
   def test_auth_setup
+    return unless should_test_plugin_debugging_features?
     db_reset_test_data
     plugin_tool_session = open_session
     user_session = open_session

@@ -81,12 +81,6 @@ class KObjectStoreApplicationDelegate
     obj_type == O_TYPE_APP_VISIBLE || obj_type == O_TYPE_ATTR_ALIAS_DESC
   end
 
-  # Called before an object is written to the store
-  # Exception to abort operation
-  def pre_object_write(store, operation, object, obj_previous_version)
-    KNotificationCentre.notify(:os_pre_object_write, operation, object)
-  end
-
   # Updating labels for an object, given a particular operation, returning a new label_changes object
   def update_label_changes_for(store, operation, object, obj_previous_version, is_schema_obj, label_changes)
     # For create/update operations, ask plugins if they'd like to modify the labels
@@ -110,9 +104,13 @@ class KObjectStoreApplicationDelegate
 
   # Called before the object indexes are updated, allowing replacement of the object when plugins
   # want to adjust the indexed data.
-  def indexed_version_of_object(object)
-    call_hook(:hPreIndexObject) do |hooks|
-      object = hooks.run(object).replacementObject || object
+  def indexed_version_of_object(object, is_schema)
+    # Schema objects can't be modified, as they're special, and it would cause JS runtimes to be loaded while
+    # schema requirements are being applied.
+    unless is_schema
+      call_hook(:hPreIndexObject) do |hooks|
+        object = hooks.run(object).replacementObject || object
+      end
     end
     object
   end

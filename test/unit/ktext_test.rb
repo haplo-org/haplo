@@ -46,32 +46,32 @@ class KTextTest < Test::Unit::TestCase
     n5 = KTextPersonName.new({:culture => :western_list, :first => 'Fst', :last => 'Lst', :middle => "Md", :title => 'Tl', :suffix => 'Sx'})
 
     # Check default option
-    assert_equal "Joe Bloggs Mr", n1.to_sortas_form
-    assert_equal "Apples Xen", n2.to_sortas_form
-    assert_equal "A M B S T", n3.to_sortas_form
+    assert_equal "Bloggs Joe Mr", n1.to_sortas_form
+    assert_equal "Xen Apples", n2.to_sortas_form
+    assert_equal "B A M S T", n3.to_sortas_form
     assert_equal "Family Given Mid Sf T", n4.to_sortas_form
     assert_equal "Lst Fst Md Sx Tl", n5.to_sortas_form
     assert_equal "Lst, Fst, Md, Tl, Sx", n5.to_s
 
     # Change the sort order
-    KObjectStore.set_store_option(:ktextpersonname_western_sortas, 'last_first')
+    KObjectStore.set_store_option(:ktextpersonname_western_sortas, 'first_last')
     run_all_jobs :expected_job_count => 1
 
     # Check sortas form now...
-    assert_equal "Bloggs Joe Mr", n1.to_sortas_form
-    assert_equal "Xen Apples", n2.to_sortas_form
-    assert_equal "B A M S T", n3.to_sortas_form
+    assert_equal "Joe Bloggs Mr", n1.to_sortas_form
+    assert_equal "Apples Xen", n2.to_sortas_form
+    assert_equal "A M B S T", n3.to_sortas_form
     assert_equal "Family Given Mid Sf T", n4.to_sortas_form # doesn't change
     assert_equal "Lst Fst Md Sx Tl", n5.to_sortas_form # doesn't change
 
     # Change sort order back
-    KObjectStore.set_store_option(:ktextpersonname_western_sortas, 'first_last')
+    KObjectStore.set_store_option(:ktextpersonname_western_sortas, 'last_first')
     run_all_jobs :expected_job_count => 1
 
     # And check the sortas forms again
-    assert_equal "Joe Bloggs Mr", n1.to_sortas_form
-    assert_equal "Apples Xen", n2.to_sortas_form
-    assert_equal "A M B S T", n3.to_sortas_form
+    assert_equal "Bloggs Joe Mr", n1.to_sortas_form
+    assert_equal "Xen Apples", n2.to_sortas_form
+    assert_equal "B A M S T", n3.to_sortas_form
     assert_equal "Family Given Mid Sf T", n4.to_sortas_form
     assert_equal "Lst Fst Md Sx Tl", n5.to_sortas_form
 
@@ -162,7 +162,7 @@ __E
     assert_equal "Joe Bloggs", n1.to_summary
     assert_equal "Joe Bloggs", n1.text
     assert_equal "joe:joe bloggs:blogg ", n1.to_terms
-    assert_equal "Joe Bloggs", n1.to_sortas_form
+    assert_equal "Bloggs Joe", n1.to_sortas_form
 
     n2 = KTextPersonName.new("w\x1ffJoe\x1flBloggs")
     assert_equal({:culture => :western, :first => 'Joe', :last => 'Bloggs'}, n2.to_fields)
@@ -181,7 +181,7 @@ __E
     assert_equal "w\x1ftMr\x1ffJoe\x1fmM\x1flBloggs\x1fsPhD", n5.to_storage_text
     assert_equal({:culture => :western, :title => 'Mr', :first => 'Joe', :middle => 'M', :last => 'Bloggs', :suffix => 'PhD'}, n5.to_fields)
     assert_equal "Mr Joe M Bloggs PhD", n5.to_s
-    assert_equal "Joe M Bloggs PhD Mr", n5.to_sortas_form
+    assert_equal "Bloggs Joe M PhD Mr", n5.to_sortas_form
 
     n6 = KTextPersonName.new({:culture => :eastern, :title => ' X', :first => ' Given', :middle => 'middle', :last => 'LAST', :suffix => 'MSc'})
     assert_equal "e\x1ftX\x1flLAST\x1fmmiddle\x1ffGiven\x1fsMSc", n6.to_storage_text

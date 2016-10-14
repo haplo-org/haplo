@@ -50,7 +50,9 @@ class JavascriptCheckRhinoConsStringTest < Test::Unit::TestCase
       assert false
     end
     # Make sure this test is looking in the right place
-    assert @checks > 0
+    unless File.exist?('static/squishing_mappings.yaml') # after release script runs, the source files are removed
+      assert @checks > 0
+    end
   end
 
   def found_failure(pathname, line, index, reason)

@@ -271,6 +271,7 @@ class KObjectStore
     # Read the current version, which enforces the rule that you need permission to read the current version
     # if you're allowed to read anything.
     current_obj = self.read(objref)
+    raise PermissionDenied, "underlying read failed in read_version #{objref}" if current_obj.nil?
     return current_obj if current_obj.version == version # shortcut
     data = KApp.get_pg_database.exec("SELECT id,object,labels FROM os_objects_old WHERE id=#{objref.obj_id} AND version=#{version.to_i}")
     if data.length < 1
@@ -752,10 +753,10 @@ private
 
     obj.update_responsible_user_id(self.external_user_id)
 
-    # Call the delegate; it may throw an exception to back out
-    @delegate.pre_object_write(self, operation, obj, previous_version_of_obj)
+    obj_is_schema_obj = is_schema_obj?(obj)
+
     # Update labels - delegate will change the label_changes and/or return a different changes object
-    label_changes = @delegate.update_label_changes_for(self, operation, obj, previous_version_of_obj, is_schema_obj?(obj), label_changes)
+    label_changes = @delegate.update_label_changes_for(self, operation, obj, previous_version_of_obj, obj_is_schema_obj, label_changes)
 
     # Determine next labels for object
     obj_labels = label_changes.change(create_operation ? obj.labels : previous_version_of_obj.labels)
@@ -852,7 +853,7 @@ private
     # Flag for text
     has_text_to_index = false
     # Write new index entries. Delegate may want to alter the object which is indexed.
-    obj_indexable = @delegate.indexed_version_of_object(obj)
+    obj_indexable = @delegate.indexed_version_of_object(obj, obj_is_schema_obj)
 
     td = KObjectStore.schema.type_descriptor(obj_indexable.first_attr(A_TYPE))
 
@@ -1093,8 +1094,6 @@ public
     $1.split(',').map {|e| e.to_i}
   end
 
-private
-
   # Not all objects labelled with O_LABEL_STRUCTURE are schema objects
   def is_schema_obj?(obj)
     return false unless obj.labels.include?(O_LABEL_STRUCTURE)
@@ -1110,6 +1109,8 @@ private
     # Otherwise it's not
     return false
   end
+
+private
 
   # Build the schema weighting function, and update the database.
   # Trigger a reindex if the weightings for the attributes have changed.

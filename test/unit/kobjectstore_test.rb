@@ -1169,6 +1169,15 @@ __E
       assert_equal [1,4], counts_in_tables.call(objref6)
       KObjectStore.erase(objs[6])
       assert_equal [0,0], counts_in_tables.call(objref6)
+
+      # Try to read a version of an erased object
+      assert_raises(KObjectStore::PermissionDenied) do
+        KObjectStore.read_version(objs[0].objref, 1)
+      end
+      # Try to read a version of an object which never existed
+      assert_raises(KObjectStore::PermissionDenied) do
+        KObjectStore.read_version(KObjRef.new(999999999), 1)
+      end
     end
   end
 
@@ -3132,18 +3141,18 @@ _OBJS
       o.add_attr(num.to_s, A_NOTES)
       KObjectStore.create(o)
     end
-    # Searching, no specific option set
-    assert_equal [1,5,3,4,2], tpns_search
-    # Change...
-    KObjectStore.set_store_option(:ktextpersonname_western_sortas, 'last_first')
-    run_all_jobs :expected_job_count => 1
-    # Test
+    # Searching, default option set
     assert_equal [5,2,3,4,1], tpns_search
-    # Change back
+    # Change...
     KObjectStore.set_store_option(:ktextpersonname_western_sortas, 'first_last')
     run_all_jobs :expected_job_count => 1
     # Test
     assert_equal [1,5,3,4,2], tpns_search
+    # Change back
+    KObjectStore.set_store_option(:ktextpersonname_western_sortas, 'last_first')
+    run_all_jobs :expected_job_count => 1
+    # Test
+    assert_equal [5,2,3,4,1], tpns_search
 
     # Check text has whitespace trimmed when storing sortas form in the database
     wst = KObject.new()
@@ -3282,6 +3291,11 @@ _OBJS
     assert_equal 5, Thread.current[:_change_indexing_plugin_calls] # not 6, only called for text indexing
     assert_equal 0, count_text_results.call('ZZZ1111', A_NOTES) # not added
     assert_equal 1, count_text_results.call('MMM8877', A_NOTES) # now added
+
+    # Schema objects can't be changed by plugins
+    KObjectStore.update(KObjectStore.read(O_TYPE_BOOK).dup)
+    run_outstanding_text_indexing
+    assert_equal 5, Thread.current[:_change_indexing_plugin_calls]
   ensure
     KPlugin.uninstall_plugin("k_object_store_test/change_indexing")
   end

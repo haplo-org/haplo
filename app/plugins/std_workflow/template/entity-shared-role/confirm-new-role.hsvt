@@ -1,0 +1,5 @@
+backLink(M.url) { "Cancel" }
+
+if(M.entities.object_maybe) { std:object(M.entities.object "linkedheading") }
+
+template:std:ui:confirm()

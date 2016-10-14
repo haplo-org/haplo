@@ -163,9 +163,11 @@ class KFileStoreTest < Test::Unit::TestCase
 
     # Check all the filenames are different
     stored_file_filenames = [stored_file, stored_file2, stored_file_also].map {|v| v.disk_pathname }
+    assert_equal true, File.exist?(stored_file.disk_pathname_render_text)
     # Check destruction deletes the file
     StoredFile.find(stored_file.id).destroy
     assert_equal false, File.exist?(stored_file_filenames.first)
+    assert_equal false, File.exist?(stored_file.disk_pathname_render_text)
 
     # Check the other file survived
     assert_equal 1, StoredFile.find(:all, :conditions => ['id = ?', stored_file_also.id]).length
@@ -175,6 +177,11 @@ class KFileStoreTest < Test::Unit::TestCase
     # Make sure RTF files uploaded with dodgy MIME types from Windows get corrected
     rtf_file = StoredFile.from_upload(fixture_file_upload('files/example6.rtf', 'text/richtext'))
     assert_equal "application/rtf", rtf_file.mime_type
+
+    # Check thumbnail is deleted
+    assert_equal true, File.exist?(stored_file_also.disk_pathname_thumbnail)
+    stored_file_also.destroy
+    assert_equal false, File.exist?(stored_file_also.disk_pathname_thumbnail)
   end
 
 end

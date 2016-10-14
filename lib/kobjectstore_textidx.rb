@@ -359,7 +359,7 @@ class KObjectStore
 
   def self.do_text_indexing_for(app_id, obj_list, pg)
     # Fetch objects from the database
-    sql = %Q!SELECT id,type_object_id,object FROM a#{app_id}.os_objects WHERE id IN (#{obj_list.join(',')})!
+    sql = %Q!SELECT id,type_object_id,object,labels FROM a#{app_id}.os_objects WHERE id IN (#{obj_list.join(',')})!
     fetched_objs = pg.exec(sql).result
 
     writer = @@xap_writers[app_id]
@@ -386,9 +386,9 @@ class KObjectStore
     # Cache object knows how to load objects from the store if they're not present.
     obj_cache = Hash.new do |hash, key|
       obj = nil
-      result = pg.exec("SELECT object FROM a#{app_id}.os_objects WHERE id=#{key.obj_id.to_i}").result
+      result = pg.exec("SELECT object,labels FROM a#{app_id}.os_objects WHERE id=#{key.obj_id.to_i}").result
       if result.length > 0
-        hash[key] = obj = Marshal.load(PGconn.unescape_bytea(result.first.first))
+        hash[key] = obj = KObjectStore._deserialize_object(*result.first)
       end
       obj
     end
@@ -397,17 +397,17 @@ class KObjectStore
     begin
       objids_updated = Array.new
 
-      fetched_objs.each do |id_t,type_object_id_t,object_m|
+      fetched_objs.each do |id_t,type_object_id_t,object_m,labels_m|
         objids_updated << id_t.to_i
 
-        raw_object = Marshal.load(PGconn.unescape_bytea(object_m))
+        raw_object = KObjectStore._deserialize_object(object_m,labels_m)
 
         KApp.logger.info "Indexing #{raw_object.objref.to_presentation} for application #{app_id}"
 
         started_document = false
         begin
           # Delegate may need to alter the indexed object
-          object = delegate.indexed_version_of_object(raw_object)
+          object = delegate.indexed_version_of_object(raw_object, store.is_schema_obj?(raw_object))
 
           td = KObjectStore.schema.type_descriptor(object.first_attr(A_TYPE))
           if td != nil

@@ -379,6 +379,8 @@ class KPlugin
         return install_check
       end
     end
+    # Pre-installation allocations
+    KNotificationCentre.notify(:plugin_pre_install, :allocations, names, new_plugin_list.plugins)
     # Check that it's OK to install these plugins
     KNotificationCentre.notify(:plugin_pre_install, :check, names, new_plugin_list.plugins, install_check)
     if install_check.failure != nil
@@ -389,14 +391,15 @@ class KPlugin
     self._add_plugins_to_installed_list(names)
     # Send notification about plugin changes (flushes lots of caches, including the JS runtime again)
     KNotificationCentre.notify(:plugin, :install, names, reason)
-    # Tell each plugin it was installed
+    # Tell _every_ plugin it was installed, as if a plugin uses a feature from another plugin it may
+    # need to be updated too if the plugin is updated, and dependences only go in one direction.
     AuthContext.with_system_user do
-      names.each do |name|
+      self.get_plugins_for_current_app.each do |plugin|
         begin
-          self.get(name).on_install
+          plugin.on_install
         rescue => e
           # Log the exception raised during installation, then raise it again to pass it on
-          KApp.logger.error("While running plugin installation for #{name}, got exception #{e}")
+          KApp.logger.error("While running plugin installation for #{plugin.name}, got exception #{e}")
           raise
         end
       end

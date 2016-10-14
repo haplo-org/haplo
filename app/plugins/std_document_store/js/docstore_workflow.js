@@ -49,7 +49,8 @@ Delegate.prototype = {
     keyToKeyId: function(key) { return key.workUnit.id; }
 };
 
-var can = function(M, user, list) {
+var can = function(M, user, spec, action) {
+    var list = spec[action];
     if(!list) { return false; }
     var allow = false, deny = false;
     for(var i = (list.length - 1); i >= 0; --i) {
@@ -160,13 +161,13 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         workflow.actionPanel({}, function(M, builder) {
             var instance = docstore.instance(M);
             var haveDocument = instance.hasCommittedDocument;
-            if(haveDocument && can(M, O.currentUser, spec.view)) {
+            if(haveDocument && can(M, O.currentUser, spec, 'view')) {
                 var viewTitle = M.getTextMaybe("docstore-panel-view-link:"+spec.name) || spec.title;
                 builder.panel(spec.panel).
                     link(spec.priority || "default", spec.path+'/view/'+M.workUnit.id, viewTitle);
             }
 
-            if(can(M, O.currentUser, spec.viewDraft)) {
+            if(can(M, O.currentUser, spec, 'viewDraft')) {
                 if(!haveDocument && instance.currentDocumentIsEdited) {
                     var draftTitle = M.getTextMaybe("docstore-panel-draft-link:"+spec.name) || "Draft "+spec.title.toLowerCase();
                     builder.panel(spec.panel).
@@ -177,7 +178,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     }
 
     workflow.actionPanelTransitionUI({}, function(M, builder) {
-        if(can(M, O.currentUser, spec.edit)) {
+        if(can(M, O.currentUser, spec, 'edit')) {
             var searchPath = "docstore-panel-edit-link:"+spec.name;
             var instance = docstore.instance(M);
             var label = M.getTextMaybe(searchPath+":"+M.state, searchPath) || "Edit "+spec.title.toLowerCase();
@@ -224,7 +225,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     ], function(E, workUnit) {
         E.setResponsiblePlugin(P); // take over as source of templates, etc
         var M = workflow.instance(workUnit);
-        if(!can(M, O.currentUser, spec.edit)) {
+        if(!can(M, O.currentUser, spec, 'edit')) {
             O.stop("Not permitted.");
         }
         var instance = docstore.instance(M);
@@ -259,7 +260,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                 O.session["std_document_store:review_list:"+M.workUnit.id] = reviewList;
             }
         }
-        if(!can(M, O.currentUser, spec.view)) {
+        if(!can(M, O.currentUser, spec, 'view')) {
             // if the user can't view this form, then skip it don't show it
             return handleRedirect(E, reviewList, workUnit);
         }
@@ -286,7 +287,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                 parameters:{reviewed:true}
             }
         ];
-        if(can(M, O.currentUser, spec.edit)) {
+        if(can(M, O.currentUser, spec, 'edit')) {
             options.push({
                 action: "",
                 label: M.getTextMaybe("docstore-review-return-to-edit:"+spec.name) ||
@@ -312,12 +313,12 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     ], function(E, workUnit) {
         E.setResponsiblePlugin(P);  // take over as source of templates, etc
         var M = workflow.instance(workUnit);
-        if(!can(M, O.currentUser, spec.viewDraft)) {
+        if(!can(M, O.currentUser, spec, 'viewDraft')) {
             O.stop("Not permitted.");
         }
         var instance = docstore.instance(M);
         var ui = instance.makeViewerUI(E, {
-            showVersions: spec.history ? can(M, O.currentUser, spec.history) : true,
+            showVersions: spec.history ? can(M, O.currentUser, spec, 'history') : true,
             showCurrent: true,
             uncommittedChangesWarningText: M.getTextMaybe("docstore-draft-warning-text:"+
                 spec.name) || "This is a draft version"
@@ -337,16 +338,16 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     ], function(E, workUnit) {
         E.setResponsiblePlugin(P);  // take over as source of templates, etc
         var M = workflow.instance(workUnit);
-        if(!can(M, O.currentUser, spec.view)) {
+        if(!can(M, O.currentUser, spec, 'view')) {
             O.stop("Not permitted.");
         }
         var instance = docstore.instance(M);
-        var canEdit = can(M, O.currentUser, spec.edit);
+        var canEdit = can(M, O.currentUser, spec, 'edit');
         if(!(canEdit || instance.hasCommittedDocument)) {
             O.stop("Form hasn't been completed yet.");
         }
         var ui = instance.makeViewerUI(E, {
-            showVersions: spec.history ? can(M, O.currentUser, spec.history) : true,
+            showVersions: spec.history ? can(M, O.currentUser, spec, 'history') : true,
             showCurrent: canEdit,
             uncommittedChangesWarningText: M.getTextMaybe("docstore-uncommitted-changes-warning-text:"+
                 spec.name)

@@ -141,6 +141,10 @@ class KFramework
     KInstallProperties.get(name.to_sym, default_value)
   end
 
+  def plugin_debugging_enabled
+    PLUGIN_DEBUGGING_SUPPORT_LOADED
+  end
+
   def devmode_setup
     # Empty for production mode (overridden in kframework_devmode)
   end
