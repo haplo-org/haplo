@@ -14,6 +14,7 @@ P.registerWorkflowFeature("std:transition_form", function(workflow, spec) {
     var form = spec.form;
     if(!form) { throw new Error("form must be specified."); }
     var onTransitionCallback = spec.onTransition;
+    var prepareFormInstance = spec.prepareFormInstance;
 
     var doNotShowForm = function(ui) {
         if(showForTransitions && (-1 === showForTransitions.indexOf(ui.requestedTransition))) {
@@ -21,10 +22,17 @@ P.registerWorkflowFeature("std:transition_form", function(workflow, spec) {
         }
     };
 
+    var getFormInstance = function(M, E, ui) {
+        var instance = form.instance(ui.transitionData);
+        if(prepareFormInstance) { prepareFormInstance(M, instance); }
+        instance.update(E.request);
+        return instance;
+    };
+
     // Add the form to the top of the page, render error message if not complete.
     workflow.transitionUI(selector, function(M, E, ui) {
         if(doNotShowForm(ui)) { return; }
-        var instance = form.handle(ui.transitionData, E.request);
+        var instance = getFormInstance(M, E, ui);
         var view = {form:instance};
         if(E.request.method === "POST" && !(instance.complete)) {
             view.incomplete = true;
@@ -36,7 +44,7 @@ P.registerWorkflowFeature("std:transition_form", function(workflow, spec) {
     // Prevent the transition from happening if the form is not complete.
     workflow.transitionFormSubmitted(selector, function(M, E, ui) {
         if(doNotShowForm(ui)) { return; }
-        var instance = form.handle(ui.transitionData, E.request);
+        var instance = getFormInstance(M, E, ui);
         if(!instance.complete) {
             ui.preventTransition();
         }

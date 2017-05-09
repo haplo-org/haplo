@@ -449,6 +449,7 @@ public class Runtime {
 
             defineSealedHostClass(scope, KRefKeyDictionary.class);
             defineSealedHostClass(scope, KRefKeyDictionaryHierarchical.class, true /* map inheritance */);
+            defineSealedHostClass(scope, KRefSet.class);
             defineSealedHostClass(scope, KCheckingLookupObject.class);
             defineSealedHostClass(scope, WorkUnitTags.class);
             defineSealedHostClass(scope, GetterDictionaryBase.class);
@@ -460,6 +461,8 @@ public class Runtime {
             defineSealedHostClass(scope, KCollaborationItem.class);
 
             defineSealedHostClass(scope, KAuthenticationService.class);
+
+            defineSealedHostClass(scope, KMessageBusPlatformSupport.class);
 
             defineSealedHostClass(scope, StdReporting.class);
 

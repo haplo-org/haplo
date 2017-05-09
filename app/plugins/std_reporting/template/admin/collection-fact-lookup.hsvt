@@ -16,6 +16,7 @@ each(factsAtTimes) {
           <td> name </td>
           <td style=if(updated){"background:#ff5"}>
             if(ref)     { std:object:link(ref) }
+            if(refList) { each(refList) { std:object:link(.) <br> } }
             if(pre)     { <pre> pre </pre> }
             if(string)  { <tt> "\"" string "\"" </tt> }
             if(value)   { value }

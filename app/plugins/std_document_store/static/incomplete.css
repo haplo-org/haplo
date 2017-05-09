@@ -1,0 +1,29 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+.z__docstore_incomplete {
+    margin: 30px 0px 30px 28px;
+}
+.z__docstore_incomplete_form_status.incomplete {
+    color: #b00;
+    font-style: italic;
+}
+.z__docstore_incomplete_form button {
+    margin-right: 8px;
+    background: transparent;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+}
+.z__docstore_incomplete_form_checklist {
+    display: inline-block;
+    width: 18px;
+}
+.z__docstore_incomplete_form_checklist.complete {
+    color: #0a0;
+}
+.z__docstore_incomplete_form_checklist.incomplete {
+    color: #d00;
+}

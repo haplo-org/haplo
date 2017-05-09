@@ -394,15 +394,8 @@ class KPlugin
     # Tell _every_ plugin it was installed, as if a plugin uses a feature from another plugin it may
     # need to be updated too if the plugin is updated, and dependences only go in one direction.
     AuthContext.with_system_user do
-      self.get_plugins_for_current_app.each do |plugin|
-        begin
-          plugin.on_install
-        rescue => e
-          # Log the exception raised during installation, then raise it again to pass it on
-          KApp.logger.error("While running plugin installation for #{plugin.name}, got exception #{e}")
-          raise
-        end
-      end
+      self.get_plugins_for_current_app.each { |plugin| plugin.on_install }
+      KNotificationCentre.notify(:plugin_post_install, :final)
     end
     install_check
   end

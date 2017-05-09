@@ -20,6 +20,7 @@ class KJSPluginRuntime
     [:app_global_change, :javascript_config_data],
     [:plugin,            :install],
     [:plugin,            :uninstall],
+    [:keychain,          :modified],
     [:user_modified,     :group]
   ], {:deduplicate => true, :max_arguments => 0}) do # max arguments set to zero so every notification counts the same
     KApp.cache_invalidate(RUNTIME_CACHE)

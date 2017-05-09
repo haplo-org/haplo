@@ -24,6 +24,7 @@
 //    shouldDisplayForm(key, form, document) - return booleans about whether to display this form
 //    shouldEditForm(key, form, document) - return booleans about whether to edit this form
 //    alwaysShowNavigation(key, instance, document) - return true to always show navigation, regardless of whether the editor thinks it's useful
+//    updateDocumentBeforeEdit(key, instance, document) - called when editing the form allowing for the document to be updated
 //    onSetCurrentDocument(instance, document, isComplete) - called when current document is set
 //    onCommit(instance, user) - called when a new version is committed
 //    getAdditionalUIForViewer(key, instance, document) - called when a document is rendered, return object with

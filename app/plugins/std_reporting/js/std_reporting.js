@@ -336,16 +336,17 @@ Collection.prototype.statisticDefinition = function(statistic) {
 Collection.prototype.calculateStatistic = function(statistic, sample, filterName) {
     statistic = this.statisticDefinition(statistic);
     if(!sample) { sample = {}; }
+    var context = sample.context || this;
     // Select applicable rows
     var select = sample.$select ?
         sample.$select() :
-        this.selectAllRowsAtTime(sample.factsAtTime, filterName, this);
+        this.selectAllRowsAtTime(sample.factsAtTime, filterName, context);
     if(statistic.filter) { statistic.filter(select); }
     if(sample.filter) { sample.filter(select); }
     // Calculate value of statistic
     var value, groups;
     if(statistic.calculate) {
-        value = statistic.calculate(select);
+        value = statistic.calculate(select, context);
     } else if((statistic.aggregate === "COUNT") && !("groupBy" in sample) && !("fact" in statistic)) {
         value = select.count();
     } else if(statistic.aggregate) {

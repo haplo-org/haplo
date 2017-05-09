@@ -28,12 +28,17 @@ public class MSOffice extends TextExtractOp {
         POITextExtractor extractor = null;
         try {
             extractor = ExtractorFactory.createExtractor(new File(getInputPathname()));
+            String text = null;
+            try {
+                text = extractor.getText();
+            } finally {
+                extractor.close();
+            }
+            return text;
         } catch(OpenXML4JException e) {
             return "";
         } catch(XmlException e) {
             return "";
         }
-
-        return extractor.getText();
     }
 }

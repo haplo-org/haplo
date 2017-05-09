@@ -4,7 +4,7 @@ pageTitle(
         " (" tagDisplayableName ")"
     }
 )
-backLink(spec.path ? *dashboard._linkParameters) { "Dashboard" }
+backLink(dashboard.spec.path ? *dashboard._linkParameters) { "Dashboard" }
 
 each(list) {
   <p> <a href=url> title </a> </p>

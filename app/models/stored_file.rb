@@ -296,4 +296,10 @@ class StoredFile < ActiveRecord::Base
   def jsGetBasename
     self.upload_filename.gsub(/\.[^\.]+\z/,'')
   end
+
+  def jsGetTagsAsJson()
+    hstore = read_attribute('tags')
+    hstore ? JSON.generate(PgHstore.parse_hstore(hstore)) : nil
+  end
+
 end

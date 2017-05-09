@@ -62,3 +62,8 @@ DocumentStore.prototype._formIdFromRequest = function(request) {
         this.delegate.formIdFromRequest(request) :
         request.extraPathElements[1]; // Assumes URLs of the form /do/.../<someId>/<formId>
 };
+
+DocumentStore.prototype._updateDocumentBeforeEdit = function(key, instance, document) {
+    return (this.delegate.updateDocumentBeforeEdit ? this.delegate.updateDocumentBeforeEdit(key, instance, document) :
+        undefined);
+};

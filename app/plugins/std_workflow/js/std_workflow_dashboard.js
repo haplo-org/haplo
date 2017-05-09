@@ -4,6 +4,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
+
+// Use platform private API
+var interpolateNAMEinString = O.$private.$interpolateNAMEinString;
+
+// --------------------------------------------------------------------------
+
 var CanViewAllDashboards = O.action("std:workflow:admin:view-all-dashboards").
     title("Workflow: View all dashboards").
     allow("group", Group.Administrators);
@@ -62,7 +68,7 @@ DashboardBase.prototype = {
         var textLookup = this.workflow.$instanceClass.prototype.$textLookup;
         var text = textLookup["dashboard-status:"+state] || textLookup["status:"+state] || '????';
         // Need to do the NAME interpolation for dashboard states
-        return P.interpolateNAME(undefined, text);
+        return interpolateNAMEinString(text);
     },
 
     _mergeStatesInCounts: function(counts) {
@@ -173,7 +179,7 @@ DashboardBase.prototype = {
 };
 
 DashboardBase.prototype.__defineGetter__("_displayableTitle", function() {
-    return this.$instanceTitle || this.spec.title;
+    return interpolateNAMEinString(this.$instanceTitle || this.spec.title);
 });
 
 // TODO: Remove query property when we're sure it's not used
@@ -205,7 +211,7 @@ P.registerWorkflowFeature("std:dashboard:states", function(workflow, spec) {
         var dashboard = (new Dashboard()).setup(E);
         E.render({
             layout: spec.layout,
-            spec: spec,
+            spec: dashboard.spec,
             dashboard: dashboard
         }, "dashboard/dashboard-states");
     });
@@ -245,22 +251,24 @@ P.registerWorkflowFeature("std:dashboard:states", function(workflow, spec) {
         var dashboard = (new Dashboard()).setup(E);
         // Filter work units
         var states = [state];
-        if(dashboard.spec.mergeStates && (state in dashboard.spec.mergeStates)) {
-            states = states.concat(dashboard.spec.mergeStates[state]);
+        var mergeStates = dashboard.spec.mergeStates;
+        if(mergeStates && (state in mergeStates)) {
+            states = states.concat(mergeStates[state]);
         }
         var list = [];
         var tagDisplayableName;
+        var columnTag = dashboard.spec.columnTag;
         states.forEach(function(queryState) {
             var query = dashboard._makeQuery();
             query.tag("state", queryState);
-            if("columnTag" in spec) {
-                var columnTagValue = E.request.parameters[spec.columnTag];
+            if(columnTag) {
+                var columnTagValue = E.request.parameters[columnTag];
                 if(columnTagValue) {
-                    query.tag(spec.columnTag, columnTagValue);
+                    query.tag(columnTag, columnTagValue);
                     if(!tagDisplayableName) { tagDisplayableName = dashboard._columnTagToName(columnTagValue); }
                 } else if(E.request.parameters.__empty_tag) {
                     // Empty column values have a special URL parameter
-                    query.tag(spec.columnTag, null);
+                    query.tag(columnTag, null);
                 }
             }
             // Get information about each work unit matching the criteria
@@ -272,7 +280,6 @@ P.registerWorkflowFeature("std:dashboard:states", function(workflow, spec) {
         E.render({
             stateName: dashboard._displayableStateName(state),
             tagDisplayableName: tagDisplayableName,
-            spec: spec,
             dashboard: dashboard,
             list: list
         }, "dashboard/dashboard-listing");

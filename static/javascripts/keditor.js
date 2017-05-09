@@ -31,7 +31,7 @@ var KEdType;
 /*CONST*/ EDITOR_TOOLBAR_ADD_ATTRIBUTE = 'Add field';
 /*CONST*/ SUBJECT_CLICK_TO_SET = '<i>click to set</i>';
 /*CONST*/ OBJREF_LOOKUP_NO_ITEMS = '<div class="z__editor_objref_lookup_results_not_found_message"><i>No items found.</div>';
-/*CONST*/ OBJREF_LOOKUP_UNCONTROLLED = 'Create uncontrolled field';
+/*CONST*/ OBJREF_LOOKUP_UNCONTROLLED = 'Enter as free text (if not found)';
 /*CONST*/ OBJREF_LOOKUP_CREATE_NEW = 'Create new ';
 
 // Root type info in schema

@@ -8,7 +8,7 @@
 
 if(canSeePrivateNotes) {
   <div class="z__workflow_note_header">
-    <b> "Private notes" </b>
+    <b> NAME("std:workflow:notes-private-label-plural" "Private notes") </b>
     if(privateNoteExplaination) { " (" privateNoteExplaination ")" }
   </div>
   <div class="z__workflow_note_container z__workflow_note_container_private">

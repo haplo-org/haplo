@@ -275,9 +275,19 @@ class WorkUnitTest < Test::Unit::TestCase
       wu.save!
       assert_equal email_del_size, EmailTemplate.test_deliveries.size
 
+      # Save the work unit again, changing actionable, but with the user active so no email would be sent
+      AuthContext.with_user(User.cache[41]) do
+        wu.actionable_by_id = 41
+        wu.data = {"notify"=>{"button"=>"Hello3"}}
+        wu.save!
+        assert_equal email_del_size, EmailTemplate.test_deliveries.size
+      end
+
       # Close doesn't send notify, even if actionable changes
+      assert ! wu.actionable_by_id_changed?
       wu.set_as_closed_by(User.cache[43])
-      wu.actionable_by_id = 41
+      wu.actionable_by_id = 42
+      assert wu.actionable_by_id_changed?
       wu.save!
       assert_equal email_del_size, EmailTemplate.test_deliveries.size
 

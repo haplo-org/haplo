@@ -30,6 +30,11 @@ module JSTextSupport
     return ktext.to_s if format == nil
     # Otherwise formatting depends on the kind of text
     case typecode
+    when KConstants::T_TEXT_DOCUMENT
+      case format
+      when "plaintext"
+        return ktext.to_plain_text
+      end
     when KConstants::T_IDENTIFIER_TELEPHONE_NUMBER
       case format
       when "dial"

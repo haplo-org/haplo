@@ -35,4 +35,5 @@ lib/javascript/lib/setup_system.js
 lib/javascript/lib/client_side_support.js
 lib/javascript/lib/plugin_forms.js
 lib/javascript/lib/ui_panel.js
+lib/javascript/lib/message_bus.js
 app/plugins/std_action_panel/shared/std_action_panel.js

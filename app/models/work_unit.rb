@@ -176,22 +176,28 @@ class WorkUnit < ActiveRecord::Base
   #   Automatic notifications
   # ----------------------------------------------------------------------------------------------------------------
 
+  # TODO: Revisit automatic notifications API, given that std_workflow reimplemented it, and the API is undocumented and not in the preferred new style
+
   after_create Proc.new { |wu|
     wu.auto_notify if wu.actionable_by_id != AuthContext.user.id
   }
   after_update Proc.new { |wu|
-    wu.auto_notify if wu.actionable_by_id_changed?
+    if wu.actionable_by_id_changed? && (wu.actionable_by_id != AuthContext.user.id)
+      wu.auto_notify
+    end
   }
   def auto_notify
     return if self.is_closed?
     min_opened_at = Time.new + MAX_OPENED_AT_IN_FUTURE_FOR_NOTIFICATION
     return if self.opened_at > min_opened_at
-    deliver_to = User.cache[self.actionable_by_id] # Don't use self.actionable_by, might use user cached in object
-    return unless deliver_to.is_active && deliver_to.email
     # Ask JS plugins (only) for the info about the notification
     info_json = KJSPluginRuntime.current.call_work_unit_render_for_event("notify", self)
     return unless info_json
     info = JSON.parse(info_json)
+    # AFTER giving the plugins a chance to implement their own notification system (eg std_workflow's own
+    # implementation), check the given user is suitable for sending an email.
+    deliver_to = User.cache[self.actionable_by_id] # Don't use self.actionable_by, might use user cached in object
+    return unless deliver_to.is_active && deliver_to.email
     # TODO: Better email template selection for work unit automatic notifications
     template = info["template"] ? EmailTemplate.where(:code => info["template"]).first : nil
     # Backwards compatible fallback to checking name

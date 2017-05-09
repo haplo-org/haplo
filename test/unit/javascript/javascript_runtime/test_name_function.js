@@ -26,6 +26,22 @@ TEST(function() {
     TEST.assert_equal("translated X", NAME("translated"));
     TEST.assert_equal("abc", NAME("abc"));  // not matched by translator service
 
+    // Two argument version
+    TEST.assert_equal("ping", NAME("test:pong", "ping"));
+    TEST.assert_equal("ping", NAME("test:pong", "ping")); // repeat
+    TEST.assert_equal("ping2", NAME("test:pong", "ping2")); // different default
+    TEST.assert_equal("ping", NAME("test:pong", "ping")); // original
+    TEST.assert_equal("ping2", NAME("test:pong", "ping2")); // repeat different default
+
+    TEST.assert_equal("test:pong", NAME("test:pong"));  // normal rules if one arg supplied
+    TEST.assert_equal("ping", NAME("test:pong", "ping"));
+    TEST.assert_equal("test:pong", NAME("test:pong"));
+    TEST.assert_equal("test:translated x X", NAME("test:translated x", "hello"));
+    TEST.assert_equal("test:translated x X", NAME("test:translated x"));
+    TEST.assert_equal("test:translated x X", NAME("test:translated x", "hello"));
+    TEST.assert_equal("test:translated x X", NAME("test:translated x", "hello"));
+    TEST.assert_equal("test:translated x X", NAME("test:translated x", "hello"));
+
     registerService("std:NAME", function(name) {
         if(name === "ping") { return "pong"; }
     });
@@ -37,6 +53,18 @@ TEST(function() {
     // Template NAME() function
     var template = new $HaploTemplate('<div> NAME("ping") </div>');
     TEST.assert_equal("<div>pong</div>", template.render());
+
+    // Template NAME() function with two arguments
+    var templateD = new $HaploTemplate('<div> NAME("ping:x" "default1") </div>');
+    TEST.assert_equal("<div>default1</div>", templateD.render());
+    TEST.assert_equal("<div>default1</div>", templateD.render());
+    template = new $HaploTemplate('<div> NAME("ping:x") </div>');   // one arg version with same name
+    TEST.assert_equal("<div>ping:x</div>", template.render());
+    TEST.assert_equal("<div>default1</div>", templateD.render());   // template with default
+
+    template = new $HaploTemplate('<div> NAME("ping:translated y" "default2") </div>');
+    TEST.assert_equal("<div>ping:translated y X</div>", template.render());
+    TEST.assert_equal("<div>ping:translated y X</div>", template.render());
 
     // Bad templates
     TEST.assert_exceptions(function() {
@@ -50,5 +78,15 @@ TEST(function() {
     $registry.services = {};
     TEST.assert_equal("trans during load X", NAME("trans during load"));
     TEST.assert_equal("during load", NAME("during load"));
+
+    // Test string interpolation function used by forms & workflow
+    var transFn = O.$private.$interpolateNAMEinString;
+    // one argument
+    TEST.assert_equal("ABC pong", transFn("ABC NAME(ping)"))
+    TEST.assert_equal("ABCNAME(ping)", transFn("ABCNAME(ping)")) // no word break before
+    TEST.assert_equal("ABC hello translated XSOMETHING", transFn("ABC NAME(hello translated)SOMETHING"))
+    // two arguments
+    TEST.assert_equal("ABC ping XYZ", transFn("ABC NAME(test:pong|ping) XYZ"))
+    TEST.assert_equal("ABC test:translated x X XYZ", transFn("ABC NAME(test:translated x|hello) XYZ"))
 
 });

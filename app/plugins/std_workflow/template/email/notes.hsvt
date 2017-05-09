@@ -1,7 +1,7 @@
 <hr>
 <h3> "Recent notes" </h3>
 each(notes) {
-  <p> <b> author </b> "  &nbsp; &nbsp; " <span style="color:#aaaaaa"> dateAndTime </span> if(isPrivate) { " &nbsp; &nbsp; " <b style="color:#ff0000"> "PRIVATE" </b> } </p>
+  <p> <b> author </b> "  &nbsp; &nbsp; " <span style="color:#aaaaaa"> dateAndTime </span> if(isPrivate) { " &nbsp; &nbsp; " <b style="color:#ff0000"> NAME("std:workflow:notes-private-email-marker" "PRIVATE") </b> } </p>
   std:text:paragraph(text)
   <p> "&nbsp;" </p>
 }

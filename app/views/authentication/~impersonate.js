@@ -35,7 +35,7 @@
 
         // Fill in data-s attribute for search selector
         $('#z__impersonate a').each(function() {
-            this.setAttribute('data-s', this.innerHTML.toLowerCase());
+            this.setAttribute('data-s', this.innerHTML.toLowerCase().replace(/[^a-z0-9]+/g,' '));
         });
 
         // Create a stylesheet with the rules for hiding irrelevant people
@@ -55,7 +55,7 @@
 
         // Replace CSS rule to filter to matching names
         $('#z__impersonate_filter').on('keyup', function() {
-            var text = $.trim(this.value.toLowerCase().replace(/[^a-z0-9 ]/g,''));
+            var text = $.trim(this.value.toLowerCase().replace(/[^a-z0-9]+/g,' '));
             // Replace the rule (Firefox doesn't have writeable selectors)
             removeHidingRule();
             addRule((text.length === 0) ? MATCH_ALL_SELECTOR : '#z__impersonate a[data-s*="'+text+'"]', "display:block");

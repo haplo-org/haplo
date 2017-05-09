@@ -168,6 +168,9 @@ class DisplayController < ApplicationController
         if @request_user.policy.can_view_history_of?(@obj)
           edit_entries << ["/do/display/history/#{@objref.to_presentation}", 'History...']
         end
+        if @request_user.policy.can_setup_system?
+          edit_entries << ["/do/admin/relabel/object/#{@objref.to_presentation}", 'Relabel...']
+        end
         @title_bar_buttons['#EDIT'] = edit_entries unless edit_entries.empty?
       end
 

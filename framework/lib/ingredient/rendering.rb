@@ -20,6 +20,7 @@ module Ingredient
       :xml => 'text/xml; charset=utf-8',
       :atom => 'application/atom+xml; charset=utf-8',
       :xls => 'application/vnd.ms-excel',
+      :xlsx => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       :csv => 'text/csv; charset=utf-8',
       :tsv => 'text/tab-separated-values; charset=utf-8',
       :css => 'text/css; charset=utf-8',

@@ -7,6 +7,13 @@
 
 class KeychainCredential < ActiveRecord::Base
 
+  after_commit :send_modify_notification
+  def send_modify_notification
+    KNotificationCentre.notify(:keychain, :modified, self)
+  end
+
+  # -------------------------------------------------------------------------
+
   MODELS = [
       {
         :kind => 'Generic',

@@ -1,0 +1,47 @@
+std:plugin:resources("edit.css")
+std:plugin:resources("incomplete.css")
+
+if(additionalUI.top) { render(additionalUI.top) }
+
+if(navigation) {
+  <div class="z__docstore_nav_top"> render(navigation) </div>
+}
+
+if(additionalUI.formTop) { render(additionalUI.formTop) }
+
+<div class="z__docstore_incomplete">
+  std:ui:notice("The form currently lacks all the required information to proceed. Please review the sections below and add any missing information.")
+  <div>
+    each(pages) {
+      <p class="z__docstore_incomplete_form">
+        if(complete) {
+          <span class="z__docstore_incomplete_form_checklist complete"> "&#10003;" </span>
+        } else {
+          <span class="z__docstore_incomplete_form_checklist incomplete"> "X" </span>
+        }
+        <button name="__goto" value=form.formId>
+          unless(complete) { <strong>form.formTitle</strong> } else { form.formTitle }
+        </button>
+        unless(complete) { 
+          <span class="z__docstore_incomplete_form_status incomplete"> "Incomplete" </span>
+        }
+      </p>
+    }
+  </div>
+</div>
+
+if(additionalUI.formBottom) { render(additionalUI.formBottom) }
+
+<div class="z__docstore_save">
+  <button name="__later" value="s">
+    "Save for later"
+  </button>
+</div>
+
+if(navigation) {
+  <div class="z__docstore_nav_bottom">
+    render(navigation)
+  </div>
+}
+
+if(additionalUI.bottom) { render(additionalUI.bottom) }

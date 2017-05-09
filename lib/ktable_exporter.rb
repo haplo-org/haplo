@@ -261,9 +261,9 @@ class KTableExporter
     end
   end
 
-  class FormatXLS
+  class FormatXLSX
     def initialize
-      @workbook = Java::OrgApachePoiHssfUsermodel::HSSFWorkbook.new
+      @workbook = Java::OrgApachePoiXssfUsermodel::XSSFWorkbook.new
       @sheet = @workbook.createSheet("#{KApp.global(:product_name)} Export")
       @sheet.createFreezePane(0, 1, 0, 1) # keeps the heading in position as the user scrolls
       @next_row = 0
@@ -299,7 +299,7 @@ class KTableExporter
   FORMATS = {
     'tsv' => FormatTSV, :tsv => FormatTSV,
     'csv' => FormatCSV, :csv => FormatCSV,
-    'xls' => FormatXLS, :xls => FormatXLS
+    'xlsx' => FormatXLSX, :xlsx => FormatXLSX
   }
 
 end

@@ -812,12 +812,17 @@ var KApp = (function($) {
             // don't do anything, as no form would have been submitted.
             return;
         }
+        if((this.method || '').toUpperCase() !== "POST") {
+            // Only protect POSTed forms, as GET can be submitted multiple times without ill effect
+            // (eg returning to search forms)
+            return;
+        }
         var now = (new Date()).getTime();
         var currentFormSubmitTimeStr = this.getAttribute("data-kformsubmit");
         if(currentFormSubmitTimeStr) {
             var currentFormSubmitTime = 1*currentFormSubmitTimeStr;
             // Form has already been submitted. If it was relatively recent, just ignore the second submit.
-            if((now - currentFormSubmitTime) < 5000) {
+            if((now - currentFormSubmitTime) < 2000) {
                 evt.preventDefault();
             } else {
                 // But if was too long ago enough that it might be legitimate to retry, ask the user.

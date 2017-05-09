@@ -1,0 +1,12 @@
+#option:no-tag-attribute-quote-minimisation
+
+<div class="box">
+    <p>
+        if(wasTakeOver) {
+            "This task was taken over"
+        } else {
+            "This task was delegated to " <b> M.workUnit.actionableBy.name </b>
+        }
+        " by " row.setByUser.name "."
+    </p>
+</div>

@@ -5,6 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
+// Use platform private API
+var interpolateNAMEinString = O.$private.$interpolateNAMEinString;
+
+// --------------------------------------------------------------------------
+
 P.allWorkflows = {}; // workType -> workflow object
 
 P.workflowFeatures = {}; // name -> function(workflow)
@@ -543,13 +548,6 @@ WorkflowInstanceBase.prototype.__defineGetter__("$timeline", function() {
 
 // --------------------------------------------------------------------------
 
-var interpolateNAMEmatch = function(_, name) { return NAME(name); };
-P.interpolateNAME = function(_, text) { // must ignore first argument
-    return text.replace(/\bNAME\(([^\)]+?)\)/g, interpolateNAMEmatch);
-};
-
-// --------------------------------------------------------------------------
-
 // Other files add more fallback implementations of functions and handlers
 WorkflowInstanceBase.prototype.$fallbackImplementations = {
 
@@ -569,7 +567,9 @@ WorkflowInstanceBase.prototype.$fallbackImplementations = {
         return M.$textLookup[key];
     },
 
-    $textInterpolate: P.interpolateNAME,
+    $textInterpolate: function(M, text) {
+        return interpolateNAMEinString(text);
+    },
 
     $getActionableBy: function(M, actionableBy, target) {
         if(actionableBy in GROUP) {
@@ -697,6 +697,19 @@ Workflow.prototype = {
         }
         var instance = new (this.$instanceClass)(workUnit);
         return instance._initialise(properties);
+    },
+
+    // ----------------------------------------------------------------------
+
+    // Implement special purpose functions, rather than allowing access to
+    // all state information, to avoid consumers doing things they shouldn't
+    // or encouraging hacky implementations of things.
+    getUsedActionableBy: function() {
+        var a = [];
+        _.each(this.$instanceClass.prototype.$states, function(state) {
+            a.push(state.actionableBy);
+        });
+        return _.uniq(_.compact(a));
     }
 };
 implementFunctionList('start');
@@ -707,6 +720,7 @@ implementFunctionList('hasRole');
 implementFunctionList('textInterpolate');
 implementFunctionList('renderTimelineEntryDeferred');
 implementFunctionList('modifyFlags');
+implementFunctionList('modifySendEmail');
 // text() function list implemented above with exception for text dictionary
 implementHandlerList('preWorkUnitSave');
 implementHandlerList('setWorkUnitProperties');
@@ -718,6 +732,7 @@ implementHandlerList('renderWork');
 implementHandlerList('renderWorkList');
 implementHandlerList('workListFullInfo');
 implementHandlerList('notification');
+implementHandlerList('notificationModifySendEmail');
 implementHandlerList('actionPanel');
 implementHandlerList('actionPanelStatusUI');
 implementHandlerList('actionPanelTransitionUI');
@@ -725,10 +740,44 @@ implementHandlerList('resolveDispatchDestination');
 implementHandlerList('resolveTransitionDestination');
 implementHandlerList('filterTransition');
 implementHandlerList('transitionUI');
+implementHandlerList('transitionUIWithoutTransitionChoice');
 implementHandlerList('transitionFormSubmitted');
 implementHandlerList('transitionFormPreTransition');
 implementHandlerList('transitionUIValidateTarget');
 implementHandlerList('transitionUIPostTransitionRedirectForActionableUser');
+
+// --------------------------------------------------------------------------
+
+// Temporary handlers & functions -- use for other std_* plugins only.
+implementHandlerList('_preferStrictActionableBy');
+WorkflowInstanceBase.prototype._shouldPreferStrictActionableBy = function() { return this._callHandler("$_preferStrictActionableBy"); };
+
+// --------------------------------------------------------------------------
+
+// onLoad callbacks enable plugins to observe all workflows in the application,
+// and (carefully) make system wide modifications to workflows. The latter use
+// is discouraged for anything other than truly system wide policy that does not
+// affect the behaviour of workflows.
+var onLoadCallbacks = [];
+
+var AllWorkflows = function() {
+    this.list = _.values(P.allWorkflows);
+};
+AllWorkflows.prototype.forEach = function(f) { this.list.forEach(f); };
+AllWorkflows.prototype.getWorkflow = function(name) {
+    return P.allWorkflows[name];
+};
+
+// Use onLoad so that observing plugins see all the workflows when they're
+// fully configured by the implementing plugins.
+P.onLoad = function() {
+    if(onLoadCallbacks.length) {
+        var workflows = new AllWorkflows();
+        onLoadCallbacks.forEach(function(callback) {
+            callback(workflows);
+        });
+    }
+};
 
 // --------------------------------------------------------------------------
 
@@ -738,7 +787,13 @@ P.registerWorkflowFeature = function(name, feature) {
 };
 
 P.workflowFeatureFunctions = {
-    registerWorkflowFeature: P.registerWorkflowFeature
+    registerOnLoadCallback: function(callback) { // last resort API, see notes above
+        onLoadCallbacks.push(callback);
+    },
+    registerWorkflowFeature: P.registerWorkflowFeature,
+    workflowFeatureImplemented: function(name) {
+        return (name in P.workflowFeatures);
+    }
     // More functions added in other files.
 };
 
@@ -759,6 +814,10 @@ P.provideFeature("std:workflow", function(plugin) {
 });
 
 // --------------------------------------------------------------------------
+
+P.implementService("std:workflow:definition_for_name", function(fullName) {
+    return P.allWorkflows[fullName];
+});
 
 P.implementService("std:workflow:for_ref", function(fullName, ref) {
     var workflow = P.allWorkflows[fullName];

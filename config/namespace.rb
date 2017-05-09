@@ -33,6 +33,7 @@ class ApplicationNamespace
         "c"              => [:controller, {}, CopyrightController],
         "generated"      => [:controller, {}, GeneratedFileController],
         "admin"          => [:sub, {}, {
+          "relabel"        => [:controller, {}, Admin_RelabelController],
           "audit"          => [:controller, {}, Admin_AuditController],
           "latest"         => [:controller, {}, Admin_LatestController],
           "otp"            => [:controller, {}, Admin_OtpController],

@@ -15,7 +15,8 @@ class JavascriptTemplateTest < Test::Unit::TestCase
     restore_store_snapshot("basic")
     obj = KObject.new()
     obj.add_attr(O_TYPE_BOOK, A_TYPE)
-    obj.add_attr("Test book", A_TITLE)
+    obj.add_attr("Test book<", A_TITLE)
+    obj.add_attr("TB&", A_TITLE)
     KObjectStore.create(obj)
     with_request(nil, User.cache[User::USER_SYSTEM]) do
       run_javascript_test(:file, 'unit/javascript/javascript_template/test_platform_template_functions.js', {

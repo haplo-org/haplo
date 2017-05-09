@@ -269,6 +269,7 @@
 .z__editor_objref_list_ui_styles select /* neaten up runs of dropdown fields, so you don't see lots of ragged right edges */ {
     /* because of a bug in IE (all versions) this is also implemented in the Javascript */
     min-width: 50%;
+    max-width: 100%; /* prevent long object titles from causing the dropdown to overflow/overlap editor UI */
 }
 .z__editor_objref_list_ui_styles label {
     display: block;

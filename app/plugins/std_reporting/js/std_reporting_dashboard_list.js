@@ -28,6 +28,36 @@ DashboardList.prototype.columns = function(priority, columns) {
     return this;
 };
 
+DashboardList.prototype.hasColumnBasedOnFact = function(fact) {
+    var groups = this.columnGroups;
+    for(var i = groups.length - 1; i >= 0; --i) {
+        var cols = groups[i].columns;
+        for(var j = cols.length - 1; j >= 0; --j) {
+            if(cols[j].fact === fact) {
+                return true;
+            }
+        }
+    }
+    return false;
+};
+
+DashboardList.prototype.removeColumnsBasedOnFact = function(fact) {
+    if(!("$removeColumnsBasedOnFact" in this)) {
+        this.$removeColumnsBasedOnFact = [];
+    }
+    this.$removeColumnsBasedOnFact.push(fact);
+};
+
+DashboardList.prototype.__defineGetter__("columnCount", function() {
+    var count = 0, groups = this.columnGroups;
+    for(var i = groups.length - 1; i >= 0; --i) {
+        count += groups[i].columns.length;
+    }
+    return count;
+});
+
+// --------------------------------------------------------------------------
+
 DashboardList.prototype._makeRenderableColumnList = function() {
     // Make sorted flat list of column objects, then prepare them use
     var dashboard = this;
@@ -35,6 +65,13 @@ DashboardList.prototype._makeRenderableColumnList = function() {
     _.each(_.sortBy(this.columnGroups, "priority"), function(group) {
         columns = columns.concat(group.columns);
     });
+    if("$removeColumnsBasedOnFact" in this) {
+        var removes = this.$removeColumnsBasedOnFact;
+        columns = _.filter(columns, function(column) {
+            var cfact = column.fact;
+            return !(cfact && (-1 !== removes.indexOf(cfact)));
+        });
+    }
     columns.forEach(function(c) { c._prepare(dashboard); });
     return columns;
 };
@@ -104,6 +141,7 @@ DashboardList.prototype._makeDashboardView = function(hideExport) {
 };
 
 DashboardList.prototype.respond = function() {
+    this._callFinalServices();
     this.E.setResponsiblePlugin(P);
     // Export data rather than rendering?
     if(this.isExporting) { return this._respondWithExport(); }
@@ -112,6 +150,7 @@ DashboardList.prototype.respond = function() {
 };
 
 DashboardList.prototype.deferredRender = function() {
+    this._callFinalServices();
     return P.template("dashboard/list/list_dashboard").deferredRender(this._makeDashboardView(true /* Hide Export */));
 };
 

@@ -48,11 +48,11 @@ P.REPORTING_API.dashboard = function(E, specification) {
         // A service for when the dashboard is exported
         callServices.push("std:reporting:dashboard:"+specification.name+":setup_export");
     }
-    callServices.forEach(function(serviceName) {
-        if(O.serviceImplemented(serviceName)) {
-            O.service(serviceName, dashboard);
-        }
-    });
+    // Call each of the services
+    callServices.forEach(function(serviceName) { O.serviceMaybe(serviceName, dashboard); });
+    // Store a 'final' version of services names to allow customisations which might depend
+    // on what other plugins did.
+    dashboard.$finalCallServices = callServices.map(function(n) { return n+'_final'; });
 
     return dashboard;
 };
@@ -68,6 +68,14 @@ P.Dashboard.prototype._setupBase = function(name, collection) {
     this.$navigationUI = [];
     this.$properties = {};  // inheritance implemented by property()
     return this;
+};
+
+P.Dashboard.prototype._callFinalServices = function() {
+    if(this.$finalCallServices) {
+        var dashboard = this;
+        this.$finalCallServices.forEach(function(serviceName) { O.serviceMaybe(serviceName, dashboard); });
+        delete this.$finalCallServices;
+    }
 };
 
 P.Dashboard.prototype.isDashboard = true;
@@ -150,6 +158,7 @@ P.Dashboard.prototype.calculateStatistic = function(statistic, displayOptions) {
     statistic = this.collection.statisticDefinition(statistic);
     displayOptions = displayOptions || statistic.defaultDisplayOptions || {};
     return this.collection.calculateStatistic(statistic, {
+        context: dashboard,
         $select: function() {
             // Mustn't add order() clauses as it'll mess up statistic groupBy.
             return dashboard.selectWithoutOrder();

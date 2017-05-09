@@ -133,7 +133,7 @@ module SchemaRequirements
   TYPE_RULES = {
     "title"             => StoreObjectRuleSingle.new(A_TITLE),
     "parent-type"       => StoreObjectRuleSingle.new(A_PARENT, *mappers_for(O_TYPE_APP_VISIBLE)),
-    "search-name"       => StoreObjectRuleMultiIfNone.new(A_ATTR_SHORT_NAME,
+    "search-name"       => StoreObjectRuleMulti.new(A_ATTR_SHORT_NAME,
                               Proc.new { |v,context| v.nil? ? nil : KText.new(KSchemaApp.to_short_name_for_type(v)) },
                               Proc.new { |v,context| v.nil? ? nil : v.to_s }),
     "behaviour"         => StoreObjectRuleMulti.new(A_TYPE_BEHAVIOUR,

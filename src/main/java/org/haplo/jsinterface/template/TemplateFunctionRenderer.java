@@ -40,6 +40,8 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
             case "std:object": std_object(builder, b); break;
             case "std:object:link": std_object_link(builder, b); break;
             case "std:object:link:descriptive": std_object_link_descriptive(builder, b); break;
+            case "std:object:title": std_object_title(builder, b, false); break;
+            case "std:object:title:shortest": std_object_title(builder, b, true); break;
             case "std:object:url": std_object_url(builder, b, false); break;
             case "std:object:url:full": std_object_url(builder, b, true); break;
 
@@ -108,6 +110,15 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
 
     public void std_object_link_descriptive(StringBuilder builder, FunctionBinding b) throws RenderException {
         builder.append(inTextContext(b).stdtmpl_link_to_object_descriptive(appObjectArg(b)));
+    }
+
+    public void std_object_title(StringBuilder builder, FunctionBinding b, boolean shortest) throws RenderException {
+        // As this is text, it can go in any context
+        KObject o = jsObjectArg(b);
+        if(o != null) {
+            String title = shortest ? o.jsGet_shortestTitle() : o.jsGet_title();
+            Escape.escape(title, builder, b.getContext());
+        }
     }
 
     public void std_object_url(StringBuilder builder, FunctionBinding b, boolean asFullURL) throws RenderException {
@@ -257,12 +268,14 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
 
     private void name(StringBuilder builder, FunctionBinding b) throws RenderException {
         String name = b.nextLiteralStringArgument(ArgumentRequirement.REQUIRED);
+        String defaultText = b.nextLiteralStringArgument(ArgumentRequirement.OPTIONAL);
         b.noMoreArgumentsExpected();
 
         Runtime runtime = Runtime.getCurrentRuntime();
         Scriptable rootScope = runtime.getJavaScriptScope();
         Callable function = (Callable)rootScope.get("NAME", rootScope);
-        Object translated = function.call(runtime.getContext(), rootScope, rootScope, new Object[]{name}); // ConsString is checked
+        Object[] args = (defaultText == null) ? new Object[]{name} : new Object[]{name, defaultText};
+        Object translated = function.call(runtime.getContext(), rootScope, rootScope, args); // ConsString is checked
         if(translated instanceof CharSequence) {
             Escape.escape(translated.toString(), builder, b.getContext());
         }

@@ -31,6 +31,8 @@ require 'js_support/js_remote_collaboration_service_support'
 require 'js_support/js_remote_authentication_service_support'
 require 'js_support/js_inter_runtime_signal_support'
 require 'js_support/js_keychain_support'
+require 'js_support/messagebus/js_messagebus_support'
+require 'js_support/messagebus/js_messagebus_inter_application'
 # Special platform support for standard plugins
 require 'js_support/js_std_reporting_support'
 

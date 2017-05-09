@@ -54,7 +54,9 @@ var checkPermissionsForObject = function(object, checkFunction) {
     var results = [];
     var objectRef = object.ref;
     _.each(workflowPermissionRules, function(rules, workUnitType) {
-        var units = O.work.query(workUnitType).ref(objectRef);
+        var units = O.work.query(workUnitType).ref(objectRef).
+            isEitherOpenOrClosed().
+            anyVisibility();
         _.each(units, function(unit) {
             if(P.allWorkflows[unit.workType]) {
                 var M = P.allWorkflows[unit.workType].instance(unit);
@@ -89,15 +91,15 @@ var checkPermissionsForObject = function(object, checkFunction) {
 
 // API to permissions system
 
-P.implementService("std:workflow:get_additional_readers_for_object", function(objectRef) {
-    var result = checkPermissionsForObject(objectRef, function(perm) {
+P.implementService("std:workflow:get_additional_readers_for_object", function(object) {
+    var result = checkPermissionsForObject(object, function(perm) {
         return (perm==="read") || (perm==="read-edit");
     });
     return result;
 });
 
-P.implementService("std:workflow:get_additional_writers_for_object", function(objectRef) {
-    var result = checkPermissionsForObject(objectRef, function(perm) {
+P.implementService("std:workflow:get_additional_writers_for_object", function(object) {
+    var result = checkPermissionsForObject(object, function(perm) {
         return (perm==="read-edit");
     });
     return result;

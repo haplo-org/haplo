@@ -39,18 +39,12 @@ P.registerWorkflowFeature("std:notes", function(workflow, spec) {
     });
 
     // Provide access to notification note rendering to workflows
-    workflow.$instanceClass.prototype.notesRenderForNotificationEmail = notesRenderForNotificationEmail;
+    workflow.$instanceClass.prototype.notesDeferredRenderForNotificationEmail = notesDeferredRenderForNotificationEmail;
 
     // Include the latest notes in the notification emails
     workflow.notification({}, function(M, notify) {
-        var notes = M.notesRenderForNotificationEmail(M.workUnit.actionableBy);
-        if(notes) { notify.addEndHTML(notes); }
-    });
-
-    // Show explanation, can be overridden by workflow
-    workflow.text({
-        "notes-explanation-everyone:transition-ui": "Notes can be seen by the applicant and all staff reviewing this application.",
-        "notes-explanation-private:transition-ui": "Seen only by staff reviewing this application, not seen by the applicant."
+        var notes = M.notesDeferredRenderForNotificationEmail(M.workUnit.actionableBy);
+        if(notes) { notify.addEndDeferred(notes); }
     });
 
     // Display the notes forms on the transition page
@@ -59,8 +53,10 @@ P.registerWorkflowFeature("std:notes", function(workflow, spec) {
         var parameters = E.request.parameters;
         ui.addFormDeferred("bottom", P.template("notes/transition-notes-form").deferredRender({
             canSeePrivateNotes: userCanSeePrivateNotes,
-            everyoneNoteExplaination: M._getTextMaybe(['notes-explanation-everyone'], ['transition-ui']),
-            privateNoteExplaination: M._getTextMaybe(['notes-explanation-private'], ['transition-ui']),
+            everyoneNoteExplaination: M._getTextMaybe(['notes-explanation-everyone'], ['transition-ui']) ||
+                NAME("std:workflow:notes-explanation-everyone", "Notes can be seen by the applicant and all staff reviewing this application."),
+            privateNoteExplaination: M._getTextMaybe(['notes-explanation-private'], ['transition-ui']) ||
+                NAME("std:workflow:notes-explanation-private", "Seen only by staff reviewing this application, not seen by the applicant."),
             notes: parameters['notes'],
             privateNotes: parameters['privateNotes']
         }));
@@ -86,7 +82,7 @@ P.registerWorkflowFeature("std:notes", function(workflow, spec) {
 
 // --------------------------------------------------------------------------
 
-var notesRenderForNotificationEmail = function(toUser) {
+var notesDeferredRenderForNotificationEmail = function(toUser) {
     var noteSpec = allNoteSpec[this.workUnit.workType];
     if(!noteSpec) { return; }
     var userCanSeePrivateNotes = noteSpec.canSeePrivateNotes(this, toUser);
@@ -108,7 +104,7 @@ var notesRenderForNotificationEmail = function(toUser) {
     });
 
     if(notesForEmail.length === 0) { return; }
-    return P.template("email/notes").render({
+    return P.template("email/notes").deferredRender({
         maxAge: MAX_NOTIFICATION_NOTE_AGE_IN_HOURS,
         notes: notesForEmail
     });

@@ -14,7 +14,7 @@ std:plugin:resources("w.css")
     <p>
       <label>
         <input type="checkbox" id="note_is_private" name="private" value="yes" checked=if(isPrivate){"checked"}>
-        "Private note" if(privateNoteExplaination) { " (" privateNoteExplaination ")" }
+        NAME("std:workflow:notes-private-label" "Private note") if(privateNoteExplaination) { " (" privateNoteExplaination ")" }
       </label>
     </p>
   }

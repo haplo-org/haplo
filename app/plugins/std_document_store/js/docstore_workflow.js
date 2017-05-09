@@ -14,11 +14,11 @@ P.use("std:workflow");
 // where spec is an object with properties:
 //    name: document store name
 //    title: Title of this form
-//    titleLowerCase: Title to use when the lower case version of title is to be
-//              displayed but acryonyms or proper nouns need to be preserved 
 //    path: URL path where the handlers should be implemented
 //    panel: Which panel the view link should appear in
 //    priority: The priority within the panel, defaulting to "default"
+//    sortDisplay: The priority for displaying in list of forms, defaulting to
+//          priority if it's a number, or 100 otherwise.
 //    ----------
 //          history/view/edit have the concept of "allowing for roles at selectors"
 //                  it is a list of these definition objects, which have properties:
@@ -49,6 +49,27 @@ Delegate.prototype = {
     keyToKeyId: function(key) { return key.workUnit.id; }
 };
 
+P.implementService("std:document_store:workflow:sorted_store_names_action_allowed", function(M, user, action) {
+    var workflow = O.service("std:workflow:definition_for_name", M.workUnit.workType);
+    var stores = [];
+    _.each(workflow.documentStore, function(store, name) {
+        var spec = store.delegate;
+        if(can(M, user, spec, action)) {
+            var sort = spec.sortDisplay;
+            if(!sort) { sort = spec.priority; }
+            if(!sort) { sort = 100; }
+            stores.push({name:name, sort:sort});
+        }
+    });
+    return _.map(_.sortBy(stores,'sort'), function(s) { return s.name; });
+});
+
+P.implementService("std:document_store:workflow:form_action_allowed", function(M, form, user, action) {
+    var workflow = O.service("std:workflow:definition_for_name", M.workUnit.workType);
+    var spec = workflow.documentStore[form].delegate;
+    return can(M, user, spec, action);
+});
+
 var can = function(M, user, spec, action) {
     var list = spec[action];
     if(!list) { return false; }
@@ -73,6 +94,14 @@ var can = function(M, user, spec, action) {
                     throw new Error("Document store 'action' parameter must be either 'allow' or 'deny'.");
                 } else { allow = true; }
                 break;
+        }
+    }
+    // TODO: Reconsider this special integration between workflow and docstore. Perhaps it would be better to tweak the permissions model? See HAPLO-80
+    if(allow && (action === 'edit')) {
+        if(true === M._shouldPreferStrictActionableBy()) {
+            if(!M.workUnit.isActionableBy(user)) {
+                deny = true;
+            }
         }
     }
     return allow && !deny;
@@ -196,7 +225,8 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
     var editor = {
         finishEditing: function(instance, E, complete) {
             if(complete && spec.onFinishPage) {
-                return E.response.redirect(spec.onFinishPage(instance.key));
+                var redirectUrl = spec.onFinishPage(instance.key);
+                if(redirectUrl) { return E.response.redirect(redirectUrl); }
             }
             if(complete && !(instance.key.transitions.empty) && instance.key.workUnit.isActionableBy(O.currentUser)) {
                 E.response.redirect("/do/workflow/transition/"+instance.key.workUnit.id);

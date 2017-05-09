@@ -56,13 +56,22 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
     }},
 
     $actionPanelStatusUI: {selector:{}, handler:function(M, builder) {
-        builder.status("top", this._getText(['status'], [this.state]));
+        var state = this.state;
+        builder.status("top", this._getText(['status'], [state]));
         if(!this.workUnit.closed) {
             var user = this.workUnit.actionableBy;
             if(user && user.name) {
+                var stateDefn = this.$states[state],
+                    displayedName = user.name;
+                if(stateDefn && stateDefn.actionableBy) {
+                    var currentlyWithNameAnnotation = this._getTextMaybe(["status-ui-currently-with-annotation"], [stateDefn.actionableBy, state]);
+                    if(currentlyWithNameAnnotation) {
+                        displayedName = displayedName+" ("+currentlyWithNameAnnotation+")";
+                    }
+                }
                 builder.element("top", {
-                    title: this._getTextMaybe(['status-ui-currently-with'], [this.state]) || 'Currently with',
-                    label: user.name
+                    title: this._getTextMaybe(['status-ui-currently-with'], [state]) || 'Currently with',
+                    label: displayedName
                 });
             }
         }
@@ -163,62 +172,8 @@ _.extend(P.WorkflowInstanceBase.prototype, {
             (W.context === "list") ? '$renderWorkList' : '$renderWork',
             W
         );
-    },
-
-    _workUnitNotify: function(workUnit) {
-        var notify = new NotificationView();
-        if(false === this._callHandler('$notification', notify)) {
-            return null; // notification cancelled
-        }
-        return notify._finalise(this);
     }
 });
-
-// --------------------------------------------------------------------------
-
-var NotificationView = function() {
-    this.$notesHTML = [];
-    this.$endHTML = [];
-};
-NotificationView.prototype = {
-    addNoteText: function(notes) {
-        this.$notesHTML.push(P.template('email/status-notes-text').render({notes:notes}));
-        return this;
-    },
-    addNoteHTML: function(html) {
-        this.$notesHTML.push(html);
-        return this;
-    },
-    addEndHTML: function(html) {
-        this.$endHTML.push(html);
-        return this;
-    },
-    _finalise: function(M) {
-        // Basic defaults have slightly different logic to platform
-        if(!this.title)     { this.title = M._call('$taskTitle'); }
-        if(!this.subject)   { this.subject = this.title; }
-        if(!this.action)    { this.action = M._call('$taskUrl'); }
-        if(!this.template)  { this.template = M.$emailTemplate; }
-        if(!this.status) {
-            var statusText = M._getTextMaybe(['notification-status', 'status'], [M.state]);
-            if(statusText) { this.status = statusText; }
-        }
-        if(!this.button) {
-            var buttonLabel = M._getTextMaybe(['notification-action-label', 'action-label'], [M.state]);
-            if(buttonLabel) { this.button = buttonLabel; }
-        }
-        if(0 === this.$notesHTML.length) {
-            // If there aren't any notes, use the workflow text system to find some 
-            var notesText = M._getTextMaybe(['notification-notes'], [M.state]);
-            if(notesText) { this.addNoteText(notesText); }
-        }
-        if(0 !== this.$notesHTML.length) { this.notesHTML = this.$notesHTML.join(''); }
-        if(0 !== this.$endHTML.length)   { this.endHTML = this.$endHTML.join(''); }
-        delete this.$notesHTML;
-        delete this.$endHTML;
-        return this;
-    }
-};
 
 // --------------------------------------------------------------------------
 
@@ -282,8 +237,11 @@ P.respond("GET,POST", "/do/workflow/transition", [
             M._callHandler('$transitionUI', E, ui);
 
         } else {
+
+            M._callHandler('$transitionUIWithoutTransitionChoice', E, ui);
+
             // Generate std:ui:choose template options from the transition
-            var urlExtraParameters = requestedTarget ? {target:requestedTarget} : undefined;
+            var urlExtraParameters = ui._urlExtraParameters;
             ui.options = _.map(M.transitions.list, function(transition) {
                 return {
                     action: M.transitionUrl(transition.name, urlExtraParameters),
@@ -312,13 +270,20 @@ P.respond("GET,POST", "/do/workflow/transition", [
 var TransitionUI = function(M, transition, target) {
     this.M = M;
     this.requestedTransition = transition;
-    this.requestedTarget = target;
+    if(target) {
+        this.requestedTarget = target;
+        this._urlExtraParameters = {target:target};
+    }
 };
 TransitionUI.prototype = {
     backLinkText: "Cancel",
     addFormDeferred: function(position, deferred) {
         if(!this.$formDeferred) { this.$formDeferred = []; }
         this.$formDeferred.push({position:position, deferred:deferred});
+    },
+    addUrlExtraParameter: function(name, value) {
+        if(!("_urlExtraParameters" in this)) { this._urlExtraParameters = {}; }
+        this._urlExtraParameters[name] = value;
     },
     preventTransition: function() {
         this._preventTransition = true;

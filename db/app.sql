@@ -193,6 +193,7 @@ CREATE TABLE stored_files (
         -- NOTE: size used to calculate disc space usage
     upload_filename TEXT NOT NULL,  -- filename given when uploaded, probably not the one offered on downloads
     mime_type TEXT NOT NULL,
+    tags HSTORE,                    -- string to string encoding (not indexed yet)
     dimensions_w INT,
     dimensions_h INT,
     dimensions_units TEXT,          -- dimensions, may be NULL if not calculated or not available

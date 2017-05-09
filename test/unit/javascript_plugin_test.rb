@@ -471,6 +471,7 @@ __E
   # -------------------------------------------------------------------------------------------------------------
 
   def test_jobs
+    KApp.get_pg_database.perform("DELETE FROM jobs WHERE application_id=#{_TEST_APP_ID}")
     KApp.set_global(:_pjson_test_plugin, "{}") # Clean up any data stored before running the test
     KPlugin.install_plugin("test_plugin")
     KApp.cache_checkin_all_caches

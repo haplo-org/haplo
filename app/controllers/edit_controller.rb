@@ -282,6 +282,7 @@ private
     # ------------------------------------------------------------------------------------------------------
     plugin_redirect = nil
     read_only_attributes = []
+    restriction_lifted_attributes = []
     # TODO: Sort out the hPreObjectEdit hook with more functionality and some tests.
     call_hook(:hPreObjectEdit) do |hooks|
       r = hooks.run(
@@ -293,6 +294,8 @@ private
       unless @request_user.kind == User::KIND_SUPER_USER
         # SUPPORT user ignores read only attributes, as it hinders support work
         read_only_attributes = r.readOnlyAttributes
+        # and doesn't need to lift attributes as no restrictions applied
+        restriction_lifted_attributes = r.restrictionLiftedAttributes
       end
       replacementObject = r.replacementObject
       # Only use this replacement object if the type is the same
@@ -309,6 +312,8 @@ private
       user_labels = @request_user.attribute_restriction_labels
       read_only_attributes.concat(@object_to_edit.read_only_restricted_attributes(user_labels))
       read_only_attributes.concat(@object_to_edit.hidden_restricted_attributes(user_labels))
+      # remove from read only any attributes that we want to force to be available
+      read_only_attributes = read_only_attributes - restriction_lifted_attributes
     end
 
     if plugin_redirect != nil

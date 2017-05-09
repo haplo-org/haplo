@@ -58,6 +58,10 @@ TEST(function() {
     TEST.assert_equal(true,  O.user(41).allowed(ActionOne));
     TEST.assert_equal(false, O.user(42).allowed(ActionOne));
 
+    TEST.assert_exceptions(function() {
+        O.user(41).allowed("test:one"); // passing in the API code instead of the object
+    }, "Bad action passed to user.allowed(). You must pass in the Action object returned by O.action()");
+
     // Use ActionTwo to test plugin defined kinds
     TEST.assert_equal(false, O.user(41).allowed(ActionTwo)); // not allowed or denies
     tester.a41 = true;

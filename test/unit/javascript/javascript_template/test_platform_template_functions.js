@@ -47,7 +47,7 @@ TEST(function() {
     var objectRendered = template.render({o:object});
     TEST.assert(objectRendered.match(/class="?z__linked_heading"?/)); // cope with minimisation
     TEST.assert(-1 != objectRendered.indexOf('class="z__icon z__icon_small"'));
-    TEST.assert(-1 != objectRendered.indexOf('/test-book">Test book</a>'));
+    TEST.assert(-1 != objectRendered.indexOf('/test-book-">Test book&lt;</a>'));
     TEST.assert_exceptions(function() {
         new $HaploTemplate('<div data-value=std:object(o)></div>').render({o:object});
     }, "When rendering template 'undefined': std:object() can only be used in TEXT context");
@@ -57,15 +57,22 @@ TEST(function() {
     // std:object:link() & std:object:link:descriptive()
     template = new $HaploTemplate('<div> std:object:link(o) " ! " std:object:link:descriptive(o) </div>');
     var objectLinksRendered = template.render({o:object}).replace(/\/[0-9qvwxyz]+\//g,'/REF/');
-    TEST.assert_equal(objectLinksRendered, '<div><a href="/REF/test-book">Test book</a> ! <a href="/REF/test-book">Test book</a></div>');
+    TEST.assert_equal(objectLinksRendered, '<div><a href="/REF/test-book-">Test book&lt;</a> ! <a href="/REF/test-book-">Test book&lt;</a></div>');
     // And with refs instead
     var refLinksRendered = template.render({o:objectRef}).replace(/\/[0-9qvwxyz]+\//g,'/REF/');
-    TEST.assert_equal(refLinksRendered, '<div><a href="/REF/test-book">Test book</a> ! <a href="/REF/test-book">Test book</a></div>');
+    TEST.assert_equal(refLinksRendered, '<div><a href="/REF/test-book-">Test book&lt;</a> ! <a href="/REF/test-book-">Test book&lt;</a></div>');
+
+    // std:object:title() & std:object:title:shortest() (can be used anywhere)
+    template = new $HaploTemplate('<div> <p data-x=std:object:title(x)> std:object:title:shortest(x) </p> </div>');
+    var objectTitlesRendered = template.render({x:object}).replace(/\/[0-9qvwxyz]+\//g,'/REF/').replace(/www\d\d+/g,'wwwAPP');
+    TEST.assert_equal(objectTitlesRendered, '<div><p data-x="Test book&lt;">TB&amp;</p></div>');
+    var objectTitlesRendered2 = template.render({x:objectRef}).replace(/\/[0-9qvwxyz]+\//g,'/REF/').replace(/www\d\d+/g,'wwwAPP');
+    TEST.assert_equal(objectTitlesRendered2, '<div><p data-x="Test book&lt;">TB&amp;</p></div>');
 
     // std:object:url*()
     template = new $HaploTemplate('<div> <a href=std:object:url(x)> "hello" </a> " / " <a href=std:object:url:full(x)> "world" </a> </div>');
     var objectUrlsRendered = template.render({x:object}).replace(/\/[0-9qvwxyz]+\//g,'/REF/').replace(/www\d\d+/g,'wwwAPP').replace(/\:\d+\b/,'');
-    TEST.assert_equal(objectUrlsRendered, '<div><a href="/REF/test-book">hello</a> / <a href="http://wwwAPP.example.com/REF/test-book">world</a></div>');
+    TEST.assert_equal(objectUrlsRendered, '<div><a href="/REF/test-book-">hello</a> / <a href="http://wwwAPP.example.com/REF/test-book-">world</a></div>');
     template = new $HaploTemplate('backLink(std:object:url(q))');
     // Check you can use it in backLink()
     var objectUrlBackLinkView = {q:object};

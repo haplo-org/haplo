@@ -18,6 +18,12 @@ TEST(function() {
     TEST.assert_equal("<p>Ping</p>", t1.toHTML());  // cached
     TEST.assert(_.isEqual(t1.toFields(), {"typecode":O.T_TEXT_PARAGRAPH})); // check toFields() only returns a typecode
 
+    // Document text formatting
+    var doc1 = O.text(O.T_TEXT_DOCUMENT, "<doc><h1>Title</h1><p>paragraph. text. with lots of dots</p><h2>title 2</h2><p>paragraph text again</p></doc>");
+    TEST.assert_equal("<doc><h1>Title</h1><p>paragraph. text. with lots of dots</p><h2>title 2</h2><p>paragraph text again</p></doc>", doc1.toString());
+    TEST.assert_equal("Title\n\nparagraph. text. with lots of dots\n\ntitle 2\n\nparagraph text again\n\n", doc1.toString("plaintext"));
+    TEST.assert_equal("<h1>Title</h1><p>paragraph. text. with lots of dots</p><h2>title 2</h2><p>paragraph text again</p>", doc1.toHTML());
+
     // Telephone number formatting
     var phone1 = O.text(O.T_IDENTIFIER_TELEPHONE_NUMBER, {guess_number:"+442070471111", guess_country:"GB"});
     // Repeats to check caching

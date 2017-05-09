@@ -17,6 +17,7 @@ module KHooks
     h.argument    :isNew,       "bool",   "Whether this object is a new object"
     h.result      :replacementObject, KObject, nil, "An object to edit in place of the given object, or null for no effect"
     h.result      :readOnlyAttributes, Array, "[]", "An array containing a list attributes which are read only for this object"
+    h.result      :restrictionLiftedAttributes, Array, [], "An array containing a list of attributes for which read-only and hidden attribute restrictions should not be applied for this object"
     h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of editing the object"
   end
 

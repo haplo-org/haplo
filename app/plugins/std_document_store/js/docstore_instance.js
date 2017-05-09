@@ -117,7 +117,7 @@ DocumentInstance.prototype.__defineGetter__("hasCommittedDocument", function() {
 
 // ----------------------------------------------------------------------------
 
-DocumentInstance.prototype.getAllVersions = function() {
+DocumentInstance.prototype.__defineGetter__("history", function() {
     return _.map(this.store.versionsTable.select().where("keyId","=",this.keyId).
         order("version"), function(row) {
             return {
@@ -128,7 +128,10 @@ DocumentInstance.prototype.getAllVersions = function() {
             };
         }
     );
-};
+});
+
+// DEPRECATED: use instance.history
+DocumentInstance.prototype.getAllVersions = function() { return this.history; };
 
 // ----------------------------------------------------------------------------
 
@@ -230,6 +233,8 @@ DocumentInstance.prototype.deferredRenderCurrentDocument = function() {
 DocumentInstance.prototype.handleEditDocument = function(E, actions) {
     // The form ID is encoded into the request somehow
     var untrustedRequestedFormId = this.store._formIdFromRequest(E.request);
+    // Is this the special form incomplete page?
+    var renderingFormIncompletePage = (untrustedRequestedFormId === "__incomplete");
     // Set up information about the pages
     var instance = this,
         delegate = this.store.delegate,
@@ -237,6 +242,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         forms,
         pages, isSinglePage,
         activePage;
+    instance.store._updateDocumentBeforeEdit(instance.key, instance, cdocument);
     var updatePages = function() {
         forms = instance.store._formsForKey(instance.key, instance, cdocument);
         if(forms.length === 0) { throw new Error("No form definitions"); }
@@ -265,12 +271,28 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         isSinglePage = (pages.length === 1);
     };
     updatePages();
-    // Default the active page to the first page
-    if(!activePage) { activePage = pages[0]; }
-    activePage.active = true;
+    var getGotoPage = function() {
+        return _.find(pages, function(p) {
+            return p.form.formId === E.request.parameters.__goto;
+        });
+    };
+    // Handle the special case of the incomplete overview seperately
+    if(renderingFormIncompletePage) {
+        if(E.request.parameters.__later === "s") {
+            return actions.finishEditing(this, E, false /* not complete */);
+        }
+        // Duplicate the .gotoPage() call from below to be able to do it without
+        // updating the document (incomplete page has no form)
+        var gotoPageIncomplete = getGotoPage();
+        if(gotoPageIncomplete) { return actions.gotoPage(this, E, gotoPageIncomplete.form.formId); }
+    } else {
+        // Default the active page to the first page
+        if(!activePage) { activePage = pages[0]; }
+        activePage.active = true;
+    }
     // What happens next?
     var showFormError = false;
-    if(E.request.method === "POST") {
+    if(!renderingFormIncompletePage && E.request.method === "POST") {
         // Update from the active form
         activePage.instance.update(E.request);
         activePage.complete = activePage.instance.complete;
@@ -281,9 +303,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         var firstIncompletePage = _.find(pages, function(p) { return !p.complete; });
         this.setCurrentDocument(cdocument, !(firstIncompletePage) /* all complete? */);
         // Goto another form?
-        var gotoPage = _.find(pages, function(p) {
-            return p.form.formId === E.request.parameters.__goto;
-        });
+        var gotoPage = getGotoPage();
         if(gotoPage) {
             return actions.gotoPage(this, E, gotoPage.form.formId);
         } else {
@@ -302,7 +322,13 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
                     }
                 }
                 if(nextIndex >= 0 && nextIndex >= pages.length) {
-                    return actions.finishEditing(this, E, true /* everything complete */);
+                    if(firstIncompletePage) {
+                        // goto checklist/show incomplete overview page
+                        // renderingFormIncompletePage = true;
+                        actions.gotoPage(this, E, "__incomplete");
+                    } else {
+                        return actions.finishEditing(this, E, true /* everything complete */);
+                    }
                 } else {
                     return actions.gotoPage(this, E,
                         pages[nextIndex].form.formId);
@@ -317,18 +343,28 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
     if(!isSinglePage || (delegate.alwaysShowNavigation && delegate.alwaysShowNavigation(this.key, this, cdocument))) {
         navigation = P.template("navigation").deferredRender({pages:pages});
     }
-    var additionalUI;
-    if(delegate.getAdditionalUIForEditor) {
-        additionalUI = delegate.getAdditionalUIForEditor(instance.key, instance, cdocument, activePage.form);
+    if(renderingFormIncompletePage) {
+        // slightly abuse form render action to show a list of 'incomplete' forms
+        // when the user tries to submit the last page with incomplete prior pages
+        actions.render(this, E, P.template("incomplete").deferredRender({
+            isSinglePage: isSinglePage,
+            navigation: navigation,
+            pages: pages
+        }));
+    } else {
+        var additionalUI;
+        if(delegate.getAdditionalUIForEditor) {
+            additionalUI = delegate.getAdditionalUIForEditor(instance.key, instance, cdocument, activePage.form);
+        }
+        actions.render(this, E, P.template("edit").deferredRender({
+            isSinglePage: isSinglePage,
+            navigation: navigation,
+            pages: pages,
+            showFormError: showFormError,
+            additionalUI: additionalUI,
+            activePage: activePage
+        }));
     }
-    actions.render(this, E, P.template("edit").deferredRender({
-        isSinglePage: isSinglePage,
-        navigation: navigation,
-        pages: pages,
-        showFormError: showFormError,
-        additionalUI: additionalUI,
-        activePage: activePage
-    }));
 };
 
 // ----------------------------------------------------------------------------

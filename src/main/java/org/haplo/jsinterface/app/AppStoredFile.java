@@ -21,6 +21,8 @@ public interface AppStoredFile {
 
     public String mime_type();
 
+    public String jsGetTagsAsJson();
+
     public String disk_pathname();
 
     // TODO: Make stored file dimensions and thumbnail info available in JS API

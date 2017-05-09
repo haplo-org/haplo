@@ -120,15 +120,15 @@ class AuditOptionalWritesTest < IntegrationTest
     assert_audit_entry(:kind => 'CONFIG')
     get "/search?q=hello"
     assert_audit_entry(:kind => 'SEARCH', :data => {"q" => "hello"}, :user_id => TEST_USER_ID)
-    post "/search/export", {:q => "hello", :output_form => '', :output_format => 'xls'}
+    post "/search/export", {:q => "hello", :output_form => '', :output_format => 'xlsx'}
     assert_audit_entry(:kind => 'EXPORT', :data => {"q" => "hello"}, :user_id => TEST_USER_ID)
     get "/search?q=hello"
     assert_no_more_audit_entries_written
-    post "/search/export", {:q => "hello", :output_form => '', :output_format => 'xls'}
+    post "/search/export", {:q => "hello", :output_form => '', :output_format => 'xlsx'}
     assert_audit_entry(:kind => 'EXPORT', :data => {"q" => "hello"}, :user_id => TEST_USER_ID) # exports aren't deduped
     get "/search?q=hello2"
     assert_audit_entry(:kind => 'SEARCH', :data => {"q" => "hello2"})
-    post "/search/export", {:q => "hello2", :output_form => '', :output_format => 'xls'}
+    post "/search/export", {:q => "hello2", :output_form => '', :output_format => 'xlsx'}
     assert_audit_entry(:kind => 'EXPORT', :data => {"q" => "hello2"}, :user_id => TEST_USER_ID) # exports aren't deduped
 
     # XML API
@@ -194,7 +194,7 @@ class AuditOptionalWritesTest < IntegrationTest
     assert_audit_entry(:kind => 'CONFIG')
     get "/search?q=1audit22"
     assert_no_more_audit_entries_written
-    post "/search/export", {:q => "abc349823", :output_form => '', :output_format => 'xls'}
+    post "/search/export", {:q => "abc349823", :output_form => '', :output_format => 'xlsx'}
     assert_audit_entry(:kind => 'EXPORT', :data => {"q" => "abc349823"}, :user_id => TEST_USER_ID) # exports always audited
     get "/search?q=ping2"
     assert_audit_entry(:kind => 'SEARCH', :data => {"q" => "ping2"})

@@ -1,0 +1,26 @@
+<%
+  @page_title = 'Administrative relabel'
+  obj_link = object_urlpath(@obj)
+  @breadcrumbs = [[obj_link, 'Cancel']]
+  client_side_resources(:mng_labels)
+  client_side_controller_js("administrative_relabel")
+-%>
+<%= render_obj(@obj, :linkedheading) %>
+
+<p>&nbsp;</p>
+<%
+  if @relabel_not_permitted
+    %><div class="z__general_alert">Relabel not permitted.</div><%
+  else
+    %><div class="z__general_alert">Be careful. Using this administrative relabelling function may cause unexpected problems with permissions.</div><%
+  end
+%>
+<p>&nbsp;</p>
+
+<form id="z__admin_relabel_form" method="POST"><%= form_csrf_token %>
+  <%= label_edit_list('z__admin_relabel_labels', @obj.labels) %>
+  <p>&nbsp;</p>
+  <p><input type="submit" value="Relabel"></p>
+</form>
+
+<p>You may not be permitted to perform all relabelling operations.</p>

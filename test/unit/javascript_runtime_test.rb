@@ -479,8 +479,10 @@ __E
     FileCacheEntry.destroy_all
     StoredFile.destroy_all
     restore_store_snapshot("basic")
-    # PDF file to test dimensions
+    # PDF file to test dimensions & tags
     pdf_3page = StoredFile.from_upload(fixture_file_upload('files/example_3page.pdf', 'application/pdf'))
+    pdf_3page.__send__(:write_attribute, 'tags', PgHstore.generate_hstore({"test-tag"=>"test-value"}))
+    pdf_3page.save!
     # Create a file with a few versions
     stored_file = StoredFile.from_upload(fixture_file_upload('files/example.doc', 'application/msword'))
     # Make an object so the plugin can find it
@@ -660,6 +662,15 @@ __E
 
   def test_json
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_json.js')
+  end
+
+  # ===============================================================================================
+
+  def test_deduplicate_array_of_refs
+    o = KObject.new([1234])
+    o.add_attr("test", A_TITLE)
+    KObjectStore.create(o)
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_deduplicate_array_of_refs.js', {"TEST_OBJ_ID" => o.objref.obj_id})
   end
 
   # ===============================================================================================

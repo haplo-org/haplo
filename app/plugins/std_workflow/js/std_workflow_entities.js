@@ -29,12 +29,17 @@ var loadRefs = function(ref) {
 var getterBySuffix = {
     "refMaybe": function(name) {
         var defn = this.__entityDefinition(name);
-        if(typeof(defn) === "function") { return defn.call(this, "first"); }
+        if(typeof(defn) === "function") { 
+            var refs = this[name+"_refList"]; // use refList so list is reused if accessed later
+            return (refs.length ? refs[0] : undefined);
+        }
         return entityLoad.apply(this, defn);
     },
     "refList": function(name) {
         var defn = this.__entityDefinition(name);
-        if(typeof(defn) === "function") { return defn.call(this, "list"); }
+        if(typeof(defn) === "function") { 
+            return O.deduplicateArrayOfRefs(defn.call(this, "list")); // "list" argument for backwards compatability
+        }
         return listLoad.apply(this, defn);
     },
     "ref": function(name) {
@@ -173,6 +178,7 @@ P.registerWorkflowFeature("std:entities:roles", function(workflow) {
     if(!("constructEntitiesObject" in workflow)) {
         throw new Error('You must use("std:entities", {...}) before using the std:entities:roles workflow feature');
     }
+    if(workflow.$stdEntitiesRolesInUse) { return; }
     workflow.$stdEntitiesRolesInUse = true;
 
     workflow.getActionableBy(function(M, actionableBy) {

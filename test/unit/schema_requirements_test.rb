@@ -72,13 +72,17 @@ class SchemaRequirementsTest < Test::Unit::TestCase
           unknown-key something
         unknown-kind unknown:x
           title: Will cause an error
+          no-value
         bad-line
       __E
-      assert_equal 1, parser.errors.length
-      assert_equal ["test_plugin line 9: bad-line"], parser.errors
+      assert_equal 2, parser.errors.length
+      assert_equal [
+          "test_plugin line 9: no-value",
+          "test_plugin line 10: bad-line"
+        ], parser.errors
       applier = SchemaRequirements::Applier.new(apply_kinds, parser, SchemaRequirements::Context.new)
       applier.apply
-      assert_equal 3, applier.errors.length
+      assert_equal 4, applier.errors.length
       applier
     end
     # Try with auto creation of groups
@@ -89,7 +93,8 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     applier.commit
     assert_equal true, groups['std:group:administrators'].save_called
     assert_equal [
-        "test_plugin line 9: bad-line",
+        "test_plugin line 9: no-value",
+        "test_plugin line 10: bad-line",
         "Unknown kind 'unknown-kind'",
         "Unknown key 'unknown-key' for 'std:group:administrators'"
       ], applier.errors # which includes the parser errors

@@ -11,7 +11,6 @@ import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
 import org.mozilla.javascript.*;
 
-import java.util.Date;
 import java.util.ArrayList;
 
 public class KWorkUnitQuery extends KScriptable {
@@ -25,6 +24,7 @@ public class KWorkUnitQuery extends KScriptable {
     private Integer objId;
     private Integer _temp_refPermitsReadByUserId; // TODO: Remove _temp_refPermitsReadByUserId and/or replace by proper interface
     private ArrayList<TagKeyValue> tagValues;
+    private boolean deadlineMissed;
 
     private static final String DEFAULT_STATUS = "open";
     private static final String DEFAULT_VISIBILITY = "visible";
@@ -153,6 +153,12 @@ public class KWorkUnitQuery extends KScriptable {
         kv.key = key;
         kv.value = stringValue;
         this.tagValues.add(kv);
+        return this;
+    }
+
+    // TODO: Add more flexible deadline query functions?
+    public Scriptable jsFunction_deadlineMissed() {
+        this.deadlineMissed = true;
         return this;
     }
 
@@ -290,6 +296,10 @@ public class KWorkUnitQuery extends KScriptable {
     public TagKeyValue[] getTagValues() {
         if(this.tagValues == null) { return null; }
         return this.tagValues.toArray(new TagKeyValue[this.tagValues.size()]);
+    }
+
+    public boolean getDeadlineMissed() {
+        return this.deadlineMissed;
     }
 
 }

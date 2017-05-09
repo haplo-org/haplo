@@ -63,8 +63,9 @@ module JSWorkUnitSupport
     work_type = query.getWorkType()
     obj_id = query.getObjId()
     tagValues = query.getTagValues()
-    unless work_type || obj_id || (tagValues && (tagValues.length > 0))
-      raise JavaScriptAPIError, "Work unit queries must specify at least a work type, a ref, or a tag"
+    deadline_missed = query.getDeadlineMissed()
+    unless work_type || obj_id || deadline_missed || (tagValues && (tagValues.length > 0))
+      raise JavaScriptAPIError, "Work unit queries must specify at least a work type, a ref, deadlineMissed, or a tag"
     end
     units = WorkUnit
     units = units.where(:work_type => work_type) if work_type
@@ -95,6 +96,10 @@ module JSWorkUnitSupport
     if actionable_by_id != nil
       user = User.cache[actionable_by_id]
       units = units.where("actionable_by_id IN (#{([user.id] + user.groups_ids).join(',')})")
+    end
+
+    if deadline_missed
+      units = units.where("deadline < NOW()")
     end
 
     closed_by_id = query.getClosedById()

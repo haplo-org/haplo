@@ -83,6 +83,20 @@ public class KStoredFile extends KScriptable {
         return this.storedFile.mime_type();
     }
 
+    // TODO: Careful interface to write tags on stored files
+    public Scriptable jsGet_tags() {
+        String jsonEncoded = this.storedFile.jsGetTagsAsJson();
+        if(jsonEncoded != null && jsonEncoded.length() > 0) {
+            try {
+                return (Scriptable)Runtime.getCurrentRuntime().makeJsonParser().parseValue(jsonEncoded);
+            } catch(org.mozilla.javascript.json.JsonParser.ParseException e) {
+                throw new OAPIException("Couldn't JSON decode stored file tags", e);
+            }
+        } else {
+            return (Scriptable)Runtime.getCurrentRuntime().createHostObject("Object");
+        }
+    }
+
     public Scriptable jsFunction_identifier() {
         KText identifier = KText.fromAppText(rubyInterface.makeIdentifierForFile(this.storedFile));
         identifier.setAsMutableIdentifier();

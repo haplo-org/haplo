@@ -145,10 +145,18 @@ class KJavaScriptPlugin < KPlugin
     [prefix, suffix]
   end
 
-  def on_install
+  # JavaScript plugins use their own on install mechanism, and don't implement on_install
+  KNotificationCentre.when(:plugin_post_install, :final) do
     js_runtime = KJSPluginRuntime.current
     js_runtime.using_runtime do
-      js_runtime.runtime.host.onPluginInstall(@name, @uses_database)
+      KPlugin.get_plugins_for_current_app.each do |plugin|
+        # Set up database storage for JS plugins
+        if plugin.kind_of?(KJavaScriptPlugin) && plugin.uses_database
+          js_runtime.runtime.host.setupDatabaseStorage(plugin.name);
+        end
+      end
+      # Call onInstall() in all plugins
+      js_runtime.runtime.host.callAllPluginOnInstall()
     end
   end
 

@@ -23,11 +23,11 @@ module ExportObjectsHelper
       include_urls = (params[:urls] == '1')
       exporter = KTableExporter.new(attrs, include_urls)
 
-      output_format = params[:output_format].downcase.gsub(/[^a-z]/,'')
-      raise "Bad format" unless output_format.length == 3
-      output_format = output_format.to_sym
+      output_format = params[:output_format]
+      exported = exporter.export(objects, output_format)
+      # output_format now known to be valid
       response.headers["Content-Disposition"] = "attachment; filename=export.#{output_format}"
-      render :text => exporter.export(objects, output_format), :kind => output_format
+      render :text => exported, :kind => output_format.to_sym
     end
   end
 

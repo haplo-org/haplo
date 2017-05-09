@@ -13,6 +13,24 @@
 
 var sharedEntitiesForWorkflow = {};
 
+// Database table to store the last selected entity
+P.db.table("sharedRoles", {
+    workUnitId:     { type:"int",   indexed:true }, // which work unit (= instance of workflow)
+    setByUser:      { type:"user",  nullable:true },// which user made this change, or null if automated
+    entityName:     { type:"text" },                // entity name
+    ref:            { type:"ref" }                  // which ref was last used
+});
+
+var tableSharedRolesSelect = function(M, entityName) {
+    var q = P.db.sharedRoles.select().
+        where("workUnitId","=",M.workUnit.id).
+        where("entityName","=",entityName).
+        limit(1).stableOrder();
+    return q.length ? q[0] : null;
+};
+
+// --------------------------------------------------------------------------
+
 P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow, specification) {
     if(!(workflow.$stdEntitiesRolesInUse)) {
         throw new Error('You must use("std:entities:roles") before using the std:entities:entity_shared_roles workflow feature');
@@ -32,25 +50,15 @@ P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow,
     // doesn't revert to the original user. But if the underlying entities change
     // it mustn't select user not in the list.
 
-    // Database table to store the last selected entity
-    workflow.plugin.db.table("stdworkflowSharedRoles", {
-        workUnitId:     { type:"int",   indexed:true }, // which work unit (= instance of workflow)
-        entityName:     { type:"text" },                // entity name
-        ref:            { type:"ref" }                  // which ref was last used
-    });
-    var dbSharedRoles = workflow.plugin.db.stdworkflowSharedRoles;
-
     // Override std:entities:roles' getActionableBy() (the other handlers work
     // with shared roles and don't need to be overriden)
     workflow.getActionableBy(function(M, actionableBy) {
         if(!(actionableBy in workflow.$entitiesBase.$entityDefinitions)) { return; }
         if(-1 === sharedEntities.indexOf(actionableBy)) { return; }
-        var q = dbSharedRoles.select().
-            where("workUnitId","=",M.workUnit.id).
-            where("entityName","=",actionableBy).
-            limit(1).stableOrder();
-        if(q.length) {
-            var stickyRef = q[0].ref;
+        if(!M.workUnit.isSaved) { return; } // doesn't have an ID until saved, but couldn't have been delegated either
+        var row = tableSharedRolesSelect(M, actionableBy);
+        if(row) {
+            var stickyRef = row.ref;
             var list = M.entities[actionableBy+'_refList'];
             for(var l = list.length - 1; l >= 0; --l) {
                 if(list[l] == stickyRef) {
@@ -63,26 +71,58 @@ P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow,
 
     // ----------------------------------------------------------------------
 
+    // If shared roles are active, we'd prefer that anything checking on roles
+    // would use strict actionable by checks.
+    workflow._preferStrictActionableBy({}, function(M) {
+        var stateDefinition = M.$states[M.state];
+        if(stateDefinition &&
+                stateDefinition.actionableBy &&
+                (-1 !== sharedEntities.indexOf(stateDefinition.actionableBy))) {
+            return true;
+        }
+    });
+
+    // ----------------------------------------------------------------------
+
     // User interface for push/pull. Only displayed if the current user is
     // in the list of entities.
     workflow.actionPanelStatusUI({}, function(M, builder) {
-        if(this.workUnit.closed) { return; }
-        var stateDefinition = this.$states[M.state],
+        if(M.workUnit.closed) { return; }
+        var stateDefinition = M.$states[M.state],
             actionableBy = stateDefinition ? stateDefinition.actionableBy : undefined;
         if(-1 === sharedEntities.indexOf(actionableBy)) { return; }
-        var list = this.entities[actionableBy+"_refList"];
+        var list = M.entities[actionableBy+"_refList"];
         if(list.length > 1) {
             var userRef = O.currentUser.ref;
             if(userRef && _.find(list, function(r) { return r == userRef; })) {
-                if(this.workUnit.isActionableBy(O.currentUser)) {
-                    builder.link(11, "/do/workflow/shared-role/delegate/"+this.workUnit.id,
-                        this._getTextMaybe(['shared-role-delegate'], [this.state]) || "Delegate this task",
+                if(M.workUnit.isActionableBy(O.currentUser)) {
+                    builder.link(11, "/do/workflow/shared-role/delegate/"+M.workUnit.id,
+                        M._getTextMaybe(['shared-role-delegate'], [M.state]) || "Delegate this task",
                         "standard");
                 } else {
-                    builder.link(11, "/do/workflow/shared-role/take-over/"+this.workUnit.id,
-                        this._getTextMaybe(['shared-role-take-over'], [this.state]) || "Take over this task",
+                    builder.link(11, "/do/workflow/shared-role/take-over/"+M.workUnit.id,
+                        M._getTextMaybe(['shared-role-take-over'], [M.state]) || "Take over this task",
                         "standard");
                 }
+            }
+        }
+    });
+
+    // ----------------------------------------------------------------------
+
+    // Make it clear in notification emails when proceses have been delegated.
+    workflow.notification({}, function(M, notify) {
+        var stateDefinition = M.$states[M.state],
+            actionableBy = stateDefinition ? stateDefinition.actionableBy : undefined;
+        if(-1 === sharedEntities.indexOf(actionableBy)) { return; }
+        var row = tableSharedRolesSelect(M, actionableBy);
+        if(row) {
+            var delegatingUser = row.setByUser;
+            if(delegatingUser) {
+                notify.addHeaderDeferred(P.template("entity-shared-role/notify-header").deferredRender({
+                    M:M, row:row,
+                    wasTakeOver: (delegatingUser.ref == row.ref)
+                }));
             }
         }
     });
@@ -123,21 +163,21 @@ P.respond("GET,POST", "/do/workflow/shared-role", [
         var user = O.user(changeRefTo);
         if(!user) { O.stop("User doesn't have an account."); }
         // Store changed ref so the role change is sticky
-        var dbSharedRoles = workflow.plugin.db.stdworkflowSharedRoles;
-        var row = dbSharedRoles.create({
+        var row = P.db.sharedRoles.create({
             workUnitId: workUnit.id,
+            setByUser: O.currentUser,
             entityName: actionableBy,
             ref: changeRefTo
         });
         row.save();
-        dbSharedRoles.select().
+        P.db.sharedRoles.select().
             where("workUnitId","=",workUnit.id).
             where("entityName","=",actionableBy).
             where("id","!=",row.id).
             deleteAll();
         // Change actionable by of underlying work unit to user
         workUnit.actionableBy = user;
-        workUnit.save();
+        M._saveWorkUnit();
 
         E.response.redirect(M.url);
     }

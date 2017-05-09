@@ -1,0 +1,23 @@
+pageTitle("Entities: " M.title)
+backLink(M.url)
+
+<table>
+    <tr>
+        <th> "Name" </th>
+        <th> "Might action" </th>
+        <th> "Objects" </th>
+    </tr>
+    each(display) {
+        <tr>
+            <td> name </td>
+            <td>
+                if(usedAsActionableBy) { "&#10003;" }
+            </td>
+            <td>
+                each(objects) { std:object:link(.) <br> }
+            </td>
+        </tr>
+    }
+</table>
+
+<p> "'Might action' means that this entity is the actionable role for at least one state in this workflow. There may be other actionable roles, for example groups and custom roles defined by the workflow, and any entity may be used by workflow logic." </p>

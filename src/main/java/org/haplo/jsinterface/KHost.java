@@ -129,29 +129,24 @@ public class KHost extends KScriptable {
         Runtime.getCurrentRuntime().callSharedScopeJSClassFunction("$Plugin", "$callOnLoad", new Object[]{});
     }
 
+    public void callAllPluginOnInstall() {
+        Runtime.getCurrentRuntime().callSharedScopeJSClassFunction("$Plugin", "$callOnInstall", new Object[]{});
+    }
+
     public void callHookInAllPlugins(Object[] args) {
         Runtime.getCurrentRuntime().callSharedScopeJSClassFunction("$Plugin", "$callAllHooks", args);
     }
 
-    public void onPluginInstall(String pluginName, boolean usesDatabase) {
+    public void setupDatabaseStorage(String pluginName) {
         Scriptable plugin = this.plugins.get(pluginName);
         if(plugin == null) {
             throw new OAPIException("Plugin " + pluginName + " is not registered.");
         }
-        // Setup storage for the database?
-        if(usesDatabase) {
-            Object database = plugin.get("db", plugin); // ConsString is checked
-            if(database == null || !(database instanceof JdNamespace)) {
-                throw new OAPIException("Plugin " + pluginName + " does not have database as expected.");
-            }
-            ((JdNamespace)database).setupStorage();
+        Object database = plugin.get("db", plugin); // ConsString is checked
+        if(database == null || !(database instanceof JdNamespace)) {
+            throw new OAPIException("Plugin " + pluginName + " does not have database as expected.");
         }
-        // See if the plugin has an onInstall handler and call it?
-        Object onInstall = plugin.get("onInstall", plugin); // ConsString is checked
-        if(onInstall != null && onInstall instanceof Function) {
-            Runtime runtime = Runtime.getCurrentRuntime();
-            ((Function)onInstall).call(runtime.getContext(), plugin, plugin, new Object[]{});
-        }
+        ((JdNamespace)database).setupStorage();
     }
 
     public String readPluginAppGlobal(String pluginName) {

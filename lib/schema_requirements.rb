@@ -28,7 +28,7 @@ module SchemaRequirements
 
     IGNORE_LINE = /\A\s*(\#.+)?\z/m # comment or blank line
     OBJECT_FORMAT = /\A(?<optional>OPTIONAL )?(?<kind>\S+)\s+(?<code>[a-zA-Z0-9_:-]+)\s*(as\s+(?<name>[a-zA-Z0-9_]+))?\s*\z/m
-    VALUE_FORMAT = /\A\s+((?<remove>REMOVE\b)\s*)?(?<key>\S+?):?\s+(?<string>.+?)?\s*(\[sort=(?<sort>\d+)\])?\s*\z/m
+    VALUE_FORMAT = /\A\s+((?<remove>REMOVE\b)\s*)?(?<key>\S+?):?\s+(?<string>.+?)\s*(\[sort=(?<sort>\d+)\])?\s*\z/m
     OPTIONAL_NAMES_KEY = "_optional".freeze
     TEMPLATE_KIND = "schema-template".freeze
     TEMPLATE_KEY = "apply-schema-template".freeze
@@ -275,27 +275,6 @@ module SchemaRequirements
     end
   end
 
-  # Use multiple values, remove ones which should be removed, but only add values if there are none left after the removes
-  module MultiValueApplyIfNone
-    def apply(object, required_value, context)
-      removes, applies = required_value.multi_value.map { |list| list.map { |v| map_value(v, context) } }
-      changed = false
-      current_object_values = values(object)
-      object_values = current_object_values - removes
-      changed = true if object_values.length != current_object_values.length
-      # Use all the values, but only if there are none to start with
-      if object_values.empty?
-        object_values = applies
-        changed = true
-      end
-      set_values(object, object_values) if changed
-      changed
-    end
-    def get_requirements_definition_values(object)
-      values(object)
-    end
-  end
-
   # ---------------------------------------------------------------------------------------------------------------
 
   # Implementation for applying requirements to Ruby objects which have a save! method, eg ActiveRecord.
@@ -390,10 +369,6 @@ module SchemaRequirements
 
   class StoreObjectRuleMulti < StoreObjectRuleMultiBase
     include MultiValueApply
-  end
-
-  class StoreObjectRuleMultiIfNone < StoreObjectRuleMultiBase
-    include MultiValueApplyIfNone
   end
 
   class StoreObjectRuleMultiString < StoreObjectRule

@@ -169,8 +169,8 @@ TEST(function() {
     TEST.assert_exceptions(function() { O.work.query("ping"); }, "Work unit work type names must start with the plugin name followed by a : to avoid collisions.");
     TEST.assert_exceptions(function() { O.work.query(":ping"); }, "Work unit work type names must start with the plugin name followed by a : to avoid collisions.");
     // Queries without minimum WHERE clause requirements will exception when executed
-    TEST.assert_exceptions(function() { var x = O.work.query().length; }, "Work unit queries must specify at least a work type, a ref, or a tag");
-    TEST.assert_exceptions(function() { var x = O.work.query(null).length; }, "Work unit queries must specify at least a work type, a ref, or a tag");
+    TEST.assert_exceptions(function() { var x = O.work.query().length; }, "Work unit queries must specify at least a work type, a ref, deadlineMissed, or a tag");
+    TEST.assert_exceptions(function() { var x = O.work.query(null).length; }, "Work unit queries must specify at least a work type, a ref, deadlineMissed, or a tag");
 
     // Query on ref only
     var refQuery = O.work.query().ref(O.ref(70));
@@ -285,5 +285,17 @@ TEST(function() {
     TEST.assert_equal(2, O.work.query("test:visquery").isVisible().length);
     TEST.assert_equal(1, O.work.query("test:visquery").isNotVisible().length);
     TEST.assert_equal(3, O.work.query("test:visquery").anyVisibility().length);
+
+    // Deadline missed
+    O.work.create({workType:"test:deadlinequery", createdBy:USER1_ID, actionableBy:user2, deadline:(new XDate()).addDays(-2)}).save();
+    O.work.create({workType:"test:deadlinequery", createdBy:USER2_ID, actionableBy:user2, deadline:(new XDate()).addDays(-1)}).save();
+    O.work.create({workType:"test:deadlinequery", createdBy:USER3_ID, actionableBy:user2, deadline:(new XDate()).addDays(1)}).save();
+    TEST.assert_equal(3, O.work.query("test:deadlinequery").length);
+    var missed = O.work.query("test:deadlinequery").deadlineMissed();
+    TEST.assert_equal(2, missed.length);
+    TEST.assert_equal(USER2_ID,missed[0].createdBy.id); // ordered by creation date descending
+    TEST.assert_equal(USER1_ID,missed[1].createdBy.id);
+    // Generic deadline missed allowed
+    TEST.assert_equal(4, O.work.query().deadlineMissed().length);
 
 });
