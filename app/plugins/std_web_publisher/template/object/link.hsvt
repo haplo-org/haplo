@@ -1,0 +1,13 @@
+do() {
+    if(href) {
+        <a class="haplo-object-link" href=href> yield:contents() </a>
+    } else {
+        <span class="haplo-object-title"> yield:contents() </span>
+    }
+} contents {
+    if(block) {
+        render(block)
+    } else {
+        title
+    }
+}

@@ -86,7 +86,7 @@ public abstract class NodeFunction extends Node {
         return null;
     }
 
-    protected Node getBlock(String name) {
+    public Node getBlock(String name) {
         return (name == Node.BLOCK_ANONYMOUS) ? this.anonymousBlock : findBlockNamed(name);
     }
 

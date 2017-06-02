@@ -1,0 +1,61 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) Haplo Services Ltd 2006 - 2017    http://www.haplo-services.com
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+
+/* TODO: Sync with main platform CSS in a sensible manner */
+/* NOTE: Styles changed slightly from main platform */
+
+table.z__file_display {
+    position: relative; /* so file icon can be positioned inside it */
+    display: block; /* necessary to get FF to get the right starting point for positioning */
+    margin: 2px 0;
+}
+table.z__file_display:hover {
+}
+
+table.z__file_display tr td {
+    border: none;
+    padding: 3px 2px;
+    height: auto;
+    vertical-align: top;
+}
+
+table.z__file_display tr td.z__file_display_icon {
+    width: 72px;
+    padding: 7px;
+}
+
+table.z__file_display td.z__file_display_name {
+    padding: 8px 2px 0 12px;
+    line-height: 20px;
+}
+
+table.z__file_display td.z__file_display_name img {
+    margin-right: 8px;
+}
+
+.z__thumbnail {
+    position: relative;
+    float: right;
+}
+
+.z__thumbnail a {
+    display: block;
+}
+
+.z__thumbnail img {
+    border: 1px solid #bbb;
+    box-shadow: 1px 1px 4px rgba(0,0,0,0.3);
+}
+
+/* ---------------------------------------------------------------------- */
+/* forms */
+
+.panel .oforms-repetition + .oforms-repetition {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 2px solid #ddd;
+}

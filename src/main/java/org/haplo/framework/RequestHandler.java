@@ -385,11 +385,9 @@ public class RequestHandler extends AbstractHandler {
         if(requestPath.length() > 1) {
             char f = requestPath.charAt(1);
 
-            // Special handling for favicon.ico and robots.txt
+            // Special handling for favicon.ico
             if(f == 'f' && requestPath.equals("/favicon.ico")) {
                 response = GlobalStaticFiles.findStaticFile("favicon.ico");
-            } else if(f == 'r' && requestPath.equals("/robots.txt")) {
-                response = GlobalStaticFiles.findStaticFile("robots.txt");
             } else {
                 // Is there a second slash in the request path, in which case the file might be a static file?
                 int secondSlash = requestPath.indexOf('/', 1);

@@ -19,8 +19,15 @@ module JSMessageBus
       return nil unless info
       JSON.generate(info)
     end
-    def self.sendInterApplicationMessage(busName, busSecret, message)
-      InterApplication.send_message(busName, busSecret, message)
+    def self.sendMessageToBus(busKind, busName, busSecret, message)
+      case busKind
+      when "$InterApplication"
+        InterApplication.send_message(busName, busSecret, message)
+      when "$AmazonKinesis"
+        AmazonKinesis.send_message(busName, busSecret, message)
+      else
+        throw new JavaScriptAPIError, "bad message bus kind"
+      end
     end
   end
 

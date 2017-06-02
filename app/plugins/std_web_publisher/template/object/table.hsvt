@@ -1,0 +1,31 @@
+<table class="table haplo-object">
+    each(attributes) {
+        if(first) {
+            if(qualifierName) {
+                <tr> <th class="haplo-attribute"> attributeName </th> </tr>
+                <tr>
+                    <th class="haplo-qualifier">
+                         <i> qualifierName </i>
+                    </th>
+                    <td> render(value) </td>
+                </tr>
+            } else {
+                <tr>
+                    <th class="haplo-attribute"> attributeName </th>
+                    <td> render(value) </td>
+                </tr>
+            }
+        } else {
+            <tr>
+                if(qualifierName) {
+                    <th class="haplo-qualifier">
+                         <i> qualifierName </i>
+                    </th>
+                } else {
+                    <th> </th>
+                }
+                <td> render(value) </td>
+            </tr>
+        }
+    }
+</table>

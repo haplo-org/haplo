@@ -19,7 +19,7 @@ public class HaploTemplateDeferredRender extends ScriptableObject implements Def
         return "$HaploTemplateDeferredRender";
     }
 
-    protected void setDeferredRender(DeferredRender deferredRender) {
+    public void setDeferredRender(DeferredRender deferredRender) {
         this.deferredRender = deferredRender;
     }
 

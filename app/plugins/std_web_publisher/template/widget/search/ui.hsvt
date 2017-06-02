@@ -1,0 +1,8 @@
+
+<div>
+    template:widget:search:form()
+</div>
+
+<div>
+    template:widget:search:results()
+</div>

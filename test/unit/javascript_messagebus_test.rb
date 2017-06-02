@@ -59,4 +59,61 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     end
   end
 
+  # To run this test, a file .haplo-test-kinesis-credentials.json must exist in the home directory, like this:
+  <<_
+      {
+        "kinesis": {
+          "stream": "stream-name",
+          "region": "eu-west-2"
+        },
+        "aws": {
+          "id": "AWS ACCESS ID",
+          "secret": "AWS ACCESS SECRET KEY"
+        }
+      }
+_
+  # -----
+
+  KINESIS_CREDENTIALS_FILE = "#{ENV['HOME']}/.haplo-test-kinesis-credentials.json"
+  if File.exist?(KINESIS_CREDENTIALS_FILE)
+    KINESIS_CREDENTIALS = File.open(KINESIS_CREDENTIALS_FILE) { |f| JSON.parse(f.read) }
+  else
+    puts
+    puts "*** Not testing Amazon Kinesis functionality because #{KINESIS_CREDENTIALS_FILE} does not exist."
+    puts
+    KINESIS_CREDENTIALS = nil
+  end
+
+  def test_messagebus_amazonkinesis
+    return unless KINESIS_CREDENTIALS
+    KeychainCredential.delete_all
+    ks_account = { "AWS Credential Name" => 'test-aws', "AWS Region" => KINESIS_CREDENTIALS['kinesis']['region'], "Kinesis Stream Name" => KINESIS_CREDENTIALS['kinesis']['stream'] }
+    KeychainCredential.new({
+      :kind => 'Message Bus', :instance_kind => 'Amazon Kinesis Stream', :name => 'test-kinesis',
+      :account_json => ks_account.to_json, :secret_json => {}.to_json
+    }).save!
+    aws_account = { "Access Key ID" => KINESIS_CREDENTIALS['aws']['id'] }
+    aws_secret = { "Access Key Secret" => KINESIS_CREDENTIALS['aws']['secret'] }
+    KeychainCredential.new({
+      :kind => 'Public Cloud Provider', :instance_kind => 'Amazon Web Services', :name => 'test-aws',
+      :account_json => aws_account.to_json, :secret_json => aws_secret.to_json
+    }).save!
+    install_grant_privileges_plugin_with_privileges('pMessageBusRemote')
+    begin
+      run_javascript_test(:file, 'unit/javascript/javascript_messagebus/test_messagebus_amazonkinesis.js', nil, "grant_privileges_plugin") do |runtime|
+        support_root = runtime.host.getSupportRoot
+        runtime.host.setTestCallback(proc { |string|
+          if string == 'deliverAmazonKinesisMessages'
+            thread = Thread.new { JSMessageBus::AmazonKinesis.deliver_queued_messages }
+            thread.join
+          end
+          ''
+        })
+      end
+    ensure
+      uninstall_grant_privileges_plugin
+      KeychainCredential.delete_all
+    end
+  end
+
 end

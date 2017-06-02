@@ -26,16 +26,16 @@ public class KMessageBusPlatformSupport extends KScriptable {
         return rubyInterface.queryKeychain(name.toString());
     }
 
-    public static void jsStaticFunction_sendInterApplicationMessage(String busName, String busSecret, String message) {
-        Runtime.privilegeRequired("pMessageBusRemote", "send message on inter-application bus");
-        rubyInterface.sendInterApplicationMessage(busName, busSecret, message);
+    public static void jsStaticFunction_sendMessageToBus(String busKind, String busName, String busSecret, String message) {
+        Runtime.privilegeRequired("pMessageBusRemote", "send message on message bus");
+        rubyInterface.sendMessageToBus(busKind, busName, busSecret, message);
     }
 
     // ----------------------------------------------------------------------
     // Interface to Ruby functions
     public interface Ruby {
         String queryKeychain(String name);
-        void sendInterApplicationMessage(String busName, String busSecret, String message);
+        void sendMessageToBus(String busKind, String busName, String busSecret, String message);
     }
     private static Ruby rubyInterface;
 

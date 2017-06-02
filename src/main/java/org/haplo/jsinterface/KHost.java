@@ -13,6 +13,7 @@ import org.mozilla.javascript.*;
 import org.haplo.appserver.FileUploads;
 
 import org.haplo.jsinterface.app.*;
+import org.haplo.jsinterface.stdplugin.StdWebPublisher;
 import org.haplo.jsinterface.db.JdNamespace;
 import org.haplo.jsinterface.template.TemplateIncludedRenderer;
 import org.haplo.jsinterface.template.TemplatePlatformFunctions;
@@ -246,18 +247,34 @@ public class KHost extends KScriptable {
         new Object[]{"$backLink", String.class},
         new Object[]{"$backLinkText", String.class}
     };
+    private static interface CallJSHandlerFn { Object call(Runtime r); }
 
-    // For calling plugins to handle HTTP requests
+    // Normal plugin HTTP request handling
     public Object[] callRequestHandler(String pluginName, String method, String path) {
         Scriptable plugin = this.plugins.get(pluginName);
         if(plugin == null) {
             throw new OAPIException("Tried to call request handler for plugin " + pluginName + " but it's not registered.");
         }
-        Runtime runtime = Runtime.getCurrentRuntime();
         Function handleRequest = findPluginFunction(plugin, pluginName, "handleRequest"); // exceptions if it can't be found
+        return callJSFunctionAndDecodeResponseObject(
+            (runtime) -> handleRequest.call(runtime.getContext(), runtime.getJavaScriptScope(), plugin, new Object[]{method, path}) // ConsString is checked
+        );
+    }
+
+    // std_web_publisher special case HTTP request handling
+    public Object[] callWebPublisherHandler(String host, String method, String path) {
+        Scriptable plugin = this.plugins.get("std_web_publisher");
+        Function handleRequest = findPluginFunction(plugin, "std_web_publisher", "$webPublisherHandle");
+        return callJSFunctionAndDecodeResponseObject(
+            (runtime) -> handleRequest.call(runtime.getContext(), runtime.getJavaScriptScope(), plugin, new Object[] {host, method, path})
+        );
+    }
+
+    private Object[] callJSFunctionAndDecodeResponseObject(CallJSHandlerFn jsFn) {
+        Runtime runtime = Runtime.getCurrentRuntime();
         Object r = null;
         try {
-            r = handleRequest.call(runtime.getContext(), runtime.getJavaScriptScope(), plugin, new Object[]{method, path}); // ConsString is checked
+            r = jsFn.call(runtime);
         } catch(StackOverflowError e) {
             // JRuby 1.7.19 doesn't cartch StackOverflowError exceptions any more, so wrap it into a JS Exception
             throw new org.mozilla.javascript.WrappedException(e);
@@ -266,7 +283,7 @@ public class KHost extends KScriptable {
             return null;
         }
         if(!(r instanceof Scriptable)) {
-            throw new OAPIException("Plugin " + pluginName + " didn't implement handleRequest as expected");
+            throw new OAPIException("JS request handler didn't return correct type");
         }
         Scriptable response = (Scriptable)r;
         // Call the $finaliseResponse method to build the final data structures
@@ -294,12 +311,32 @@ public class KHost extends KScriptable {
                 // Send it to the Ruby side, which knows how to handle it
                 info[RESPONSE_BODY_INDEX] = body;
             } else if(body != UniqueTag.NOT_FOUND) {
-                throw new OAPIException("The response body (usually E.response.body) set by " + pluginName
+                throw new OAPIException("The response body (usually E.response.body)"
                         + " is not valid, must be a String, StoredFile, or a generator (O.generate) object. "
                         + "JSON responses should be encoded using JSON.stringify by the request handler.");
             }
         }
         return info;
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+    public StdWebPublisher.WebPublisher getWebPublisher() {
+        return getWebPublisherImpl(true);
+    }
+
+    public StdWebPublisher.WebPublisher getWebPublisherMaybe() {
+        return getWebPublisherImpl(false);
+    }
+
+    private StdWebPublisher.WebPublisher getWebPublisherImpl(boolean required) {
+        Scriptable plugin = this.plugins.get("std_web_publisher");
+        if(plugin == null) {
+            if(required) {
+                throw new RuntimeException("std_web_publisher was expected to be installed, but wasn't.");
+            }
+            return null;
+        }
+        return new StdWebPublisher.WebPublisher(Runtime.getCurrentRuntime(), plugin);
     }
 
     // --------------------------------------------------------------------------------------------------------------

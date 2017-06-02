@@ -117,7 +117,7 @@ class JavaScriptControllerTest < IntegrationTest
     # Test invalid response
     get '/do/plugin_test/invalid_response', nil, {:expected_response_codes => [500]}
     if should_test_plugin_debugging_features?
-      assert_select('h2', "The response body (usually E.response.body) set by test_response_plugin is not valid, must be a String, StoredFile, or a generator (O.generate) object. JSON responses should be encoded using JSON.stringify by the request handler.")
+      assert_select('h2', "The response body (usually E.response.body) is not valid, must be a String, StoredFile, or a generator (O.generate) object. JSON responses should be encoded using JSON.stringify by the request handler.")
     end
     # ... but make sure it's happy with nothing being returned.
     get '/do/plugin_test/no_response_at_all_was_called'

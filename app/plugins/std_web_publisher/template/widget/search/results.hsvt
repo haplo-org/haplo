@@ -1,0 +1,9 @@
+if(query) {
+    <div class="haplo-results-count">
+        _resultsCount
+        switch(_resultsCount)
+              { " results found" }
+            1 { " result found" }
+    </div>
+    std:web-publisher:widget:query:list:search-result(_resultsRender)
+}

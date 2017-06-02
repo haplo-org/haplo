@@ -1,0 +1,14 @@
+{
+  "pluginName": "std_web_publisher",
+  "pluginAuthor": "Haplo Services",
+  "pluginVersion": 100,
+  "displayName": "Web Publisher",
+  "displayDescription": "Standard framework for publishing public web sites.",
+  "apiVersion": 4,
+  "loadPriority": 1000,
+  "load": [
+      "js/std_web_publisher.js",
+      "js/std_web_publisher_rendering.js",
+      "js/std_web_publisher_widgets.js"
+    ]
+}

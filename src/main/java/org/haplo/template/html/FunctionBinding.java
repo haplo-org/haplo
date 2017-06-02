@@ -22,6 +22,10 @@ final public class FunctionBinding {
         this.restartArguments();
     }
 
+    public NodeFunction getFunction() {
+        return this.function;
+    }
+
     public String getFunctionName() {
         return this.function.getFunctionName();
     }
@@ -126,9 +130,11 @@ final public class FunctionBinding {
         return null != this.function.getBlock(blockName);
     }
 
-    public void renderBlock(String blockName, StringBuilder builder, Object view, Context context) throws RenderException {
+    public void renderBlock(String blockName, StringBuilder builder, Object ignoredView, Context context) throws RenderException {
         Node block = this.function.getBlock(blockName);
         if(block != null) {
+            // Uses view from the function binding so that changes to the view in the calling template
+            // don't move the view to an unexpected point when yielding back in the caller template.
             block.render(builder, this.driver, this.view, context);
         }
     }

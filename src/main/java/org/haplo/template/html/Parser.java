@@ -279,6 +279,9 @@ final public class Parser {
             this.childlessTagName = null;
             return closeTag;
         }
+        if(symbolIsSingleChar(name, '!')) {
+            return parseDOCTYPE(tagStartPos);
+        }
         this.context = Context.TAG;
         checkTagName(name, false, tagStartPos);
         String tagName = name.toString();
@@ -344,6 +347,24 @@ final public class Parser {
         }
         this.context = Context.TEXT;
         return tag;
+    }
+
+    protected Node parseDOCTYPE(int tagStartPos) throws ParseException {
+        int c;
+        do {
+            c = read();
+        } while(c != -1 && c != '>');
+        if(c == -1) {
+            error("Unexpected end of template when reading possible <!DOCTYPE ...> declaration");
+        }
+        String doctype = this.source.subSequence(tagStartPos-1, this.pos).toString();
+        if(doctype.equals("<!DOCTYPE>")) {
+            error("<!DOCTYPE ...> declarations must specify the document type", tagStartPos);
+        }
+        if(!doctype.startsWith("<!DOCTYPE ")) {
+            error("Tags starting with <! may only be a <!DOCTYPE ...> declaration", tagStartPos);
+        }
+        return new NodeLiteral(doctype);
     }
 
     protected Node checkedTagAttribute(String attributeName, Node value) throws ParseException {

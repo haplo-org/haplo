@@ -208,6 +208,12 @@ class KJSPluginRuntime
     end
   end
 
+  def call_web_publisher_handler(host, method, path)
+    using_runtime do
+      @runtime.host.callWebPublisherHandler(host, method, path)
+    end
+  end
+
   def call_search_result_render(object)
     host = @runtime.host
     return nil unless host.doesAnyPluginRenderSearchResults()

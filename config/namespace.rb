@@ -13,6 +13,7 @@ class ApplicationNamespace
     # REMOVE_ON_PROCESS_BEGIN
     "_dev_ctrl_js" => [:controller, {}, DevCtrlJSController],
     # REMOVE_ON_PROCESS_END
+    "robots.txt"     => [:controller, {}, RobotsTxtController],
     "do" => [:sub, {:do_url => true}, {
         "authentication" => [:controller, {}, AuthenticationController],
         "session"        => [:controller, {}, SessionController],
@@ -127,6 +128,10 @@ class ApplicationNamespace
           controller = DisplayController
         end
       end
+    end
+    if controller.nil?
+      # Default to web publisher, which delegates to the std_web_publisher plugin (if installed)
+      controller = WebPublisherController
     end
     [elements, controller, annotations].freeze
   end

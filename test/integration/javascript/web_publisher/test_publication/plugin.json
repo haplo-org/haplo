@@ -1,0 +1,15 @@
+{
+  "pluginName": "test_publication",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1,
+  "displayName": "Test Publication",
+  "displayDescription": "Test publication.",
+  "apiVersion": 4,
+  "depend": [
+      "std_web_publisher"
+    ],
+  "use": ["std:web-publisher"],
+  "load": [
+      "js/test_publication.js"
+    ]
+}

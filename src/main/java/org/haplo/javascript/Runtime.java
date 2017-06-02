@@ -465,6 +465,9 @@ public class Runtime {
             defineSealedHostClass(scope, KMessageBusPlatformSupport.class);
 
             defineSealedHostClass(scope, StdReporting.class);
+            defineSealedHostClass(scope, StdWebPublisher.class);
+            defineSealedHostClass(scope, StdWebPublisher.RenderedAttributeListView.class);
+            defineSealedHostClass(scope, StdWebPublisher.ValueView.class);
 
             // Seal the root now everything has been added
             scope.sealObject();

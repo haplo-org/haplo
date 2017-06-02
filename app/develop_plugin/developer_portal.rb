@@ -32,6 +32,7 @@ class StdDeveloperPortalPlugin < KTrustedPlugin
 
     db = KApp.get_pg_database
     apps = db.exec("SELECT application_id,hostname FROM applications WHERE application_id<>#{KApp.current_application.to_i} ORDER BY hostname")
+    apps = apps.sort_by{ |app| app[1].to_s.split(/(\d+)/).map { |s| [s.to_i, s] } } # natural sort of hostnames
 
     app_html = []
     apps.each do |application_id,hostname|

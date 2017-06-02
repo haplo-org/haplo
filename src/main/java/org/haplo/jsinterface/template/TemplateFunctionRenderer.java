@@ -10,6 +10,7 @@ import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
 import org.haplo.jsinterface.*;
 import org.haplo.jsinterface.app.*;
+import org.haplo.jsinterface.stdplugin.StdWebPublisher;
 
 import org.haplo.template.html.Context;
 import org.haplo.template.html.Driver;
@@ -78,6 +79,10 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
             case "std:ui:navigation:arrow":
                 implementedInJavaScript(builder, b, Context.TEXT);
                 break;
+
+            // Needs to be implemented by platform as plugin may not be installed.
+            // No std: prefix to match if() template function.
+            case "ifRenderingForWebPublisher": ifRenderingForWebPublisher(builder, b); break;
 
             default:
                 handled = false;
@@ -279,6 +284,19 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
         if(translated instanceof CharSequence) {
             Escape.escape(translated.toString(), builder, b.getContext());
         }
+    }
+
+    // ----------------------------------------------------------------------
+
+    private void ifRenderingForWebPublisher(StringBuilder builder, FunctionBinding b) throws RenderException {
+        boolean renderingForWebPublisher = false;
+        StdWebPublisher.WebPublisher publisher = Runtime.getCurrentRuntime().getHost().getWebPublisherMaybe();
+        if(publisher != null) {
+            Object result = publisher.callPublisher("$isRenderingForWebPublisher");
+            if(result instanceof Boolean) { renderingForWebPublisher = ((Boolean)result).booleanValue(); }
+        }
+        String block = renderingForWebPublisher ? Node.BLOCK_ANONYMOUS : "else";
+        b.renderBlock(block, builder, b.getView(), b.getContext());
     }
 
     // ----------------------------------------------------------------------
