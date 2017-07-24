@@ -467,6 +467,7 @@ h2 + .z__crm_note {
 
 /* work units on object pages */
 
+/* NOTE: Also used by std_workflow for rendering timelines outside the normal work unit interface */
 .z__work_unit_obj_display {
     position: relative;  /* for positioning the :before icon */
     margin: 4px 0;

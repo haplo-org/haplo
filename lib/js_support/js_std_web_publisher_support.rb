@@ -112,9 +112,7 @@ module JSStdWebPublisherSupport
   def self.render_value(value, desc, object, permissions, web_publisher)
     begin
       if value.kind_of?(KIdentifierFile)
-        # TODO: Need to sync up permissions between (forthcoming) service user and file controller, so user can download. Maybe custom file download handler?
-        # TODO: Better rendering of files, and sort out styling in std_web_publisher CSS file
-        return %Q!<div class="z__file_with_icon_container">#{KFramework.request_context.controller.render_value_identifier_file(value, object, {}, desc)}</div>!
+        return web_publisher.renderFileIdentifierValue(value)
       elsif value.kind_of?(KObjRef)
         referred_object = KObjectStore.read(value)
         if permissions.allow?(:read, referred_object.labels)

@@ -302,4 +302,32 @@ class StoredFile < ActiveRecord::Base
     hstore ? JSON.generate(PgHstore.parse_hstore(hstore)) : nil
   end
 
+  def jsUpdateTags(changes)
+    # WARNING: Generates SQL directly for easy atomic updates, careful with quoting if modifying
+    set = []
+    delete = []
+    JSON.parse(changes).each do |k,v|
+      if v.nil?
+        delete.push(k)
+      else
+        set.push([k,v])
+      end
+    end
+    return if set.empty? && delete.empty?
+    new_value = "COALESCE(tags,''::hstore)"
+    unless delete.empty?
+      new_value = "(#{new_value} - ARRAY[#{delete.map { |k| PGconn.quote(k) } .join(',')}])"
+    end
+    unless set.empty?
+      new_value << ' || hstore(ARRAY['
+      new_value << set.map do |k,v|
+        "[#{PGconn.quote(k)},#{PGconn.quote(v)}]"
+      end .join(',')
+      new_value << '])'
+    end
+    sql = "UPDATE stored_files SET tags = (#{new_value}) WHERE id=#{self.id.to_i}";
+    KApp.get_pg_database.exec(sql)
+    self.reload
+  end
+
 end

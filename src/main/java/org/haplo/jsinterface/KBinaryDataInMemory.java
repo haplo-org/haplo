@@ -24,11 +24,15 @@ public class KBinaryDataInMemory extends KBinaryData {
 
     // --------------------------------------------------------------------------------------------------------------
     // For now, only supports constructing data from a string
-    public void jsConstructor(String source, String charset, String filename, String mimeType) {
-        try {
-            this.data = source.getBytes(charset);
-        } catch(UnsupportedEncodingException e) {
-            throw new OAPIException("Unknown character set: "+charset);
+    public void jsConstructor(boolean sourceIsAlreadyAvailable, String source, String charset, String filename, String mimeType) {
+        if(sourceIsAlreadyAvailable) {
+            try {
+                this.data = source.getBytes(charset);
+            } catch(UnsupportedEncodingException e) {
+                throw new OAPIException("Unknown character set: "+charset);
+            }
+        } else {
+            this.data = null; // It will be filled in later
         }
         this.filename = filename;
         this.mimeType = mimeType;
@@ -36,6 +40,10 @@ public class KBinaryDataInMemory extends KBinaryData {
 
     public String getClassName() {
         return "$BinaryDataInMemory";
+    }
+
+    public void setBinaryData(byte[] source) {
+        this.data = source;
     }
 
     // --------------------------------------------------------------------------------------------------------------

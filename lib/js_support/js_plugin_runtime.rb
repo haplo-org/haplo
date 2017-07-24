@@ -214,6 +214,29 @@ class KJSPluginRuntime
     end
   end
 
+  def call_callback(callback_name, callback_arguments)
+    using_runtime do
+      js_args = [callback_name]
+      arguments = callback_arguments.reverse
+      while !arguments.empty?
+        constructor = arguments.pop
+        js_args.push(constructor)
+        case constructor
+        when "raw", "parseJSON"
+          js_args.push(arguments.pop) # Arg passed as is, or already a JSON string
+        when "makeHTTPClient"
+          js_args.push(JSON.generate(arguments.pop))
+        when "makeHTTPResponse"
+          js_args.push(JSON.generate(arguments.pop))
+          js_args.push(arguments.pop) # KBinaryData instance
+        else
+          raise "bad constructor name #{constructor}"
+        end
+      end
+      @runtime.host.callCallback(js_args)
+    end
+  end
+
   def call_search_result_render(object)
     host = @runtime.host
     return nil unless host.doesAnyPluginRenderSearchResults()

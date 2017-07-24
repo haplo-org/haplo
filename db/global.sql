@@ -45,6 +45,22 @@ CREATE UNIQUE INDEX idx_temp_data_store ON temp_data_store(Key,purpose);
 
 
 --------------------------------------------------------------------------------------
+-- Message bus message queue
+--------------------------------------------------------------------------------------
+
+CREATE TABLE js_message_bus_queue (
+    id SERIAL PRIMARY KEY,
+    created_at TIMESTAMP NOT NULL, -- when added
+    application_id INT NOT NULL,
+    bus_id INT NOT NULL,        -- keychain_credentials.id in application schema
+    is_send BOOLEAN NOT NULL,   -- TRUE: send to external, or FALSE: delivery to JS runtime
+    reliability SMALLINT NOT NULL,
+    body TEXT NOT NULL,
+    transport_options TEXT NOT NULL
+);
+
+
+--------------------------------------------------------------------------------------
 -- Database status (only in public schema)
 --------------------------------------------------------------------------------------
 

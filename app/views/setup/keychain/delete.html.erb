@@ -1,0 +1,21 @@
+<%
+  @page_title = 'Delete credential: '+h(@credential.name)
+-%>
+
+<h1><%= @page_title %></h1>
+
+<% if @should_confirm %>
+  <p><b>Confirm credential deletion by checking the box below.</b></p>
+<% end %>
+
+<form method="POST"><%= form_csrf_token %>
+
+<p>Really delete this credential?</p>
+
+<p><input type="checkbox" name="delete" value="confirm"> Delete <%= h(@credential.name) %></p>
+
+<p><input type="submit" value="Delete"></p>
+
+<p style="width:60%">Deleting a keychain credential may cause application errors.</p>
+
+</form>

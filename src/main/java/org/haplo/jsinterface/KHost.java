@@ -18,7 +18,9 @@ import org.haplo.jsinterface.db.JdNamespace;
 import org.haplo.jsinterface.template.TemplateIncludedRenderer;
 import org.haplo.jsinterface.template.TemplatePlatformFunctions;
 import org.haplo.template.driver.rhinojs.HaploTemplate;
+import org.haplo.httpclient.HTTPClient;
 
+import java.util.Map;
 import java.util.HashMap;
 import java.util.WeakHashMap;
 
@@ -206,20 +208,11 @@ public class KHost extends KScriptable {
 
     // --------------------------------------------------------------------------------------------------------------
     public Function findPluginFunction(Scriptable plugin, String pluginName, String name) {
-        Function fn = null;
-        Scriptable search = plugin;
-        while(fn == null && search != null) {
-            Object property = search.get(name, search); // ConsString is checked
-            if(property instanceof Function) {
-                fn = (Function)property;
-                break;
-            }
-            search = search.getPrototype();
-        }
-        if(fn == null) {
+        Object property = ScriptableObject.getProperty(plugin, name);
+        if(!(property instanceof Function)) {
             throw new OAPIException("Can't find " + name + "() function for plugin " + pluginName);
         }
-        return fn;
+        return (Function)property;
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -232,6 +225,28 @@ public class KHost extends KScriptable {
         Function getInstructions = findPluginFunction(plugin, pluginName, "getFileUploadInstructions"); // exceptions if it can't be found
         Object r = getInstructions.call(runtime.getContext(), runtime.getJavaScriptScope(), plugin, new Object[]{path}); // ConsString is checked
         return (r == null || !(r instanceof CharSequence)) ? null : ((CharSequence)r).toString();
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+    // For invoking generic plugin callbacks
+    public Object callCallback(Object[] arguments) {
+        Runtime runtime = Runtime.getCurrentRuntime();
+        Scriptable scope = runtime.getSharedJavaScriptScope();
+
+        Scriptable o = (Scriptable)ScriptableObject.getProperty(scope, "O");
+        Scriptable privateThings = (Scriptable)ScriptableObject.getProperty(o, "$private");
+        Function invokeCallback = (Function)ScriptableObject.getProperty(privateThings, "invokeCallback");
+
+        Object r = null;
+        try {
+            r = invokeCallback.call(runtime.getContext(),
+                                    runtime.getJavaScriptScope(), runtime.getJavaScriptScope(),
+                                    arguments);
+        } catch(StackOverflowError e) {
+            // JRuby 1.7.19 doesn't cartch StackOverflowError exceptions any more, so wrap it into a JS Exception
+            throw new org.mozilla.javascript.WrappedException(e);
+        }
+        return r;
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -560,6 +575,21 @@ public class KHost extends KScriptable {
 
     public void jsFunction_reloadJavaScriptRuntimes() {
         this.supportRoot.reloadJavaScriptRuntimes();
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+    // HTTP Client
+    public void jsFunction_httpClientRequest(String callbackName,
+                                             String callbackData,
+                                             Scriptable requestSettings) {
+        Runtime.privilegeRequired("pHTTPClient", "perform HTTP requests");
+        Map<String,Object> requestSettingsMap = new HashMap<String,Object>();
+        for(Object id : requestSettings.getIds()) {
+            requestSettingsMap.put(id.toString(),
+                                   requestSettings.get(id.toString(),
+                                                       requestSettings));
+        }
+        HTTPClient.queueHttpClientRequest(callbackName, callbackData, requestSettingsMap);
     }
 
     // --------------------------------------------------------------------------------------------------------------

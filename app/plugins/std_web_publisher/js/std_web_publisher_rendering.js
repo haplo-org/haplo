@@ -46,6 +46,17 @@ P.globalTemplateFunction("std:web-publisher:widget:query:list:search-result", fu
 });
 
 // --------------------------------------------------------------------------
+// Files
+
+P.globalTemplateFunction("std:web-publisher:file:thumbnail", function(fileOrIdentifier) {
+    if(fileOrIdentifier) {
+        this.render(P.template("value/file/thumbnail").deferredRender(
+            P.makeThumbnailViewForFile(currentPublication, O.file(fileOrIdentifier))
+        ));
+    }
+});
+
+// --------------------------------------------------------------------------
 // Rendering helper fns
 
 P.globalTemplateFunction("std:web-publisher:utils:title:name", function(object) {
@@ -70,6 +81,11 @@ P.renderingWithPublication = function(publication, f) {
     } finally {
         currentPublication = undefined;
     }
+};
+
+P.withCurrentPublication = function(fn) {
+    if(!currentPublication) { throw new Error("Expected a publication to be rendering"); }
+    return fn(currentPublication);
 };
 
 // --------------------------------------------------------------------------

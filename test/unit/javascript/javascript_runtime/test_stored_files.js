@@ -75,6 +75,9 @@ TEST(function() {
     TEST.assert_equal(null, identifier.logMessage);
     TEST.assert_equal("1", identifier.version);
 
+    // Calling identifier() on an identifier returns itself
+    TEST.assert(identifier === identifier.identifier());
+
     // Set properties on new identifier and update object
     identifier.filename = "js_filename.doc";
     TEST.assert_equal("js_filename.doc", identifier.toString());
@@ -145,7 +148,58 @@ TEST(function() {
     TEST.assert(_.isEqual(
         {"dimensions":{"width":594,"height":841,"units":"pt"},"numberOfPages":3,"thumbnail":{"width":45,"height":63,"mimeType":"image/png"}},
         pdf3page.properties));
+
     // Tags
     TEST.assert_equal("test-value", pdf3page.tags["test-tag"]);
+
+    TEST.assert_exceptions(function() { pdf3page.changeTags(); }, "Must pass object to changeTags()");
+    TEST.assert_exceptions(function() { pdf3page.changeTags([1,23,4]); }, "Object passed to changeTags() has non-String property id (maybe an array)");
+    TEST.assert_exceptions(function() { pdf3page.changeTags({something:1}); }, "Values in object passed to changeTags() must be strings to set, or null/undefined to delete a tag.");
+    TEST.assert_exceptions(function() { pdf3page.changeTags({ping:"pong",something:1}); }, "Values in object passed to changeTags() must be strings to set, or null/undefined to delete a tag.");
+
+    pdf3page.changeTags({
+        "test-tag": undefined,  // undefined can be used instead of null to delete
+        "another-tag": "hel';--lo"  // check escaping
+    });
+    TEST.assert_equal(undefined, pdf3page.tags["test-tag"]);
+    TEST.assert(!("test-tag" in pdf3page.tags));
+    TEST.assert_equal("hel';--lo", pdf3page.tags["another-tag"]);
+    TEST.assert(!("test-tag" in pdf3page.tags));
+    pdf3page.changeTags({});
+    TEST.assert_equal("hel';--lo", pdf3page.tags["another-tag"]);
+
+    // only set in one file
+    TEST.assert(!("another-tag" in O.file(storedFile.digest).tags));
+    storedFile.changeTags({"abc":"def"});
+    TEST.assert(!("another-tag" in storedFile.tags));
+    TEST.assert_equal("def", storedFile.tags.abc);
+    TEST.assert(!("another-tag" in O.file(storedFile.digest).tags));
+    TEST.assert(!("another-tag" in storedFile.tags));
+    TEST.assert(!("abc" in O.file(pdf3page.digest).tags));
+
+    pdf3page.changeTags({
+        "ping:23": "pong"
+    });
+    TEST.assert_equal("hel';--lo", pdf3page.tags["another-tag"]);
+    TEST.assert_equal("pong", pdf3page.tags["ping:23"]);
+    pdf3page.changeTags({
+        "ping:23": null // check both null and undefined
+    });
+    TEST.assert(!("ping:23" in pdf3page.tags));
+    pdf3page.changeTags({   // set multiple and delete multiple
+        "ping:23": "pong2",
+        "carrots": "hello",
+        "another-tag": null,
+        "doesn't exist": null
+    });
+    TEST.assert_equal("pong2", pdf3page.tags["ping:23"]);
+    TEST.assert_equal("hello", pdf3page.tags["carrots"]);
+    TEST.assert(_.isEqual(pdf3page.tags, O.file(pdf3page.digest).tags));  // check reloaded stored file has same tags
+
+    // Thumbnail image
+    var thumbnailFile = pdf3page.thumbnailFile;
+    TEST.assert(thumbnailFile instanceof $BinaryDataStaticFile);
+    TEST.assert_equal("image/png", thumbnailFile.mimeType);
+    TEST.assert(thumbnailFile.fileSize > 50);
 
 });

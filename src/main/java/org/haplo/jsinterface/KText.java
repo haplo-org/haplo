@@ -188,6 +188,12 @@ public class KText extends KScriptable {
         return clone;
     }
 
+    // So you can call identifier() on either a File or FileIndentifier
+    public KText jsFunction_identifier() {
+        asFileIdentifier(); // check it's actually a file identifier
+        return this;
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     // Interface to Ruby functions
     public interface Ruby {

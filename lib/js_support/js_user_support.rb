@@ -54,8 +54,19 @@ module JSUserSupport
     User.find_by_objref(ref)
   end
 
+  def self.getServiceUserByCode(code)
+    cache = User.cache
+    id = cache.service_user_code_to_id_lookup[code]
+    raise JavaScriptAPIError, "Service user #{code} not does not exist, define in plugin requirements.schema" if id.nil?
+    cache[id]
+  end
+
   def self.getCurrentUser()
     AuthContext.user
+  end
+
+  def self.getCurrentAuthenticatedUser()
+    AuthContext.auth_user
   end
 
   # ---------------------------------------------------------------------------------------------
@@ -78,6 +89,14 @@ module JSUserSupport
 
   def self.isSuperUser(user)
     user.permissions.is_superuser?
+  end
+  
+  def self.isServiceUser(user)
+    user.kind == User::KIND_SERVICE_USER
+  end
+
+  def self.isAnonymous(user)
+    user.policy.is_anonymous?
   end
 
   def self.getUserDataJSON(user)

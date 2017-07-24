@@ -65,6 +65,19 @@ class Setup_KeychainController < ApplicationController
     end
   end
 
+  _GetAndPost
+  def handle_delete
+    @credential = KeychainCredential.find(params[:id].to_i)
+    if request.post?
+      if params[:delete] != 'confirm'
+        @should_confirm = true
+      else
+        @credential.destroy
+        render :action => 'refresh_list'
+      end
+    end
+  end
+
   def handle_about
   end
 

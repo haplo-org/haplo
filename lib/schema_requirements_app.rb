@@ -212,6 +212,26 @@ module SchemaRequirements
 
   # ---------------------------------------------------------------------------------------------------------------
 
+  SERVICE_USER_RULES = {
+    "title" => RubyObjectRuleValue.new(:name, :name=)
+    # Also 'group' rule, handled in code
+  }
+
+  class ApplyToServiceUser < ApplyToRubyObject
+    def initialize(code, object)
+      super(code, object, SERVICE_USER_RULES)
+    end
+    def apply(requirement, errors, context)
+      group_requirement = requirement.values.delete("group")
+      super(requirement, errors, context)
+      if group_requirement
+        context.service_user_group_requirement(group_requirement, @object)
+      end
+    end
+  end
+
+  # ---------------------------------------------------------------------------------------------------------------
+
   FEATURE_HOME_PAGE_RULES = {
     "element"           => RubyObjectRuleMultiString.new(:elements, :elements=)
   }
@@ -416,6 +436,7 @@ module SchemaRequirements
     "feature" => Proc.new { |kind, code, context| context.apply_for_feature(code) },
     "object" => Proc.new { |kind, code, context| context.apply_for_generic_object(code) },
     "group" => Proc.new { |kind, code, context| context.apply_for_group(code) },
+    "service-user" => Proc.new { |kind, code, context| context.apply_for_service_user(code) },
     "email-template" => Proc.new { |kind, code, context| context.apply_for_email_template(code) },
     "label" => Proc.new { |kind, code, context| context.apply_for_code(code, O_TYPE_LABEL, LABEL_RULES) },
     "attribute" => Proc.new { |kind, code, context| context.apply_for_code(code, O_TYPE_ATTR_DESC, ATTRIBUTE_RULES) },
@@ -525,11 +546,17 @@ module SchemaRequirements
           @generic_objects[generic_object.first_attr(A_CONFIGURED_BEHAVIOUR).to_s] = generic_object.dup
         end
       end
-      # Groups load from relational database, not object store
+      # Groups & service users load from relational database, not object store
       @groups = {}
       @group_member_requirements = []
-      User.where("(kind=#{User::KIND_GROUP} OR kind=#{User::KIND_GROUP_DISABLED}) AND code IS NOT NULL").each do |group|
-        @groups[group.code] = group
+      @service_users = {}
+      @service_user_group_requirements = []
+      User.where("(kind IN (#{User::KIND_GROUP},#{User::KIND_GROUP_DISABLED},#{User::KIND_SERVICE_USER})) AND code IS NOT NULL").each do |user|
+        if user.kind == User::KIND_SERVICE_USER
+          @service_users[user.code] = user
+        else
+          @groups[user.code] = user
+        end
       end
       # Email template objects
       @email_templates = {}
@@ -676,6 +703,19 @@ module SchemaRequirements
       @group_member_requirements << [members_requirement, group]
     end
 
+    def apply_for_service_user(code)
+      ApplyToServiceUser.new(code, @service_users[code] ||= begin
+        user = User.new
+        user.kind = User::KIND_SERVICE_USER
+        user.code = code
+        user
+      end)
+    end
+
+    def service_user_group_requirement(group_requirement, user)
+      @service_user_group_requirements << [group_requirement, user]
+    end
+
     def while_committing(applier)
       KObjectStore.with_superuser_permissions do
         # Delayed schema also prevents hooks in plugins being called while the schema is changing under them.
@@ -729,6 +769,16 @@ module SchemaRequirements
         if current_ids != new_ids
           KApp.logger.info("Schema requirements: Updated members of group #{group.code}")
           group.update_members!(new_ids)
+        end
+      end
+      # Service user group membership
+      @service_user_group_requirements.each do |group_requirement, user|
+        removes, applies = group_requirement.multi_value.map { |list| list.map { |code| group_code_to_id[code] } .compact }
+        current_membership = user.direct_groups.map { |g| g.id } .sort
+        new_membership = (current_membership - removes + applies).uniq.sort
+        if current_membership != new_membership
+          user.set_groups_from_ids(new_membership)
+          KApp.logger.info("Schema requirements: Updated group membership of service user #{user.code}")
         end
       end
     end

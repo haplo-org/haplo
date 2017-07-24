@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.haplo</groupId>
   <artifactId>haplo</artifactId>
-  <version>3.20170602.1632.0fd4c893e4</version>
+  <version>3.20170720.1309.1298f24e51</version>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -57,12 +57,17 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.3.9.v20160517</version>
+      <version>9.4.0.v20161208</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-continuation</artifactId>
-      <version>9.3.9.v20160517</version>
+      <version>9.4.0.v20161208</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-client</artifactId>
+      <version>9.4.0.v20161208</version>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>
@@ -103,6 +108,11 @@
       <groupId>com.unboundid</groupId>
       <artifactId>unboundid-ldapsdk</artifactId>
       <version>2.3.8</version>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>amazon-kinesis-client</artifactId>
+      <version>1.7.6</version>
     </dependency>
     <dependency>
       <groupId>org.apache.pdfbox</groupId>

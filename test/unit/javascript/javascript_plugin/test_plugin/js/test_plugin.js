@@ -264,3 +264,11 @@ P.implementTextType("test_plugin:testtype2", "Test type Two", {
         return 'ID-'+value.v;
     }
 });
+
+P.testCallback = P.callback("test", function(a,b,o) {
+    return "Result is [" + a + "]/[" + b + "]/[" + o.a + "]/[" + o.b + "]";
+});
+
+P.hook("hTestReportCallbackName", function(response) {
+    response.name = P.testCallback.$name;
+});

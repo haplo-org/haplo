@@ -83,7 +83,6 @@ public class KStoredFile extends KScriptable {
         return this.storedFile.mime_type();
     }
 
-    // TODO: Careful interface to write tags on stored files
     public Scriptable jsGet_tags() {
         String jsonEncoded = this.storedFile.jsGetTagsAsJson();
         if(jsonEncoded != null && jsonEncoded.length() > 0) {
@@ -95,6 +94,30 @@ public class KStoredFile extends KScriptable {
         } else {
             return (Scriptable)Runtime.getCurrentRuntime().createHostObject("Object");
         }
+    }
+
+    public Scriptable jsFunction_changeTags(Object object) {
+        if(!(object instanceof Scriptable)) { throw new OAPIException("Must pass object to changeTags()"); }
+        Runtime runtime = Runtime.getCurrentRuntime();
+        Scriptable changesIn = (Scriptable)object;
+        Scriptable changes = runtime.createHostObject("Object");
+        for(Object id : changesIn.getIds()) {
+            if(id instanceof CharSequence) {
+                String name = id.toString();
+                Object value = changesIn.get(name, changesIn); // ConsString is checked
+                if((value == null) || (value instanceof org.mozilla.javascript.Undefined)) {
+                    changes.put(name, changes, null);    // delete key
+                } else if(value instanceof CharSequence) {
+                    changes.put(name, changes, value.toString());
+                } else {
+                    throw new OAPIException("Values in object passed to changeTags() must be strings to set, or null/undefined to delete a tag.");
+                }
+            } else {
+                throw new OAPIException("Object passed to changeTags() has non-String property id (maybe an array)");
+            }
+        }
+        this.storedFile.jsUpdateTags(runtime.jsonStringify(changes));
+        return this;
     }
 
     public Scriptable jsFunction_identifier() {
@@ -200,6 +223,12 @@ public class KStoredFile extends KScriptable {
         return rubyInterface.fileIdentifierMakePathOrHTML(this.storedFile, fro, true /* HTML */);
     }
 
+    public Scriptable jsGet_thumbnailFile() {
+        KBinaryDataStaticFile file = (KBinaryDataStaticFile)Runtime.createHostObjectInCurrentRuntime("$BinaryDataStaticFile");
+        rubyInterface.setBinaryDataForThumbnail(this.storedFile, file);
+        return file;
+    }
+
     // --------------------------------------------------------------------------------------------------------------
 
     public static KStoredFile newStoredFileFromData(byte[] data, String filename, String mimeType) {
@@ -219,6 +248,7 @@ public class KStoredFile extends KScriptable {
         public AppStoredFile newStoredFileFromData(byte[] data, String filename, String mimeType);
 
         public String fileIdentifierMakePathOrHTML(AppStoredFile storedFile, FileRenderOptions options, boolean html);
+        public void setBinaryDataForThumbnail(AppStoredFile storedFile, KBinaryDataStaticFile binaryData);
 
         public String getFilePropertiesJSON(AppStoredFile storedFile);
 

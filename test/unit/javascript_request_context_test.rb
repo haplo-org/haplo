@@ -29,4 +29,11 @@ class JavaScriptRequestContextTest < Test::Unit::TestCase
     run_javascript_test(:file, 'unit/javascript/javascript_request_context/test_current_user.js')
   end
 
+  def test_authenticated_user
+    run_javascript_test(:file, 'unit/javascript/javascript_request_context/test_authenticated_user_is_current.js')
+    end_test_request
+    start_test_request(nil, User.cache[21], User.cache[22])
+    run_javascript_test(:file, 'unit/javascript/javascript_request_context/test_authenticated_user.js')
+  end
+
 end

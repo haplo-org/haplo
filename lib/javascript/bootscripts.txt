@@ -36,4 +36,5 @@ lib/javascript/lib/client_side_support.js
 lib/javascript/lib/plugin_forms.js
 lib/javascript/lib/ui_panel.js
 lib/javascript/lib/message_bus.js
+lib/javascript/lib/http_client.js
 app/plugins/std_action_panel/shared/std_action_panel.js

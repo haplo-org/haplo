@@ -126,6 +126,19 @@ class Setup_SchemaRequirementsController < ApplicationController
         end
         @generated_requirements << "\n"
       end
+      service_users = User.find(:all, :conditions => "kind=#{User::KIND_SERVICE_USER} AND code IS NOT NULL", :order => 'name')
+      if service_users.length > 0
+        @generated_requirements << "\n# -------- Service users ---------------------------\n\n"
+        service_users.each do |user|
+          @generated_requirements << "service-user #{user.code}\n"
+          @generated_requirements << "    title: #{user.name}\n"
+          user.direct_groups_ids.uniq.each do |gid|
+            code = gid_to_code[gid]
+            @generated_requirements << "    group #{code}\n" if code
+          end
+          @generated_requirements << "\n"
+        end
+      end
     end
 
     # Generic objects?

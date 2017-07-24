@@ -11,6 +11,9 @@ P.db.table("values", {"value":{type:"int"}});
 var Bus = O.messageBus.remote("Test Inter App Bus");
 
 Bus.receive(function(message) {
+    if(0 !== O.currentUser.id) { // should be SYSTEM
+        throw new Error("Inter-application message received with unexpected user active");
+    }
     P.db.values.create({
         value: message.parsedBody().value
     }).save();

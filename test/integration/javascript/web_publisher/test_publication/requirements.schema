@@ -1,0 +1,12 @@
+
+group test:group:publisher-service-group as ServiceGroup
+    title: Test Publisher Group
+
+service-user test:service-user:publisher
+    title: Test Publisher User
+    group test:group:publisher-service-group
+
+# ---------------------------------------------------------------------------
+
+type std:type:book as Book
+

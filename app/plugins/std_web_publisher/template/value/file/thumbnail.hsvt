@@ -1,0 +1,7 @@
+<span class="haplo-file-thumbnail-container">
+  if(hasThumbnail) {
+    <img src=["/thumbnail/" file.digest "/" file.fileSize] class="haplo-file-thumbnail" width=width height=height>
+  } else {
+    <img src=[staticDirectoryUrl "/default-thumbnail.png"] class="haplo-file-default-thumbnail" width=width height=height>
+  }
+</span>

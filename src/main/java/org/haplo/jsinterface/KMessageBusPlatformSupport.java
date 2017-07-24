@@ -18,6 +18,11 @@ public class KMessageBusPlatformSupport extends KScriptable {
 
     // ----------------------------------------------------------------------
 
+    public static void jsStaticFunction_setBusPlatformConfig(Object json) {
+        if(!(json instanceof CharSequence)) { throw new OAPIException("Bad bus setup"); }
+        rubyInterface.setBusPlatformConfig(json.toString());
+    }
+
     public static String jsStaticFunction_queryKeychain(Object name) {
         Runtime.privilegeRequired("pMessageBusRemote", "use configured remote message bus");
         if(!(name instanceof CharSequence)) {
@@ -26,16 +31,17 @@ public class KMessageBusPlatformSupport extends KScriptable {
         return rubyInterface.queryKeychain(name.toString());
     }
 
-    public static void jsStaticFunction_sendMessageToBus(String busKind, String busName, String busSecret, String message) {
+    public static void jsStaticFunction_sendMessageToBus(String busKind, int busId, String busName, String busSecret, int reliability, String body) {
         Runtime.privilegeRequired("pMessageBusRemote", "send message on message bus");
-        rubyInterface.sendMessageToBus(busKind, busName, busSecret, message);
+        rubyInterface.sendMessageToBus(busKind, busId, busName, busSecret, reliability, body);
     }
 
     // ----------------------------------------------------------------------
     // Interface to Ruby functions
     public interface Ruby {
+        void setBusPlatformConfig(String json);
         String queryKeychain(String name);
-        void sendMessageToBus(String busKind, String busName, String busSecret, String message);
+        void sendMessageToBus(String busKind, int busId, String busName, String busSecret, int reliability, String body);
     }
     private static Ruby rubyInterface;
 

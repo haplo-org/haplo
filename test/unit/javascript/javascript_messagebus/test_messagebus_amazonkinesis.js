@@ -8,6 +8,7 @@
 TEST(function() {
 
     var Bus = O.messageBus.remote("test-kinesis");
+    TEST.assert(Bus === O.messageBus.remote("test-kinesis")); // get the same bus twice
 
     var testValue = Date.now() % 10000000;
     Bus.message().body({value:testValue}).send();

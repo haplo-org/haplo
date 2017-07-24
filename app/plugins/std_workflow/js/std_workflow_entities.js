@@ -105,6 +105,7 @@ var setupEntities = function(object, entityDefinitions, setupPrototype) {
         if("workUnit" in o) { ref = o.workUnit.ref; }
         else if(O.isRef(o)) { ref = o; }
         else                { ref = o.ref; }
+        if(!ref) { ref = M._call('$findEntityRootObjectRefWhenUnknown'); }
         if(!ref) { throw new Error("Can't find ref when constructing Entities object"); }
         return new Entities(ref, M);
     };

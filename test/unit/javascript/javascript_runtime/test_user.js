@@ -18,6 +18,8 @@ TEST(function() {
     TEST.assert_equal(false, u1.isGroup);
     TEST.assert_equal(true, u1.isActive);
     TEST.assert_equal(false, u1.isSuperUser);
+    TEST.assert_equal(false, u1.isServiceUser);
+    TEST.assert_equal(false, u1.isAnonymous);
     TEST.assert(null !== u1.ref);
     TEST.assert_equal(USER1_REF_OBJID, u1.ref.objId);
     // Load it by ref
@@ -40,6 +42,12 @@ TEST(function() {
     TEST.assert_equal("User 4", blocked_u4.name);
     TEST.assert_equal(false, blocked_u4.isGroup);
     TEST.assert_equal(false, blocked_u4.isActive);
+
+    // Anonymous
+    var anon = O.user(2);
+    TEST.assert_equal("ANONYMOUS", anon.name);
+    TEST.assert_equal(false, anon.isServiceUser);
+    TEST.assert_equal(true, anon.isAnonymous);
 
     // Lookup by email address
     TEST.assert_equal(41, O.user("user1@example.com").id);

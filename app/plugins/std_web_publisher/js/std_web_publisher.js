@@ -11,7 +11,6 @@ var Exchange = $Exchange;
 // --------------------------------------------------------------------------
 
 P.$webPublisherHandle = function(host, method, path) {
-    if(method !== "GET") { throw new Error("Only GET requests expected for web publisher"); }
     var publication = publications[host.toLowerCase()] || publications[DEFAULT];
     if(!publication) { return null; }
     return P.renderingWithPublication(publication, function() {
@@ -74,35 +73,58 @@ var checkHandlerArgs = function(path, handlerFunction) {
 
 // --------------------------------------------------------------------------
 
-var Publication = function(name, plugin) {
+var Publication = P.Publication = function(name, plugin) {
     this.name = name;
     this._implementingPlugin = plugin;
     this._paths = [];
     this._objectTypeHandler = O.refdictHierarchical();
     this._searchResultsRenderers = O.refdictHierarchical(); // also this._defaultSearchResultRenderer
+    this._setupForFileDownloads();
+};
+
+// NOTE: API for file downloads implemented in std_web_publisher_files.js
+
+Publication.prototype.serviceUser = function(serviceUserCode) {
+    if(typeof(serviceUserCode) !== "string") { throw new Error("serviceUser() must take an API code as a string"); }
+    this._serviceUserCode = serviceUserCode;
+    return this;
 };
 
 Publication.prototype.DEFAULT = {};
 
-Publication.prototype.respondToExactPath = function(path, handlerFunction) {
+Publication.prototype._respondToExactPath = function(allowPOST, path, handlerFunction) {
     checkHandlerArgs(path, handlerFunction);
     this._paths.push({
         path: path,
+        allowPOST: allowPOST,
         robotsTxtAllowPath: path,
         matches: function(t) { return t === path; },
         fn: handlerFunction
     });
 };
+Publication.prototype.respondToExactPath = function(path, handlerFunction) {
+    return this._respondToExactPath(false, path, handlerFunction);
+};
+Publication.prototype.respondToExactPathAllowingPOST = function(path, handlerFunction) {
+    return this._respondToExactPath(true, path, handlerFunction);
+};
 
-Publication.prototype.respondToDirectory = function(path, handlerFunction) {
+Publication.prototype._respondToDirectory = function(allowPOST, path, handlerFunction) {
     checkHandlerArgs(path, handlerFunction);
     var pathPrefix = path+"/";
     this._paths.push({
         path: path,
+        allowPOST: allowPOST,
         robotsTxtAllowPath: pathPrefix,
         matches: function(t) { return t.startsWith(pathPrefix); },
         fn: handlerFunction
     });
+};
+Publication.prototype.respondToDirectory = function(path, handlerFunction) {
+    return this._respondToDirectory(false, path, handlerFunction);
+};
+Publication.prototype.respondToDirectoryAllowingPOST = function(path, handlerFunction) {
+    return this._respondToDirectory(true, path, handlerFunction);
 };
 
 Publication.prototype.respondWithObject = function(path, types, handlerFunction) {
@@ -156,6 +178,14 @@ Publication.prototype.searchResultRendererForTypes = function(types, renderer) {
 // --------------------------------------------------------------------------
 
 Publication.prototype._handleRequest = function(method, path) {
+    if(!this._serviceUserCode) { throw new Error("serviceUser() must have been called during publication configuration to set a service user."); }
+    var publication = this;
+    return O.impersonating(O.serviceUser(this._serviceUserCode), function() {
+        return publication._handleRequest2(method, path);
+    });
+};
+
+Publication.prototype._handleRequest2 = function(method, path) {
     // Find handler from paths this publication responds to:
     var handler;
     for(var l = 0; l < this._paths.length; ++l) {
@@ -166,6 +196,11 @@ Publication.prototype._handleRequest = function(method, path) {
         }
     }
     if(!handler) { return null; }
+    if(method !== "GET") {
+        if(!(handler.allowPOST)) {
+            return null; // TODO: Nicer error page
+        }
+    }
     // Set up exchange and call handler
     var pathElements = path.substring(handler.path.length+1).split('/');
     var E = new Exchange(this._implementingPlugin, handler.path, method, path, pathElements);
@@ -182,6 +217,18 @@ Publication.prototype._urlPathForObject = function(object) {
     if(handler) {
         return handler.urlForObject(object);
     }
+};
+
+Publication.prototype.__defineGetter__("urlHostname", function() {
+    return (this.name === DEFAULT) ?
+        O.application.hostname :
+        this.name;
+});
+
+Publication.prototype.urlForObject = function(object) {
+    var path = this._urlPathForObject(object);
+    if(!path) { return; }
+    return 'https://'+this.urlHostname+path;
 };
 
 Publication.prototype._generateRobotsTxt = function() {

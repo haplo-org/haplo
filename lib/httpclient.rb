@@ -12,3 +12,131 @@ KNotificationCentre.when(:server, :starting) do
     :secret => {"Password" => ""}
   })
 end
+
+class KHTTPClientJob < KJob
+
+  def default_queue
+    QUEUE_HTTP_CLIENT
+  end
+
+  def default_retries_allowed
+    2
+  end
+
+  def initialize(callback_name, callback_data_JSON, request_settings)
+    @callback_name = callback_name
+    @callback_data_JSON = callback_data_JSON
+    @request_settings = request_settings
+    @keychain_data = {}
+    @retry_count = 0
+  end
+
+  def headerParts(hdr)
+    parts = /\s*([^;]+)\s*(.*)?/.match(hdr)
+    unless parts
+      return false
+    end
+
+    body = parts[1]
+    params = {}
+    rest = parts[2]
+    while rest
+      # Look for a quoted string
+      parts = /\s*;\s*(\w+)="((?:[^"\\]|\\.)*)"\s*(.*)?/.match(rest)
+      unless parts
+        # Look for a plain atom
+        parts = /\s*;\s*(\w+)=([^;\s]+)\s*(.*)?/.match(rest)
+        unless parts
+          rest = false
+        else
+          params[parts[1].downcase] = parts[2]
+          rest = parts[3]
+        end
+      else
+        unquoted = parts[2].gsub(/\\(.)/, '\1')
+        params[parts[1].downcase] = unquoted
+        rest = parts[3]
+      end
+    end
+    return body, params
+  end
+
+  def callback()
+    KJSPluginRuntime.current.using_runtime do
+      body = nil
+      if @result.has_key?("body")
+        # Wrap body in a KBinaryData
+        mimeType, mimeParams = headerParts(@result["header:content-type"])
+        if mimeType
+          mimeType = mimeType.downcase
+        else
+          mimeType = "application/octet-stream"
+        end
+        if mimeParams
+          charset = mimeParams["charset"]
+        end
+        if charset
+          charset.upcase!
+        else
+          charset = "UTF-8"
+        end
+        dispType, dispParams = headerParts(@result["header:content-disposition"])
+        if dispParams
+          filename = dispParams["filename"]
+        end
+        unless filename
+          filename = "response.bin"
+        end
+        body = Java::OrgHaploJavascript::Runtime.createHostObjectInCurrentRuntime("$BinaryDataInMemory", false, nil, nil, filename, mimeType)
+        body.setBinaryData(@result.delete("body"))
+        @result["charset"] = charset
+      end
+
+      KJSPluginRuntime.current.call_callback(@callback_name,
+                                             ["parseJSON",@callback_data_JSON,
+                                              "makeHTTPClient",@request_settings,
+                                              "makeHTTPResponse",@result.to_hash,body])
+    end
+  end
+
+  def giving_up()
+    callback()
+  end
+
+  def run(context)
+    if @request_settings.has_key?("auth")
+      name = @request_settings["auth"]
+      credential = KeychainCredential.find(:first, :conditions => {:kind => 'HTTP', :name => name}, :order => :id)
+      if credential
+        if credential.instance_kind != "Basic"
+          raise JavascriptAPIError, "Can't attempt HTTP authentication with a login of kind '#{credential.instance_kind}'"
+        end
+      else
+        raise JavascriptAPIError, "Can't find an HTTP keychain entry called '#{name}'"
+      end
+      @keychain_data["auth_type"] = "Basic"
+      @keychain_data["auth_username"] = credential.account['Username']
+      @keychain_data["auth_password"] = credential.secret['Password']
+    end
+
+    @result = Java::OrgHaploHttpclient::HTTPClient.attemptHTTP(
+      @request_settings,
+      @keychain_data,
+      KInstallProperties.get(:network_client_blacklist))
+
+    # Result map is set up in HTTPOperation.java
+    if @result["type"] == "TEMP_FAIL"
+      context.job_failed_and_retry(@result["errorMessage"], @request_settings["retryDelay"].to_i)
+    else
+      callback()
+
+      if @result["type"] == "SUCCEEDED"
+        # Nothing else to do
+      elsif @result["type"] == "FAIL"
+        context.job_failed(@result["errorMessage"])
+      else
+        context.job_failed("Unknown job result #{@result["type"]}")
+      end
+    end
+  end
+end

@@ -20,6 +20,7 @@ TEST(function() {
 
     // Receive message on loopback 0
     Bus0.receive(function(msg) {
+        TEST.assert_equal(0, O.currentUser.id); // must be SYSTEM
         X += 'A:'+msg.parsedBody().m+',';
     });
 
@@ -29,6 +30,7 @@ TEST(function() {
     // Create loopback 1
     var Bus1 = O.messageBus.loopback("test:loopback:1").
         receive(function(msg) {
+            TEST.assert_equal(0, O.currentUser.id); // must be SYSTEM
             X += 'B:'+msg.parsedBody().m+',';
         });
     TEST.assert_equal(Bus1, O.messageBus.loopback("test:loopback:1"));
@@ -47,6 +49,12 @@ TEST(function() {
     });
     Bus0.message().body({m:4}).send();
     TEST.assert_equal(X, 'A:1,A:2,B:3,A:4,C:4,')
+
+    // Loopback messages received as SYSTEM for consistency with other message bus types
+    O.impersonating(O.user(41), function() {
+        Bus0.message().body({m:6}).send();
+        Bus1.message().body({m:7}).send();
+    });
 
     // Bad API use
     TEST.assert_exceptions(function() { Bus0.message().body(); },               "Message body is not a JSON-compatible Object");

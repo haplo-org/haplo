@@ -7,7 +7,11 @@
 
 class WebPublisherController < ApplicationController
 
+  KStoredFile = Java::OrgHaploJsinterface::KStoredFile
+  KBinaryDataStaticFile = Java::OrgHaploJsinterface::KBinaryDataStaticFile
+
   # Send requests to std_web_publisher plugin (if installed)
+  # NOTE: CSRF protection is disabled for publisher
   def handle(exchange, path_elements)
     @exchange = exchange
 
@@ -20,27 +24,45 @@ class WebPublisherController < ApplicationController
     @request_user = anonymous
 
     request = exchange.request
-    if request.method != "GET"
-      # If this is changed, then CSRF needs to be considered. (CSRF protection is disabled for publisher)
-      raise KFramework::RequestPathNotFound.new("Only GET supported by web publisher");
+    unless (request.method == "GET") || (request.method == "POST")
+      raise KFramework::RequestPathNotFound.new("Only GET & POST supported by web publisher");
     end
 
-    r = KJSPluginRuntime.current.call_web_publisher_handler(request.host, "GET", request.path)
+    r = KJSPluginRuntime.current.call_web_publisher_handler(request.host, request.method, request.path)
     raise KFramework::RequestPathNotFound.new("Web publisher didn't render anything") unless r
 
     # Split out response infomation (shares Java response decoding with JavaScriptPluginController)
     status_code, headersJSON, body, kind = r.to_a
     raise KFramework::RequestPathNotFound.new("Web publisher didn't render a body") if body.nil?
 
-    # Only support HTML responses
-    unless (kind == 'html') && body.kind_of?(String)
-      raise JavaScriptAPIError, "Web publisher response wasn't HTML"
+    # Support a limited set of binary data types as body
+    if body.kind_of?(KStoredFile)
+      # Stored file - probably from built-in /download handler
+      stored_file = body.toRubyObject()
+      exchange.response = KFramework::FileResponse.new(stored_file.disk_pathname, {
+        :type => stored_file.mime_type,
+        :filename => stored_file.upload_filename,
+        :disposition => 'attachment'
+      })
+      return
+    elsif body.kind_of?(KBinaryDataStaticFile)
+      # Static file - probably thumbnail from built-in /thumbnail handler
+      exchange.response = KFramework::FileResponse.new(body.getDiskPathnameForResponse(), {
+        :type => body.jsGet_mimeType(),
+        :filename => body.jsGet_filename()
+      })
+      return
     end
 
-    session_commit
+    # Otherwise only support Text and HTML responses
+    unless (kind == 'html' || kind == 'text') && body.kind_of?(String)
+      raise JavaScriptAPIError, "Web publisher response wasn't HTML or text"
+    end
 
     # Build & return response
-    response = KFramework::DataResponse.new(body, 'text/html; charset=utf-8', (status_code || 200).to_i)
+    response = KFramework::DataResponse.new(body,
+      (kind == 'text') ? 'text/plain; charset=utf-8' : 'text/html; charset=utf-8',
+      (status_code || 200).to_i)
     if headersJSON != nil
       headers = JSON.parse(headersJSON)
       headers.each do |name, value|

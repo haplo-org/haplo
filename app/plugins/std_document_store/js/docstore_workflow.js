@@ -133,7 +133,12 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
 
     var delegate = _.extend(new Delegate(), spec);
     var docstore = plugin.defineDocumentStore(delegate);
-    if(!("documentStore" in workflow)) { workflow.documentStore = {}; }
+    if(!("documentStore" in workflow)) {
+        workflow.documentStore = {};
+        workflow.actionPanel({}, function(M, builder) {
+            if(O.currentUser.isSuperUser) { builder.panel(8888999).element(0, {title:"Docstore admin"}); }
+        });
+    }
     workflow.documentStore[spec.name] = docstore;
 
     // ------------------------------------------------------------------------
@@ -217,6 +222,13 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                         spec.path+'/form/'+M.workUnit.id,
                         label,
                         isDone ? "standard" : "primary");
+        }
+    });
+
+    workflow.actionPanel({}, function(M, builder) {
+        if(O.currentUser.isSuperUser) {
+            builder.panel(8888999).
+                link("default", spec.path+'/admin/'+M.workUnit.id, spec.title);
         }
     });
 
@@ -394,6 +406,91 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             backLink: M.url,
             ui: ui
         }, "workflow/view");
+    });
+
+    // ----------------------------------------------------------------------
+
+    plugin.respond("GET,POST", spec.path+'/admin', [
+        {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true}
+    ], function(E, workUnit) {
+        if(!O.currentUser.isSuperUser) { O.stop("Not permitted."); }
+        E.setResponsiblePlugin(P);  // take over as source of templates, etc
+        var M = workflow.instance(workUnit);
+        var instance = docstore.instance(M);
+        var currentDocument = instance.currentDocument;
+        var forms = _.map(docstore._formsForKey(M, instance), function(form) {
+            return form;
+        });
+        if(E.request.method === "POST") {
+            currentDocument = JSON.parse(E.request.parameters.currentDocument);
+            if(E.request.parameters.set) {
+                instance.setCurrentDocument(currentDocument, true);
+            }
+            if(E.request.parameters.setAndCommit) {
+                instance.setCurrentDocument(currentDocument, true);
+                instance.commit();
+            }
+        }
+        E.render({
+            pageTitle: M.title+': '+(spec.title || '????'),
+            backLink: M.url,
+            M: M,
+            path: spec.path,
+            forms: forms,
+            instance: instance,
+            currentDocument: JSON.stringify(currentDocument, undefined, 2)
+        }, "workflow/admin/overview");
+    });
+
+    plugin.respond("GET,POST", spec.path+'/admin/view-document', [
+        {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true},
+        {pathElement:1, as:"int"}
+    ], function(E, workUnit, requestedVersion) {
+        if(!O.currentUser.isSuperUser) { O.stop("Not permitted."); }
+        E.setResponsiblePlugin(P);  // take over as source of templates, etc
+        var M = workflow.instance(workUnit);
+        var instance = docstore.instance(M);
+        var entry = _.find(instance.history, function(v) {
+            return v.version === requestedVersion;
+        });
+        E.render({
+            pageTitle: M.title+': '+(spec.title || '????'),
+            backLink: spec.path+'/admin/'+M.workUnit.id,
+            backLinkText: "Admin",
+            M: M,
+            path: spec.path,
+            instance: instance,
+            entry: entry,
+            document: JSON.stringify(entry.document, undefined, 2)
+        }, "workflow/admin/view-document");
+    });
+
+    var adminEditor = {
+        finishEditing: function(instance, E, complete) {
+            E.response.redirect(spec.path+'/admin/'+instance.key.workUnit.id);
+        },
+        gotoPage: function(instance, E, formId) {
+            E.response.redirect(spec.path+'/admin/form/'+instance.key.workUnit.id+"/"+formId);
+        },
+        render: function(instance, E, deferredForm) {
+            var M = workflow.instance(O.work.load(E.request.extraPathElements[0]));
+            E.render({
+                pageTitle: "Admin Edit "+spec.title+": "+instance.key.title,
+                backLink: spec.path+'/admin/'+instance.key.workUnit.id,
+                deferredForm: deferredForm,
+                deferredPreForm: spec.deferredPreForm ? spec.deferredPreForm(M) : null
+            }, "workflow/form");
+        }
+    };
+
+    plugin.respond("GET,POST", spec.path+'/admin/form', [
+        {pathElement:0, as:"workUnit", workType:workflow.fullName, allUsers:true}
+    ], function(E, workUnit) {
+        if(!O.currentUser.isSuperUser) { O.stop("Not permitted."); }
+        E.setResponsiblePlugin(P); // take over as source of templates, etc
+        var M = workflow.instance(workUnit);
+        var instance = docstore.instance(M);
+        instance.handleEditDocument(E, adminEditor);
     });
 
 });

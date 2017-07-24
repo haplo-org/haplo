@@ -13,10 +13,10 @@ import org.mozilla.javascript.Function;
 import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
 import org.haplo.jsinterface.KHost;
+import org.haplo.jsinterface.KText;
+import org.haplo.jsinterface.app.AppText;
 import org.haplo.jsinterface.KObject;
 import org.haplo.jsinterface.app.AppObject;
-
-import org.haplo.jsinterface.KObject;
 
 import org.haplo.template.driver.rhinojs.JSFunctionThis;
 import org.haplo.template.driver.rhinojs.HaploTemplateDeferredRender;
@@ -108,6 +108,10 @@ public class StdWebPublisher extends ScriptableObject {
         }
         public String renderObjectValue(AppObject object) {
             Object html = this.callPublisher("$renderObjectValue", KObject.fromAppObject(object, false));
+            return (html instanceof CharSequence) ? html.toString() : "";
+        }
+        public String renderFileIdentifierValue(AppText fileIdentifier) {
+            Object html = this.callPublisher("$renderFileIdentifierValue", KText.fromAppText(fileIdentifier));
             return (html instanceof CharSequence) ? html.toString() : "";
         }
     }

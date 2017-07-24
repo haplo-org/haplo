@@ -11,7 +11,7 @@ module JSStdReportingSupport
 
   PLUGIN_NAME = "std_reporting".freeze
   DB_TABLE_NAME = "rebuilds".freeze
-  UPDATE_JOB_NAME = "#{PLUGIN_NAME}:update".freeze
+  UPDATE_CALLBACK_NAME = "#{PLUGIN_NAME}:$update".freeze
 
   WAIT_FOR_UPDATE_REQUESTS = 60*60 # one hour
 
@@ -26,7 +26,6 @@ module JSStdReportingSupport
   # -------------------------------------------------------------------------
 
   class BackgroundTask < KFramework::BackgroundTask
-    include KPlugin::HookSite
     def initialize()
     end
     def description
@@ -52,19 +51,22 @@ module JSStdReportingSupport
       # Application might not use std_reporting
       std_reporting = KPlugin.get(PLUGIN_NAME)
       if std_reporting
+        logger = KApp.logger
         # Check there's something in the rebuilds
         db_namespace = KJSPluginRuntime::DatabaseNamespaces.new()[PLUGIN_NAME]
         raise "Unexpected namespace" unless db_namespace =~ /\A[a-z0-9]{6,}\z/
         has_rebuilds = KApp.get_pg_database.exec("SELECT 1 FROM j_#{db_namespace}_rebuilds LIMIT 1").length
         if has_rebuilds != 0
           sleep(0.5) # hopefully the triggering runtime will no longer be in use and can be reused here
-          KApp.logger.info("Starting #{PLUGIN_NAME} updates for application #{KApp.current_application}")
-          # TODO: Use a proper JS callback when implemented instead of :hPlatformInternalJobRun (and update comment in js_job_support.rb)
-          call_hook(:hPlatformInternalJobRun) do |hooks|
-            hooks.run(UPDATE_JOB_NAME, '{}')
+          logger.info("Starting #{PLUGIN_NAME} updates for application #{KApp.current_application}")
+          begin
+            KJSPluginRuntime.current.call_callback(UPDATE_CALLBACK_NAME, [])
+          rescue => e
+            logger.error("Exception during callback to std_reporting")
+            logger.log_exception(e)
           end
-          KApp.logger.info("Finished #{PLUGIN_NAME} updates for application #{KApp.current_application}")
-          KApp.logger.flush_buffered
+          logger.info("Finished #{PLUGIN_NAME} updates for application #{KApp.current_application}")
+          logger.flush_buffered
         end
       end
     end

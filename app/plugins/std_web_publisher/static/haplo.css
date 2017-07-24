@@ -5,48 +5,24 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
-/* TODO: Sync with main platform CSS in a sensible manner */
-/* NOTE: Styles changed slightly from main platform */
-
-table.z__file_display {
-    position: relative; /* so file icon can be positioned inside it */
-    display: block; /* necessary to get FF to get the right starting point for positioning */
-    margin: 2px 0;
-}
-table.z__file_display:hover {
+span.haplo-file-thumbnail-container {
+    display: inline-block;
+    width: 76px;
+    text-align: right;
 }
 
-table.z__file_display tr td {
-    border: none;
-    padding: 3px 2px;
-    height: auto;
-    vertical-align: top;
+span.haplo-file-download-not-permitted {
+    display: inline-block;
+    margin: 0 0 6px 0;
+    font-style: italic;
 }
 
-table.z__file_display tr td.z__file_display_icon {
-    width: 72px;
-    padding: 7px;
+img.haplo-file-default-thumbnail,
+img.haplo-file-thumbnail {
+    margin: 1px 12px 1px 0px;
 }
 
-table.z__file_display td.z__file_display_name {
-    padding: 8px 2px 0 12px;
-    line-height: 20px;
-}
-
-table.z__file_display td.z__file_display_name img {
-    margin-right: 8px;
-}
-
-.z__thumbnail {
-    position: relative;
-    float: right;
-}
-
-.z__thumbnail a {
-    display: block;
-}
-
-.z__thumbnail img {
+img.haplo-file-thumbnail {
     border: 1px solid #bbb;
     box-shadow: 1px 1px 4px rgba(0,0,0,0.3);
 }

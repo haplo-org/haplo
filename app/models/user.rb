@@ -88,6 +88,7 @@ class User < ActiveRecord::Base
   KIND_USER = 0
   KIND_GROUP = 1
   KIND_SUPER_USER = 3 # for SYSTEM (full priv code) and SUPPORT (support logins from the management system)
+  KIND_SERVICE_USER = 6
   KIND__MAX_ACTIVE = 7
   KIND_USER_BLOCKED = 8
   KIND_USER_DELETED = 16
@@ -95,7 +96,7 @@ class User < ActiveRecord::Base
 
   # Kind testing functions
   def is_group; self.kind == KIND_GROUP || self.kind == KIND_GROUP_DISABLED; end
-  def is_active; self.kind == KIND_USER || self.kind == KIND_GROUP; end
+  def is_active; self.kind <= KIND__MAX_ACTIVE; end
 
   USER_SYSTEM = 0       # SYSTEM full priv code
   USER_ANONYMOUS = 2
@@ -399,6 +400,7 @@ class User < ActiveRecord::Base
 
   # Update the groups, by ID
   def set_groups_from_ids(ids)
+    ids = ids.sort.uniq
     db = KApp.get_pg_database
     uid = id.to_i
     db.update('DELETE FROM user_memberships WHERE user_id = $1', uid)
@@ -438,6 +440,13 @@ class User < ActiveRecord::Base
       @group_code_to_id_lookup ||= begin
         lookup = {}
         User.find(:all, :conditions => "kind=#{KIND_GROUP} AND code IS NOT NULL").each { |g| lookup[g.code] = g.id }
+        lookup
+      end
+    end
+    def service_user_code_to_id_lookup
+      @service_user_code_to_id_lookup ||= begin
+        lookup = {}
+        User.find(:all, :conditions => "kind=#{KIND_SERVICE_USER} AND code IS NOT NULL").each { |u| lookup[u.code] = u.id }
         lookup
       end
     end

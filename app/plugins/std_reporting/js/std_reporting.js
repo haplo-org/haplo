@@ -555,7 +555,7 @@ var doUpdateFactsForObjects = function(collectionName, updates) {
 };
 
 // NOTE: Platform runs this callback in a special thread, and requires this name.
-P.backgroundCallback("update", function() {
+P.callback("$update", function() {
     // Determine what needs to be rebuilt
     var rebuilds = P.db.rebuilds.select();
     var fullRebuilds = {};
@@ -586,6 +586,7 @@ P.backgroundCallback("update", function() {
     } catch(e) {
         if("$isPlatformStopUpdating" in e) {
             console.log("Reporting update terminated early, updates not cleared and will be rerun");
+            return; // prevent clearing of update in table
         } else {
             console.log("Updating, caught error: "+e.message);
             if(reportNextExceptionFromUpdates) {
@@ -593,11 +594,12 @@ P.backgroundCallback("update", function() {
                     "Exception thrown when updating facts for an object. NOTE: Future exceptions in this runtime will not be reporting. Check server logs.\n\nException: "+e.message);
                 reportNextExceptionFromUpdates = false; // don't send too many, just one per runtime gives the right idea
             }
+            // In the error state, fall through to clearing updates, so it's not retried
+            // endlessly. It'll be fixed eventually in a nightly update.
         }
-        return; // prevent clearing of update in table
     }
     // Delete all the rebuild row used to determine data AFTER they've been completed.
-    // But if reporting updates stopped early or there was an error, then the table won't be cleared so it'll retry.
+    // But if reporting updates stopped early, then the table won't be cleared so it'll retry.
     _.each(rebuilds, function(row) {
         row.deleteObject();
     });

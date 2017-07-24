@@ -265,10 +265,12 @@ class AuthenticationController < ApplicationController
   _GetAndPost
   _PoliciesRequired :not_anonymous
   def handle_impersonate
-    # Allowed if the user has the impersonate policy, or the request is for a user which
-    # has been impersonated in this session (so the history UI can swap users).
+    # Allowed if the user has the impersonate policy, or if the original
+    # logged-in user has the impersonate user policy. This enables the
+    # impersonate history UI to swap users.
+    authenticated_user = session[:uid] ? User.cache[session[:uid].to_i] : nil
     permission_denied unless @request_user.policy.can_impersonate_user? ||
-        (session[:impersonate_history] || []).include?(params[:uid].to_i)
+        (authenticated_user && authenticated_user.policy.can_impersonate_user?)
     raise "Impersonate not allowed for API keys" if @request_uses_api_key # TODO: Test to make sure impersonation isn't allowed for API keys
     if request.post?
       impersonate_uid = params[:uid].to_i
@@ -276,11 +278,12 @@ class AuthenticationController < ApplicationController
         # Nothing selected
         redirect_to '/do/authentication/impersonate'
       else
-        KNotificationCentre.notify(:authentication, :impersonate, @request_user, impersonate_uid)
+        KNotificationCentre.notify(:authentication, :impersonate, authenticated_user, impersonate_uid)
         session[:impersonate_uid] = impersonate_uid
         history = (session[:impersonate_history] ||= [])
         history.push(impersonate_uid) unless history.include?(impersonate_uid)
-        redirect_to '/'
+        rdr = params[:rdr]
+        redirect_to((rdr != nil && rdr =~ /\A\//) ? rdr : '/')
       end
     else
       @users = User.find_all_by_kind(User::KIND_USER)

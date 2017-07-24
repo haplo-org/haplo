@@ -1,0 +1,6 @@
+<a href=["/download/" identifier.digest "/" identifier.fileSize "/" identifier.filename] class="haplo-file-download-link">
+    within(thumbnail) {
+        template:value:file:thumbnail()
+    }
+    identifier.filename
+</a>

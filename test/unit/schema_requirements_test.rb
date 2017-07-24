@@ -286,6 +286,10 @@ class SchemaRequirementsTest < Test::Unit::TestCase
         REMOVE member test:group:does-not-exist
         REMOVE member std:group:administrators
 
+      service-user test:service-user:one
+        title: Service User One
+        group test:group:test-group-two
+
       object test:generic-object:pre-existing-root
         notes: Add some notes
 
@@ -416,15 +420,18 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     KObjectStore.schema.each_qual_descriptor { |q| not_mentioned_qualifier = q if q.code == "test:qualifier:no-details" }
     assert_equal "NO TITLE SET IN SCHEMA REQUIREMENTS", not_mentioned_qualifier.printable_name.to_s
     assert_equal "no-title-set-in-schema-requirements", not_mentioned_qualifier.short_name.to_s
-    # Check group creation
+    # Check group & service user creation
     test_group = User.find(:first, :conditions => {:kind => User::KIND_GROUP, :code => 'test:group:test-group'})
+    test_service_user = User.find(:first, :conditions => {:kind => User::KIND_SERVICE_USER, :code => 'test:service-user:one'})
     assert test_group != nil
     assert_equal "Test Group", test_group.name
     group_two_post_apply = User.find(:first, :conditions => {:code => 'test:group:test-group-two'})
     assert_equal group_two.id, group_two_post_apply.id
     assert_equal "Group 2", group_two_post_apply.name
-    assert_equal [test_group.id], group_two_post_apply.direct_member_ids
+    assert_equal [test_group.id, test_service_user.id].sort, group_two_post_apply.direct_member_ids.sort
     assert_equal User::KIND_GROUP, group_two_post_apply.kind # disabled groups get reenabled
+    assert_equal "Service User One", test_service_user.name
+    assert_equal [group_two_post_apply.id], test_service_user.groups.map { |g| g.id }
     # Check generic objects
     list_type_desc = KObjectStore.schema.root_type_descs_sorted_by_printable_name.find { |t| t.code == "test:type:test-list" }
     subject_for_notes_updated = KObjectStore.read(subject_for_notes.objref)

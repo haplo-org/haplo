@@ -35,7 +35,7 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
             workUnit: M.workUnit,
             processName: M.getWorkflowProcessName(),
             status: M._getText(['status'], [M.state]),
-            timeline: M.renderTimelineDeferred()
+            timeline: M.renderTimelineDeferred(true)
         }, P.template("default-work"));
         return true;
     }},
@@ -127,7 +127,7 @@ _.extend(P.WorkflowInstanceBase.prototype, {
         this._callHandler('$workListFullInfo', W, view);
     },
 
-    renderTimelineDeferred: function() {
+    renderTimelineDeferred: function(renderingForWorkUnitDisplay) {
         var entries = [];
         var timeline = this.timelineSelect();
         var layout = P.template('timeline/entry-layout');
@@ -149,7 +149,10 @@ _.extend(P.WorkflowInstanceBase.prototype, {
                 }));
             }
         }
-        return P.template("timeline").deferredRender({entries:entries});
+        return P.template("timeline").deferredRender({
+            renderingForWorkUnitDisplay: renderingForWorkUnitDisplay,
+            entries: entries
+        });
     },
 
     // Render built-in timeline entries

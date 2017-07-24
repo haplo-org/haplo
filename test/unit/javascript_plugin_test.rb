@@ -360,6 +360,28 @@ __E
 
   # -------------------------------------------------------------------------------------------------------------
 
+  def test_plugin_callbacks
+    begin
+      assert_equal(true, KPlugin.install_plugin("test_plugin"))
+
+      has_hook = false
+      r = call_hook(:hTestReportCallbackName) do |hooks|
+        has_hook = true
+        hooks.run
+      end
+      assert has_hook
+      cbr = KJSPluginRuntime.current.call_callback(
+        r.name, ["raw", "foo",
+                       "parseJSON", "\"bar\"",
+                       "parseJSON", JSON.generate({"a"=>1, "b"=>2})]);
+      assert_equal("Result is [foo]/[bar]/[1]/[2]", cbr)
+    ensure
+      KPlugin.uninstall_plugin("test_plugin")
+    end
+  end
+
+  # -------------------------------------------------------------------------------------------------------------
+
   def test_plugin_database
     drop_all_javascript_db_tables
     assert_equal(true, KPlugin.install_plugin("test_plugin2"))
@@ -695,6 +717,10 @@ module KHooks
   define_hook :hTestPlugin3OnLoadOK do |h|
     h.description "Check onLoad was successful for test_plugin3"
     h.result :ok, "bool", nil, "In request?"
+  end
+  define_hook :hTestReportCallbackName do |h|
+    h.description "Ask the callback what callback it has created"
+    h.result :name, String, "''", "The name of the test callback"
   end
   define_hook :hTotallyUnimplementedHook do |h|
     h.description "Do not implement this hook anywhere"

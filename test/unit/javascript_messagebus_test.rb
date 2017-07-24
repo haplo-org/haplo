@@ -11,6 +11,7 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_messagebus/messagebus_test1")
 
   def test_messagebus_loopback
+    db_reset_test_data
     run_javascript_test(:file, 'unit/javascript/javascript_messagebus/test_messagebus_loopback.js')
   end
 
@@ -35,19 +36,28 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
 
   def test_messagebus_interapp_single_app
     KeychainCredential.delete_all
-    KeychainCredential.new({
+    bus = KeychainCredential.new({
       :kind => 'Message Bus', :instance_kind => 'Inter-application', :name => 'Test Inter App Bus',
-      :account_json => '{"Bus":"https://example.org/name"}', :secret_json => '{"Secret":"secret1234"}'
-    }).save!
+      # Include the app ID in the name of the bus, otherwise tests run in parallel will interfere with each other
+      :account_json => %Q!{"Bus":"https://example.org/name/#{_TEST_APP_ID}"}!,
+      :secret_json => '{"Secret":"secret1234"}'
+    })
+    bus.save!
     install_grant_privileges_plugin_with_privileges('pMessageBusRemote')
     assert KPlugin.install_plugin('messagebus_test1')
+    # Check platform bus configuration
+    expected_plugin_messagebus_config = {}
+    expected_plugin_messagebus_config[bus.id.to_s] = [true]
+    assert_equal expected_plugin_messagebus_config, JSON.parse(KApp.global(:js_messagebus_config))
+    platform_config = JSMessageBus::MessageBusPlatformConfiguration.new
+    assert_equal true, platform_config.for_bus(bus.id).has_receive
     begin
       run_javascript_test(:file, 'unit/javascript/javascript_messagebus/test_messagebus_interapp_single_app.js', nil, "grant_privileges_plugin") do |runtime|
         support_root = runtime.host.getSupportRoot
         runtime.host.setTestCallback(proc { |string|
           if string == 'deliverInterAppMessages'
-            thread = Thread.new { JSMessageBus::InterApplication.deliver_queued_messages }
-            thread.join
+            deliver = JSMessageBus::DeliverMessages.new(_TEST_APP_ID)
+            deliver.deliver_from_queue
           end
           ''
         })
@@ -87,16 +97,16 @@ _
   def test_messagebus_amazonkinesis
     return unless KINESIS_CREDENTIALS
     KeychainCredential.delete_all
-    ks_account = { "AWS Credential Name" => 'test-aws', "AWS Region" => KINESIS_CREDENTIALS['kinesis']['region'], "Kinesis Stream Name" => KINESIS_CREDENTIALS['kinesis']['stream'] }
+    ks_account = {
+      "Kinesis Stream Name" => KINESIS_CREDENTIALS['kinesis']['stream'],
+      "Kinesis Stream Partition Key" => 'partition1',
+      "AWS Region" => KINESIS_CREDENTIALS['kinesis']['region'],
+      "AWS Access Key ID" => KINESIS_CREDENTIALS['aws']['id']
+    }
+    ks_secret = { "AWS Access Key Secret" => KINESIS_CREDENTIALS['aws']['secret'] }
     KeychainCredential.new({
       :kind => 'Message Bus', :instance_kind => 'Amazon Kinesis Stream', :name => 'test-kinesis',
-      :account_json => ks_account.to_json, :secret_json => {}.to_json
-    }).save!
-    aws_account = { "Access Key ID" => KINESIS_CREDENTIALS['aws']['id'] }
-    aws_secret = { "Access Key Secret" => KINESIS_CREDENTIALS['aws']['secret'] }
-    KeychainCredential.new({
-      :kind => 'Public Cloud Provider', :instance_kind => 'Amazon Web Services', :name => 'test-aws',
-      :account_json => aws_account.to_json, :secret_json => aws_secret.to_json
+      :account_json => ks_account.to_json, :secret_json => ks_secret.to_json
     }).save!
     install_grant_privileges_plugin_with_privileges('pMessageBusRemote')
     begin
@@ -104,8 +114,8 @@ _
         support_root = runtime.host.getSupportRoot
         runtime.host.setTestCallback(proc { |string|
           if string == 'deliverAmazonKinesisMessages'
-            thread = Thread.new { JSMessageBus::AmazonKinesis.deliver_queued_messages }
-            thread.join
+            deliver = JSMessageBus::DeliverMessages.new(_TEST_APP_ID)
+            deliver.deliver_from_queue
           end
           ''
         })
@@ -114,6 +124,24 @@ _
       uninstall_grant_privileges_plugin
       KeychainCredential.delete_all
     end
+  end
+
+  # -------------------------------------------------------------------------
+
+  def test_message_bus_platform_config_decoding
+    c0 = JSMessageBus::MessageBusPlatformConfiguration.new('{"42":[false],"98":[true],"65":[false]}')
+    assert_equal false, c0.for_bus(42).has_receive
+    assert_equal true,  c0.for_bus(98).has_receive
+    # Not explicitly configured
+    assert_equal true,  c0.for_bus(9999).has_receive
+
+    c1 = JSMessageBus::MessageBusPlatformConfiguration.new('{}')
+    assert_equal true,  c1.for_bus(42).has_receive
+
+    # Use app global
+    KApp.set_global(:js_messagebus_config, '{"42":[true],"87":[true]}')
+    c2 = JSMessageBus::MessageBusPlatformConfiguration.new
+    assert_equal true,  c2.for_bus(42).has_receive
   end
 
 end

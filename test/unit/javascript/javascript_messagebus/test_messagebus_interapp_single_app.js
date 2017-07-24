@@ -9,7 +9,7 @@ TEST(function() {
 
     // Inter-app from keychain
     var Bus = O.messageBus.remote("Test Inter App Bus");
-    TEST.assert_equal(Bus._interappName, "https://example.org/name");
+    TEST.assert_equal(Bus._interappName, "https://example.org/name/"+O.application.id);
     TEST.assert_equal(Bus._interappSecret, "secret1234");
 
     // Get the same one back if requested twice
@@ -19,6 +19,7 @@ TEST(function() {
     messagebus_test1.db.values.select().deleteAll();
     var getValueFromDatabase = function() {
         var q = messagebus_test1.db.values.select();
+        TEST.assert(q.length < 2);    // delivery only once
         return q.length ? q[0].value : undefined;
     };
 

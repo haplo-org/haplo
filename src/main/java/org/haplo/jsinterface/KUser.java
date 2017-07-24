@@ -78,8 +78,18 @@ public class KUser extends KScriptable {
         return (user == null) ? null : KUser.fromAppUser(user);
     }
 
+    public static Scriptable jsStaticFunction_getServiceUserByCode(String code) {
+        AppUser user = rubyInterface.getServiceUserByCode(code);
+        return KUser.fromAppUser(user);
+    }
+
     public static Scriptable jsStaticFunction_getCurrentUser() {
         AppUser user = rubyInterface.getCurrentUser();
+        return (user == null) ? null : KUser.fromAppUser(user);
+    }
+
+    public static Scriptable jsStaticFunction_getCurrentAuthenticatedUser() {
+        AppUser user = rubyInterface.getCurrentAuthenticatedUser();
         return (user == null) ? null : KUser.fromAppUser(user);
     }
 
@@ -127,6 +137,14 @@ public class KUser extends KScriptable {
 
     public boolean jsGet_isSuperUser() {
         return rubyInterface.isSuperUser(this.user);
+    }
+
+    public boolean jsGet_isServiceUser() {
+        return rubyInterface.isServiceUser(this.user);
+    }
+
+    public boolean jsGet_isAnonymous() {
+        return rubyInterface.isAnonymous(this.user);
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -330,7 +348,11 @@ public class KUser extends KScriptable {
 
         public AppUser getUserByRef(AppObjRef ref);
 
+        public AppUser getServiceUserByCode(String code);
+
         public AppUser getCurrentUser();
+
+        public AppUser getCurrentAuthenticatedUser();
 
         public boolean canCreateObjectOfType(AppUser user, int objId);
 
@@ -341,6 +363,8 @@ public class KUser extends KScriptable {
         public Integer[] getDirectGroupIds(AppUser user);
 
         public boolean isSuperUser(AppUser user);
+        public boolean isServiceUser(AppUser user);
+        public boolean isAnonymous(AppUser user);
 
         public String getUserDataJSON(AppUser user);
 

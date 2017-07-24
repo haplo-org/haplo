@@ -408,6 +408,9 @@ class AuthenticationControllerTest < IntegrationTest
       # Will be able to login and impersonate
       impersonation_do_login_and_impersonation
 
+      # Able to impersonate another user directly while impersonating if authed user has permission
+      impersonation_do_impersonate_while_impersonating
+
       # And end the impersonation
       post_302 "/do/authentication/end_impersonation"
       assert_redirected_to '/'
@@ -464,9 +467,34 @@ class AuthenticationControllerTest < IntegrationTest
     assert_equal @_users[_TEST_APP_ID].id, session[:uid]
     assert_equal other_user.id, session[:impersonate_uid]
     assert_select 'form[action="/do/authentication/end_impersonation"]', "Impersonating #{other_user.name}"
+  end
 
-    # Impersonated user doesn't have permission to impersonate
-    get_403 "/do/authentication/impersonate"
+  def impersonation_do_impersonate_while_impersonating
+    other_user = User.find(41)
+    another_user = User.find(42)
+    # Post with UID but without redirect
+    about_to_create_an_audit_entry
+    post_302 "/do/authentication/impersonate", {:uid => another_user.id.to_s}
+    assert_audit_entry({:kind => 'USER-IMPERSONATE', :user_id => another_user.id, :auth_user_id => @_users[_TEST_APP_ID].id, :displayable => false})
+    assert_redirected_to '/'
+    get '/do/account/info'
+    assert_select '#z__aep_tools_tab a', another_user.name
+    assert_select '#z__ws_content b', another_user.email
+    assert_equal @_users[_TEST_APP_ID].id, session[:uid]
+    assert_equal another_user.id, session[:impersonate_uid]
+    # Back to other_user, post with UID and redirect
+    about_to_create_an_audit_entry
+    post_302 "/do/authentication/impersonate", {:uid => other_user.id.to_s, :rdr => "/path/to/alternative/location" }
+    assert_audit_entry({:kind => 'USER-IMPERSONATE', :user_id => other_user.id, :auth_user_id => @_users[_TEST_APP_ID].id, :displayable => false})
+    assert_redirected_to "/path/to/alternative/location"
+    get '/do/account/info'
+    assert_select '#z__aep_tools_tab a', other_user.name
+    assert_select '#z__ws_content b', other_user.email
+    assert_equal @_users[_TEST_APP_ID].id, session[:uid]
+    assert_equal other_user.id, session[:impersonate_uid]
+    # Security check - make sure rdr's which could go elsewhere are ignored
+    post_302 "/do/authentication/impersonate", {:uid => another_user.id.to_s, :rdr => "does_not/start/with/slash" }
+    assert_redirected_to "/" # rdr ignored
   end
 
   # ===================================================================================================================

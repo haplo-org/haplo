@@ -14,6 +14,7 @@
     ]
   end
   allowed_edit_main_details = @user.id > User::USER_ID_MAX_PROTECTED
+  allowed_edit_main_details = false if @user.kind == User::KIND_SERVICE_USER
   change_state_buttons = [] unless allowed_edit_main_details && (@user.id != @request_user.id)
   is_active = @user.kind <= User::KIND__MAX_ACTIVE
   show_access_buttons = true
@@ -67,10 +68,10 @@
     <% end %>
   </td>
   <% end %>
-  <% unless @is_user %>
+  <% if @is_group || @is_service_user %>
   <%= code_show_in_table(@user.code) %>
   <tr><th>Notification email</th><td><%= h(@user.email) %></td></tr>
-  <tr><th>Group ID</th><td><%= h(@user.id) %></td></tr>
+  <tr><th><% if @is_group %>Group<% else %>Service user<% end %> ID</th><td><%= h(@user.id) %></td></tr>
   <% end %>
   <%
     # Plugins can add arbitary information to the user page
@@ -119,7 +120,7 @@
 
 <!-- ------------------ MEMBERS OF THIS GROUP ------------------ -->
 
-<% unless @is_user -%>
+<% if @is_group -%>
   <h1>Members of this group</h1>
     <% unless @user.id.to_i == User::GROUP_EVERYONE -%>
       <% @user.members.each do |member| -%>
@@ -209,7 +210,7 @@
 
 <!-- ------------------ RESTRICTION LABELS -------------- -->
 
-<% if @is_user %>
+<% if @is_user || @is_service_user %>
   <h1>Restriction labels</h1>
   <%
     restriction_labels = @user.attribute_restriction_labels
@@ -226,25 +227,29 @@
 
 <!-- ------------------ LATEST UPDATES ------------------ -->
 
-<h1><%= h(KApp.global(:name_latest).capitalize) %> settings</h1>
+<% unless @is_service_user -%>
 
-<table class="z__mangement_kv_table">
-  <tr><th>Schedule</th><td><%= @latest_updates_schedule %></td><td>(<%= h(@latest_updates_source) %>)</td></tr>
-  <tr><th>Format</th><td><%= @latest_updates_format %></td><td>(<%= h(@latest_updates_source) %>)</td></tr>
-  <tr><th>Email template</th><td><%= h(@latest_updates_template.name) %></td><td>(<%= h(@latest_template_source) %>)</tr>
-</table>
-<%= (is_active && show_property_buttons) ? sys_mng_edit_button("/do/admin/latest/settings/#{@user.id}") : sys_mng_edit_button_disabled() %>
+  <h1><%= h(KApp.global(:name_latest).capitalize) %> settings</h1>
+
+  <table class="z__mangement_kv_table">
+    <tr><th>Schedule</th><td><%= @latest_updates_schedule %></td><td>(<%= h(@latest_updates_source) %>)</td></tr>
+    <tr><th>Format</th><td><%= @latest_updates_format %></td><td>(<%= h(@latest_updates_source) %>)</td></tr>
+    <tr><th>Email template</th><td><%= h(@latest_updates_template.name) %></td><td>(<%= h(@latest_template_source) %>)</tr>
+  </table>
+  <%= (is_active && show_property_buttons) ? sys_mng_edit_button("/do/admin/latest/settings/#{@user.id}") : sys_mng_edit_button_disabled() %>
 
 
-<h1><%= h(KApp.global(:name_latest_requests).capitalize) %></h1>
+  <h1><%= h(KApp.global(:name_latest_requests).capitalize) %></h1>
 
-<% @latest_update_requests.each do |req| %>
-  <p><i><%= h(req.title) %></i></p>
+  <% @latest_update_requests.each do |req| %>
+    <p><i><%= h(req.title) %></i></p>
+  <% end -%>
+
+  <p>Topics will also include topics set on this user's groups.</p>
+
+  <%= (is_active && show_property_buttons) ? sys_mng_edit_button("/do/admin/latest/edit/#{@user.id}") : sys_mng_edit_button_disabled() %>
+
 <% end -%>
-
-<p>Topics will also include topics set on this user's groups.</p>
-
-<%= (is_active && show_property_buttons) ? sys_mng_edit_button("/do/admin/latest/edit/#{@user.id}") : sys_mng_edit_button_disabled() %>
 
 <!-- ------------------ LOCALISATION SETTINGS ------------------ -->
 
@@ -259,7 +264,7 @@
 
 <!-- ------------------ API KEYS ------------------ -->
 
-<% if @is_user %>
+<% if @is_user || @is_service_user %>
 
   <h1>API keys (communication with other software)</h1>
   <p>

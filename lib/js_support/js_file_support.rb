@@ -183,6 +183,14 @@ module JSFileSupport
 
   # ------------------------------------------------------------------------------------------------------------
 
+  def self.setBinaryDataForThumbnail(stored_file, binary_data)
+    thumb_info = stored_file.thumbnail
+    raise JavaScriptAPIError, "No thumbnail image available" unless thumb_info
+    binary_data.setFile(stored_file.disk_pathname_thumbnail, "thumbnail", stored_file.thumbnail_mime_type)
+  end
+
+  # ------------------------------------------------------------------------------------------------------------
+
   def self.verifyFileTransformPipelineTransform(name, json)
     KJSFileTransformPipeline.verify_transform(name, json)
   end

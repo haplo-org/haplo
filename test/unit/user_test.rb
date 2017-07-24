@@ -134,6 +134,11 @@ class UserTest < Test::Unit::TestCase
     # Set group membership
     user0.set_groups_from_ids([21,22])
     assert_audit_entry(:kind => 'GROUP-MEMBERSHIP', :entity_id => user0.id, :data => {"groups" => [21,22]})
+    assert_equal [21,22], user0.direct_groups_ids.sort
+    # Check group memberships is de-duplicated
+    user0.set_groups_from_ids([22,22])
+    assert_audit_entry(:kind => 'GROUP-MEMBERSHIP', :entity_id => user0.id, :data => {"groups" => [22]})
+    assert_equal [22], user0.direct_groups_ids.sort
     # Create a password and blank the recovery token, like welcome / recovery
     user0.password = "ping2376@!"
     user0.recovery_token = nil

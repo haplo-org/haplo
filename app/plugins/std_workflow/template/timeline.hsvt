@@ -1,3 +1,14 @@
-each(entries) {
-  render(.)
+do() {
+  if(renderingForWorkUnitDisplay) {
+    yield:timeline()
+
+  } else {
+    // TODO: Better display for non-work unit rendering?
+    <div class="z__work_unit_obj_display">
+      yield:timeline()
+    </div>
+  }
+
+} timeline {
+  each(entries) { render(.) }
 }

@@ -20,6 +20,12 @@
   %>
 </table>
 
+<div class="z__management_extra_buttons_holder">
+  <form method="GET" action="/do/setup/keychain/delete/<%= @credential.id %>">
+    <input type="submit" value="Delete">
+  </form>
+</div>
+
 <%= sys_mng_edit_button("/do/setup/keychain/edit/#{@credential.id}") %>
 
 <%= sys_mng_update_submenu(@credential.name, "/do/setup/keychain/info/#{@credential.id}") %>

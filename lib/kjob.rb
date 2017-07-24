@@ -9,17 +9,19 @@ class KJob
   QUEUE_DEFAULT   = 0
   QUEUE_PLUGINS   = 1
   QUEUE_FILE_TRANSFORM_PIPELINE = 2
-  QUEUE__COUNT    = 3
+  QUEUE_HTTP_CLIENT = 3
+  QUEUE__COUNT    = 4
 
   # How many worker threads to start
   BACKGROUND_TASK_COUNTS = {
     QUEUE_DEFAULT => 3,
     QUEUE_FILE_TRANSFORM_PIPELINE => 2,
-    QUEUE_PLUGINS => 1 # DO NOT CHANGE THIS
+    QUEUE_PLUGINS => 1, # DO NOT CHANGE THIS
     # Plugins need some way to be able to control concurrency of their jobs, and
     # by default, not run any concurrently. Setting only one background task for
     # plugins is an easy way to ensure no concurrency, even if it does introduce
     # other problems around efficiency and ability of apps to block other apps.
+    QUEUE_HTTP_CLIENT => 2
   }
 
   DEFAULT_RETRY_DELAY = 60
@@ -53,6 +55,11 @@ class KJob
   #   Use context.user_id to get the (integer) user which initiated the job.
   #
   def run(context)
+  end
+
+  # When a job has run out of retries, this is called to notify the job that it's not
+  # going to be run again.
+  def giving_up()
   end
 
   def description_for_log
@@ -219,6 +226,8 @@ class KJob
         JOB_HEALTH_EVENTS.log_and_report_exception(e)
       end
 
+      gave_up_on_job = false
+
       KApp.in_application(:no_app) do
         pg = KApp.get_pg_database
 
@@ -231,6 +240,7 @@ class KJob
           KApp.logger.error "Job failure: #{log_info}, message=\"#{context.log_message || '?'}\""
           if retries_left.to_i <= 1
             # Can't do anything more
+            gave_up_on_job = true
             delete_job(job_id, pg)
           else
             # Mark it for retrying, and re-serialize the job so it can have updated state
@@ -252,6 +262,16 @@ class KJob
         else
           # If it returns anything, just delete it
           delete_job(job_id, pg)
+        end
+      end
+
+      if gave_up_on_job
+        KApp.in_application(application_id) do
+          begin
+            job.giving_up()
+          rescue => e
+            KApp.logger.log_exception e
+          end
         end
       end
 

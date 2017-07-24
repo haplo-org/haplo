@@ -1,0 +1,58 @@
+<p> <b> "WARNING:" </b> " Use this tool with care. It may result in unexpected behaviour." </p>
+
+<h2>"Status"</h2>
+<table>
+  <tr>
+    <td> "Is edited" </td>
+    <td> instance.currentDocumentIsEdited </td>
+  </tr>
+  <tr>
+    <td> "Is complete" </td>
+    <td> instance.currentDocumentIsComplete </td>
+  </tr>
+</table>
+
+<h2>"Forms for key"</h2>
+<table>
+  <tr>
+    <th> "formId" </th>
+    <th> "Title" </th>
+    <th> </th>
+  </tr>
+  each(forms) {
+  <tr>
+    <td> formId </td>
+    <td> formTitle </td>
+    <td> <a href=[^{path} "/admin/form/" ^{M.workUnit.id}]>"Edit"</a> </td>
+  </tr>
+  }
+</table>
+
+<h2>"Current document"</h2>
+
+<form method="POST"> std:form:token()
+  <textarea name="currentDocument" rows="30" cols="80">currentDocument</textarea>
+  <p>
+    <input type="submit" name="set" value="Set current document"> "&nbsp;"
+    <input type="submit" name="setAndCommit" value="Set current document and commit">
+  </p>
+</form>
+
+<h2>"History"</h2>
+
+<table>
+  <tr>
+    <th> "Version" </th>
+    <th> "Date" </th>
+    <th> "User" </th>
+  </tr>
+  each(instance.history) {
+  <tr>
+    <td> <a href=[^{path} "/admin/view-document/" ^{M.workUnit.id} "/" version]>version</a> </td>
+    <td> std:date:time(date) </td>
+    <td> user.name </td>
+  </tr>
+  }
+</table>
+
+

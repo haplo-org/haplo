@@ -8,6 +8,7 @@
   selector = if @showing_users
     [
       [User::KIND_USER, 'ACTIVE', "list?kind=#{User::KIND_USER}"],
+      [User::KIND_SERVICE_USER, 'SRV', "list?kind=#{User::KIND_SERVICE_USER}"],
       [User::KIND_USER_BLOCKED, 'BLOCKED', "list?kind=#{User::KIND_USER_BLOCKED}"],
       [User::KIND_USER_DELETED, 'DELETED', "list?kind=#{User::KIND_USER_DELETED}"]
     ]

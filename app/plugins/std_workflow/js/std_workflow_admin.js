@@ -126,6 +126,11 @@ P.respond("GET", "/do/workflow/administration/entities", [
         };
         if(i.usedAsActionableBy) { display.unshift(i); } else { display.push(i); }
     });
+    display.unshift({
+        name: "object",
+        objects: entities.object_list,
+        usedAsActionableBy: false
+    });
     E.render({
         M: M,
         display: display

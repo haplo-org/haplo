@@ -28,7 +28,7 @@ class Admin_UserController < ApplicationController
     # What kind?
     @kind = params[:kind].to_i if params.has_key?(:kind)
     @kind ||= User::KIND_USER
-    @showing_users = case @kind; when User::KIND_USER, User::KIND_USER_BLOCKED, User::KIND_USER_DELETED; true; else false; end
+    @showing_users = case @kind; when User::KIND_USER, User::KIND_SERVICE_USER, User::KIND_USER_BLOCKED, User::KIND_USER_DELETED; true; else false; end
 
     # got a search
     @search_string = params[:search]
@@ -55,6 +55,8 @@ class Admin_UserController < ApplicationController
     # User info
     @user = User.find(params[:id])
     @is_user = case @user.kind.to_i; when User::KIND_USER, User::KIND_USER_BLOCKED, User::KIND_USER_DELETED; true; else false; end
+    @is_service_user = @user.kind == User::KIND_SERVICE_USER
+    @is_group = @user.is_group
     # Latest updates
     @latest_update_requests = LatestRequest.find_all_by_user_id(@user.id).sort { |a,b| a.title <=> b.title }
     # Schedule etc
@@ -72,7 +74,7 @@ class Admin_UserController < ApplicationController
     @time_zone, @time_zone_source =
         get_user_data_with_source_description(@user, UserData::NAME_TIME_ZONE, KDisplayConfig::DEFAULT_TIME_ZONE)
     # API keys
-    if @is_user
+    if @is_user || @is_service_user
       @api_keys = ApiKey.find(:all, :conditions => ['user_id=?', @user.id], :order => 'name')
     end
     # Load representative object
@@ -392,7 +394,7 @@ class Admin_UserController < ApplicationController
   _GetAndPost
   def handle_new_api_key
     @for_user = User.find(params[:for])
-    raise "Bad new api key" unless @for_user.kind == User::KIND_USER
+    raise "Bad new api key" unless @for_user.kind == User::KIND_USER || @for_user.kind == User::KIND_SERVICE_USER
     @data = FormDataObject.new({
       :name => 'General API access',
       :path => '/api/'
