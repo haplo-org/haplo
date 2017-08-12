@@ -9,6 +9,7 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
   include JavaScriptTestHelper
 
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_messagebus/messagebus_test1")
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_messagebus/messagebus_test2")
 
   def test_messagebus_loopback
     db_reset_test_data
@@ -47,10 +48,11 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     assert KPlugin.install_plugin('messagebus_test1')
     # Check platform bus configuration
     expected_plugin_messagebus_config = {}
-    expected_plugin_messagebus_config[bus.id.to_s] = [true]
+    expected_plugin_messagebus_config[bus.id.to_s] = [true,false]
     assert_equal expected_plugin_messagebus_config, JSON.parse(KApp.global(:js_messagebus_config))
     platform_config = JSMessageBus::MessageBusPlatformConfiguration.new
     assert_equal true, platform_config.for_bus(bus.id).has_receive
+    assert_equal false, platform_config.for_bus(bus.id).has_delivery_report
     begin
       run_javascript_test(:file, 'unit/javascript/javascript_messagebus/test_messagebus_interapp_single_app.js', nil, "grant_privileges_plugin") do |runtime|
         support_root = runtime.host.getSupportRoot
@@ -108,6 +110,7 @@ _
       :kind => 'Message Bus', :instance_kind => 'Amazon Kinesis Stream', :name => 'test-kinesis',
       :account_json => ks_account.to_json, :secret_json => ks_secret.to_json
     }).save!
+    assert KPlugin.install_plugin('messagebus_test2')
     install_grant_privileges_plugin_with_privileges('pMessageBusRemote')
     begin
       run_javascript_test(:file, 'unit/javascript/javascript_messagebus/test_messagebus_amazonkinesis.js', nil, "grant_privileges_plugin") do |runtime|
@@ -122,6 +125,7 @@ _
       end
     ensure
       uninstall_grant_privileges_plugin
+      KPlugin.uninstall_plugin('messagebus_test2')
       KeychainCredential.delete_all
     end
   end
@@ -129,19 +133,24 @@ _
   # -------------------------------------------------------------------------
 
   def test_message_bus_platform_config_decoding
-    c0 = JSMessageBus::MessageBusPlatformConfiguration.new('{"42":[false],"98":[true],"65":[false]}')
+    c0 = JSMessageBus::MessageBusPlatformConfiguration.new('{"42":[false,true],"98":[true,false],"65":[false,false]}')
     assert_equal false, c0.for_bus(42).has_receive
+    assert_equal true,  c0.for_bus(42).has_delivery_report
     assert_equal true,  c0.for_bus(98).has_receive
+    assert_equal false, c0.for_bus(65).has_delivery_report
     # Not explicitly configured
     assert_equal true,  c0.for_bus(9999).has_receive
+    assert_equal true,  c0.for_bus(9999).has_delivery_report
 
     c1 = JSMessageBus::MessageBusPlatformConfiguration.new('{}')
     assert_equal true,  c1.for_bus(42).has_receive
+    assert_equal true,  c1.for_bus(42).has_delivery_report
 
     # Use app global
-    KApp.set_global(:js_messagebus_config, '{"42":[true],"87":[true]}')
+    KApp.set_global(:js_messagebus_config, '{"42":[true,false],"87":[true,true]}')
     c2 = JSMessageBus::MessageBusPlatformConfiguration.new
     assert_equal true,  c2.for_bus(42).has_receive
+    assert_equal false, c2.for_bus(42).has_delivery_report
   end
 
 end

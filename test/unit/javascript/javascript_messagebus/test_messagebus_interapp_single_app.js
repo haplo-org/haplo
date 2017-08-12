@@ -15,6 +15,12 @@ TEST(function() {
     // Get the same one back if requested twice
     TEST.assert(Bus === O.messageBus.remote("Test Inter App Bus"));
 
+    // Delivery reports
+    var deliveryStatus, deliveryInfomation, deliveryMessage;
+    Bus.deliveryReport(function(status, information, message) {
+        deliveryStatus = status; deliveryInfomation = information; deliveryMessage = message;
+    });
+
     // Use a database to get info between runtimes
     messagebus_test1.db.values.select().deleteAll();
     var getValueFromDatabase = function() {
@@ -27,8 +33,13 @@ TEST(function() {
     TEST.assert_equal(undefined, getValueFromDatabase());
     messagebus_test1.data.lastMsgValue = '';
     var testValue = Date.now() % 10000000;
-    Bus.message().body({value:testValue}).send();
+    var testMsg = Bus.message().body({value:testValue});
+    testMsg.send();
     TEST.assert_equal(undefined, getValueFromDatabase());
+    // Check delivery report as it's queued now
+    TEST.assert_equal("success", deliveryStatus);
+    TEST.assert(_.isEqual({}, deliveryInfomation));
+    TEST.assert(testMsg === deliveryMessage);   // will be identical object because of implementation
 
     // Use callback to trigger delivery
     $host._testCallback("deliverInterAppMessages");

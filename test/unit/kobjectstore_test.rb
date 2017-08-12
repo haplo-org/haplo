@@ -2806,6 +2806,45 @@ _OBJS
     assert_equal 0, KObjectStore.query_and.free_text("special_stuff").execute(:all,:any).length # not indexed
   end
 
+  def test_uuid_identifier
+    restore_store_snapshot("basic")
+    uuid1 = KIdentifierUUID.new("9553ade8-625d-efb0-8660-c4e908e4ea70")
+    uuid2 = KIdentifierUUID.new("  0bbc260e-56a0-6fc9-c601-f5c090064eb3  ")
+    assert_raises(RuntimeError) { KIdentifierUUID.new("not a UUID") }
+
+    assert uuid1 != "9553ade8-625d-efb0-8660-c4e908e4ea70" # string representation, but still not equal
+    assert_equal "9553ade8-625d-efb0-8660-c4e908e4ea70", uuid1.to_s
+    assert_equal "0bbc260e-56a0-6fc9-c601-f5c090064eb3", uuid2.to_s
+
+    assert uuid1 != uuid2
+    assert uuid1 != KIdentifierUUID.new("c53466b0-b9f8-c3df-a5f2-d8abe14afb42")
+
+    assert_equal KIdentifierUUID.new("0bbc260e-56a0-6fc9-c601-f5c090064eb3"), uuid2
+    assert_equal KIdentifierUUID.new("0BBC260E-56A0-6FC9-C601-F5C090064EB3"), uuid2
+    assert_equal KIdentifierUUID.new("0bbc260e-56a0-6fc9-c601-F5C090064EB3"), uuid2
+
+    obj1 = KObject.new()
+    obj1.add_attr(O_TYPE_BOOK, A_TYPE)
+    obj1.add_attr("book1", A_TITLE)
+    obj1.add_attr(uuid1, 1777)
+    KObjectStore.create(obj1)
+    obj2 = KObject.new()
+    obj2.add_attr(O_TYPE_BOOK, A_TYPE)
+    obj2.add_attr("book2", A_TITLE)
+    obj2.add_attr(uuid2, 1777)
+    KObjectStore.create(obj2)
+
+    check1 = Proc.new do |uuidstr, expected_title|
+      r = KObjectStore.query_and().identifier(KIdentifierUUID.new(uuidstr), 1777).execute()
+      assert_equal 1, r.length
+      assert_equal expected_title, r[0].first_attr(A_TITLE).to_s
+    end
+    check1.call('9553ade8-625d-efb0-8660-c4e908e4ea70', 'book1')
+    check1.call('9553ADE8-625D-EFB0-8660-C4E908E4EA70', 'book1') # all upper case
+    check1.call('0bbc260e-56a0-6fc9-c601-f5c090064eb3', 'book2')
+    check1.call('0bbc260e-56a0-6fc9-c601-F5C090064EB3', 'book2') # partial upper case
+  end
+
   # ------------------------------------------------------------------------
 
   def tetm_m(q)

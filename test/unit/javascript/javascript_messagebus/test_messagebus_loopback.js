@@ -64,11 +64,28 @@ TEST(function() {
     TEST.assert_exceptions(function() { Bus0.message().body({}).body({}); },    "Message body is already set");
     TEST.assert_exceptions(function() { Bus0.message().send(); },               "Cannot send a message without a message body");
     // Can't modify messages after receiving them
-    Bus0.receive(function(msg) {
-        if(msg.parsedBody().modBody) { msg.body({}); }
-        if(msg.parsedBody().doSend) { msg.send(); }
+    var capturedMessage;
+    Bus0.receive(function(msg) { capturedMessage = msg; });
+    Bus0.message().body({}).send();
+    TEST.assert_exceptions(function() { capturedMessage.body({}); }, "Message cannot be modified");
+    Bus0.message().body({}).send();
+    TEST.assert_exceptions(function() { capturedMessage.send(); },   "Message cannot be modified");
+
+    // Delivery reports
+    Bus0.receive(function(msg) { if(msg.parsedBody().throwException) { throw new Error("error on delivery"); } });
+    var deliveryStatus, deliveryInfomation, deliveryMessage;
+    Bus0.deliveryReport(function(status, information, message) {
+        deliveryStatus = status; deliveryInfomation = information; deliveryMessage = message;
     });
-    TEST.assert_exceptions(function() { Bus0.message().body({modBody:true}).send(); },  "Message cannot be modified");
-    TEST.assert_exceptions(function() { Bus0.message().body({doSend:true}).send(); },   "Message cannot be modified");
+    // Successful delivery on loopback (has own implementation)
+    Bus0.message().body({delivery1:true}).send();
+    TEST.assert_equal("success", deliveryStatus);
+    TEST.assert(_.isEqual({}, deliveryInfomation));
+    TEST.assert(deliveryMessage.parsedBody().delivery1);
+    // Failed deilvery on loopback
+    Bus0.message().body({delivery2:true,throwException:true}).send();
+    TEST.assert_equal("failure", deliveryStatus);
+    TEST.assert("exception" in deliveryInfomation);
+    TEST.assert(deliveryMessage.parsedBody().delivery2);
 
 });

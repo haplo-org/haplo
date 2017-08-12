@@ -50,6 +50,7 @@ class ApplicationNamespace
           "navigation"     => [:controller, {}, Setup_NavigationController],
           "subset"         => [:controller, {}, Setup_SubsetController],
           "keychain"       => [:controller, {}, Setup_KeychainController],
+          "web-publication" =>[:controller, {}, Setup_WebPublicationController],
           "plugins"        => [:controller, {}, Setup_PluginsController],
           "schema-requirements" =>
                               [:controller, {}, Setup_SchemaRequirementsController],

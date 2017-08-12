@@ -1,0 +1,10 @@
+{
+  "pluginName": "messagebus_test2",
+  "pluginAuthor": "Test",
+  "pluginVersion": 1,
+  "displayName": "Message Bus Test 2",
+  "displayDescription": "Testing",
+  "privilegesRequired": ["pMessageBusRemote", "pDatabase"],
+  "apiVersion": 4,
+  "load": ["js/messagebus_test2.js"]
+}

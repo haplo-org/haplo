@@ -13,6 +13,12 @@ module KHooks
     h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of displaying the object"
   end
 
+  define_hook :hPreObjectDisplayPublisher do |h|
+    h.private_hook
+    h.argument    :object,      KObject,  "The object being displayed"
+    h.result      :replacementObject, KObject, nil, "An object to display in place of the given object, or null for no replacement"
+  end
+
   define_hook :hObjectDisplay do |h|
     h.argument    :object,      KObject,        "The object being displayed"
     h.result      :hideModificationInfo,  "bool", "false", "Set to true to hide the modification info after the object"

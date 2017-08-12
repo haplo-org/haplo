@@ -1,0 +1,32 @@
+<table class="z__mangement_kv_table">
+    <tr>
+        <th> "Hostname" </th>
+        <td> <span class="z__management_code_text"> hostname </span> </td>
+    </tr>
+    <tr>
+        <th> "Home page" </th>
+        <td>
+            if(homePageUrl) {
+                <span class="z__management_code_text">
+                    <a href=homePageUrl rel="noopener" target="_blank"> homePageUrl </a>
+                </span>
+            } else {
+                <i> "No home page set" </i>
+            }
+        </td>
+    </tr>
+    <tr>
+        <th> "Implementing plugin" </th>
+        <td> publication.implementingPlugin.pluginName </td>
+    </tr>
+    <tr>
+        <th> "Service user" </th>
+        <td>
+            <div class="z__mng_user_display"> serviceUser.name </div>
+            <span class="z__management_code_text"> publication._serviceUserCode </span>
+        </td>
+    </tr>
+</table>
+
+<h2> "robots.txt" </h2>
+<pre> robotsTxt </pre>

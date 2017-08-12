@@ -130,12 +130,18 @@ module JSFileSupport
       end
     end
     # Generate the file path
-    url_path_options = options.authenticationSignature ? {:sign_with => session} : nil
+    url_path_options = nil
+    if options.authenticationSignatureValidForSeconds != nil
+      time_now = Time.now.to_i
+      url_path_options = {:sign_for_validity => [time_now, time_now+options.authenticationSignatureValidForSeconds]}
+    elsif options.authenticationSignature
+      url_path_options = {:sign_with => session}
+    end
     file_path = file_url_path(stored_file, as_thumbnail_html ? nil : requested_transform, url_path_options) # requested_transform is known URL safe
     file_path = KApp.url_base() + file_path if options.asFullURL
     # As an attachment?
     if options.forceDownload
-      file_path = "#{file_path}#{options.authenticationSignature ? '&' : '?'}attachment=1"
+      file_path = "#{file_path}#{url_path_options ? '&' : '?'}attachment=1"
     end
     # If only the path of the file was requested, return it now
     return file_path unless makeHTML

@@ -35,21 +35,40 @@ module JSMessageBus
         withRegion(credential.account['AWS Region']).
         withCredentials(aws_credentials_provider).
         build()
-      put_record_request = Java::ComAmazonawsServicesKinesisModel::PutRecordRequest.new().
-        withStreamName(credential.account['Kinesis Stream Name']).
-        withPartitionKey(credential.account['Kinesis Stream Partition Key']).
-        withData(java.nio.ByteBuffer.wrap(body.to_java_bytes))
-      res = client.putRecord(put_record_request)
-      KApp.logger.info("AWS KINESIS: Put record into stream #{credential.name}: #{res.toString()}")
+      report_status = nil
+      report_infomation = nil
+      begin
+        # AWS SDK implements retry logic, no need to do retries here as well
+        # TODO: Allow the AWS SDK retry logic for Kinesis to be configured
+        put_record_request = Java::ComAmazonawsServicesKinesisModel::PutRecordRequest.new().
+          withStreamName(credential.account['Kinesis Stream Name']).
+          withPartitionKey(credential.account['Kinesis Stream Partition Key']).
+          withData(java.nio.ByteBuffer.wrap(body.to_java_bytes))
+        res = client.putRecord(put_record_request)
+        KApp.logger.info("AWS KINESIS: Put record into stream #{credential.name}: #{res.toString()}")
+        report_status = 'success'
+        report_infomation = {"result" => res.toString()}
+      rescue => e
+        report_status = 'failure'
+        report_infomation = {"exception" => e.to_s}
+      end
+      # Only send delivery reports if the application is interested
+      if JSMessageBus::MessageBusPlatformConfiguration.new.for_bus(credential.id).has_delivery_report
+        runtime = KJSPluginRuntime.current
+        runtime.using_runtime do
+          runtime.runtime.callSharedScopeJSClassFunction("O", "$messageBusKinesisMessageAction", [credential.name, body, "report", report_status, JSON.generate(report_infomation)])
+        end
+        KApp.logger.info("AWS KINESIS: Done delivery notification for #{credential.name}: #{res.toString()}")
+      end
     else
       begin
         runtime = KJSPluginRuntime.current
         runtime.using_runtime do
-          runtime.runtime.callSharedScopeJSClassFunction("O", "$messageBusKinesisMessageDeliver", [credential.name, body])
+          runtime.runtime.callSharedScopeJSClassFunction("O", "$messageBusKinesisMessageAction", [credential.name, body, "deliver"])
         end
-        KApp.logger.info("INTER-APP MESSAGE: Delivered message on #{credential.name} to app #{KApp.current_application}")
+        KApp.logger.info("AWS KINESIS: Delivered message on #{credential.name} to app #{KApp.current_application}")
       rescue => e
-        KApp.logger.error("INTER-APP MESSAGE: Exception when delivering message on #{credential.name} to app #{KApp.current_application}")
+        KApp.logger.error("AWS KINESIS: Exception when delivering message on #{credential.name} to app #{KApp.current_application}")
         KApp.logger.log_exception(e)
       end
     end

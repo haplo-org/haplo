@@ -1,3 +1,10 @@
 {
-  "syntaxCheckGlobalsServer": ["$Exchange", "$GetterDictionaryBase", "$registry", "$StdWebPublisher"]
+  "syntaxCheckGlobalsServer": [
+    "$Exchange",
+    "$GetterDictionaryBase",
+    "$host",
+    "$registry",
+    "$GenericDeferredRender",
+    "$StdWebPublisher"
+  ]
 }

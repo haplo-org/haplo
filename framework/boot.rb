@@ -85,7 +85,7 @@ puts "Platform components available: #{KFRAMEWORK_LOADED_COMPONENTS.join(' ')}"
 KFRAMEWORK_IS_MANAGED_SERVER = KFRAMEWORK_LOADED_COMPONENTS.include?('management')
 
 # Setup logging
-KApp.logger_configure(KFRAMEWORK_LOG_FILE, 7, 4*1024*1024)
+KApp.logger_configure(KFRAMEWORK_LOG_FILE, 40, 4*1024*1024)
 # Load a patch to turn off colorization from the built in logger
 require 'framework/lib/activerecord_3_colorized_logging_off'
 

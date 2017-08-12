@@ -54,6 +54,10 @@ class JavaScriptPluginController < ApplicationController
     end
     # Split out the array returned by the plugin handler
     status_code, headersJSON, body, kind, layout_name, page_title, staticResourcesJSON, back_link, back_link_text = r.to_a
+    if status_code == -11111
+      # Magic status code value means a continuation has suspended this request handler
+      return render_continuation_suspended
+    end
     if body == nil
       raise KFramework::RequestPathNotFound.new("Plugin #{@factory.plugin_name} returned a null response body")
     end

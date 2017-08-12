@@ -201,6 +201,10 @@ class StringEncodingTest < Test::Unit::TestCase
         test_string = "GB\x1f02070471111".force_encoding(Encoding::US_ASCII)
         test_binary = "GB\x1f02070471119".force_encoding(Encoding::ASCII_8BIT)
 
+      when KConstants::T_IDENTIFIER_UUID
+        test_string = 'cc42bd71-557c-6c62-d5eb-8920c50fec17'.force_encoding(Encoding::US_ASCII)
+        test_binary = 'FF7ABB89-6832-4E0D-BC77-FA2724447BE7'.force_encoding(Encoding::ASCII_8BIT)
+
       when KConstants::T_TEXT_PLUGIN_DEFINED
         do_default_test = false
         pdt = KTextPluginDefined.new({

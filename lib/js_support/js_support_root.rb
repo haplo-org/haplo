@@ -96,6 +96,12 @@ class JSSupportRoot
     plugin.has_privilege?(privilegeName)
   end
 
+  def pluginHasPrivilege(pluginName, privilegeName)
+    plugin = KPlugin.get(pluginName)
+    return false unless plugin != nil
+    plugin.has_privilege?(privilegeName)
+  end
+
   def getPostgresSchemaName()
     app_id = KApp.current_application
     if app_id == nil || !(app_id.kind_of?(Integer)) || app_id < 0
@@ -166,6 +172,18 @@ class JSSupportRoot
     c = controller
     raise "Cannot fetch request information - bad state or not in request context" unless c
     c.exchange.annotations[:uploads]
+  end
+
+  JS_IDENTIFIER_CONTINUATION_ATTRIBUTE = "org.haplo.jscontinuationidentifier".to_java_string
+  def fetchRequestContinuation()
+    c = controller
+    raise "Cannot fetch request continuation - bad state or not in request context" unless c
+    continuation = c.request.continuation
+    if continuation.getAttribute(JS_IDENTIFIER_CONTINUATION_ATTRIBUTE).nil?
+      identifier = KRandom.random_api_key
+      continuation.setAttribute(JS_IDENTIFIER_CONTINUATION_ATTRIBUTE, identifier.to_java_string)
+    end
+    continuation
   end
 
   def getSessionJSON()
@@ -259,6 +277,9 @@ class JSSupportRoot
     c = controller
     raise JavaScriptAPIError, "Can only use renderIntoSidebar() when a request is being processed" unless c
     c.in_right_column(html)
+  end
+  def getRightColumnHTML
+    controller._right_column_html_for_js()
   end
 
   def loadFileForPlugin(pluginName, pathname, binaryData)

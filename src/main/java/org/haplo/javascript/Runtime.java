@@ -212,6 +212,11 @@ public class Runtime {
             throw new OAPIException("Cannot "+attemptedAction+" without the "+privilege+" privilege. Add it to privilegesRequired in plugin.json");
         }
     }
+    public static void enforcePrivilegeRequired(String pluginName, String privilege, String attemptedAction) {
+        if(!(Runtime.currentRuntimeHost().getSupportRoot().pluginHasPrivilege(pluginName, privilege))) {
+            throw new OAPIException("Cannot "+attemptedAction+" without the "+privilege+" privilege. Add it to privilegesRequired in plugin.json");
+        }
+    }
 
     /**
      * Get current app ID, or exception
@@ -454,6 +459,7 @@ public class Runtime {
             defineSealedHostClass(scope, WorkUnitTags.class);
             defineSealedHostClass(scope, GetterDictionaryBase.class);
             defineSealedHostClass(scope, InterRuntimeSignal.class);
+            defineSealedHostClass(scope, KRequestContinuation.class);
 
             defineSealedHostClass(scope, KCollaborationService.class);
             defineSealedHostClass(scope, KCollaborationFolder.class);
@@ -463,6 +469,7 @@ public class Runtime {
             defineSealedHostClass(scope, KAuthenticationService.class);
 
             defineSealedHostClass(scope, KMessageBusPlatformSupport.class);
+            defineSealedHostClass(scope, KUUIDPlatformSupport.class);
 
             defineSealedHostClass(scope, StdReporting.class);
             defineSealedHostClass(scope, StdWebPublisher.class);

@@ -16,7 +16,7 @@ module JSStdWebPublisherSupport
 
   def self.generateObjectWidgetAttributes(object, optionsJSON, web_publisher)
     # Allow plugins to modify
-    call_hook(:hPreObjectDisplay) do |hooks|
+    call_hook(:hPreObjectDisplayPublisher) do |hooks|
       h = hooks.run(object)
       object = h.replacementObject if h.replacementObject != nil
     end
@@ -56,13 +56,11 @@ module JSStdWebPublisherSupport
             qd = schema.qualifier_descriptor(qualifier)
             qualifier_name = qd ? qd.printable_name.to_s : nil
           end
-          rendered_values << [
-            first_attribute,
-            attribute_name,
-            qualifier_name,
-            render_value(value, toa.descriptor.desc, object, permissions, web_publisher)
-          ]
-          first_attribute = false
+          vhtml = render_value(value, toa.descriptor.desc, object, permissions, web_publisher)
+          unless vhtml.nil?
+            rendered_values << [first_attribute, attribute_name, qualifier_name, vhtml]
+            first_attribute = false
+          end
         end
       end
     end
@@ -131,7 +129,7 @@ module JSStdWebPublisherSupport
       # TODO: Work out what to do with exceptions?
       KApp.logger.log_exception(e)
     end
-    '????'
+    nil
   end
 
 end

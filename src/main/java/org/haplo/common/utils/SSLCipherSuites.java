@@ -11,6 +11,9 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 public class SSLCipherSuites {
     static public void configureCipherSuites(SslContextFactory factory) {
         factory.setExcludeCipherSuites(
+                // Disable suites which prevent use of forward secrecy
+                "TLS_RSA_WITH_AES_256_CBC_SHA",
+                "TLS_RSA_WITH_AES_256_CBC_SHA256",
                 // Disable RC4, as it's broken
                 "TLS_RSA_WITH_RC4_128_MD5", "SSL_RSA_WITH_RC4_128_MD5",
                 "TLS_RSA_WITH_RC4_128_SHA", "SSL_RSA_WITH_RC4_128_SHA",

@@ -28,7 +28,7 @@ abstract public class Node {
         return false;
     }
 
-    protected Object value(Driver driver, Object view) {
+    protected Object value(Driver driver, Object view) throws RenderException {
         return null;
     }
 

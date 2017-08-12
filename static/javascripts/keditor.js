@@ -2070,6 +2070,23 @@ j__makeValidatedKctrltext(T_IDENTIFIER_URL,{
     }
 });
 
+
+// ----------------------------------------------------------------------------------------------------
+
+// UUID value
+j__makeValidatedKctrltext(T_IDENTIFIER_UUID, {
+    j__processValue: function(value) {
+        // Strip leading and trailing whitespace from the value
+        return stripString(value);
+    },
+    j__validate: function() {
+        var v = this.j__value();
+        if(!(v.match(/\w/))) { return null; }   // don't complain about empty strings
+        return (v.match(/^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$/)) ? null : "This is not a valid UUID";
+    }
+});
+
+
 // ----------------------------------------------------------------------------------------------------
 
 // Special configuration names

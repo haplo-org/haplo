@@ -62,6 +62,7 @@ module SchemaRequirements
   # ---------------------------------------------------------------------------------------------------------------
 
   ATTR_DATA_TYPE = {
+    # Not included: T_BLOB, T_BOOLEAN, T_TYPEREF
     "link" => T_OBJREF,
     "plugin" => T_TEXT_PLUGIN_DEFINED,
     "datetime" => T_DATETIME,
@@ -75,6 +76,7 @@ module SchemaRequirements
     "idsn" => T_IDENTIFIER_ISBN,
     "email-address" => T_IDENTIFIER_EMAIL_ADDRESS,
     "url" => T_IDENTIFIER_URL,
+    "uuid" => T_IDENTIFIER_UUID,
     "postcode" => T_IDENTIFIER_POSTCODE,
     "telephone-number" => T_IDENTIFIER_TELEPHONE_NUMBER,
     "person-name" => T_TEXT_PERSON_NAME,

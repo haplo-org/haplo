@@ -1,0 +1,15 @@
+<% @page_title = 'Web publications' %>
+<%= sys_mng_header %>
+
+<ul>
+  <% @publications.each do |hostname| %>
+    <li><a href="/do/setup/web-publication/info/<%= h(hostname) %>" target="workspace"><%= h(hostname) %></a></li>
+  <% end %>
+  <% if @publications.empty? %>
+    <li><i>(no publications installed)</i></li>
+  <% end %>
+</ul>
+
+<ul>
+  <li class="z__management_action"><a href="/do/setup/web-publication/about" target="workspace">About Web publications</a></li>
+</ul>

@@ -178,6 +178,10 @@ public class KHost extends KScriptable {
         return this.supportRoot.currentlyExecutingPluginHasPrivilege(privilegeName);
     }
 
+    public boolean pluginHasPrivilege(String pluginName, String privilegeName) {
+        return this.supportRoot.pluginHasPrivilege(pluginName, privilegeName);
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     public String jsFunction_getSchemaInfo(int type, int objId) {
         return this.supportRoot.getSchemaInfo(type, objId);
@@ -386,6 +390,10 @@ public class KHost extends KScriptable {
         return this.nextPluginToBeRegisteredUsesDatabase;
     }
 
+    public void jsFunction_enforcePluginPrivilege(String pluginName, String privilege, String action) {
+        Runtime.enforcePrivilegeRequired(pluginName, privilege, action);
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     public boolean jsFunction_isHandlingRequest() {
         return this.supportRoot.isHandlingRequest();
@@ -441,6 +449,12 @@ public class KHost extends KScriptable {
         file.setUpload(upload);
         return file;
     }
+
+    public KRequestContinuation jsFunction_fetchRequestContinuation() {
+        KRequestContinuation c = (KRequestContinuation)Runtime.createHostObjectInCurrentRuntime("$RequestContinuation");
+        c.setContinuation(this.supportRoot.fetchRequestContinuation());
+        return c;
+    };
 
     public KSessionStore jsFunction_getSessionStore() {
         if(sessionStore == null) {
@@ -501,6 +515,10 @@ public class KHost extends KScriptable {
 
     public void jsFunction_addRightContent(String html) {
         this.supportRoot.addRightContent(html);
+    }
+
+    public String jsFunction_getRightColumnHTML() {
+        return this.supportRoot.getRightColumnHTML();
     }
 
     public Scriptable jsFunction_loadFileForPlugin(String pluginName, String pathname) {

@@ -12,6 +12,7 @@ module KRandom
   PASSWORD_RECOVERY_TOKEN_LENGTH = 16 # 32 chars when hex encoded
   FILE_SECRET_KEY_LENGTH = 32 # = 64 chars when hex encoded
   FILE_IDENTIFIER_TRACKING_ID_LENGTH = 9 # odd length avoids padding characters
+  FILE_STATIC_SIGNATURE_KEY_LENGTH = 64 # long lived secret for static file URLs
   AUTOLOGIN_SECRET_LENGTH = 32 # = 64 chars when hex encoded
   TOKEN_FOR_EMAIL_LENGTH = 16 # 32 chars when hex encoded, use for tokens sent in email
   LINK_COOKIE_LENGTH = 24 # link cookie for pairing devices, 48 chars when hex encoded

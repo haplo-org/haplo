@@ -8,8 +8,10 @@
   "loadPriority": 1000,
   "load": [
       "js/std_web_publisher.js",
+      "js/std_web_publisher_mnginfo.js",
       "js/std_web_publisher_files.js",
       "js/std_web_publisher_rendering.js",
+      "js/std_web_publisher_page_parts.js",
       "js/std_web_publisher_widgets.js"
     ]
 }

@@ -59,19 +59,19 @@ module JSMessageBus
   # Decoding the bus platform configuration
   # See message_bus.js implementation of _getPlatformConfig()
   class MessageBusPlatformConfiguration
-    BusConfig = Struct.new(:has_receive) # NOTE: when adding, set additional true in DEFAULT_CONFIG below
+    BusConfig = Struct.new(:has_receive, :has_delivery_report)
     # Default config says there are all functions, so if there is a pause between
     # creating the credential and loading the runtime, the default is to try to
     # deliver the message until it's known otherwise. This avoids potentially
     # losing messages.
-    DEFAULT_CONFIG = BusConfig.new(true).freeze
+    DEFAULT_CONFIG = BusConfig.new(true, true).freeze
     def initialize(override_json = nil)
       @config = JSON.parse(override_json || KApp.global(:js_messagebus_config) || '{}')
     end
     def for_bus(id)
       c = @config[id.to_s] # because JSON only has string keys
       return DEFAULT_CONFIG unless c.kind_of?(Array)
-      BusConfig.new(!!c[0])
+      BusConfig.new(!!c[0], !!c[1])
     end
   end
 
@@ -203,8 +203,8 @@ module JSMessageBus
     end
 
     def delivery_thread(application_id)
-      # TODO: Backoff on errors, etc
-      # TODO: Stop when main thread is shutting down
+      # Each bus type has different requirements for error handling and reports back to the JS, so retry isn't implemented here.
+      # TODO: More control over bus specific retry mechanisms, and stopping promptly when server is shutting down.
       KApp.in_application(application_id) do
         deliver = JSMessageBus::DeliverMessages.new(application_id)
         deliver.deliver_from_queue

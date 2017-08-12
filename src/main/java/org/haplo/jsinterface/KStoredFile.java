@@ -160,6 +160,7 @@ public class KStoredFile extends KScriptable {
         public String transform;
         public boolean asFullURL = false;
         public boolean authenticationSignature = false;
+        public Integer authenticationSignatureValidForSeconds;
         public boolean linkToDownload = false;  // thumbnail HTML generation only
         public boolean forceDownload = false;
     }
@@ -176,6 +177,11 @@ public class KStoredFile extends KScriptable {
                         try {
                             field.set(o, b);
                         } catch(java.lang.IllegalAccessException e) { /* ignore */ }
+                    } else if(field.getType() == Integer.class) {
+                        int i = (value instanceof Number) ? ((Number)value).intValue() : 0;
+                        try {
+                            field.set(o, new Integer(i));
+                        } catch(java.lang.IllegalAccessException e) { /* ignore */ }
                     } else {
                         // Assume it's a string
                         String str = (value instanceof CharSequence) ? ((CharSequence)value).toString() : null;
@@ -187,6 +193,10 @@ public class KStoredFile extends KScriptable {
                     }
                 }
             }
+        }
+        if(o.authenticationSignatureValidForSeconds != null) {
+            // Make sure the session based authenticationSignature isn't set at the same time as a static signature
+            o.authenticationSignature = false;
         }
         return o;
     }

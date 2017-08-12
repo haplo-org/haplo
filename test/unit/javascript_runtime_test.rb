@@ -720,6 +720,12 @@ __E
 
   # ===============================================================================================
 
+  def test_uuid
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_uuid.js')
+  end
+
+  # ===============================================================================================
+
   def run_audit_test(filename)
     restore_store_snapshot("basic")
     AuditEntry.delete_all

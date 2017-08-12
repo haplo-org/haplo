@@ -107,7 +107,8 @@ class Setup_ApplicationController < ApplicationController
     end
   end
   ENABLE_FEATURES = [
-    [:enable_feature_doc_text_html_widgets, "HTML widgets in document text (allows HTML injection by users)"]
+    [:hide_impersonate_overlay_ui, "Hide impersonation overlay UI (removes clutter for screenshots)", false],
+    [:enable_feature_doc_text_html_widgets, "HTML widgets in document text (allows HTML injection by users)", true]
   ]
 
   _GetAndPost

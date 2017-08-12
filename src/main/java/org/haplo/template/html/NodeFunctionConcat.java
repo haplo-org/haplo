@@ -15,6 +15,14 @@ final class NodeFunctionConcat extends NodeFunction {
         return "concat";
     }
 
+    protected Object value(Driver driver, Object view) throws RenderException {
+        Node arguments = getArgumentsHead();
+        if(arguments == null) { return null; }
+        StringBuilder builder = new StringBuilder();
+        arguments.renderWithNextNodes(builder, driver, view, Context.UNSAFE);
+        return builder.toString();
+    }
+
     public void render(StringBuilder builder, Driver driver, Object view, Context context) throws RenderException {
         Node arguments = getArgumentsHead();
         if(arguments != null) {

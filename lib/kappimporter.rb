@@ -98,6 +98,7 @@ class KAppImporter
 
       # Change secrets on app import, so values created by clones can't be used in the originals
       KApp.set_global(:file_secret_key, KRandom.random_hex(KRandom::FILE_SECRET_KEY_LENGTH))
+      KApp.set_global(:file_static_signature_key, KRandom.random_hex(KRandom::FILE_STATIC_SIGNATURE_KEY_LENGTH)) if KApp.global(:file_static_signature_key) != nil
 
       KAccounting.set_counters_for_current_app
 

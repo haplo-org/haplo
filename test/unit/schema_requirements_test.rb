@@ -547,6 +547,27 @@ __E
 
   # ---------------------------------------------------------------------------------------------------------------
 
+  DATA_TYPES_NOT_IN_SCHEMA_REQUIREMENTS = [:T_BLOB, :T_BOOLEAN, :T_TYPEREF]
+  def test_have_defined_all_data_types
+    type_constants = KConstants.constants.select { |k| k.to_s =~ /\AT_/ }
+    type_constants.each do |sym|
+      assert sym.kind_of?(Symbol)
+      value = KConstants.const_get(sym)
+      if value >= 0
+        unless SchemaRequirements::ATTR_DATA_TYPE.has_value?(value)
+          unless DATA_TYPES_NOT_IN_SCHEMA_REQUIREMENTS.include?(sym)
+            puts "Missing #{sym} in SchemaRequirements::ATTR_DATA_TYPE"
+            assert false
+          end
+        else
+          assert true
+        end
+      end
+    end
+  end
+
+  # ---------------------------------------------------------------------------------------------------------------
+
   def parser_for(string)
     string =~ /\A(\s+)/; string.gsub!(Regexp.new("^#{$1}",'m'),'') # Remove indentation from here doc
     parser = SchemaRequirements::Parser.new()

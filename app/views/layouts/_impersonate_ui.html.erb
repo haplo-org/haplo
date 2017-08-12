@@ -1,6 +1,6 @@
 <%
-  # TODO: Fix so that :_temp_hide_impersonate_top_ui doesn't break the impersonation detection in kapplication.js
-  unless KApp.global_bool(:_temp_hide_impersonate_top_ui)
+  # TODO: Fix so that :hide_impersonate_overlay_ui doesn't break the impersonation detection in kapplication.js
+  unless KApp.global_bool(:hide_impersonate_overlay_ui)
     client_side_resources(:impersonate_ui)
     # Add the platform_impersonate_ui class so screenshot utilities can temporarily remove the divs
     %><div id="z__impersonate_ui_top_container" class="platform_impersonate_ui">

@@ -41,7 +41,7 @@ class StdDeveloperPortalPlugin < KTrustedPlugin
       app_html.push <<__E
         <form method="POST" action="/do/std_developer_portal/login">
         #{controller.form_csrf_token}<input type="hidden" name="appid" value="#{application_id}">
-        <h2>#{h(hostname)}</h2>
+        <h2 id="app_#{application_id}">#{h(hostname)}</h2>
         <p><input type="submit" value="Login"> #{h(system_name)}</p>
         </form>
 __E
@@ -49,11 +49,11 @@ __E
           app_html.push <<__E
             <form method="POST" action="/do/std_developer_portal/description">
             #{controller.form_csrf_token}<input type="hidden" name="appid" value="#{application_id}">
-            <p><textarea name="text" cols="80" rows="2">#{h(description)}</textarea><br><input type="submit" value="Save description"></p>
+            <p><textarea name="text" cols="80" rows="2" autofocus="autofocus">#{h(description)}</textarea><br><input type="submit" value="Save description"></p>
             </form>
 __E
         else
-          app_html.push(%Q!<p><i>#{h(description)}</i> &nbsp; <a href="?edit_app_description=#{application_id}">edit</a></p>!)
+          app_html.push(%Q!<p><i>#{h(description)}</i> &nbsp; <a href="?edit_app_description=#{application_id}#app_#{application_id}">edit</a></p>!)
         end
     end
 
@@ -131,7 +131,7 @@ __E
       app_descriptions = JSON.parse(KApp.global(:std_developer_portal_descriptions) || '{}')
       app_descriptions[application_id.to_s] = text
       KApp.set_global(:std_developer_portal_descriptions, JSON.generate(app_descriptions))
-      redirect_to '/'
+      redirect_to "/#app_#{application_id}"
     end
   end
 

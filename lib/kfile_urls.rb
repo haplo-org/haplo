@@ -39,24 +39,52 @@ module KFileUrls
       p << ERB::Util.url_encode(file.presentation_filename)
     end
     # Sign path?
-    if options && (session = options[:sign_with])
-      # Get or generate a key, then add signature to URL
-      key = (session[:file_auth_key] ||= KRandom.random_base64(16))
-      p = "#{p}?s=#{HMAC::SHA256.sign(key, "*#{KApp.current_application}:#{p}*")}"
+    if options
+      if (age = options[:sign_for_validity]) && age.length == 2
+        # Signature with global static key
+        start_time, end_time = age.map { |x| x.to_i }
+        key = KApp.global(:file_static_signature_key)
+        unless key
+          # Make sure there's only a key when it's actually needed, at cost of race condition for first URLs.
+          KApp.logger.info("Setting file_static_signature_key global for application")
+          KApp.set_global(:file_static_signature_key, key = KRandom.random_base64(KRandom::FILE_STATIC_SIGNATURE_KEY_LENGTH))
+        end
+        p = "#{p}?s=#{HMAC::SHA256.sign(key, "*#{KApp.current_application}:#{p}:#{start_time}:#{end_time}*")},#{start_time},#{end_time}"
+      elsif (session = options[:sign_with])
+        # Session based signature
+        # Get or generate a key, then add signature to URL
+        key = (session[:file_auth_key] ||= KRandom.random_base64(16))
+        p = "#{p}?s=#{HMAC::SHA256.sign(key, "*#{KApp.current_application}:#{p}*")}"
+      end
     end
     p
   end
 
-  def file_request_check_signature(signature, path, session)
-    # Is there a signature key in the session?
-    key = session[:file_auth_key]
-    return false if key == nil
-    # Signature looks OK?
+  def file_request_check_signature(signature_param, path, session)
+    signature, start_time_s, end_time_s = signature_param.split(',')
+    # Basic signature check
     return false unless signature.kind_of?(String) && signature.length > 16
-    # Generate a signature to compare it with
-    valid_signature = HMAC::SHA256.sign(key, "*#{KApp.current_application}:#{path}*")
-    # And compare with hashes to avoid timing attacks
-    return (Digest::SHA1.hexdigest(signature) == Digest::SHA1.hexdigest(valid_signature))
+    # Generate a signature to compare it with, with additional checks
+    valid_signature = 'INVALID'
+    if start_time_s && end_time_s
+      # Time based static signature - check time first
+      start_time = start_time_s.to_i
+      end_time = end_time_s.to_i
+      time_now = Time.now.to_i
+      return false unless start_time <= end_time
+      return false unless (time_now >= start_time) && (time_now < end_time)
+      key = KApp.global(:file_static_signature_key)
+      return false if key == nil
+      valid_signature = HMAC::SHA256.sign(key, "*#{KApp.current_application}:#{path}:#{start_time}:#{end_time}*")
+    else
+      # Session based signature
+      # Is there a signature key in the session?
+      key = session[:file_auth_key]
+      return false if key == nil
+      valid_signature = HMAC::SHA256.sign(key, "*#{KApp.current_application}:#{path}*")
+    end
+    # Compare signature with hashes to avoid timing attacks
+    return (Digest::SHA256.hexdigest(signature) == Digest::SHA256.hexdigest(valid_signature))
   end
 
 end

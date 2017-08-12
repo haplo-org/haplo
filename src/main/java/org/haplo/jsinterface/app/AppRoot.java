@@ -10,6 +10,7 @@ import org.haplo.appserver.FileUploads;
 import org.haplo.jsinterface.template.TemplatePlatformFunctions;
 import org.haplo.jsinterface.KBinaryDataStaticFile;
 import java.sql.Connection;
+import org.eclipse.jetty.continuation.Continuation;
 
 public interface AppRoot {
     // Application information
@@ -24,6 +25,7 @@ public interface AppRoot {
 
     // JavaScript plugin privileges
     public boolean currentlyExecutingPluginHasPrivilege(String privilegeName);
+    public boolean pluginHasPrivilege(String pluginName, String privilegeName);
 
     // Database access
     public String getPostgresSchemaName();
@@ -45,6 +47,8 @@ public interface AppRoot {
 
     public FileUploads fetchRequestUploads();
 
+    public Continuation fetchRequestContinuation();
+
     public String getSessionJSON();
 
     public void setSessionJSON(String json);
@@ -61,6 +65,7 @@ public interface AppRoot {
     String renderRubyTemplate(String templateName, Object[] args);
 
     void addRightContent(String html);
+    String getRightColumnHTML();
 
     String userTimeZone();
 

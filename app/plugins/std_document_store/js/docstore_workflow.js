@@ -480,7 +480,8 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                 deferredForm: deferredForm,
                 deferredPreForm: spec.deferredPreForm ? spec.deferredPreForm(M) : null
             }, "workflow/form");
-        }
+        },
+        _showAllForms: true
     };
 
     plugin.respond("GET,POST", spec.path+'/admin/form', [

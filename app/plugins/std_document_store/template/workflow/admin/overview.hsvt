@@ -23,7 +23,7 @@
   <tr>
     <td> formId </td>
     <td> formTitle </td>
-    <td> <a href=[^{path} "/admin/form/" ^{M.workUnit.id}]>"Edit"</a> </td>
+    <td> <a href=[^{path} "/admin/form/" ^{M.workUnit.id} "/" formId]>"Edit"</a> </td>
   </tr>
   }
 </table>

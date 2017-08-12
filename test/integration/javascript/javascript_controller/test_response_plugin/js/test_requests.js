@@ -595,3 +595,23 @@
             query: "type:book"
         }, "std:search_results");
     });
+
+    P.respond("GET", "/do/plugin_test/suspended_request", [
+    ], function(E) {
+        var continuation = E.continuation;
+        if(continuation.isInitial) {
+            P.data.lastContinuationIdentifier = continuation.identifier;
+            continuation.setTimeout(40000);
+            continuation.suspend();
+        } else {
+            if(continuation.identifier != P.data.lastContinuationIdentifier) { throw new Error("Unexpected continuation identifier"); }
+            E.response.body = continuation.getAttribute("TEST:ATTRIBUTE") || "didn't get attribute";
+            E.response.kind = 'text';
+        }
+    });
+    P.callback("unsuspend_test_request", function(testAttributeValue) {
+        O.resumeRequestWithContinuationIdentifier(
+            P.data.lastContinuationIdentifier,
+            {"TEST:ATTRIBUTE":testAttributeValue}
+        );
+    });

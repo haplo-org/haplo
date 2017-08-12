@@ -29,6 +29,11 @@ class WebPublisherTest < IntegrationTest
     get "/test-publication?test=something"
     assert_equal %Q!<div class="test-publication" data-uid="#{service_user.id}">something</div>!, response.body
 
+    get "/test-publication?layout=1"
+    assert_equal %Q!<div class="in-layout"><div class="test-publication" data-uid="#{service_user.id}"></div></div>!, response.body
+    get "/test-publication?layout=1&sidebar=1"
+    assert_equal %Q!<div class="in-layout"><div class="test-publication" data-uid="#{service_user.id}"></div></div><div class="in-sidebar"><span>Sidebar</span></div>!, response.body
+
     get_201 "/test-publication/all-exchange?t2=abc"
     assert_equal "201", response.code
     assert_equal "text/plain; charset=utf-8", response.header["Content-Type"]

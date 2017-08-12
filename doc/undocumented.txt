@@ -61,12 +61,20 @@ Databases
 ---------
 P.db._dynamicTable(...) for tables which can be redefined at runtime.
 
+Request continuations
+---------------------
+RequestContinuation interface
+E.continuation
+O.resumeRequestWithContinuationIdentifier()
+
 Misc
 ----
 O.tray
 setResponsiblePlugin() in Exchange objects
 O.reportHealthEvent() + pReportHealthEvent
 O.PLUGIN_DEBUGGING_ENABLED flags for checking development servers
+O.uuid.*() - but we prefer O.security.random.identifier()
+O.enforcePluginPrivilege()
 
 Client side object editor plugins
 ---------------------------------

@@ -115,6 +115,41 @@ end
 # --------------------------------------------------------------------------------------------------------------
 
 
+class KIdentifierUUID < KIdentifier
+  ktext_typecode KConstants::T_IDENTIFIER_UUID, 'UUID'
+  IS_VALID_UUID = /\A[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\z/
+  def initialize(text, language = nil)
+    text = KText.ensure_utf8(text).strip
+    raise "Not a valid UUID" unless text =~ IS_VALID_UUID
+    super(text.gsub(/\s/,''), nil)
+  end
+  def ==(other)
+    # Case insensitive comparisons
+    other != nil && other.class == KIdentifierUUID && @text.downcase == other.__text.downcase
+  end
+  def eql?(other)
+    other != nil && self == other
+  end
+  # Case insensitive indexing (UUIDs are hex representation, but we should preseve case for compatibility with external systems)
+  def to_identifier_index_str
+    @text.downcase
+  end
+  # Also want to be able to find UUID by free text searching
+  def to_indexable
+    @text
+  end
+  # Display in monospaced text
+  def to_html
+    # Escape just in case, but shouldn't really need it
+    %Q!<tt>#{ERB::Util.h(self.text)}</tt>!
+  end
+  # Don't implement to_summary so that UUIDs are not shown in, for example, search results
+end
+
+
+# --------------------------------------------------------------------------------------------------------------
+
+
 class KIdentifierPostcode < KIdentifier
   # TODO: Finish coding for postcode identifier type
   ktext_typecode KConstants::T_IDENTIFIER_POSTCODE, 'Postcode'

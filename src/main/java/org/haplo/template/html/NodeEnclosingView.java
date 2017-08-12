@@ -23,7 +23,7 @@ final class NodeEnclosingView extends Node {
         return true;
     }
 
-    protected Object value(Driver driver, Object view) {
+    protected Object value(Driver driver, Object view) throws RenderException {
         if(this.blockHead.getNextNode() != null) { return null; }
         return this.blockHead.value(driver, driver.recallView(this.rememberedViewIndex));
     }

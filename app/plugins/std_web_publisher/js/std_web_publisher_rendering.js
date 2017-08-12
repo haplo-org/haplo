@@ -19,8 +19,9 @@ P.globalTemplateFunction("std:web-publisher:platform-style-tag", function() {
 // title argument is optional, to allow links with text other than the object title to be generated.
 // If an anonymous block is given, it's rendered instead of the title.
 P.globalTemplateFunction("std:web-publisher:object:link", function(object, title) {
+    var context = P.getRenderingContext();
     this.render(P.template("object/link").deferredRender({
-        href: currentPublication ? currentPublication._urlPathForObject(object) : undefined,
+        href: context ? context.publication._urlPathForObject(object) : undefined,
         title: title ? title : object.title,
         block: this.deferredRenderBlock()
     }));
@@ -30,8 +31,9 @@ P.globalTemplateFunction("std:web-publisher:object:link", function(object, title
 // Search result rendering
 
 P.globalTemplateFunction("std:web-publisher:widget:query:list:search-result", function(specification) {
-    var renderers = currentPublication._searchResultsRenderers;
-    var defaultRenderer = currentPublication._defaultSearchResultRenderer;
+    var publication = P.getRenderingContext().publication;
+    var renderers = publication._searchResultsRenderers;
+    var defaultRenderer = publication._defaultSearchResultRenderer;
     var fallbackRenderer = function(object) {
         return P.template("widget/query/list-search-result-item-fallback").deferredRender(object);
     };
@@ -51,7 +53,7 @@ P.globalTemplateFunction("std:web-publisher:widget:query:list:search-result", fu
 P.globalTemplateFunction("std:web-publisher:file:thumbnail", function(fileOrIdentifier) {
     if(fileOrIdentifier) {
         this.render(P.template("value/file/thumbnail").deferredRender(
-            P.makeThumbnailViewForFile(currentPublication, O.file(fileOrIdentifier))
+            P.makeThumbnailViewForFile(P.getRenderingContext().publication, O.file(fileOrIdentifier))
         ));
     }
 });
@@ -69,46 +71,3 @@ P.globalTemplateFunction("std:web-publisher:utils:title:name", function(object) 
         return title.toString();
     }
 });
-
-// --------------------------------------------------------------------------
-
-// Global variable to keep track of current Publisher
-var currentPublication;
-P.renderingWithPublication = function(publication, f) {
-    currentPublication = publication;
-    try {
-        return f();
-    } finally {
-        currentPublication = undefined;
-    }
-};
-
-P.withCurrentPublication = function(fn) {
-    if(!currentPublication) { throw new Error("Expected a publication to be rendering"); }
-    return fn(currentPublication);
-};
-
-// --------------------------------------------------------------------------
-
-// TODO: Better sevice, better name? Only works when rendering a public page
-P.implementService("std:web-publisher:published-url-for-object", function(object) {
-    return currentPublication ? currentPublication._urlPathForObject(object) : null;
-});
-
-// --------------------------------------------------------------------------
-
-// Platform support
-P.$renderObjectValue = function(object) {
-    var href;
-    if(currentPublication) {
-        href = currentPublication._urlPathForObject(object);
-    }
-    return P.template("object/link").render({
-        href: href,
-        title: object.title
-    });
-};
-
-P.$isRenderingForWebPublisher = function() {
-    return !!currentPublication;
-};

@@ -13,7 +13,7 @@ final class NodeList extends NodeListBase {
         return (hasOneMember()) ? getListHeadMaybe() : this;
     }
 
-    protected Object value(Driver driver, Object view) {
+    protected Object value(Driver driver, Object view) throws RenderException {
         if(hasOneMember()) {
             return getListHeadMaybe().value(driver, view);
         } else {

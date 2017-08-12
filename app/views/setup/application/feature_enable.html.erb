@@ -3,8 +3,6 @@
 -%>
 <%= sys_mng_header %>
 
-<p class="z__management_notice">These features have security implications, and should be disabled in applications processing sensitive information.</p>
-
 <%
   if @do_edit
     %><form method="POST"><%= form_csrf_token %><%
@@ -16,8 +14,17 @@
   else
     %><table class="z__mangement_kv_table">
       <%
-        Setup_ApplicationController::ENABLE_FEATURES.each do |sym,name|
-          %><tr><td><%= KApp.global_bool(sym) ? '<span style="color:red">Enabled</span>' : 'Disabled' %></td><td><%= h(name) %></td></tr><%
+        Setup_ApplicationController::ENABLE_FEATURES.each do |sym,name,security|
+          enabled = KApp.global_bool(sym)
+          %><tr><td><%= enabled ? 'Enabled' : 'Disabled' %></td><td><%= h(name) %>
+          <% if security %><br>
+            <% if enabled %>
+              <b style="color:red">This feature should be disabled in applications processing sensitive information.</b>
+            <% else %>
+              <i>(should be disabled in applications processing sensitive information)</i>
+            <% end %>
+          <% end %>
+          </td></tr><%
         end
       %>
     </table>

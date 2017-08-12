@@ -202,4 +202,10 @@ TEST(function() {
     TEST.assert_equal("image/png", thumbnailFile.mimeType);
     TEST.assert(thumbnailFile.fileSize > 50);
 
+    // Statically signed URL
+    var signedUrl = pdf3page.url({"authenticationSignatureValidForSeconds":20,"authenticationSignature":true});
+    var signedUrlCheck = /\?s=[a-f0-9]{64,64},(\d+),(\d+)$/.exec(signedUrl);
+    TEST.assert(signedUrlCheck != null);
+    TEST.assert((signedUrlCheck[1]*1)+20 === (signedUrlCheck[2]*1));
+
 });

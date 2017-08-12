@@ -11,12 +11,6 @@ span.haplo-file-thumbnail-container {
     text-align: right;
 }
 
-span.haplo-file-download-not-permitted {
-    display: inline-block;
-    margin: 0 0 6px 0;
-    font-style: italic;
-}
-
 img.haplo-file-default-thumbnail,
 img.haplo-file-thumbnail {
     margin: 1px 12px 1px 0px;

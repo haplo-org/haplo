@@ -112,7 +112,7 @@ public class StdWebPublisher extends ScriptableObject {
         }
         public String renderFileIdentifierValue(AppText fileIdentifier) {
             Object html = this.callPublisher("$renderFileIdentifierValue", KText.fromAppText(fileIdentifier));
-            return (html instanceof CharSequence) ? html.toString() : "";
+            return (html instanceof CharSequence) ? html.toString() : null;
         }
     }
 

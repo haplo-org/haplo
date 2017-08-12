@@ -160,6 +160,7 @@ class PermissionsTest < IntegrationTest
     joe.get file_path(:o2)+"?s="+joe_o2_signature
     check_file_download(joe, :o2)
     joe.get_403 file_path(:o2)+"?s="+joe_o2_signature_thumbnail
+    assert joe.response.body !~ /IHDR/ # PNG header
     # Check a new signature is needed for transformed files
     joe.get_403 file_path(:o2, 'w100')+"?s="+joe_o2_signature
     joe_o2_signature_w100 = get_file_signature(:o2, 'w100', joe.session)
@@ -171,6 +172,40 @@ class PermissionsTest < IntegrationTest
     joe.get_403 thumbnail_path(:o2)+"?s="+joe_o2_signature
     joe.get thumbnail_path(:o2)+"?s="+joe_o2_signature_thumbnail
     assert joe.response.body =~ /IHDR/ # PNG header
+
+    # Check static time based signatures
+    # In past
+    joe_o2_signature_t0 = get_file_signature_static(:o2, nil, 0, 1)
+    joe.get_403 file_path(:o2)+"?s="+joe_o2_signature_t0
+    assert joe.response.body !~ /IHDR/ # PNG header
+    joe_o2_signature_now = get_file_signature_static(:o2, nil, Time.now.to_i, Time.now.to_i+10)
+    joe.get file_path(:o2)+"?s="+joe_o2_signature_now
+    assert joe.response.body =~ /IHDR/ # PNG header
+    # Session independence
+    get file_path(:o2)+"?s="+joe_o2_signature_now
+    assert response.body =~ /IHDR/ # PNG header
+    joan.get file_path(:o2)+"?s="+joe_o2_signature_now
+    assert joan.response.body =~ /IHDR/ # PNG header
+    # Corrupt signature
+    joe.get_403 file_path(:o2)+"?s="+joe_o2_signature_now.tr('0123456789abcdef','abcdef0123456789')
+    assert joe.response.body !~ /IHDR/ # PNG header
+    # In future
+    joe_o2_signature_later = get_file_signature_static(:o2, nil, Time.now.to_i+4, Time.now.to_i+200)
+    joe.get_403 file_path(:o2)+"?s="+joe_o2_signature_later
+    assert joe.response.body !~ /IHDR/ # PNG header
+    # Invalid static dates
+    joe_o2_signature_invalid = get_file_signature_static(:o2, nil, Time.now.to_i+10, Time.now.to_i-10)
+    joe.get_403 file_path(:o2)+"?s="+joe_o2_signature_invalid
+    assert joe.response.body !~ /IHDR/ # PNG header
+    # Check static key exists and is a decent length
+    assert KApp.global(:file_static_signature_key).length > 60
+    # Check changing key invalidates signatures
+    joe.get file_path(:o2)+"?s="+joe_o2_signature_now
+    old_secret = KApp.global(:file_static_signature_key)
+    KApp.set_global(:file_static_signature_key, '012345678901234567890123456789012345')
+    joe.get_403 file_path(:o2)+"?s="+joe_o2_signature_now
+    KApp.set_global(:file_static_signature_key, old_secret) # so tests can be re-run
+    joe.get file_path(:o2)+"?s="+joe_o2_signature_now
 
     # Can't use that file signature for another file
     joe.get_403 file_path(:p2)
@@ -278,6 +313,10 @@ class PermissionsTest < IntegrationTest
 
   def get_file_signature(name, transforms, session)
     raise "bad signature" unless file_url_path(@files[name].first, transforms, {:sign_with => session}) =~ /\?s=([a-f0-9]{64,64})\z/
+    $1
+  end
+  def get_file_signature_static(name, transforms, start_time, end_time)
+    raise "bad signature" unless file_url_path(@files[name].first, transforms, {:sign_for_validity => [start_time,end_time]}) =~ /\?s=([a-f0-9]{64,64},\d+,\d+)\z/
     $1
   end
 

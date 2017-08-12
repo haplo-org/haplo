@@ -1,0 +1,8 @@
+<div class="in-layout">
+    render(blocks.body)
+</div>
+if(blocks.sidebar) {
+    <div class="in-sidebar">
+        render(blocks.sidebar)
+    </div>
+}

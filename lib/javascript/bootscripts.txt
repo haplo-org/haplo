@@ -10,6 +10,7 @@ lib/javascript/lib/console.js
 lib/javascript/lib/framework.js
 lib/javascript/lib/constants.js
 lib/javascript/lib/datetime.js
+lib/javascript/lib/uuid.js
 lib/javascript/lib/schema_support.js
 lib/javascript/lib/labels.js
 lib/javascript/lib/query.js

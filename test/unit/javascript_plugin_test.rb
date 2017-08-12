@@ -476,6 +476,16 @@ __E
       assert KJSPluginRuntime.current.runtime.getHost().currentlyExecutingPluginHasPrivilege("pTestPriv1");
       assert KJSPluginRuntime.current.runtime.getHost().currentlyExecutingPluginHasPrivilege("pTestPriv2");
       assert ! KJSPluginRuntime.current.runtime.getHost().currentlyExecutingPluginHasPrivilege("pants");
+
+      assert KJSPluginRuntime.current.runtime.getHost().pluginHasPrivilege("test_plugin", "pTestPriv1");
+      assert KJSPluginRuntime.current.runtime.getHost().pluginHasPrivilege("test_plugin", "pTestPriv2");
+      assert ! KJSPluginRuntime.current.runtime.getHost().pluginHasPrivilege("test_plugin", "pants");
+
+      assert ! KJSPluginRuntime.current.runtime.getHost().pluginHasPrivilege("test_plugin2", "pTestPriv1");
+      assert ! KJSPluginRuntime.current.runtime.getHost().pluginHasPrivilege("test_plugin2", "pTestPriv2");
+      assert ! KJSPluginRuntime.current.runtime.getHost().pluginHasPrivilege("test_plugin2", "pants");
+
+      assert ! KJSPluginRuntime.current.runtime.getHost().pluginHasPrivilege("does_not_exist", "pTestPriv1");
     })
     call_hook(:hTestNullOperation1) { |hooks| hooks.run() } # responded to by test_plugin
 
@@ -488,6 +498,8 @@ __E
     call_hook(:hTestNullOperation2) { |hooks| hooks.run() } # responded to by test_plugin2
 
     assert_equal 2, ran_callback
+
+    run_javascript_test(:file, 'unit/javascript/javascript_plugin/test_privileges.js')
   end
 
   # -------------------------------------------------------------------------------------------------------------

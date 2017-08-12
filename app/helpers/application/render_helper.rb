@@ -25,6 +25,9 @@ module Application_RenderHelper
     @__right_column_chunks << html
   end
 
+  def _right_column_html_for_js
+    @__right_column_chunks ? @__right_column_chunks.join('') : nil
+  end
 
   # ========================================================================================================
   # Rendering objects as HTML

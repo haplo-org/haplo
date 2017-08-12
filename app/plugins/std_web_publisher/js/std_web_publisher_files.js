@@ -176,16 +176,7 @@ P.Publication.prototype._renderFileIdentifierValue = function(fileIdentifier) {
             thumbnail: makeThumbnailViewForFile(this, file)
         });
     } else {
-        // Fallback rendering
-        return P.template("value/file/file-hidden-by-permissions").render();
+        // Hide from display entirely
+        return null;
     }
-};
-
-// --------------------------------------------------------------------------
-
-// Platform support
-P.$renderFileIdentifierValue = function(fileIdentifier) {
-    return P.withCurrentPublication(function(publication) {
-        return publication._renderFileIdentifierValue(fileIdentifier);
-    });
 };

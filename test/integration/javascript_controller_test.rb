@@ -18,6 +18,7 @@ class JavaScriptControllerTest < IntegrationTest
     db_reset_test_data
     drop_all_javascript_db_tables
     StoredFile.destroy_all
+    KApp.set_global(:_pjson_test_response_plugin, '{}')
     KPlugin.install_plugin("test_response_plugin")
     @user = User.new(
       :name_first => 'first',
@@ -553,6 +554,14 @@ __E
     assert anon_user.response.body !~ /\APK\x03\x04/
     assert anon_user.response.body.length != uploaded_stored_file.size
 
+    post_fid.call "url", '{"authenticationSignatureValidForSeconds":10}'
+    assert response.body =~ /\A\/file\/#{uploaded_stored_file.digest}\/#{uploaded_stored_file.size}\/example\.pages\?s=[0-9a-f]+,(\d+),(\d+)\z/
+    assert ($1.to_i + 10) == $2.to_i
+    static_signed_file_url = response.body
+    anon_user2 = open_session
+    anon_user2.get static_signed_file_url
+    anon_user2.get_302 static_signed_file_url+'1'
+
     post_fid.call "url", '{"authenticationSignature":true,"forceDownload":true}'
     assert response.body =~ /\A\/file\/#{uploaded_stored_file.digest}\/#{uploaded_stored_file.size}\/example\.pages\?s=[0-9a-f]+\&attachment\=1\z/
     anon_user.get response.body
@@ -671,6 +680,31 @@ __E
     get '/do/plugin_test/test_std_template_with_hook_during_request'
     assert response.body =~ /IN_REQUEST/ # flag
     assert response.body =~ /TEST BOOK/ # result of rendering standard template
+
+    # Suspended requests with continuations
+    start_time = Time.now.to_i
+    value_passed_through_continuation = KRandom.random_api_key
+    testing_app_id = _TEST_APP_ID
+    other_thread = Thread.new do
+      KApp.in_application(testing_app_id) do
+        # Get will happen sometime during thread execution, but probably not yet
+        # Wait for the identifier to be set
+        identifier_in_data = nil
+        while identifier_in_data == nil
+          r = KApp.get_pg_database.exec("SELECT value_string FROM app_globals WHERE key='_pjson_test_response_plugin'")
+          identifier_in_data = JSON.parse(r.first.first)['lastContinuationIdentifier']
+          java.lang.Thread.sleep(20) unless identifier_in_data
+        end
+        # Call the function to resume the suspended request
+        KJSPluginRuntime.current.call_callback("test_response_plugin:unsuspend_test_request", ['raw', value_passed_through_continuation])
+      end
+    end
+    get '/do/plugin_test/suspended_request'
+    assert_equal value_passed_through_continuation, response.body
+    other_thread.join
+    time_taken = Time.now.to_i - start_time
+    # Timeout is 40seconds, this should take much less time
+    assert time_taken < 4
   end
 
   def test_hlabellinguserinterface_hook
