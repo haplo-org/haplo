@@ -63,6 +63,7 @@ class JavaScriptSyntaxTester
     @client_side_predefined_globals = {'_' => false, 'jQuery' => false, 'alert' => false}
     @client_side_predefined_globals_plugin = @client_side_predefined_globals.dup
     @client_side_predefined_globals_plugin['ONEIS'] = false
+    @client_side_predefined_globals_plugin['oFormsChanges'] = false
     # Client side constants
     @client_side_constant_names = {}
     Dir.glob("static/javascripts/*.js").each do |filename|

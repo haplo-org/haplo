@@ -1,0 +1,10 @@
+std:layout:wide()
+
+template:dashboard:common:dashboard-page() {
+  if(dashboard._droppedValuesFromGroupByAggregate) {
+    std:ui:notice("This dashboard does not include all data. Some rows are omitted.")
+  }
+  template:dashboard:common:export-form() {
+    template:dashboard:aggregate:aggregate-table()
+  }
+}

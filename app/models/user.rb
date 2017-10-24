@@ -525,11 +525,31 @@ class User < ActiveRecord::Base
     @policy_bitmask
   end
 
+  # NOTE: As with all the internals of Restrictions, labels are stored as ints not refs
   def attribute_restriction_labels()
     @attribute_restriction_label_cache ||=
       call_hook(:hUserAttributeRestrictionLabels) do |hooks|
-      hooks.run(self).labels._to_internal
-    end || []
+        hooks.response.userLabels = KLabelChanges.new
+        r = hooks.run(self)
+        raise "userLabels property removed in hook" unless r.userLabels
+        # TODO: Remove deprecated labels property in hUserAttributeRestrictionLabels response
+        r.userLabels.change(r.labels || KLabelList.new([]))._to_internal
+      end || []
+  end
+
+  def kobject_restricted_attributes(object)
+    labels = []
+    call_hook(:hObjectAttributeRestrictionLabelsForUser) do |hooks|
+      hooks.response.userLabelsForObject = KLabelChanges.new
+      r = hooks.run(self, object)
+      raise "userLabelsForObject property removed in hook" unless r.userLabelsForObject
+      labels = r.userLabelsForObject.change(KLabelList.new([]))._to_internal
+    end
+    KObject::RestrictedAttributes.new(object, labels + self.attribute_restriction_labels)
+  end
+
+  def kobject_dup_restricted(object)
+    object.dup_restricted(self.kobject_restricted_attributes(object))
   end
 
   def policy

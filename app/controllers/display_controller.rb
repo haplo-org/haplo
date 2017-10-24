@@ -74,6 +74,12 @@ class DisplayController < ApplicationController
       end
     end
 
+    # Options used for the object rendering
+    @render_options = {
+      # Rendering restrictions need the unmodified object so the correct restrictions can be applied
+      :unmodified_object => @obj
+    }
+
     # Type descriptor
     type = @obj_display.first_attr(A_TYPE)
     @type_desc = (type == nil) ? nil : KObjectStore.schema.type_descriptor(type)
@@ -134,9 +140,6 @@ class DisplayController < ApplicationController
       render :action => 'linked'
       return
     end
-
-    # Options used for the object rendering
-    @render_options = Hash.new
 
     # Add menu items to files?
     user_can_see_file_versions = @request_user.policy.has_permission?(:update, @obj)

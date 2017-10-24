@@ -780,11 +780,23 @@ class AuthenticationControllerTest < IntegrationTest
       # The user object we'll use
       user_obj = @_users[_TEST_APP_ID]
 
+      # Make an API Key
+      key = 'M3pa44a8cozdJQobdu1u3jjq5c40DLm5PVlD5Ll5'
+      apikey = ApiKey.new(:user_id => user_obj.id, :path => '/api/', :name => 'TEST');
+      apikey._set_api_key(key)
+      apikey.save!
+
       # Log into the application
-      get "/do/authentication/login"
-      post_302 "/do/authentication/login", {:email => 'authtest@example.com', :password => 'pass1234'}
-      assert_redirected_to('/')
-      assert_equal user_obj.id, session[:uid]
+      user_session = open_session
+      user_session.get "/do/authentication/login"
+      user_session.post_302 "/do/authentication/login", {:email => 'authtest@example.com', :password => 'pass1234'}
+      user_session.assert_redirected_to('/')
+      assert_equal user_obj.id, user_session.session[:uid]
+      user_session.get('/api/test/uid')
+      assert_equal user_obj.id, user_session.response.body.to_i
+
+      # Also an anon session for API key access
+      anon_session = open_session
 
       # Modify the user object with a different kind and make sure authentication works only with expected kinds
       user_kinds.each do |kind_of_user|
@@ -792,16 +804,37 @@ class AuthenticationControllerTest < IntegrationTest
         k = User.const_get(kind_of_user)
         user_obj.kind = k
         user_obj.save!
+        User.invalidate_cached # changing types from group<->user needs special attention
         # Get account page to test to see whether it was allowed or not
-        get "/do/account/info", nil, {:expected_response_codes => [200, 302]}
+        user_session.get "/do/account/info", nil, {:expected_response_codes => [200, 302]}
+        # Only these two have identity
         if k == User::KIND_USER || k == User::KIND_SUPER_USER
           # Got the account page OK?
-          assert_select 'h1', "first last#{_TEST_APP_ID}'s account information"
+          user_session.assert_select 'h1', "first last#{_TEST_APP_ID}'s account information"
         else
           # Was redirected away
-          assert_redirected_to "/do/authentication/login?rdr=%2Fdo%2Faccount%2Finfo"
+          user_session.assert_redirected_to "/do/authentication/login?rdr=%2Fdo%2Faccount%2Finfo"
         end
+
+        # Test that API key works for all kinds of access
+        anon_session.get('/api/test/uid')
+        assert_equal User::USER_ANONYMOUS, anon_session.response.body.to_i
+
+        anon_session.get('/api/test/uid', nil, {
+            "Authorization"=>"Basic "+["haplo:#{key}"].pack('m').gsub(/\s/,''),
+            :expected_response_codes => [200, 403]
+          })
+        if k == User::KIND_USER || k == User::KIND_SUPER_USER || k == User::KIND_SERVICE_USER
+          assert_equal user_obj.id.to_s, anon_session.response.body
+          assert_equal "200", anon_session.response.code
+        else
+          assert_equal "Not authorised", anon_session.response.body
+          assert_equal "403", anon_session.response.code
+        end
+        
       end
+
+      ApiKey.destroy_all
 
       without_application { teardown_in_app(_TEST_APP_ID) }
 

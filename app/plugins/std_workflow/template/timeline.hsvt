@@ -10,5 +10,5 @@ do() {
   }
 
 } timeline {
-  each(entries) { render(.) }
+  each(entries) { render(deferred) }
 }

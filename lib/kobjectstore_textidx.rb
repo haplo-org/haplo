@@ -409,15 +409,8 @@ class KObjectStore
           # Delegate may need to alter the indexed object
           object = delegate.indexed_version_of_object(raw_object, store.is_schema_obj?(raw_object))
 
-          td = KObjectStore.schema.type_descriptor(object.first_attr(A_TYPE))
-          if td != nil
-            td = schema.type_descriptor(td.root_type)
-          end
-          if td != nil
-            restrictions = td.attributes_restrictions
-          else
-            restrictions = {}
-          end
+          # Get restrictions from the _unmodified_ object, as the delegate may have modified it in a way which changes which restrictions match
+          restrictions = schema._get_restricted_attributes_for_object(raw_object).hidden
 
           # TODO: Should cache be the unaltered object, or the one modified by the plugin? If modified, the obj_cache needs to be updated too
           obj_cache[object.objref] = raw_object

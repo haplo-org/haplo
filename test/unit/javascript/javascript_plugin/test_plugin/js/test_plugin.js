@@ -5,14 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
-P.hook('hUserAttributeRestrictionLabels', function(response, user) {
-    if(user && user.email === "user2@example.com") {
-        response.labels = O.labelList(LABEL["std:label:common"]);
-    } else {
-        response.labels = O.labelList();
-    }
-});
-
 P.hook('hTestNullOperation1', function(response) {
     $host._testCallback("hTestNullOperation1");
 });

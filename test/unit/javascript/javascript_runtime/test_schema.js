@@ -130,6 +130,32 @@ TEST(function() {
     TEST.assert(arrayOfRefsEqual(SCHEMA.getTypesWithAnnotation("test:annotation:x1"), [TYPE['std:type:file']]));
     TEST.assert(arrayOfRefsEqual(SCHEMA.getTypesWithAnnotation("test:annotation:x2"), [TYPE['std:type:file'], TYPE['std:type:book']]));
 
+    // Type annotations on object tests
+    var annoTest1 = O.object();
+    annoTest1.appendType(TYPE["std:type:organisation:supplier"]);
+    annoTest1.appendType(TYPE["std:type:file"]);
+    TEST.assert_equal(true, annoTest1.isKindOfTypeAnnotated("test:annotation:x1"));
+    TEST.assert_equal(true, annoTest1.isKindOfTypeAnnotated("test:annotation:x2"));
+    TEST.assert_equal(false, annoTest1.isKindOfTypeAnnotated("test:annotation:XXX1"));
+
+    var annoTest2 = O.object();
+    annoTest2.appendType(TYPE["std:type:book"]);
+    TEST.assert_equal(false, annoTest2.isKindOfTypeAnnotated("test:annotation:special"));// Annotation only on subtype
+    TEST.assert_equal(false, annoTest2.isKindOfTypeAnnotated("test:annotation:x1"));
+    TEST.assert_equal(true, annoTest2.isKindOfTypeAnnotated("test:annotation:x2"));
+
+    var annoTest3 = O.object();
+    annoTest3.appendType(TYPE["std:type:book:special"]);
+    TEST.assert_equal(true, annoTest3.isKindOfTypeAnnotated("test:annotation:special"));
+    TEST.assert_equal(false, annoTest3.isKindOfTypeAnnotated("test:annotation:x1"));
+    TEST.assert_equal(true, annoTest3.isKindOfTypeAnnotated("test:annotation:x2"));
+
+    var annoTest4 = O.object();
+    annoTest4.appendType(TYPE["std:type:organisation:supplier"]);
+    TEST.assert_equal(false, annoTest4.isKindOfTypeAnnotated("test:annotation:special"));
+    TEST.assert_equal(false, annoTest4.isKindOfTypeAnnotated("test:annotation:x1"));
+    TEST.assert_equal(false, annoTest4.isKindOfTypeAnnotated("test:annotation:x2"));
+
     // Elements
     TEST.assert(_.isEqual(['std:contact_notes','std:sidebar_object'], SCHEMA.getTypeInfo(TYPE["std:type:person"]).elements));
     TEST.assert(_.isEqual(['std:contact_notes','std:linked_objects'], SCHEMA.getTypeInfo(TYPE["std:type:organisation"]).elements));

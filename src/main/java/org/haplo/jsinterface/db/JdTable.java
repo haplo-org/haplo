@@ -12,6 +12,8 @@ import org.haplo.javascript.JsGet;
 import org.haplo.jsinterface.KScriptable;
 import org.mozilla.javascript.*;
 
+import java.math.BigDecimal;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayList;
@@ -27,6 +29,7 @@ import org.haplo.jsinterface.KObjRef;
 import org.haplo.jsinterface.KUser;
 import org.haplo.jsinterface.KStoredFile;
 import org.haplo.jsinterface.KLabelList;
+import org.haplo.jsinterface.util.JsBigDecimal;
 
 // TODO: Handle java.sql.SQLException exceptions? Or use a global method of turning exceptions into something presentable to the JS code?
 public class JdTable extends KScriptable {
@@ -136,6 +139,7 @@ public class JdTable extends KScriptable {
                     case "int":         field = new IntField(fieldName, defn); break;
                     case "bigint":      field = new BigIntField(fieldName, defn); break;
                     case "float":       field = new FloatField(fieldName, defn); break;
+                    case "numeric":     field = new NumericField(fieldName, defn); break;
                     case "ref":         field = new ObjRefField(fieldName, defn); break;
                     case "file":        field = new FileField(fieldName, defn); break;
                     case "user":        field = new UserField(fieldName, defn); break;
@@ -454,20 +458,33 @@ public class JdTable extends KScriptable {
 
     // How to interpret values returned by the database in executeSingleValueExpression()
     public enum SingleValueKind {
-        INT() {
-            public Object get(ResultSet results) throws java.sql.SQLException { return (Integer)results.getInt(1); }
-            public Object valueForNoResult() { return (Integer)0; }
+        BIGINT() {
+            public Object get(ResultSet results, int expectedJdbcType) throws java.sql.SQLException { return (Long)results.getLong(1); }
+            public Object valueForNoResult(int expectedJdbcType) { return (Integer)0; }
         },
-        DOUBLE() {
-            public Object get(ResultSet results) throws java.sql.SQLException { return results.getDouble(1); }
-            public Object valueForNoResult() { return (Double)0.0; }
+        NUMERIC_OR_DOUBLE() {
+            public Object get(ResultSet results, int expectedJdbcType) throws java.sql.SQLException {
+                if(expectedJdbcType == java.sql.Types.NUMERIC) {
+                    BigDecimal d = results.getBigDecimal(1);
+                    return (d == null) ? null : JsBigDecimal.fromBigDecimal(d);
+                } else {
+                    return results.getDouble(1);
+                }
+            }
+            public Object valueForNoResult(int expectedJdbcType) {
+                if(expectedJdbcType == java.sql.Types.NUMERIC) {
+                    return JsBigDecimal.fromBigDecimal(BigDecimal.ZERO);
+                } else {
+                    return (Double)0.0;
+                }
+            }
         };
-        public abstract Object get(ResultSet results) throws java.sql.SQLException;
-        public abstract Object valueForNoResult();
+        public abstract Object get(ResultSet results, int expectedJdbcType) throws java.sql.SQLException;
+        public abstract Object valueForNoResult(int expectedJdbcType);
     }
 
     // Execute a query which returns a single value from a *trusted* SQL expression
-    public Object executeSingleValueExpressionUsingTrustedSQL(JdSelect query, String sqlExpression, SingleValueKind kind, Field groupByField) throws java.sql.SQLException {
+    public Object executeSingleValueExpressionUsingTrustedSQL(JdSelect query, String sqlExpression, SingleValueKind kind, int expectedJdbcType, Field groupByField) throws java.sql.SQLException {
         // WARNING: sqlExpression is added into the SQL statement directly
         return buildAndExecuteQuery(query, new QueryExecution() {
             public int appendOutputExpressions(StringBuilder select, ParameterIndicies indicies) {
@@ -502,7 +519,7 @@ public class JdTable extends KScriptable {
                         Scriptable entry = runtime.createHostObject("Object");
                         groups.add(entry);
                         // Result of SQL expression
-                        entry.put("value", entry, kind.get(results));
+                        entry.put("value", entry, kind.get(results, expectedJdbcType));
                         // Group value
                         readGroupValueIndicies.nextRow();
                         Object groupValue = groupByField.getValueFromResultSet(results, readGroupValueIndicies);
@@ -515,7 +532,7 @@ public class JdTable extends KScriptable {
                     return runtime.getContext().newArray(runtime.getJavaScriptScope(), groups.toArray(new Object[groups.size()]));
                 } else {
                     // Just a single value
-                    return results.next() ? kind.get(results) : kind.valueForNoResult();
+                    return results.next() ? kind.get(results, expectedJdbcType) : kind.valueForNoResult(expectedJdbcType);
                 }
             }
         });
@@ -730,6 +747,12 @@ public class JdTable extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+    protected static interface ValueTransformer {
+        String transform(String sqlValue);
+        int setWhereValue(JdTable.Field field, int parameterIndex, PreparedStatement statement, Object value) throws java.sql.SQLException;
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
     protected static abstract class Field {
         protected String dbName;  // name in the database
         protected String jsName;  // name in the javascript
@@ -789,17 +812,21 @@ public class JdTable extends KScriptable {
             return nullable;
         }
 
-        public abstract boolean jsNonNullObjectIsCompatible(Object object);
+        public abstract boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer);
 
-        public boolean jsObjectIsCompatible(Object object) {
+        public boolean isJSONCompatible() {
+            return false;
+        }
+
+        public boolean jsObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             if(object == null) {
                 return this.nullable ? true : false;
             }
-            return jsNonNullObjectIsCompatible(object);
+            return jsNonNullObjectIsCompatible(object, valueTransformer);
         }
 
-        public boolean jsObjectIsCompatibleForWhereClause(Object object) {
-            return jsObjectIsCompatible(object);
+        public boolean jsObjectIsCompatibleForWhereClause(Object object, ValueTransformer valueTransformer) {
+            return jsObjectIsCompatible(object, valueTransformer);
         }
 
         public void checkNonNullJsObjectForComparison(Object object, String comparison) {
@@ -898,8 +925,14 @@ public class JdTable extends KScriptable {
             return parameterIndex + 1;
         }
 
-        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value) {
-            appendWhereSqlFieldName(where, tableAlias);
+        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value, ValueTransformer valueTransformer) {
+            if(valueTransformer == null) {
+                appendWhereSqlFieldName(where, tableAlias);
+            } else {
+                StringBuilder sqlValue = new StringBuilder();
+                appendWhereSqlFieldName(sqlValue, tableAlias);
+                where.append(valueTransformer.transform(sqlValue.toString()));
+            }
             where.append(' ');
             if(value == null) {
                 if(comparison.equals("=")) {
@@ -980,7 +1013,12 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public boolean jsNonNullObjectIsCompatible(Object object) {
+        public boolean isJSONCompatible() {
+            return true;
+        }
+
+        @Override
+        public boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             return object instanceof CharSequence;
         }
 
@@ -1056,7 +1094,7 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public boolean jsNonNullObjectIsCompatible(Object object) {
+        public boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             return Runtime.getCurrentRuntime().isAcceptedJavaScriptDateObject(object);
         }
 
@@ -1117,7 +1155,7 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public boolean jsNonNullObjectIsCompatible(Object object) {
+        public boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             // A simple, and not entirely accurate test. But good enough for these purposes.
             if(!(object instanceof Scriptable)) {
                 return false;
@@ -1193,7 +1231,7 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public boolean jsNonNullObjectIsCompatible(Object object) {
+        public boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             return object instanceof Boolean;
         }
 
@@ -1237,7 +1275,7 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public boolean jsNonNullObjectIsCompatible(Object object) {
+        public boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             return object instanceof Number;
         }
 
@@ -1285,7 +1323,7 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public boolean jsNonNullObjectIsCompatible(Object object) {
+        public boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             return object instanceof Number;
         }
 
@@ -1338,7 +1376,7 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public boolean jsNonNullObjectIsCompatible(Object object) {
+        public boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             return object instanceof Number;
         }
 
@@ -1382,7 +1420,7 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public boolean jsNonNullObjectIsCompatible(Object object) {
+        public boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             return object instanceof Number;
         }
 
@@ -1410,6 +1448,69 @@ public class JdTable extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+    private static class NumericField extends Field {
+        private int precision = -1;
+        private int scale = -1;
+
+        public NumericField(String name, Scriptable defn) {
+            super(name, defn);
+            Object precision = defn.get("precision", defn); // ConsString is checked
+            Object scale = defn.get("scale", defn); // ConsString is checked
+            if(precision != null && !(precision instanceof org.mozilla.javascript.UniqueTag)) {
+                if(!(precision instanceof Number)) { throw new OAPIException("Bad precision"); }
+                this.precision = ((Number)precision).intValue();
+                if(this.precision < 1) { throw new OAPIException("precision must be >= 1"); }
+                if(scale != null && !(scale instanceof org.mozilla.javascript.UniqueTag)) {
+                    if(!(scale instanceof Number)) { throw new OAPIException("Bad scale"); }
+                    this.scale = ((Number)scale).intValue();
+                    if(this.scale < 0) { throw new OAPIException("scale must be >= 0"); }
+                }
+            } else if(scale != null && !(scale instanceof org.mozilla.javascript.UniqueTag)) {
+                throw new OAPIException("Scale cannot be specified without a precision");
+            }
+        }
+
+        @Override
+        public String sqlDataType() {
+            if(precision < 0 && scale < 0) { return "NUMERIC"; }
+            if(scale < 0) { return "NUMERIC("+precision+")"; }
+            return "NUMERIC("+precision+","+scale+")";
+        }
+
+        @Override
+        public int jdbcDataType() {
+            return java.sql.Types.NUMERIC;
+        }
+
+        @Override
+        public boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
+            return object instanceof JsBigDecimal;
+        }
+
+        @Override
+        public int setStatementField(int parameterIndex, PreparedStatement statement, Scriptable values) throws java.sql.SQLException {
+            JsBigDecimal d = (JsBigDecimal)JsGet.objectOfClass(this.jsName, values, JsBigDecimal.class);
+            checkForForbiddenNullValue(d);
+            if(d == null) {
+                statement.setNull(parameterIndex, java.sql.Types.NUMERIC);
+            } else {
+                statement.setBigDecimal(parameterIndex, d.toBigDecimal());
+            }
+            return parameterIndex + 1;
+        }
+
+        @Override
+        public void setWhereNotNullValue(int parameterIndex, PreparedStatement statement, Object value) throws java.sql.SQLException {
+            statement.setBigDecimal(parameterIndex, ((JsBigDecimal)value).toBigDecimal());
+        }
+
+        @Override
+        protected Object getValueFromResultSet(ResultSet results, ParameterIndicies indicies) throws java.sql.SQLException {
+            return JsBigDecimal.fromBigDecimal(results.getBigDecimal(indicies.get()));
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
     private static class ObjRefField extends Field {
         public ObjRefField(String name, Scriptable defn) {
             super(name, defn);
@@ -1426,15 +1527,15 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public boolean jsNonNullObjectIsCompatible(Object object) {
+        public boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             return object instanceof KObjRef;
         }
 
-        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value) {
+        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value, ValueTransformer valueTransformer) {
             if(!(comparison.equals("=") || comparison.equals("<>"))) {
                 throw new OAPIException("Can't use a comparison other than = for a ref field in a where() clause");
             }
-            super.appendWhereSql(where, tableAlias, comparison, value);
+            super.appendWhereSql(where, tableAlias, comparison, value, valueTransformer);
         }
 
         @Override
@@ -1502,11 +1603,11 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value) {
+        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value, ValueTransformer valueTransformer) {
             if(!(comparison.equals("=") || comparison.equals("<>"))) {
                 throw new OAPIException("Link fields can only use the = and <> comparisons in where clauses.");
             }
-            super.appendWhereSql(where, tableAlias, comparison, value);
+            super.appendWhereSql(where, tableAlias, comparison, value, valueTransformer);
         }
     }
 
@@ -1517,16 +1618,16 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public boolean jsNonNullObjectIsCompatible(Object object) {
+        public boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             return object instanceof KUser;
         }
 
         @Override
-        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value) {
+        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value, ValueTransformer valueTransformer) {
             if(!(comparison.equals("=") || comparison.equals("<>"))) {
                 throw new OAPIException("User fields can only use the = and <> comparisons in where clauses.");
             }
-            super.appendWhereSql(where, tableAlias, comparison, value);
+            super.appendWhereSql(where, tableAlias, comparison, value, valueTransformer);
         }
 
         @Override
@@ -1557,7 +1658,7 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public boolean jsNonNullObjectIsCompatible(Object object) {
+        public boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             return object instanceof KStoredFile;
         }
 
@@ -1646,7 +1747,7 @@ public class JdTable extends KScriptable {
             return parameterIndex + 2;
         }
 
-        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value) {
+        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value, ValueTransformer valueTransformer) {
             boolean isEqualComparison = comparison.equals("=");
             if(!(isEqualComparison || comparison.equals("<>"))) {
                 throw new OAPIException("Can't use a comparison other than = for a file field in a where() clause");
@@ -1756,7 +1857,7 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public boolean jsNonNullObjectIsCompatible(Object object) {
+        public boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             return object instanceof KLabelList;
         }
 
@@ -1808,7 +1909,7 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public boolean jsObjectIsCompatible(Object object) {
+        public boolean jsObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             if(object == null) {
                 throw new OAPIException("Can't use a null value for PERMIT READ comparison in a where() clause.");
             }
@@ -1820,7 +1921,7 @@ public class JdTable extends KScriptable {
             return parameterIndex;  // Embeds everything in generated SQL WHERE clause
         }
 
-        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value) {
+        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value, ValueTransformer valueTransformer) {
             KUser user = (KUser)value;
             where.append(user.makeWhereClauseForPermitRead(String.format("%1$s.%2$s", tableAlias, dbName)));
         }
@@ -1849,15 +1950,20 @@ public class JdTable extends KScriptable {
         }
 
         @Override
-        public boolean jsObjectIsCompatibleForWhereClause(Object object) {
-            if(object != null) {
-                throw new OAPIException("json columns cannot be used in where clauses, except as a comparison to null.");
-            }
-            return super.jsObjectIsCompatibleForWhereClause(object);
+        public boolean isJSONCompatible() {
+            return true;
         }
 
         @Override
-        public boolean jsNonNullObjectIsCompatible(Object object) {
+        public boolean jsObjectIsCompatibleForWhereClause(Object object, ValueTransformer valueTransformer) {
+            if((object != null) && (valueTransformer == null)) {
+                throw new OAPIException("json columns cannot be used in where clauses, except as a comparison to null.");
+            }
+            return super.jsObjectIsCompatibleForWhereClause(object, valueTransformer);
+        }
+
+        @Override
+        public boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
             return object instanceof CharSequence; // serialised
         }
 

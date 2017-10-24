@@ -42,42 +42,71 @@ class KObjectTest < Test::Unit::TestCase
   end
 
   def test_object_restrictions
+    restore_store_snapshot("basic")
+    # Attribute 1 is hidden apart from holders of label 100
+    # Attribute 3 is read-only apart from holders of labels 100 or 200, and hidden apart from holders of label 200
+    restriction1 = KObject.new([O_LABEL_STRUCTURE])
+    restriction1.add_attr(O_TYPE_RESTRICTION, A_TYPE)
+    restriction1.add_attr(O_TYPE_BOOK, A_RESTRICTION_TYPE)
+    restriction1.add_attr(KObjRef.new(100), A_RESTRICTION_UNRESTRICT_LABEL)
+    restriction1.add_attr(KObjRef.new(1), A_RESTRICTION_ATTR_RESTRICTED)
+    KObjectStore.create(restriction1)
+
+    restriction2 = KObject.new([O_LABEL_STRUCTURE])
+    restriction2.add_attr(O_TYPE_RESTRICTION, A_TYPE)
+    restriction2.add_attr(O_TYPE_BOOK, A_RESTRICTION_TYPE)
+    restriction2.add_attr(KObjRef.new(100), A_RESTRICTION_UNRESTRICT_LABEL)
+    restriction2.add_attr(KObjRef.new(200), A_RESTRICTION_UNRESTRICT_LABEL)
+    restriction2.add_attr(KObjRef.new(3), A_RESTRICTION_ATTR_READ_ONLY)
+    KObjectStore.create(restriction2)
+
+    restriction3 = KObject.new([O_LABEL_STRUCTURE])
+    restriction3.add_attr(O_TYPE_RESTRICTION, A_TYPE)
+    restriction3.add_attr(O_TYPE_BOOK, A_RESTRICTION_TYPE)
+    restriction3.add_attr(KObjRef.new(200), A_RESTRICTION_UNRESTRICT_LABEL)
+    restriction3.add_attr(KObjRef.new(3), A_RESTRICTION_ATTR_RESTRICTED)
+    KObjectStore.create(restriction3)
+
     obj = KObject.new()
+    obj.add_attr(O_TYPE_BOOK, A_TYPE)
     obj.add_attr('Pants', 1);
     obj.add_attr("a", 3)
     obj.add_attr("c", 4)
-    # Attribute 1 is hidden apart from holders of label 100
-    # Attribute 3 is read-only apart from holders of labels 100 or 200, and hidden apart from holders of label 200
-    obj._test_set_restrictions({1 => [100], 3 => [200]}, {3 => [100,200]})
 
-    assert obj.can_read?(1, [100])
-    assert obj.can_read?(3, [200])
-    assert obj.can_read?(1, [100,200])
-    assert obj.can_read?(3, [100,200])
-    assert (not obj.can_read?(1, [200]))
-    assert (not obj.can_read?(3, [100]))
+    ra_none = KObject::RestrictedAttributes.new(obj, [])
+    ra_100 = KObject::RestrictedAttributes.new(obj, [100])
+    ra_200 = KObject::RestrictedAttributes.new(obj, [200])
+    ra_300 = KObject::RestrictedAttributes.new(obj, [300])
+    ra_100_200 = KObject::RestrictedAttributes.new(obj, [100,200])
 
-    assert obj.can_read?(4, [100])
-    assert obj.can_read?(4, [200])
-    assert obj.can_read?(4, [100,200])
-    assert obj.can_read?(4, [])
+    assert ra_100.can_read_attribute?(1)
+    assert ra_200.can_read_attribute?(3)
+    assert ra_100_200.can_read_attribute?(1)
+    assert ra_100_200.can_read_attribute?(3)
+    assert (not ra_200.can_read_attribute?(1))
+    assert (not ra_100.can_read_attribute?(3))
 
-    assert (not obj.can_read?(1, []))
-    assert (not obj.can_read?(1, [300]))
+    assert ra_100.can_read_attribute?(4)
+    assert ra_200.can_read_attribute?(4)
+    assert ra_100_200.can_read_attribute?(4)
+    assert ra_none.can_read_attribute?(4)
 
-    assert obj.can_modify?(3, [100])
-    assert obj.can_modify?(3, [200])
-    assert obj.can_modify?(3, [100,200])
-    assert (not obj.can_modify?(3, [300]))
-    assert (not obj.can_modify?(3, []))
+    assert (not ra_none.can_read_attribute?(1))
+    assert (not ra_300.can_read_attribute?(1))
 
-    assert obj.can_modify?(4, [100])
-    assert obj.can_modify?(4, [200])
-    assert obj.can_modify?(4, [100,200])
-    assert obj.can_modify?(4, [])
+    assert ra_100.can_modify_attribute?(3)
+    assert ra_200.can_modify_attribute?(3)
+    assert ra_100_200.can_modify_attribute?(3)
+    assert (not ra_300.can_modify_attribute?(3))
+    assert (not ra_none.can_modify_attribute?(3))
+
+    assert ra_100.can_modify_attribute?(4)
+    assert ra_200.can_modify_attribute?(4)
+    assert ra_100_200.can_modify_attribute?(4)
+    assert ra_none.can_modify_attribute?(4)
 
     # See the object as a user with label 200 only; attribute 1 disappears, but 3 and 4 remain
-    robj = obj.dup_restricted([200])
+    robj = obj.dup_restricted(ra_200)
     assert (not obj.restricted?)
     assert robj.restricted?
     assert_equal "a", robj.first_attr(3).to_s

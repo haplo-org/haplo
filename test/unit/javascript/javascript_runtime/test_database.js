@@ -6,7 +6,7 @@
 
 
 // Create database namespace outside function so it can be picked up by the test callback
-var db = new $DbNamespace();
+var db = this.__test_database_db = new $DbNamespace();
 
 TEST(function() {
 
@@ -116,7 +116,14 @@ TEST(function() {
 
     db.table("json1", {
         data: { type:"json", nullable:true },
+        text: { type:"text", nullable:true },
         number: { type:"int" }
+    });
+
+    db.table("numerics", {
+        n0: { type:"numeric", nullable:true },
+        n1: { type:"numeric", nullable:true, precision:10 },
+        n2: { type:"numeric", nullable:true, precision:10, scale:4 }
     });
 
     // Set up the storage
@@ -160,6 +167,7 @@ TEST(function() {
     // Select all the objects
     var alldepartments = db.department.select().stableOrder();
     TEST.assert_equal(2, alldepartments.count());   // count() before select
+    TEST.assert_equal("number", typeof(alldepartments.count()));
     TEST.assert_equal(2, alldepartments.length);
     TEST.assert_equal(2, alldepartments.count());   // count() after select
     TEST.assert_equal(undefined, alldepartments[-1]);
@@ -555,9 +563,11 @@ TEST(function() {
 (function() { // TODO: Work out why this anon function is necessary to stop Rhino getting upset
     var selectForAggregate = db.numbers.select();   // for reuse a few times
     TEST.assert_equal(238,      selectForAggregate.aggregate("SUM", "small"));
+    TEST.assert_equal("number", typeof(selectForAggregate.aggregate("SUM", "small")));
     TEST.assert_equal(2,        selectForAggregate.aggregate("COUNT", "big"));   // only 2 non-NULL
     TEST.assert_equal(6,        selectForAggregate.aggregate("COUNT", "id"));    // id useful for "all"
     TEST.assert_equal(39.666666666666664, selectForAggregate.aggregate("AVG", "small"));
+    TEST.assert_equal("number", typeof(selectForAggregate.aggregate("AVG", "small")));
     TEST.assert_equal(242847,   selectForAggregate.aggregate("SUM", "big"));   // some NULL values in SUM
     TEST.assert_equal(35,       db.numbers.select().where("small","<",30).aggregate("SUM", "small"));
     TEST.assert_equal(46,       db.numbers.select().where("medium","<",11).aggregate("SUM", "small"));
@@ -847,144 +857,5 @@ TEST(function() {
     filenullable_select3[0].attachedFile2 = null;
     filenullable_select3[0].save();
     TEST.assert_equal(0, db.files2.select().where("attachedFile2","<>",null).length);
-
-    // =====================================================================================
-    // JSON data type
-    db.json1.create({number:4}).save();
-    db.json1.create({number:8,data:{a:1,b:2}}).save();
-    var jr1 = db.json1.select().where("number","=",4)[0];
-    TEST.assert_equal(null, jr1.data);
-    var jr2 = db.json1.select().where("number","=",8)[0];
-    TEST.assert_equal(2, jr2.data.b);
-    TEST.assert(_.isEqual({b:2,a:1}, jr2.data));
-    // Test that modifications to the deserialised object persist (ie cache is working, but not saved)
-    jr2.data.b = 3;
-    jr2.number = 9;
-    TEST.assert_equal(3, jr2.data.b);   // modifies cached value
-    jr2.save();
-    jr2 = db.json1.load(jr2.id);
-    TEST.assert_equal(2, jr2.data.b);   // NOT modified by save because data property was not assigned explicitly
-    TEST.assert_equal(9, jr2.number);
-    // Assign to property to actually change it
-    jr2.data = {b:4,c:8};
-    TEST.assert_equal(4, jr2.data.b);   // invalidated cache
-    jr2.save();
-    jr2 = db.json1.load(jr2.id);
-    TEST.assert_equal(4, jr2.data.b);
-    TEST.assert(_.isEqual({c:8,b:4}, jr2.data));
-    // Can't use them in where clauses...
-    TEST.assert_exceptions(function() {
-        db.json1.select().where("data","=",{a:2});
-    }, "json columns cannot be used in where clauses, except as a comparison to null.");
-    TEST.assert_exceptions(function() {
-        db.json1.select().where("data","=",'{"a":2}');  // even as JSON encoded text
-    }, "json columns cannot be used in where clauses, except as a comparison to null.");
-    // ... except when comparing to null.
-    var jqn1 = db.json1.select().where("data","=",null);
-    TEST.assert_equal(1, jqn1.length);
-    TEST.assert_equal(4, jqn1[0].number);
-    var jqn2 = db.json1.select().where("data","!=",null);
-    TEST.assert_equal(1, jqn2.length);
-    TEST.assert_equal(9, jqn2[0].number);
-
-    // =====================================================================================
-    // Very simple migration test
-    db.forMigration.create({number1:2}).save();
-    db.forMigration.create({number1:4}).save();
-    var migrated_select0 = db.forMigration.select().where("number1","=",4);
-    TEST.assert_equal(1, migrated_select0.length);
-    TEST.assert_equal(undefined, migrated_select0[0].text1);
-    // Do actual migration
-    delete db.forMigration;   // to avoid redeclaration warning
-    db.table("forMigration", {
-        number1: { type:"int" },
-        text1: { type:"text", nullable:true }
-    });
-    $host._testCallback("");
-    // Check existing data is still there, and new field works
-    var migrated_select1 = db.forMigration.select().where("number1","=",4);
-    TEST.assert_equal(1, migrated_select1.length);
-    TEST.assert_equal(null, migrated_select1[0].text1);
-    migrated_select1[0].text1 = "Hello";
-    migrated_select1[0].save();
-    var migrated_select2 = db.forMigration.select().where("number1","=",4);
-    TEST.assert_equal(1, migrated_select2.length);
-    TEST.assert_equal("Hello", migrated_select2[0].text1);
-
-    // =====================================================================================
-    // Dynamic tables
-    var dyn1 = db._dynamicTable("dyn1", {
-        name: {type:"text", indexed:true},
-        number: {type:"int"}
-    });
-    TEST.assert_equal(true, dyn1.wasCreated);
-    TEST.assert_equal(true, dyn1.databaseSchemaChanged);
-    // can be used immediately without setting up storage
-    dyn1.create({name:"Ping", number:76}).save();
-    dyn1.create({name:"Pong", number:87}).save();
-    var dyn1_select1 = dyn1.select().where("name","=","Ping");
-    TEST.assert_equal(1, dyn1_select1.length);
-    TEST.assert_equal(76, dyn1_select1[0].number);
-    // Redefined with automigrate of new nullable columns
-    dyn1 = db._dynamicTable("dyn1", {
-        name: {type:"text"},
-        number: {type:"int"},
-        add1: {type:"text", nullable:true, indexed:true},   // and indicies work
-        add2: {type:"smallint", nullable:true}
-    });
-    TEST.assert_equal(false, dyn1.wasCreated);
-    TEST.assert_equal(true, dyn1.databaseSchemaChanged);
-    var dyn1_select2 = dyn1.select().where("name","=","Pong");
-    TEST.assert_equal(1, dyn1_select2.length);
-    TEST.assert_equal(87, dyn1_select2[0].number);
-    // Can use the additional fields
-    var dyn1row = dyn1_select2[0];
-    dyn1row.add1 = "additional one";
-    dyn1row.add2 = 48;
-    dyn1row.save();
-    var dyn1row_reload = dyn1.select().where("name","=","Pong")[0];
-    TEST.assert_equal(87, dyn1row_reload.number);
-    TEST.assert_equal("additional one", dyn1row_reload.add1);
-    TEST.assert_equal(48, dyn1row_reload.add2);
-    // Can redefine, losing one of the additional fields
-    dyn1 = db._dynamicTable("dyn1", {
-        name: {type:"text", indexed:true},
-        number: {type:"int"},
-        add2: {type:"smallint", nullable:true}
-    });
-    TEST.assert_equal(false, dyn1.wasCreated);
-    TEST.assert_equal(false, dyn1.databaseSchemaChanged);
-    var dyn1row_lost1 = dyn1.select().where("name","=","Pong")[0];
-    TEST.assert_equal(87, dyn1row_lost1.number);
-    TEST.assert_equal(undefined, dyn1row_lost1.add1);
-    TEST.assert_equal(48, dyn1row_lost1.add2);
-    // But it'll appear again if it appears in a new redefinition
-    dyn1 = db._dynamicTable("dyn1", {
-        name: {type:"text", indexed:true},
-        number: {type:"int"},
-        add1: {type:"text", nullable:true},
-        add2: {type:"smallint", nullable:true}
-    });
-    TEST.assert_equal(false, dyn1.wasCreated);
-    TEST.assert_equal(false, dyn1.databaseSchemaChanged);
-    var dyn1row_reappear1 = dyn1.select().where("name","=","Pong")[0];
-    TEST.assert_equal(87, dyn1row_reappear1.number);
-    TEST.assert_equal("additional one", dyn1row_reappear1.add1);
-    TEST.assert_equal(48, dyn1row_reappear1.add2);
-    // Can't redefine with non-nullable columns
-    TEST.assert_exceptions(function() {
-        var dyn1 = db._dynamicTable("dyn1", {
-            name: {type:"text"},
-            number: {type:"int"},
-            nonnullable: {type:"text"}
-        });
-    }, "Cannot automatically migrate table definition: field nonnullable is not nullable");
-    // Redefine back to the basics, the Ruby test checks that all the expected fields are there.
-    dyn1 = db._dynamicTable("dyn1", {
-        name: {type:"text"},
-        number: {type:"int"}
-    });
-    TEST.assert_equal(false, dyn1.wasCreated);
-    TEST.assert_equal(false, dyn1.databaseSchemaChanged);
 
 });

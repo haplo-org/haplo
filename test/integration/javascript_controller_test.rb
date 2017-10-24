@@ -13,6 +13,7 @@ class JavaScriptControllerTest < IntegrationTest
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_controller/test_response_plugin")
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_controller/test_request_callbacks")
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_controller/test_user_login")
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_controller/test_anon_not_allowed")
 
   def setup
     db_reset_test_data
@@ -56,6 +57,27 @@ class JavaScriptControllerTest < IntegrationTest
     assert_equal "USER 2 'ANONYMOUS' 'null' 'null' 'null'", response.body
     get "/do/plugin_test/current_user_has_permission_to_create_intranet_page"
     assert_equal "NO", response.body
+
+    # Authenticated with a service user & API key
+    service_user = User.where(:code=>'test:service-user:test-response').first
+    apikey = ApiKey.new(:user_id => service_user.id, :path => '/', :name => 'TEST');
+    key = apikey.set_random_api_key
+    apikey_auth_headers = {"Authorization"=>"Basic "+["haplo:#{key}"].pack('m').gsub(/\s/,''),}
+    apikey.save!
+    get "/do/plugin_test/current_user", nil, apikey_auth_headers
+    assert_response :success
+    assert_equal "USER #{service_user.id} 'Test Resource Service User' 'null' 'null' 'null'", response.body
+
+    KPlugin.install_plugin('test_anon_not_allowed')
+    get_302 "/do/anon-not-allowed/current-user" # as anon, gets redirected
+    get "/do/anon-not-allowed/current-user", nil, apikey_auth_headers
+    assert_equal "USER #{service_user.id} 'Test Resource Service User'", response.body
+
+    # And it doesn't work when the api key is destroyed
+    apikey.destroy
+    get_403 "/do/plugin_test/current_user", nil, apikey_auth_headers
+    get_403 "/do/anon-not-allowed/current-user", nil, apikey_auth_headers
+    KPlugin.uninstall_plugin('test_anon_not_allowed')
 
     # Simple response without layout
     get '/do/plugin_test/test1/ping'
@@ -118,7 +140,7 @@ class JavaScriptControllerTest < IntegrationTest
     # Test invalid response
     get '/do/plugin_test/invalid_response', nil, {:expected_response_codes => [500]}
     if should_test_plugin_debugging_features?
-      assert_select('h2', "The response body (usually E.response.body) is not valid, must be a String, StoredFile, or a generator (O.generate) object. JSON responses should be encoded using JSON.stringify by the request handler.")
+      assert_select('h2', "The response body (usually E.response.body) is not valid, must be a String, StoredFile, XML document, or a generator (O.generate) object. JSON responses should be encoded using JSON.stringify by the request handler.")
     end
     # ... but make sure it's happy with nothing being returned.
     get '/do/plugin_test/no_response_at_all_was_called'

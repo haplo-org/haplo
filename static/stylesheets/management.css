@@ -98,19 +98,15 @@ em {
 #z__management_intro div {
     padding: 32px;  /* use a div within the main div to get the padding without falling foul of IE's different box model */
 }
-#z__management_intro_logo {
-    font-family: $SPECIAL_FONT_FAMILY;
-    font-weight: bold;
-    color: #888;
-    font-size: 64px;
-    letter-spacing: 16px;
-    line-height: 100px;
+#z__management_intro_logo img {
+    position:relative;
+    left:-4px; /* visual balance */
 }
 #z__management_intro p {
     color: #777;
 }
 #z__management_intro b {
-    font-size: 24px;
+    font-size: 16px;
 }
 
 .z__webfonts_enabled #z__management_intro b {

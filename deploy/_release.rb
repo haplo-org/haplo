@@ -156,7 +156,7 @@ system "rm #{css_process_order_filename}"
 # Find all other files which might have IDs in them
 puts "Searching other files for css ids and classes..."
 examine_for_ids = []
-['erb', 'js', 'rb', 'css', 'html'].each do |ext|
+['erb', 'hsvt', 'js', 'rb', 'css', 'html'].each do |ext|
   examine_for_ids.concat(`find #{export_dir} -name *.#{ext}`.split(/[\r\n]+/))
 end
 examine_for_ids.sort.reverse.each do |filename|

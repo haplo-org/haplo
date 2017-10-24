@@ -55,6 +55,7 @@ def copy_with_header(filename, to, out_filename = nil)
 end
 copy_with_header("oforms_server.js", "lib/javascript/lib")
 copy_with_header("oforms_jquery.js", "static/javascripts")
+copy_with_header("oforms_changes.js", "static/javascripts")
 
 
 

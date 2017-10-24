@@ -1,0 +1,23 @@
+pageTitle(dashboard.specification.title)
+if(dashboard.specification.backLink) {
+  if(dashboard.specification.backLinkText) { backLink(dashboard.specification.backLink) { dashboard.specification.backLinkText } }
+  else { backLink(dashboard.specification.backLink) }
+}
+
+std:plugin:resources("dashboard.css")
+
+if(dashboard.collection.isUpdatingFacts) {
+  std:ui:notice("This dashboard is being updated. Some data may be out of date.")
+}
+
+if(dashboard.invalidFactsAtRequested) {
+  std:ui:notice("Invalid time requested, showing current data.")
+}
+
+each(dashboard.$displays.above-summary) { render(.) }
+
+template:dashboard:common:summary-display()
+
+yield()
+
+each(dashboard.$displays.below) { render(.) }

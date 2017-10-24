@@ -8,6 +8,7 @@
 module SchemaRequirements
 
   SORT_REMOVE = -1
+  SORT_REMOVE_FORCE = -2
   # Default sort value is chosen so requirements can put things before and after the default sort without using silly sort values
   SORT_DEFAULT = 10000
   # Always include colons for consistency in fields which tend to have spaces
@@ -28,7 +29,7 @@ module SchemaRequirements
 
     IGNORE_LINE = /\A\s*(\#.+)?\z/m # comment or blank line
     OBJECT_FORMAT = /\A(?<optional>OPTIONAL )?(?<kind>\S+)\s+(?<code>[a-zA-Z0-9_:-]+)\s*(as\s+(?<name>[a-zA-Z0-9_]+))?\s*\z/m
-    VALUE_FORMAT = /\A\s+((?<remove>REMOVE\b)\s*)?(?<key>\S+?):?\s+(?<string>.+?)\s*(\[sort=(?<sort>\d+)\])?\s*\z/m
+    VALUE_FORMAT = /\A\s+((?<remove>(?<forceremove>(FORCE-)?)REMOVE\b)\s*)?(?<key>\S+?):?\s+(?<string>.+?)\s*(\[sort=(?<sort>\d+)\])?\s*\z/m
     OPTIONAL_NAMES_KEY = "_optional".freeze
     TEMPLATE_KIND = "schema-template".freeze
     TEMPLATE_KEY = "apply-schema-template".freeze
@@ -45,7 +46,9 @@ module SchemaRequirements
           sortstr = match[:sort]
           sort = (sortstr && !sortstr.empty?) ? sortstr.to_i : SORT_DEFAULT
           remove = match[:remove]
-          sort = SORT_REMOVE if remove && !remove.empty?
+          if remove && !remove.empty?
+            sort = match[:forceremove].empty? ? SORT_REMOVE : SORT_REMOVE_FORCE
+          end
           key = match[:key]
           if key == TEMPLATE_KEY
             current_requirement.add_template(match[:string])
@@ -116,6 +119,12 @@ module SchemaRequirements
       @templates ||= []
       @templates.push(template_name)
     end
+    def _dump
+      @values.each do |code,value|
+        puts "    #{code}"
+        value._dump
+      end
+    end
   end
 
   class TemplateRequirement < Requirement
@@ -136,28 +145,42 @@ module SchemaRequirements
   class RequiredValue
     def initialize
       @values = []
+      @forceremove = []
+      @remove = []
     end
     def set(sort, value)
-      # Don't add an additional value if there's already one for that value, so that
-      #  1) multiple plugins can specify the same values for multi-values without duplicating them,
-      #  2) the highest priority plugin sets the sort order for a given value.
-      unless @values.find { |s,v| v == value }
-        @values.push([sort, value])
+      case sort
+      when SORT_REMOVE_FORCE; @forceremove.push(value); @forceremove.uniq!
+      when SORT_REMOVE;       @remove.push(value);      @remove.uniq!
+      else
+        # Don't add an additional value if there's already one for that value, so that
+        #  1) multiple plugins can specify the same values for multi-values without duplicating them,
+        #  2) the highest priority plugin sets the sort order for a given value.
+        unless @values.find { |s,v| v == value }
+          @values.push([sort, value])
+        end
       end
     end
     def multi_value
-      remove = []; apply = []
+      apply = []
       # Use n and sort_by to give a stable sort
       n = 0
       @values.sort_by { |x| n += 1; [x.first, n] } .each do |v|
-        (v.first == SORT_REMOVE ? remove : apply).push(v.last)
+        apply.push(v.last)
       end
       # Apply takes precedence over remove so a plugin can stop requiring something without preventing another plugin from using it.
-      [remove - apply, apply]
+      [(@remove - apply) + @forceremove, apply - @forceremove]
     end
     def single_value
       remove, apply = self.multi_value()
       [remove, apply.last]
+    end
+    def _dump
+      @values.each do |v|
+        @forceremove.each { |w| puts "        FORCE-REMOVE #{w}" }
+        @remove.each      { |w| puts "        REMOVE #{w}" }
+        puts "        #{v[0]} #{v[1]}"
+      end
     end
   end
 
@@ -450,6 +473,18 @@ module SchemaRequirements
       end
       @context.post_commit(self)
       self
+    end
+    def _dump
+      @kinds.each do |kind, kind_applier|
+        puts "--- #{kind} ---"
+        @parser.requirements[kind].each do |code,requirement|
+          puts "  #{kind} #{code}"
+          requirement.values.each do |code,value|
+            puts "    #{code}"
+            value._dump
+          end
+        end
+      end
     end
   end
 

@@ -604,9 +604,16 @@ class KObjectStoreTest < Test::Unit::TestCase
       Thread.current[:test_user_attribute_restrictions] = mappings
     end
     def hUserAttributeRestrictionLabels(result, user)
+      # Code to make sure queries can be used during this hook
+      unless Thread.current[:test_user_attribute_restrictions_in_query]
+        Thread.current[:test_user_attribute_restrictions_in_query] = true
+        KObjectStore.query_and().free_text("hello").execute();
+        Thread.current[:test_user_attribute_restrictions_in_query] = false
+      end
+      # Get labels from mappings
       m = Thread.current[:test_user_attribute_restrictions]
-      if m.has_key?(AuthContext.user.id)
-        result.labels = KLabelList.new(m[AuthContext.user.id])
+      if m.has_key?(user.id)
+        result.userLabels.add([m[user.id]])
       end
     end
   end
@@ -618,50 +625,54 @@ class KObjectStoreTest < Test::Unit::TestCase
                                                  42 => [],
                                                  43 => [O_LABEL_COMMON.to_i, O_LABEL_CONFIDENTIAL.to_i]})
 
-    p = KObject.new()
+    p = KObject.new([O_LABEL_CONFIDENTIAL])
     p.add_attr(O_TYPE_STAFF, A_TYPE)
     p.add_attr("Herbet Simpkins", A_TITLE)
     tn = KIdentifierTelephoneNumber.new_with_plain_text("01234 567 890", A_TELEPHONE_NUMBER)
     p.add_attr(tn, A_TELEPHONE_NUMBER)
     KObjectStore.create(p)
     # Check everything is allowed before the load
-    assert p.can_read?(A_TITLE, [O_LABEL_COMMON.to_i])
-    assert p.can_read?(A_TITLE, [])
+    p_ra_none = KObject::RestrictedAttributes.new(p, [])
+    p_ra_common = KObject::RestrictedAttributes.new(p, [O_LABEL_COMMON.to_i])
+    p_ra_confidential = KObject::RestrictedAttributes.new(p, [O_LABEL_CONFIDENTIAL.to_i])
 
-    assert p.can_read?(A_TELEPHONE_NUMBER, [O_LABEL_COMMON.to_i])
-    assert p.can_read?(A_TELEPHONE_NUMBER, [O_LABEL_CONFIDENTIAL.to_i])
-    assert p.can_modify?(A_TELEPHONE_NUMBER, [O_LABEL_CONFIDENTIAL.to_i])
-    assert p.can_read?(A_TELEPHONE_NUMBER, [])
-    assert p.can_modify?(A_TELEPHONE_NUMBER, [O_LABEL_COMMON.to_i])
-    assert p.can_modify?(A_TELEPHONE_NUMBER, [])
-    assert_equal [], p.hidden_restricted_attributes([])
-    assert_equal [], p.hidden_restricted_attributes([O_LABEL_COMMON.to_i])
-    assert_equal [], p.hidden_restricted_attributes([O_LABEL_CONFIDENTIAL.to_i])
-    assert_equal [], p.read_only_restricted_attributes([])
-    assert_equal [], p.read_only_restricted_attributes([O_LABEL_COMMON.to_i])
-    assert_equal [], p.read_only_restricted_attributes([O_LABEL_CONFIDENTIAL.to_i])
+    assert p_ra_common.can_read_attribute?(A_TITLE)
+    assert p_ra_none.can_read_attribute?(A_TITLE)
 
-    p_as_nobody = p.dup_restricted([])
+    assert p_ra_common.can_read_attribute?(A_TELEPHONE_NUMBER)
+    assert p_ra_confidential.can_read_attribute?(A_TELEPHONE_NUMBER)
+    assert p_ra_confidential.can_modify_attribute?(A_TELEPHONE_NUMBER)
+    assert p_ra_none.can_read_attribute?(A_TELEPHONE_NUMBER)
+    assert p_ra_common.can_modify_attribute?(A_TELEPHONE_NUMBER)
+    assert p_ra_none.can_modify_attribute?(A_TELEPHONE_NUMBER)
+    assert_equal [], p_ra_none.hidden_attributes()
+    assert_equal [], p_ra_common.hidden_attributes()
+    assert_equal [], p_ra_confidential.hidden_attributes()
+    assert_equal [], p_ra_none.read_only_attributes()
+    assert_equal [], p_ra_common.read_only_attributes()
+    assert_equal [], p_ra_confidential.read_only_attributes()
+
+    p_as_nobody = p.dup_restricted(KObject::RestrictedAttributes.new(p, []))
     assert_equal tn, p_as_nobody.first_attr(A_TELEPHONE_NUMBER)
 
-    # Restrict view of staff telephone numbers to people with label 'common' or 'confidential'
-    # Restrict editing of staff telephone numbers to people with label 'confidential'
+    # Restrict view of telephone numbers on confidential objects to people with label 'common' or 'confidential'
+    # Restrict editing of telephone numbers on confidential objects to people with label 'confidential'
     parser = SchemaRequirements::Parser.new()
     parser.parse("test_javascript_schema", StringIO.new(<<__E))
 restriction test:restriction:hide-telephones
     title: Restrict view of staff telephone numbers
-    restrict-type std:type:person
+    restrict-if-label std:label:confidential
     label-unrestricted std:label:common
     label-unrestricted std:label:confidential
     attribute-restricted std:attribute:telephone
 restriction test:restriction:ro-telephones
     title: Restrict editing of staff telephone numbers
-    restrict-type std:type:person
+    restrict-if-label std:label:confidential
     label-unrestricted std:label:confidential
     attribute-read-only std:attribute:telephone
 restriction test:restriction:hide-title
     title: Restrict view of staff names
-    restrict-type std:type:person
+    restrict-if-label std:label:confidential
     label-unrestricted std:label:confidential
     attribute-restricted dc:attribute:title
 __E
@@ -670,27 +681,30 @@ __E
     assert_equal 0, applier.errors.length
     KObjectStore._test_reset_currently_selected_store
     # Check things are now restricted
+    p_ra_none = KObject::RestrictedAttributes.new(p, [])
+    p_ra_common = KObject::RestrictedAttributes.new(p, [O_LABEL_COMMON.to_i])
+    p_ra_confidential = KObject::RestrictedAttributes.new(p, [O_LABEL_CONFIDENTIAL.to_i])
 
-    assert p.can_read?(A_TITLE, [O_LABEL_CONFIDENTIAL.to_i])
-    assert (not p.can_read?(A_TITLE, []))
-    assert (not p.can_read?(A_TITLE, [O_LABEL_COMMON.to_i]))
+    assert p_ra_confidential.can_read_attribute?(A_TITLE)
+    assert (not p_ra_none.can_read_attribute?(A_TITLE))
+    assert (not p_ra_common.can_read_attribute?(A_TITLE))
 
-    assert p.can_read?(A_TELEPHONE_NUMBER, [O_LABEL_COMMON.to_i])
-    assert p.can_read?(A_TELEPHONE_NUMBER, [O_LABEL_CONFIDENTIAL.to_i])
-    assert p.can_modify?(A_TELEPHONE_NUMBER, [O_LABEL_CONFIDENTIAL.to_i])
-    assert (not p.can_read?(A_TELEPHONE_NUMBER, []))
-    assert (not p.can_modify?(A_TELEPHONE_NUMBER, [O_LABEL_COMMON.to_i]))
-    assert (not p.can_modify?(A_TELEPHONE_NUMBER, []))
-    assert_equal [A_TITLE, A_TELEPHONE_NUMBER], p.hidden_restricted_attributes([])
-    assert_equal [A_TITLE], p.hidden_restricted_attributes([O_LABEL_COMMON.to_i])
-    assert_equal [], p.hidden_restricted_attributes([O_LABEL_CONFIDENTIAL.to_i])
-    assert_equal [A_TELEPHONE_NUMBER], p.read_only_restricted_attributes([])
-    assert_equal [A_TELEPHONE_NUMBER], p.read_only_restricted_attributes([O_LABEL_COMMON.to_i])
-    assert_equal [], p.read_only_restricted_attributes([O_LABEL_CONFIDENTIAL.to_i])
+    assert p_ra_common.can_read_attribute?(A_TELEPHONE_NUMBER)
+    assert p_ra_confidential.can_read_attribute?(A_TELEPHONE_NUMBER)
+    assert p_ra_confidential.can_modify_attribute?(A_TELEPHONE_NUMBER)
+    assert (not p_ra_none.can_read_attribute?(A_TELEPHONE_NUMBER))
+    assert (not p_ra_common.can_modify_attribute?(A_TELEPHONE_NUMBER))
+    assert (not p_ra_none.can_modify_attribute?(A_TELEPHONE_NUMBER))
+    assert_equal [A_TITLE, A_TELEPHONE_NUMBER], p_ra_none.hidden_attributes()
+    assert_equal [A_TITLE], p_ra_common.hidden_attributes()
+    assert_equal [], p_ra_confidential.hidden_attributes()
+    assert_equal [A_TELEPHONE_NUMBER], p_ra_none.read_only_attributes()
+    assert_equal [A_TELEPHONE_NUMBER], p_ra_common.read_only_attributes()
+    assert_equal [], p_ra_confidential.read_only_attributes()
 
-    p_as_nobody = p.dup_restricted([])
-    p_as_common = p.dup_restricted([O_LABEL_COMMON.to_i])
-    p_as_confidential = p.dup_restricted([O_LABEL_CONFIDENTIAL.to_i])
+    p_as_nobody = p.dup_restricted(KObject::RestrictedAttributes.new(p, []))
+    p_as_common = p.dup_restricted(KObject::RestrictedAttributes.new(p, [O_LABEL_COMMON.to_i]))
+    p_as_confidential = p.dup_restricted(KObject::RestrictedAttributes.new(p, [O_LABEL_CONFIDENTIAL.to_i]))
 
     # Check ability to read A_TELEPHONE_NUMBER from p, p_as_common, p_as_confidential
     assert_equal tn, p.first_attr(A_TELEPHONE_NUMBER)
@@ -702,7 +716,7 @@ __E
 
     # Now, p was not restricted when it was created, so we'll create a fresh object
     # to test indexing.
-    p = KObject.new()
+    p = KObject.new([O_LABEL_COMMON, O_LABEL_CONFIDENTIAL])
     p.add_attr(O_TYPE_STAFF, A_TYPE)
     p.add_attr("Herbet Simpkins Jr", A_TITLE)
     tn_text = "01234 890 567"
@@ -736,7 +750,10 @@ __E
 
     # Become a user that the hooks return O_COMMON for
     u = User.find(41) # User 41 from test fixture data
-    state = AuthContext.set_user(u,u)
+    assert u.permissions.allow?(:read, p.labels)
+    original_state = AuthContext.set_user(u,u)
+
+    assert_equal 41, KObjectStore.external_user_id
 
     # Test attribute index
     query = KObjectStore.query_and.identifier(tn, A_TELEPHONE_NUMBER)
@@ -744,28 +761,35 @@ __E
     assert_equal [p.objref], query_result.map {|o| o.objref }
 
     # Test free text - that field
+    u.__send__(:remove_instance_variable, :@attribute_restriction_label_cache) # ensure hUserAttributeRestrictionLabels called
     query = KObjectStore.query_and.free_text("890567", A_TELEPHONE_NUMBER)
     query_result = query.execute(:reference, :relevance)
     assert_equal [p.objref], query_result.map {|o| o.objref }
 
     # Test free text - all fields
+    u.__send__(:remove_instance_variable, :@attribute_restriction_label_cache) # ensure hUserAttributeRestrictionLabels called
     query = KObjectStore.query_and.free_text("890567")
     query_result = query.execute(:reference, :relevance)
     assert_equal [p.objref], query_result.map {|o| o.objref }
 
     # Test free text title - that field - title
+    u.__send__(:remove_instance_variable, :@attribute_restriction_label_cache) # ensure hUserAttributeRestrictionLabels called
     query = KObjectStore.query_and.free_text("Jr", A_TITLE)
     query_result = query.execute(:reference, :relevance)
     assert_equal [], query_result.map {|o| o.objref }
 
     # Test free text title - all fields - title
+    u.__send__(:remove_instance_variable, :@attribute_restriction_label_cache) # ensure hUserAttributeRestrictionLabels called
     query = KObjectStore.query_and.free_text("Jr")
     query_result = query.execute(:reference, :relevance)
     assert_equal [], query_result.map {|o| o.objref }
 
     # Become a user that the hooks return O_COMMON and O_CONFIDENTIAL for
     u = User.find(43) # User 43 from test fixture data
-    state = AuthContext.set_user(u,u)
+    assert u.permissions.allow?(:read, p.labels)
+    AuthContext.set_user(u,u)
+
+    assert_equal 43, KObjectStore.external_user_id
 
     # Test attribute index
     query = KObjectStore.query_and.identifier(tn, A_TELEPHONE_NUMBER)
@@ -796,7 +820,9 @@ __E
 
     # Become a user that the hooks return no labels for
     u = User.find(42) # User 42 from test fixture data
-    state = AuthContext.set_user(u,u)
+    assert u.permissions.allow?(:read, p.labels)
+    assert_equal [], u.attribute_restriction_labels
+    AuthContext.set_user(u,u)
 
     # Test attribute index
     query = KObjectStore.query_and.identifier(tn, A_TELEPHONE_NUMBER)
@@ -813,9 +839,72 @@ __E
     query_result = query.execute(:reference, :relevance)
     assert_equal [], query_result.map {|o| o.objref }
 
+    # Relabel so restrictions don't apply
+    p = KObjectStore.relabel(p, KLabelChanges.new([],[O_LABEL_CONFIDENTIAL]))
+    assert u.permissions.allow?(:read, p.labels)
+    run_outstanding_text_indexing()
+    AuthContext.set_user(u,u)
+
+    # And now this user can find the object
+    assert_equal 42, KObjectStore.external_user_id
+    # Test attribute index
+    query = KObjectStore.query_and.identifier(tn, A_TELEPHONE_NUMBER)
+    query_result = query.execute(:reference, :relevance)
+    assert_equal [p.objref], query_result.map {|o| o.objref }
+
+    # Test free text - all fields
+    query = KObjectStore.query_and.free_text("890567")
+    query_result = query.execute(:reference, :relevance)
+    assert_equal [p.objref], query_result.map {|o| o.objref }
+
+    # Test free text - that field
+    query = KObjectStore.query_and.free_text("890567", A_TELEPHONE_NUMBER)
+    query_result = query.execute(:reference, :relevance)
+    assert_equal [p.objref], query_result.map {|o| o.objref }
+
+    # Relabel so restrictions apply again
+    p = KObjectStore.relabel(p, KLabelChanges.new([O_LABEL_CONFIDENTIAL],[]))
+    assert u.permissions.allow?(:read, p.labels)
+    run_outstanding_text_indexing()
+    AuthContext.set_user(u,u)
+
+    # User can't see them again
+    assert_equal 42, KObjectStore.external_user_id
+    # Test attribute index
+    query = KObjectStore.query_and.identifier(tn, A_TELEPHONE_NUMBER)
+    query_result = query.execute(:reference, :relevance)
+    assert_equal [], query_result.map {|o| o.objref }
+
+    # Test free text - all fields
+    query = KObjectStore.query_and.free_text("890567")
+    query_result = query.execute(:reference, :relevance)
+    assert_equal [], query_result.map {|o| o.objref }
+
+    # Test free text - that field
+    query = KObjectStore.query_and.free_text("890567", A_TELEPHONE_NUMBER)
+    query_result = query.execute(:reference, :relevance)
+    assert_equal [], query_result.map {|o| o.objref }
+
     # Remove hooks
-    AuthContext.restore_state(state)
+    AuthContext.restore_state(original_state)
     assert KPlugin.uninstall_plugin("k_object_store_test/attribute_restrictions_hook")
+  end
+
+  class UnhelpfulPreIndexObjectPlugin < KTrustedPlugin
+    def hPreIndexObject(result, object)
+      r = KObject.new
+      object.each { |v,d,q| r.add_attr(v,d,q) }
+      result.replacementObject = r
+    end
+  end
+
+  def test_attribute_restrictions_with_unhelpful_hpreindexobject
+    # Install a plugin which wipes out the labels used for selecting restrictions,
+    # then run the test above again.
+    assert KPlugin.install_plugin("k_object_store_test/unhelpful_pre_index_object")
+    test_attribute_restrictions()
+  ensure
+    KPlugin.uninstall_plugin("k_object_store_test/unhelpful_pre_index_object")
   end
 
   # ---------------------------------------------------------------------------------------------------------------
@@ -1020,7 +1109,7 @@ __E
     object.add_attr("X", A_TITLE)
     KObjectStore.create(object)
     check = Proc.new do |expected|
-      assert_equal expected, (KObjectStore.query_and.link(object.objref).execute().length == 1)
+      assert_equal(expected ? 1 : 0, KObjectStore.query_and.link(object.objref).execute().length)
     end
     check.call(false)
     o2 = KObject.new
@@ -1511,6 +1600,7 @@ _OBJS
     parser.parse("test_javascript_schema", StringIO.new(<<__E))
 type test:type:restricted
     title: Test type with restrictions
+    search-name: test type with restrictions
     attribute dc:attribute:title
     attribute dc:attribute:date
     label-base std:label:concept
@@ -1531,12 +1621,18 @@ restriction test:restriction:two
     label-unrestricted std:label:archived
     attribute-restricted dc:attribute:subject
     attribute-restricted std:attribute:notes
+restriction test:restriction:three
+    title: Test restriction three
+    # Applies to all types, but only with confidential label
+    restrict-if-label std:label:confidential
+    label-unrestricted std:label:common
+    attribute-restricted std:attribute:file
 __E
     applier = SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new(parser))
     applier.apply.commit
     assert_equal 0, applier.errors.length
 
-    assert_equal 2, KObjectStore.query_and().link(O_TYPE_RESTRICTION, A_TYPE).add_label_constraints([O_LABEL_STRUCTURE]).execute().length
+    assert_equal 3, KObjectStore.query_and().link(O_TYPE_RESTRICTION, A_TYPE).add_label_constraints([O_LABEL_STRUCTURE]).execute().length
 
     schema = KObjectStore.schema
     # label list -> sorted obj_id
@@ -1544,34 +1640,74 @@ __E
 
     assert_equal lo.call([O_LABEL_COMMON, O_LABEL_CONCEPT, O_LABEL_ARCHIVED]), schema.all_restriction_labels
 
-    file_td = schema.type_descriptor(O_TYPE_FILE)
-    assert_equal({}, file_td.attributes_restrictions)
-    assert_equal({}, file_td.attributes_read_only)
+    test_file_obj = KObject.new; test_file_obj.add_attr(O_TYPE_FILE, A_TYPE)
+    file_restrictions = schema._get_restricted_attributes_for_object(test_file_obj)
+    assert_equal({}, file_restrictions.hidden)
+    assert_equal({}, file_restrictions.read_only)
 
-    equipment_td = schema.type_descriptor(O_TYPE_EQUIPMENT)
+    test_equipment_obj = KObject.new; test_equipment_obj.add_attr(O_TYPE_EQUIPMENT, A_TYPE)
+    equipment_restrictions = schema._get_restricted_attributes_for_object(test_equipment_obj)
     assert_equal({
       A_NOTES => lo.call([O_LABEL_COMMON, O_LABEL_CONCEPT]),
       A_PROJECT => lo.call([O_LABEL_COMMON, O_LABEL_CONCEPT])
-    }, equipment_td.attributes_restrictions)
+    }, equipment_restrictions.hidden)
     assert_equal({
       A_AUTHOR => lo.call([O_LABEL_COMMON, O_LABEL_CONCEPT])
-    }, equipment_td.attributes_read_only)
+    }, equipment_restrictions.read_only)
 
-    # Subtypes don't have restrictions, even if they were used in schema requirements
-    laptop_td = schema.type_descriptor(O_TYPE_LAPTOP)
-    assert_equal(nil, laptop_td.attributes_restrictions)
-    assert_equal(nil, laptop_td.attributes_read_only)
+    # Subtypes always use restrictions of parent
+    test_laptop_obj = KObject.new; test_laptop_obj.add_attr(O_TYPE_LAPTOP, A_TYPE)
+    laptop_restrictions = schema._get_restricted_attributes_for_object(test_laptop_obj)
+    assert_equal(equipment_restrictions.hidden, laptop_restrictions.hidden)
+    assert_equal(equipment_restrictions.read_only, laptop_restrictions.read_only)
+    # And aubtypes don't have restrictions in type descriptor, even if they were used in schema requirements
+    assert_equal(nil, schema.type_descriptor(O_TYPE_LAPTOP).restrictions)
 
     restrict_td = KObjectStore.schema.root_type_descs_sorted_by_printable_name.find { |t| t.code == "test:type:restricted" }
     assert restrict_td != nil
+    test_restrict_obj = KObject.new(); test_restrict_obj.add_attr(restrict_td.objref, A_TYPE)
+    restrict_type_restrictions = schema._get_restricted_attributes_for_object(test_restrict_obj)
     assert_equal({
       A_NOTES => lo.call([O_LABEL_COMMON, O_LABEL_ARCHIVED, O_LABEL_CONCEPT]),
       A_PROJECT => lo.call([O_LABEL_COMMON, O_LABEL_CONCEPT]),
       A_SUBJECT => lo.call([O_LABEL_COMMON, O_LABEL_ARCHIVED])
-    }, restrict_td.attributes_restrictions)
+    }, restrict_type_restrictions.hidden)
     assert_equal({
       A_AUTHOR => lo.call([O_LABEL_COMMON, O_LABEL_CONCEPT])
-    }, restrict_td.attributes_read_only)
+    }, restrict_type_restrictions.read_only)
+
+    # Restriction which applies based on labels (only)
+    test_equipment_obj_conf = KObject.new([O_LABEL_CONFIDENTIAL]); test_equipment_obj_conf.add_attr(O_TYPE_EQUIPMENT, A_TYPE)
+    equipment_restrictions2 = schema._get_restricted_attributes_for_object(test_equipment_obj_conf)
+    assert_equal({
+      A_NOTES => lo.call([O_LABEL_COMMON, O_LABEL_CONCEPT]),
+      A_PROJECT => lo.call([O_LABEL_COMMON, O_LABEL_CONCEPT]),
+      A_FILE => lo.call([O_LABEL_COMMON])
+    }, equipment_restrictions2.hidden)
+    # Change it so it has a type constraint too
+    parser2 = SchemaRequirements::Parser.new()
+    parser2.parse("test_javascript_schema", StringIO.new(<<__E))
+restriction test:restriction:three
+    restrict-type std:type:book
+__E
+    SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser2, SchemaRequirements::AppContext.new(parser2)).apply.commit
+    schema = KObjectStore.schema
+    # Try again with same labelled object
+    equipment_restrictions3 = schema._get_restricted_attributes_for_object(test_equipment_obj_conf)
+    assert_equal({
+      A_NOTES => lo.call([O_LABEL_COMMON, O_LABEL_CONCEPT]),
+      A_PROJECT => lo.call([O_LABEL_COMMON, O_LABEL_CONCEPT])
+    }, equipment_restrictions3.hidden)
+    # But a labeled book gets the restriction
+    conf_book_obj = KObject.new([O_LABEL_CONFIDENTIAL]); conf_book_obj.add_attr(O_TYPE_BOOK, A_TYPE)
+    conf_book_restrictions = schema._get_restricted_attributes_for_object(conf_book_obj)
+    assert({
+      A_FILE => lo.call([O_LABEL_COMMON])
+    }, conf_book_restrictions.hidden);
+    # And an unlabelled one doesn't
+    book_obj = KObject.new(); book_obj.add_attr(O_TYPE_BOOK, A_TYPE)
+    book_restrictions = schema._get_restricted_attributes_for_object(book_obj)
+    assert({}, book_restrictions.hidden);
   end
 
   def test_query_results_load_labels

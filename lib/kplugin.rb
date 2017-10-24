@@ -341,6 +341,9 @@ class KPlugin
     def warnings
       @warnings.empty? ? nil : @warnings.join("\n\n")
     end
+    def warnings_array
+      @warnings
+    end
   end
 
   # Installs one or more plugins

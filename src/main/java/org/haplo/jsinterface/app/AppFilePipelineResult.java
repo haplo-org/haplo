@@ -15,6 +15,8 @@ public interface AppFilePipelineResult {
 
     public String dataJSON();
 
+    public String informationJSON();
+
     public String error_message();
 
     public AppStoredFile get_stored_file(String name, String filename);

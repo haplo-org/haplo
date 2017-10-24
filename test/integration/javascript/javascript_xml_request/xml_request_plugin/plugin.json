@@ -1,0 +1,10 @@
+{
+  "pluginName": "xml_request_plugin",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Plugin which does XML request and response",
+  "displayDescription": "For testing",
+  "apiVersion": 4,
+  "load": ["js/xml_request_plugin.js"],
+  "respond": ["/api/xml-request"]
+}

@@ -284,84 +284,47 @@ class KObject
   # =============================================================================================================
   #   Attribute restrictions
   # =============================================================================================================
-  def _test_set_restrictions(hidden, readonly)
-    self.store._test_set_restrictions_for_type(first_attr(A_TYPE), hidden, readonly)
-  end
-
-  def hidden_attrs
-    self.store.attribute_restrictions_for_type(first_attr(A_TYPE))
-  end
-
-  def read_only_attrs
-    self.store.attribute_readonly_for_type(first_attr(A_TYPE))
-  end
-
-  def can_read?(desc, labels)
-    ha = hidden_attrs()
-    if not ha.has_key?(desc)
-      true
-    else
-      (ha[desc] & labels).length > 0
-    end
-  end
-
-  def hidden_restricted_attributes(labels)
-    _find_restricted_attributes(labels, hidden_attrs)
-  end
-
-  def read_only_restricted_attributes(labels)
-    _find_restricted_attributes(labels, read_only_attrs)
-  end
-
-  def _find_restricted_attributes(labels, attrs)
-    a = []
-    attrs.each do |desc, attr_labels|
-      a << desc if (attr_labels & labels).length == 0
-    end
-    a.uniq
-  end
-
-  def can_modify?(desc, labels)
-    ra = read_only_attrs()
-    if not ra.has_key?(desc)
-      true
-    else
-      (ra[desc] & labels).length > 0
-    end
-  end
 
   def restricted?()
     @restricted
   end
 
-  # Duplicate the object, only including attritbutes not hidden to holders of the given labels
-  def dup_restricted(labels)
+  # Duplicate the object, without the restricted attributes
+  def dup_restricted(restricted_attributes)
     raise "Already restricted" if @restricted
     obj = self.dup
-    obj.restrict_to(labels)
+    obj._restrict_to(restricted_attributes)
     obj
   end
 
-  def restrict_to(labels)
+  def _restrict_to(restricted_attributes)
     raise "Already restricted" if @restricted
+    hidden_attrs = restricted_attributes.hidden_attributes
     new_attrs = Array.new
     @attrs.each do |attr|
       desc = attr[0]
-      if hidden_attrs.has_key?(desc)
-        if (hidden_attrs[desc] & labels).length > 0
-          # Hidden, but not from these labels
-          new_attrs << attr
-        else
-          # Hidden, and we don't have the labels to view it, so don't pass this value on
-        end
-      else
-        # Not hidden at all
+      unless hidden_attrs.include?(desc)
         new_attrs << attr
       end
     end
     @restricted = true
     @attrs = new_attrs
     self.freeze
+  end
+
+  class RestrictedAttributes
+    attr_reader :hidden_attributes, :read_only_attributes
+    def initialize(object, labels)
+      @restricted_attrs = object.store.schema._get_restricted_attributes_for_object(object, labels)
+      @hidden_attributes = @restricted_attrs.hidden.keys.sort
+      @read_only_attributes = @restricted_attrs.read_only.keys.sort
+    end
+    def can_read_attribute?(desc)
+      ! @hidden_attributes.include?(desc)
+    end
+    def can_modify_attribute?(desc)
+      ! @read_only_attributes.include?(desc)
+    end
   end
 
   # =============================================================================================================

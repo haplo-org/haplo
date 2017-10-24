@@ -75,6 +75,16 @@ class WebPublisherTest < IntegrationTest
     get "/thumbnail/#{stored_file.digest}/#{stored_file.size}"
     assert_equal "image/png", response.header["Content-Type"]
 
+    # But restrictions stop them
+    restriction1 = KObject.new([O_LABEL_STRUCTURE])
+    restriction1.add_attr(O_TYPE_RESTRICTION, A_TYPE)
+    restriction1.add_attr(KObjRef.new(100), A_RESTRICTION_UNRESTRICT_LABEL)
+    restriction1.add_attr(KObjRef.new(A_FILE), A_RESTRICTION_ATTR_RESTRICTED)
+    KObjectStore.create(restriction1)
+    get_404 "/download/#{stored_file.digest}/#{stored_file.size}/#{stored_file.upload_filename}"
+    # Remove the restriction completely
+    KObjectStore.erase(restriction1)
+
     # robots.txt generated automatically
     get_200 "/robots.txt"
     assert_equal <<__E, response.body

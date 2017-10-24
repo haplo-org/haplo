@@ -63,11 +63,15 @@ module Ingredient
     # Default implementation of CSRF prevention
     def csrf_check(exchange)
       if exchange.request.post?
-        # Requires token to be set, unless it's a request for instructions in a file upload
+        # Requires token to be set, unless:
+        # - it's a request for instructions in a file upload
+        # - the request is being resumed from suspension (it was checked the first time round and request body no longer available)
         uploads = exchange.annotations[:uploads]
         unless uploads != nil && uploads.getInstructionsRequired()
           if params[:__] != csrf_get_token
-            raise KFramework::CSRFAttempt
+            if request.continuation.isInitial()
+              raise KFramework::CSRFAttempt
+            end
           end
         end
       end

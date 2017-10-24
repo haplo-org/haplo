@@ -270,6 +270,7 @@ class KJavaScriptPlugin < KPlugin
       end
     end
     # Stop now if nothing happened
+    failed_updates = []
     if reload_required.empty?
       KApp.logger.info("Reloaded third party plugins, no changes requiring application runtime flushing detected.")
     else
@@ -284,8 +285,21 @@ class KJavaScriptPlugin < KPlugin
         unless reload_in_app.empty?
           log_lines = ["Application #{app_id} #{KApp.global(:url_hostname)}"]
           reload_in_app.each { |name| log_lines << "  Changed plugin: #{name}" }
-          # Reinstall the plugins: Trigger a JS runtime flush and call plugin's onInstall()
-          KPlugin.install_plugin(reload_in_app, :reload)
+          begin
+            # Reinstall the plugins: Trigger a JS runtime flush and call plugin's onInstall()
+            result = KPlugin.install_plugin_returning_checks(reload_in_app, :reload)
+            # If there are problems, report the error now, but keep on going to make sure other apps are OK
+            if result.failure != nil
+              log_lines << "  FAILURE: #{result.failure}"
+              result.warnings_array.each { |w| log_lines << "    #{w}" }
+              failed_updates << "f/#{app_id}/#{KApp.global(:url_hostname)}"
+            end
+          rescue => e
+            # If there's an exception, log, but still keep going and try updating the next app too
+            log_lines << "  EXCEPTION: #{e.message}"
+            e.backtrace.each { |l| log_lines << "    #{l}" }
+            failed_updates << "e/#{app_id}/#{KApp.global(:url_hostname)}"
+          end
           # Log
           case log_destination
           when :logger; KApp.logger.info(log_lines.join("\n"))
@@ -298,6 +312,10 @@ class KJavaScriptPlugin < KPlugin
     # Finish by dumping the new version info and flushing the logs
     self.save_javascript_plugin_version_info
     KApp.logger.flush_buffered
+    # Throw exception if there were problems, now everything that can be done has been done
+    unless failed_updates.empty?
+      raise "Plugin updates failed in #{failed_updates.join(' ')}"
+    end
   end
 
   def self.collect_plugin_version_info

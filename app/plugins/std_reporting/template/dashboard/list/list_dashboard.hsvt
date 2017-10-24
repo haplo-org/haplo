@@ -1,69 +1,56 @@
-std:plugin:resources("dashboard.css" "tablesort.js")
+std:plugin:resources("tablesort.js")
 
-if(dashboard.collection.isUpdatingFacts) {
-  std:ui:notice("This dashboard is being updated. Some data may be out of date.")
-}
+template:dashboard:common:dashboard-page() {
 
-if(dashboard.invalidFactsAtRequested) {
-  std:ui:notice("Invalid time requested, showing current data.")
-}
+  each(dashboard.$displays.above-export) { render(.) }
 
-each(dashboard.$displays.above-summary) { render(.) }
+  template:dashboard:common:export-form() {
 
-template:dashboard:common:summary-display()
-
-each(dashboard.$displays.above-export) { render(.) }
-
-unless(hideExport) {
-  <div class="z__std_reporting_list_export_form">
-    <form method="POST"> std:form:token() <input type="submit" value="Export"> </form>
-  </div>
-}
-
-each(dashboard.$displays.above-navigation) { render(.) }
-
-template:dashboard:common:navigation()
-
-each(dashboard.$displays.above) { render(.) }
-
-if(widgetsTop) {
-  <div class="z__std_reporting_list_widgets_top">
-    each(widgetsTop) { render(.) }
-  </div>
-}
-
-each(dashboard.$displays.above-table) { render(.) }
-
-<table id="z__std_reporting_list_filterable_table" class=[
-      "tablesort"
-      // TODO: Work out how to lay out tables with grouping headers a bit better
-      unless(groupHeaderRows){"z__std_reporting_dashboard_table_no_wrapping"}
-]>
-  <thead>
-    <tr>
-      each(groupHeaderRows) {
-        <tr>
-          each(.) {
-            <th colspan=colspan class="z__std_reporting_list_group_header_cell"> title </th>
-          }
-        </tr>
-      }
-      each(columns) {
-        <th class=switch(columnStyle) {}
-                    wide   { "z__std_reporting_list_column_wide" }
-                    medium { "z__std_reporting_list_column_medium" }
-                    small  { "z__std_reporting_list_column_small" }
-                    tiny   { "z__std_reporting_list_column_tiny" } >
-          heading
-        </th>
-      }
-    </tr>
-  </thead>
-  <tbody>
-    each(rowsHTML) {
-      <tr *attributes> unsafeHTML(unsafeRowHTML) </tr>
+    each(dashboard.$displays.above-navigation) { render(.) }
+  
+    template:dashboard:common:navigation()
+  
+    each(dashboard.$displays.above) { render(.) }
+  
+    if(widgetsTop) {
+      <div class="z__std_reporting_list_widgets_top">
+        each(widgetsTop) { render(.) }
+      </div>
     }
-  </tbody>
-</table>
+  }
 
-each(dashboard.$displays.below) { render(.) }
+  each(dashboard.$displays.above-table) { render(.) }
+
+  <table id="z__std_reporting_list_filterable_table" class=[
+        "tablesort"
+        // TODO: Work out how to lay out tables with grouping headers a bit better
+        unless(groupHeaderRows){"z__std_reporting_dashboard_table_no_wrapping"}
+  ]>
+    <thead>
+      <tr>
+        each(groupHeaderRows) {
+          <tr>
+            each(.) {
+              <th colspan=colspan class="z__std_reporting_list_group_header_cell"> title </th>
+            }
+          </tr>
+        }
+        each(columns) {
+          <th class=switch(columnStyle) {}
+                      wide   { "z__std_reporting_list_column_wide" }
+                      medium { "z__std_reporting_list_column_medium" }
+                      small  { "z__std_reporting_list_column_small" }
+                      tiny   { "z__std_reporting_list_column_tiny" } >
+            heading
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      each(rowsHTML) {
+        <tr *attributes> unsafeHTML(unsafeRowHTML) </tr>
+      }
+    </tbody>
+  </table>
+
+}

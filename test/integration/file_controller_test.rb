@@ -191,7 +191,7 @@ class FileControllerTest < IntegrationTest
       pdf_file = StoredFile.from_upload(fixture_file_upload('files/example3.pdf', 'application/pdf'))
       make_object_for_file pdf_file
       html_file = StoredFile.from_upload(fixture_file_upload('files/example7.html', 'text/html'))
-      make_object_for_file html_file
+      html_obj = make_object_for_file html_file
       run_all_jobs({})
 
       get "/file/#{pdf_file.digest}/#{pdf_file.size}/example3.pdf"
@@ -209,10 +209,10 @@ class FileControllerTest < IntegrationTest
       assert response.body =~ /\A%PDF/
 
       get_302 "/file/#{html_file.digest}/#{html_file.size}/example7.html"
-      assert_redirected_to "/do/file-download-redirected-away/"
+      assert_redirected_to "/do/file-download-redirected-away/?permittingRef=#{html_obj.objref.to_presentation}"
 
       get_302 "/file/#{html_file.digest}/#{html_file.size}/preview/text/example7.html"
-      assert_redirected_to "/do/file-download-redirected-away/preview/text"
+      assert_redirected_to "/do/file-download-redirected-away/preview/text?permittingRef=#{html_obj.objref.to_presentation}"
 
     ensure
       KPlugin.uninstall_plugin("file_downloads_plugin")

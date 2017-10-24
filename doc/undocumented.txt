@@ -19,9 +19,11 @@ Templates
 
 std:resource:tree
 std:treesource
+std:jquery_ui:sortable
 std:jquery_ui:slider
 std:render_doc_as_html
 std:resource:plugin_adaptor
+std:oforms:changes
 std:search_results
 std:element + handlebars helper
 
@@ -60,6 +62,7 @@ SecurityPrincipal changeGroupMemberships(), setGroupMemberships()
 Databases
 ---------
 P.db._dynamicTable(...) for tables which can be redefined at runtime.
+whereJSONProperty(), because it's not indexed and has to be used carefully.
 
 Request continuations
 ---------------------

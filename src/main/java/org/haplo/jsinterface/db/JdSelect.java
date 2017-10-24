@@ -146,7 +146,7 @@ public class JdSelect extends JdSelectClause {
     // Performs a COUNT(*) instead of selecting all the values
     public Object jsFunction_count() {
         try {
-            return this.table.executeSingleValueExpressionUsingTrustedSQL(this, "COUNT(*)", JdTable.SingleValueKind.INT, null);
+            return this.table.executeSingleValueExpressionUsingTrustedSQL(this, "COUNT(*)", JdTable.SingleValueKind.BIGINT, java.sql.Types.BIGINT, null);
         } catch(java.sql.SQLException e) {
             throw new OAPIException(GENERIC_SQL_ERROR + e.getMessage(), e);
         }
@@ -181,22 +181,22 @@ public class JdSelect extends JdSelectClause {
         }
         // Execute query
         try {
-            return this.table.executeSingleValueExpressionUsingTrustedSQL(this, sqlExpression, valueKind, groupByField);
+            return this.table.executeSingleValueExpressionUsingTrustedSQL(this, sqlExpression, valueKind, field.jdbcDataType(), groupByField);
         } catch(java.sql.SQLException e) {
             throw new OAPIException(GENERIC_SQL_ERROR + e.getMessage(), e);
         }
     }
 
     private static HashMap<String,JdTable.SingleValueKind> ALLOWED_AGGREGATE_FNS = new HashMap<String,JdTable.SingleValueKind>(16) {{
-        put("AVG", JdTable.SingleValueKind.DOUBLE);
-        put("COUNT", JdTable.SingleValueKind.INT);
-        put("MAX", JdTable.SingleValueKind.DOUBLE);
-        put("MIN", JdTable.SingleValueKind.DOUBLE);
-        put("SUM", JdTable.SingleValueKind.DOUBLE);
-        put("STDDEV_POP", JdTable.SingleValueKind.DOUBLE);
-        put("STDDEV_SAMP", JdTable.SingleValueKind.DOUBLE);
-        put("VAR_POP", JdTable.SingleValueKind.DOUBLE);
-        put("VAR_SAMP", JdTable.SingleValueKind.DOUBLE);
+        put("AVG",          JdTable.SingleValueKind.NUMERIC_OR_DOUBLE);
+        put("COUNT",        JdTable.SingleValueKind.BIGINT);
+        put("MAX",          JdTable.SingleValueKind.NUMERIC_OR_DOUBLE);
+        put("MIN",          JdTable.SingleValueKind.NUMERIC_OR_DOUBLE);
+        put("SUM",          JdTable.SingleValueKind.NUMERIC_OR_DOUBLE);
+        put("STDDEV_POP",   JdTable.SingleValueKind.NUMERIC_OR_DOUBLE);
+        put("STDDEV_SAMP",  JdTable.SingleValueKind.NUMERIC_OR_DOUBLE);
+        put("VAR_POP",      JdTable.SingleValueKind.NUMERIC_OR_DOUBLE);
+        put("VAR_SAMP",     JdTable.SingleValueKind.NUMERIC_OR_DOUBLE);
     }};
 
     // --------------------------------------------------------------------------------------------------------------

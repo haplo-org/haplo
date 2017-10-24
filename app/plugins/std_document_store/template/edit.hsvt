@@ -18,15 +18,9 @@ if(additionalUI.formBottom) { render(additionalUI.formBottom) }
 
 <div class="z__docstore_save">
   <input type="submit" value=
-    if(isSinglePage) {
-      "Save"
-    } else {
-      if(activePage.isLastPage) {
-        "Save and finish"
-      } else {
-        "Save and continue"
-      }
-    }
+    switch(saveButtonStyle) { "Save" }
+                   continue { "Save and continue" }
+                     finish { "Save and finish" }
   >
   " "
   <button name="__later" value="s">

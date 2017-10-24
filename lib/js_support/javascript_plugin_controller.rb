@@ -14,6 +14,7 @@ class JavaScriptPluginController < ApplicationController
 
   KBinaryData = Java::OrgHaploJsinterface::KBinaryData
   KStoredFile = Java::OrgHaploJsinterface::KStoredFile
+  XmlDocument = Java::OrgHaploJsinterfaceXml::XmlDocument
 
   CONTENT_TYPES = Hash.new
   Ingredient::Rendering::RENDER_KIND_CONTENT_TYPES.each_key { |k| CONTENT_TYPES[k.to_s] = k}
@@ -28,9 +29,11 @@ class JavaScriptPluginController < ApplicationController
   end
 
   def perform_handle(exchange, path_elements, requested_method)
-    # Unless anonymous requests are allowed, check the user is not anonymous
+    # Unless anonymous requests are allowed, check the user is not anonymous or a service user
     unless @factory.allow_anonymous
-      permission_denied unless @request_user.policy.is_not_anonymous?
+      unless (@request_user.policy.is_not_anonymous?) || (@request_user.kind == User::KIND_SERVICE_USER)
+        permission_denied
+      end
     end
     # Handle any request by the framework for file upload instructions
     uploads = exchange.annotations[:uploads]
@@ -71,6 +74,7 @@ class JavaScriptPluginController < ApplicationController
     # If E.response.body was set to a stored or generated file, respond without any further response processing.
     return respond_with_binary_data(body) if body.kind_of?(KBinaryData)
     return respond_with_stored_file(body) if body.kind_of?(KStoredFile)
+    return respond_with_xml(body) if body.kind_of?(XmlDocument)
     # Handle response
     render_opts = Hash.new
     render_opts[:status] = status_code if status_code != nil
@@ -151,6 +155,12 @@ class JavaScriptPluginController < ApplicationController
     render_send_file stored_file.disk_pathname, :type => stored_file.mime_type,
       :filename => stored_file.upload_filename,
       :disposition => 'attachment'
+  end
+
+  def respond_with_xml(xml)
+    r = KFramework::JavaByteArrayResponse.new(xml.toByteArray())
+    r.content_type = "application/xml"
+    exchange.response = r
   end
 
 end

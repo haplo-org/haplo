@@ -34,7 +34,7 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
         W.render({
             workUnit: M.workUnit,
             processName: M.getWorkflowProcessName(),
-            status: M._getText(['status'], [M.state]),
+            status: M.getDisplayableStatus(),
             timeline: M.renderTimelineDeferred(true)
         }, P.template("default-work"));
         return true;
@@ -59,21 +59,29 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
         var state = this.state;
         builder.status("top", this._getText(['status'], [state]));
         if(!this.workUnit.closed) {
-            var user = this.workUnit.actionableBy;
-            if(user && user.name) {
-                var stateDefn = this.$states[state],
-                    displayedName = user.name;
-                if(stateDefn && stateDefn.actionableBy) {
-                    var currentlyWithNameAnnotation = this._getTextMaybe(["status-ui-currently-with-annotation"], [stateDefn.actionableBy, state]);
-                    if(currentlyWithNameAnnotation) {
-                        displayedName = displayedName+" ("+currentlyWithNameAnnotation+")";
-                    }
-                }
+            var displayedName = this._callHandler('$currentlyWithDisplayName');
+            if(displayedName) {
                 builder.element("top", {
                     title: this._getTextMaybe(['status-ui-currently-with'], [state]) || 'Currently with',
                     label: displayedName
                 });
             }
+        }
+    }},
+
+    $currentlyWithDisplayName: {selector:{}, handler:function(M) {
+        var state = this.state,
+            user = M.workUnit.actionableBy;
+        if(user && user.name) {
+            var stateDefn = M.$states[state],
+                displayedName = user.name;
+            if(stateDefn && stateDefn.actionableBy) {
+                var currentlyWithNameAnnotation = M._getTextMaybe(["status-ui-currently-with-annotation"], [stateDefn.actionableBy, state]);
+                if(currentlyWithNameAnnotation) {
+                    displayedName = displayedName+" ("+currentlyWithNameAnnotation+")";
+                }
+            }
+            return displayedName;
         }
     }},
 
@@ -107,6 +115,14 @@ _.extend(P.WorkflowInstanceBase.prototype, {
         return this._getTextMaybe(["workflow-process-name"], [this.state]) || 'Workflow';
     },
 
+    getDisplayableStatus: function() {
+        return this._getText(['status'], [this.state]);
+    },
+
+    getCurrentlyWithDisplayName: function() {
+        return this._callHandler('$currentlyWithDisplayName');
+    },
+
     fillActionPanel: function(builder) {
         this._callHandler('$actionPanelStatusUI', builder);
         this._callHandler('$actionPanelTransitionUI', builder);
@@ -128,9 +144,17 @@ _.extend(P.WorkflowInstanceBase.prototype, {
     },
 
     renderTimelineDeferred: function(renderingForWorkUnitDisplay) {
-        var entries = [];
         var timeline = this.timelineSelect();
+        var entries = this._renderTimelineEntries(timeline);
+        return P.template("timeline").deferredRender({
+            renderingForWorkUnitDisplay: renderingForWorkUnitDisplay,
+            entries: entries
+        });
+    },
+
+    _renderTimelineEntries: function(timeline) {
         var layout = P.template('timeline/entry-layout');
+        var entries = [];
         for(var i = 0; i < timeline.length; ++i) {
             var entry = timeline[i];
             var textSearch = [entry.action];
@@ -142,17 +166,18 @@ _.extend(P.WorkflowInstanceBase.prototype, {
                     this._renderTimelineEntryDeferredBuiltIn(entry);
             }
             if(text || special) {
-                entries.push(layout.deferredRender({
+                var deferred = layout.deferredRender({
                     entry: entry,
                     text: text,
                     special: special
-                }));
+                });
+                entries.push({
+                    datetime: entry.datetime,
+                    deferred: deferred
+                });
             }
         }
-        return P.template("timeline").deferredRender({
-            renderingForWorkUnitDisplay: renderingForWorkUnitDisplay,
-            entries: entries
-        });
+        return entries;
     },
 
     // Render built-in timeline entries
@@ -176,6 +201,29 @@ _.extend(P.WorkflowInstanceBase.prototype, {
             W
         );
     }
+});
+
+// --------------------------------------------------------------------------
+
+P.implementService("std:workflow:deferred_render_combined_timeline", function(instances) {
+    var entries = [];
+    _.each(instances, function(M) {
+        var processName = M.getWorkflowProcessName();
+        var renderedEntries = M._renderTimelineEntries(M.timelineSelect());
+        renderedEntries.forEach(function(e) { e.processName = processName; });
+        entries = entries.concat(renderedEntries);
+    });
+    entries = _.sortBy(entries, 'datetime');
+    var currentProcessName;
+    entries.forEach(function(e) {
+        if(e.processName !== currentProcessName) {
+            currentProcessName = e.processName;
+            e.differentProcess = true;
+        }
+    });
+    return P.template("timeline-combined").deferredRender({
+        entries: entries
+    });
 });
 
 // --------------------------------------------------------------------------

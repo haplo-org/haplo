@@ -25,5 +25,7 @@ public interface AppUser {
 
     public AppObjRef objref();
 
-    public int[] attribute_restriction_labels();
+    public AppObject kobject_dup_restricted(AppObject object);
+
+    public AppObjectRestrictedAttributes kobject_restricted_attributes(AppObject object);
 }

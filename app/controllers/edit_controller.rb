@@ -278,46 +278,20 @@ private
     end
 
     # ------------------------------------------------------------------------------------------------------
-    # Check with plugins
+    # Check with plugins & apply restrictions
     # ------------------------------------------------------------------------------------------------------
-    plugin_redirect = nil
-    read_only_attributes = []
-    restriction_lifted_attributes = []
-    # TODO: Sort out the hPreObjectEdit hook with more functionality and some tests.
-    call_hook(:hPreObjectEdit) do |hooks|
-      r = hooks.run(
-        @object_to_edit,
-        !(request.post? && params[:obj] != nil) && @objref == nil,  # is this a template for a new object?
-        @objref == nil  # is this a new object?
-      )
-      plugin_redirect = r.redirectPath
-      unless @request_user.kind == User::KIND_SUPER_USER
-        # SUPPORT user ignores read only attributes, as it hinders support work
-        read_only_attributes = r.readOnlyAttributes
-        # and doesn't need to lift attributes as no restrictions applied
-        restriction_lifted_attributes = r.restrictionLiftedAttributes
-      end
-      replacementObject = r.replacementObject
-      # Only use this replacement object if the type is the same
-      if replacementObject != nil && replacementObject.first_attr(A_TYPE) == @object_to_edit.first_attr(A_TYPE)
-        # Copy in the attributes to the object to edit, so that the non-attribute metadata isn't lost
-        @object_to_edit.delete_attr_if { true }
-        replacementObject.each { |v,d,q| @object_to_edit.add_attr(v,d,q) }
-      end
-    end
 
-    # Hidden restricted attributes and read only attributes are read only in the editor
-    # SUPPORT user ignores this, as it hinders support work
-    unless @request_user.kind == User::KIND_SUPER_USER
-      user_labels = @request_user.attribute_restriction_labels
-      read_only_attributes.concat(@object_to_edit.read_only_restricted_attributes(user_labels))
-      read_only_attributes.concat(@object_to_edit.hidden_restricted_attributes(user_labels))
-      # remove from read only any attributes that we want to force to be available
-      read_only_attributes = read_only_attributes - restriction_lifted_attributes
-    end
+    edit_behaviour = KEditor.determine_read_only_attributes_and_plugin_object_modifications(
+      @request_user,
+      @object_to_edit,
+      !(request.post? && params[:obj] != nil) && @objref == nil,  # is this a template for a new object?
+      @objref == nil  # is this a new object?
+    )
 
-    if plugin_redirect != nil
-      redirect_to plugin_redirect
+    read_only_attributes = edit_behaviour.read_only_attributes
+
+    if edit_behaviour.redirect != nil
+      redirect_to edit_behaviour.redirect
       return :cancelled
     end
 

@@ -26,6 +26,7 @@ import org.haplo.jsinterface.template.TemplateParserConfiguration;
 import org.haplo.jsinterface.template.TemplateIncludedRenderer;
 import org.haplo.jsinterface.template.TemplateFunctionRenderer;
 import org.haplo.jsinterface.template.GenericDeferredRender;
+import org.haplo.jsinterface.xml.*;
 import org.haplo.template.driver.rhinojs.*;
 
 /**
@@ -460,6 +461,11 @@ public class Runtime {
             defineSealedHostClass(scope, GetterDictionaryBase.class);
             defineSealedHostClass(scope, InterRuntimeSignal.class);
             defineSealedHostClass(scope, KRequestContinuation.class);
+            defineSealedHostClass(scope, JsBigDecimal.class);
+            defineSealedHostClass(scope, JsDecimalFormat.class);
+
+            defineSealedHostClass(scope, XmlDocument.class);
+            defineSealedHostClass(scope, XmlCursor.class);
 
             defineSealedHostClass(scope, KCollaborationService.class);
             defineSealedHostClass(scope, KCollaborationFolder.class);

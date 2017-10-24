@@ -47,6 +47,48 @@ module KEditor
   end
 
   # ------------------------------------------------------------------------------
+  #  Plugin integration
+  # ------------------------------------------------------------------------------
+
+  EditorPluginBehaviour = Struct.new(:redirect, :read_only_attributes)
+
+  def self.determine_read_only_attributes_and_plugin_object_modifications(user, object, is_template, is_new)
+    plugin_redirect = nil
+    read_only_attributes = []
+    restriction_lifted_attributes = []
+    # TODO: Sort out the hPreObjectEdit hook with more functionality and some tests.
+    call_hook(:hPreObjectEdit) do |hooks|
+      r = hooks.run(object, is_template, is_new)
+      plugin_redirect = r.redirectPath
+      unless user.kind == User::KIND_SUPER_USER
+        # SUPPORT user ignores read only attributes, as it hinders support work
+        read_only_attributes = r.readOnlyAttributes
+        # and doesn't need to lift attributes as no restrictions applied
+        restriction_lifted_attributes = r.restrictionLiftedAttributes
+      end
+      replacementObject = r.replacementObject
+      # Only use this replacement object if the type is the same
+      if replacementObject != nil && replacementObject.first_attr(A_TYPE) == object.first_attr(A_TYPE)
+        # Copy in the attributes to the object to edit, so that the non-attribute metadata isn't lost
+        object.delete_attr_if { true }
+        replacementObject.each { |v,d,q| object.add_attr(v,d,q) }
+      end
+    end
+
+    # Hidden restricted attributes and read only attributes are read only in the editor
+    # SUPPORT user ignores this, as it hinders support work
+    unless user.kind == User::KIND_SUPER_USER
+      restricted_attributes = user.kobject_restricted_attributes(object)
+      read_only_attributes.concat(restricted_attributes.read_only_attributes)
+      read_only_attributes.concat(restricted_attributes.hidden_attributes)
+      # remove from read only any attributes that we want to force to be available
+      read_only_attributes = read_only_attributes - restriction_lifted_attributes
+    end
+
+    EditorPluginBehaviour.new(plugin_redirect, read_only_attributes)
+  end
+
+  # ------------------------------------------------------------------------------
   #  Editor object labelling logic
   # ------------------------------------------------------------------------------
 

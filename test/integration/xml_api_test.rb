@@ -28,12 +28,23 @@ class XMLAPITest < IntegrationTest
     @api_key.destroy
   end
 
+  def apply_notes_restriction
+    parser = SchemaRequirements::Parser.new()
+    parser.parse("test_javascript_schema", StringIO.new(<<__E))
+restriction test:restriction:all-notes
+    title: Restrict all notes
+    attribute-restricted std:attribute:notes
+__E
+    SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new(parser)).apply.commit
+  end
+
   # ====================================================================================================
   def test_obj_api
     obj = KObject.new()
     obj.add_attr(O_TYPE_BOOK, A_TYPE)
     obj.add_attr("Book title", A_TITLE)
     obj.add_attr("Alternative title", A_TITLE, Q_ALTERNATIVE)
+    obj.add_attr("NOTES", A_NOTES)
     KObjectStore.create(obj)
 
     # Fetch the object
@@ -50,6 +61,15 @@ class XMLAPITest < IntegrationTest
     # Check it looks OK
     assert_equal "Book title", objr.first_attr(A_TITLE).to_s
     assert_equal O_TYPE_BOOK, objr.first_attr(A_TYPE)
+    assert_equal "NOTES", objr.first_attr(A_NOTES).to_s
+
+    # Try with restrictions
+    apply_notes_restriction
+    get '/api/object/ref/'+obj.objref.to_presentation, {}, {'X-ONEIS-Key' => @api_key_secret}
+    xml_doc2 = REXML::Document.new(response.body)
+    objr2 = KObject.new()
+    objr2.add_attrs_from_xml(xml_doc2.elements['response/read/object'], KObjectStore.schema)
+    assert_equal nil, objr2.first_attr(A_NOTES)
   end
 
   # ====================================================================================================
@@ -58,11 +78,13 @@ class XMLAPITest < IntegrationTest
     obj1 = KObject.new()
     obj1.add_attr(O_TYPE_BOOK, A_TYPE)
     obj1.add_attr("Book1", A_TITLE)
+    obj1.add_attr("NOTES1", A_NOTES)
     KObjectStore.create(obj1)
 
     obj2 = KObject.new()
     obj2.add_attr(O_TYPE_BOOK, A_TYPE)
     obj2.add_attr("Book2", A_TITLE)
+    obj2.add_attr("NOTES2", A_NOTES)
     KObjectStore.create(obj2)
 
     # Make a request
@@ -113,6 +135,7 @@ class XMLAPITest < IntegrationTest
     obj1r = KObject.new()
     obj1r.add_attrs_from_xml(xml_doc.elements['response/read/object'], KObjectStore.schema)
     assert_equal "Book1", obj1r.first_attr(A_TITLE).to_s
+    assert_equal "NOTES1", obj1r.first_attr(A_NOTES).to_s
 
     # Check object got deleted
     assert KObjectStore.read(obj2.objref).labels.include? O_LABEL_DELETED
@@ -121,6 +144,40 @@ class XMLAPITest < IntegrationTest
     obj1_update = KObjectStore.read(obj1.objref)
     assert_equal "Book1", obj1_update.first_attr(A_TITLE).to_s
     assert obj1_update.first_attr(A_NOTES).to_s =~ /Notes updated/
+
+    # Try with restrictions
+    apply_notes_restriction
+    builder = Builder::XmlMarkup.new
+    builder.instruct!
+    builder.request(:identifier => 'TEST') do |req|
+      req.operations do |ops|
+        ops.read(:ref => obj1.objref.to_presentation)
+        ops.create() do |op|
+          op.object do |ob|
+            ob.attributes do |attrs|
+              attrs.a('20x1', :d => 'x2', :vt => 0) # type
+              attrs.a(:d => 'x3', :vt => 16) { |a| a.text 'Random title' }
+            end
+          end
+        end
+        ops.update(:ref => obj1.objref.to_presentation) do |op|
+          op.object(:included_attrs => '9w5') do |ob|
+            ob.attributes do |attrs|
+              attrs.a(:d => '9w5', :vt => 16) { |a| a.text 'Notes updated ' + Time.now.to_s }
+            end
+          end
+        end
+      end
+    end
+    post '/api/object/batch', builder.target!, {'X-ONEIS-Key' => @api_key_secret}
+    assert_response :success
+    xml_doc = REXML::Document.new(response.body)
+    obj1r2 = KObject.new()
+    obj1r2.add_attrs_from_xml(xml_doc.elements['response/read/object'], KObjectStore.schema)
+    assert_equal "Book1", obj1r2.first_attr(A_TITLE).to_s
+    assert_equal nil, obj1r2.first_attr(A_NOTES)
+    assert nil != find_tag(:tag => 'error', :attributes => {:index => 1})
+    assert nil != find_tag(:tag => 'error', :attributes => {:index => 2})
   end
 
   # ====================================================================================================
@@ -129,6 +186,7 @@ class XMLAPITest < IntegrationTest
       obj = KObject.new()
       obj.add_attr(O_TYPE_BOOK, A_TYPE)
       obj.add_attr("Book "+sprintf("%04d",i), A_TITLE)
+      obj.add_attr("NOTES "+sprintf("%04d",i), A_NOTES)
       KObjectStore.create(obj)
     end
 
@@ -162,6 +220,8 @@ class XMLAPITest < IntegrationTest
         # Check seen status
         assert !(seen.has_key?(i))
         seen[i] = true
+        # Has notes attribute
+        assert o.first_attr(A_NOTES).to_s =~ /^NOTES/
       end
 
       # Check the number of results matches the thing it's supposed to be
@@ -194,6 +254,18 @@ class XMLAPITest < IntegrationTest
 
     # Check that a search for an empty string doesn't error
     tsa_check_zero_results '/api/search/q', {:q => ''}, false
+
+    # Try with restrictions
+    apply_notes_restriction
+    get '/api/search/q', {:q => 'type:book', :start_index => 0}, {'X-ONEIS-Key' => @api_key_secret}
+    assert_response :success
+    xml = REXML::Document.new(response.body)
+    results = xml.elements['response/results']
+    results.children.each do |result|
+      o = KObject.new()
+      o.add_attrs_from_xml(result, KObjectStore.schema)
+      assert_equal nil, o.first_attr(A_NOTES)
+    end
   end
 
   def tsa_check_zero_results(path, params, expected_to_do_search = true)

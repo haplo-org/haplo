@@ -15,6 +15,7 @@ class ObjectController < ApplicationController
     return error('Bad objref') if objref == nil
     obj = KObjectStore.read(objref)
     return error('No such object') if obj == nil
+    obj = @request_user.kobject_dup_restricted(obj)
     # Notify for auditing
     KNotificationCentre.notify(:display, :object, obj, "xml-api")
     # Render object
@@ -70,11 +71,13 @@ class ObjectController < ApplicationController
               obj = KObject.new()
               obj.add_attrs_from_xml(op.elements['object'], schema)
               check_obj_type(obj)
+              permission_denied unless @request_user.kobject_restricted_attributes(obj).hidden_attributes.empty?
               KObjectStore.create(obj)
               resp.create(:index => index, :ref => obj.objref.to_presentation, :url => KApp.url_base(:logged_in) + object_urlpath(obj))
             # =================== READ ===================
             when 'read'
               obj = KObjectStore.read(objref)
+              obj = @request_user.kobject_dup_restricted(obj)
               # Notify for auditing
               KNotificationCentre.notify(:display, :object, obj, "xml-api")
               resp.read(:index => index, :ref => objref.to_presentation, :url => KApp.url_base(:logged_in) + object_urlpath(obj)) do |o|
@@ -85,6 +88,7 @@ class ObjectController < ApplicationController
               obj = KObjectStore.read(objref)
               raise "Not found" if obj == nil
               obj = obj.dup
+              permission_denied unless @request_user.kobject_restricted_attributes(obj).hidden_attributes.empty?
               # Store the old type so it can be restored later
               old_type = obj.first_attr(A_TYPE)
               # Is there a list of attributes to replace?
@@ -122,7 +126,7 @@ class ObjectController < ApplicationController
             end
           rescue => e
             resp.error(:index => index) do |err|
-              err.message 'An error occurred processing this operation'
+              err.message 'An error occurred processing this operation: '+e.message
             end
           end
           index += 1

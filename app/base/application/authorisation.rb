@@ -160,9 +160,8 @@ class ApplicationController
 
   # Check that a User object is valid for authenticating a request
   def user_valid_for_request(user_object)
-    if user_object == nil
-      false
-    elsif user_object.kind == User::KIND_USER || user_object.kind == User::KIND_SUPER_USER
+    case user_object.kind
+    when User::KIND_USER, User::KIND_SERVICE_USER, User::KIND_SUPER_USER
       true
     else
       false

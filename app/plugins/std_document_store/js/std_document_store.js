@@ -15,6 +15,8 @@
 // Delegate has properties:
 //    name - of store (short string) - REQUIRED
 //    keyIdType - type of keyId, if not "int"
+//    __formSubmissionDoesNotCompleteProcess -- (internal) if true, UI adjusted with expectation submitting form is not last step
+//       TODO: public API for __formSubmissionDoesNotCompleteProcess equivalent
 // Delegate has methods:
 //    formsForKey(key, instance, document) - return an array of forms - REQUIRED
 //    keyToKeyId(key) - convert key to a keyId

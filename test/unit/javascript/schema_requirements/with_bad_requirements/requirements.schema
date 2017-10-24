@@ -1,0 +1,5 @@
+
+type with-bad-requirements:type:some-type as SomeType
+
+attribute with-bad-requirements:attribute:some-attribute as SomeAttribute
+    title: Some Attribute

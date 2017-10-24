@@ -89,4 +89,14 @@ TEST(function() {
     TEST.assert_equal("ABC ping XYZ", transFn("ABC NAME(test:pong|ping) XYZ"))
     TEST.assert_equal("ABC test:translated x X XYZ", transFn("ABC NAME(test:translated x|hello) XYZ"))
 
+    // Public API
+    TEST.assert_equal(O.interpolateNAMEinString, transFn); // is same implementation
+    // one argument
+    TEST.assert_equal("ABC pong", O.interpolateNAMEinString("ABC NAME(ping)"))
+    TEST.assert_equal("ABCNAME(ping)", O.interpolateNAMEinString("ABCNAME(ping)")) // no word break before
+    TEST.assert_equal("ABC hello translated XSOMETHING", O.interpolateNAMEinString("ABC NAME(hello translated)SOMETHING"))
+    // two arguments
+    TEST.assert_equal("ABC ping XYZ", O.interpolateNAMEinString("ABC NAME(test:pong|ping) XYZ"))
+    TEST.assert_equal("ABC test:translated x X XYZ", O.interpolateNAMEinString("ABC NAME(test:translated x|hello) XYZ"))
+
 });

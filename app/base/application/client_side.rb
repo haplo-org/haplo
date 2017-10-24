@@ -174,7 +174,8 @@ JAVASCRIPTS_IN_ORDER = [
     # Plugin adaptor (possibly temporary)
     :plugin_adaptor,
     # oForms client side support
-    :oforms_jquery
+    :oforms_jquery,
+    :oforms_changes
   ];
 
 # DEPLOYMENT_JAVASCRIPT_FILENAME_MAPPING_GOES_HERE
@@ -315,6 +316,9 @@ CLIENT_SIDE_RESOURCES = {
   :oforms_file_support => {
     :resource => [:oforms_support],
     :javascript => [:file_upload]
+  },
+  :oforms_changes => {
+    :javascript => [:oforms_changes]
   },
 
   # Management UI

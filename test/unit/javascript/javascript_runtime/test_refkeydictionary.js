@@ -125,4 +125,14 @@ TEST(function() {
     TEST.assert_equal(""+TYPE["std:type:intranet-page"]+"/3", hdict2.get(TYPE["std:type:intranet-page"]));
     iteratortester(hdict2, [[TYPE["std:type:equipment"],""+TYPE["std:type:equipment"]+"/1"], [TYPE["std:type:equipment:computer"],"computer"], [TYPE["std:type:event:conference"],""+TYPE["std:type:event:conference"]+"/2"], [TYPE["std:type:intranet-page"],""+TYPE["std:type:intranet-page"]+"/3"]]);
 
+    // Hierarchical with constructor function and use of getWithoutHierarchy()
+    var hdict3ConstructCount = 0;
+    var hdict3 = O.refdictHierarchical(function(ref) { hdict3ConstructCount++; return hdict3ConstructCount; });
+    TEST.assert_equal(1, hdict3.get(TYPE["std:type:equipment"]));
+    TEST.assert_equal(1, hdict3.get(TYPE["std:type:equipment:laptop"]));
+    TEST.assert_equal(2, hdict3.getWithoutHierarchy(TYPE["std:type:equipment:computer"]));
+    TEST.assert_equal(2, hdict3.get(TYPE["std:type:equipment:laptop"]));
+    TEST.assert_equal(2, hdict3.get(TYPE["std:type:equipment:computer"]));
+    TEST.assert_equal(1, hdict3.get(TYPE["std:type:equipment"]));
+
 });

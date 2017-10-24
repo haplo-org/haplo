@@ -90,6 +90,19 @@ class KFramework
 
   # -------------------------------------------------------------------------------------------------------------------------
 
+  # Java Byte Array
+  class JavaByteArrayResponse < KFramework::Response
+    def initialize(bytes)
+      super()
+      @bytes = bytes
+    end
+    def make_java_object
+      Java::OrgHaploAppserver::DataResponse.new(@bytes)
+    end
+  end
+
+  # -------------------------------------------------------------------------------------------------------------------------
+
   # Redirect response
   class RedirectResponse < Response
     def initialize(url)

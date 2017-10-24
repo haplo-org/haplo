@@ -52,6 +52,10 @@ public class KFilePipelineResult extends KScriptable {
         return Runtime.getCurrentRuntime().makeJsonParser().parseValue(this.result.dataJSON());
     }
 
+    public Object jsGet_information() throws org.mozilla.javascript.json.JsonParser.ParseException {
+        return Runtime.getCurrentRuntime().makeJsonParser().parseValue(this.result.informationJSON());
+    }
+
     public String jsGet_errorMessage() {
         return this.result.error_message();
     }

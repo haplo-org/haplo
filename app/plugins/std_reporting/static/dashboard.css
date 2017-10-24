@@ -81,13 +81,14 @@ table.z__std_reporting_dashboard_table_no_wrapping tr:not(:hover) td {
 
 /* ----------------------------------------------------------------------- */
 
-.z__std_reporting_list_export_form {
+.z__std_reporting_export_form {
     position: relative;
     height: 28px;
 }
-.z__std_reporting_list_export_form form {
+.z__std_reporting_export_form input {
     position: absolute;
     right: 0;
+    width: 120px;
 }
 
 .z__std_reporting_list_widgets_top input, select {

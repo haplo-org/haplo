@@ -62,6 +62,11 @@ public class KRefKeyDictionaryHierarchical extends KRefKeyDictionary {
         return returnableValue(value);
     }
 
+    public Object jsFunction_getWithoutHierarchy(Object keyObject) {
+        invalidateCachedLookups();  // because get() uses caches, and constructor functions may set this value
+        return getValue(keyObject);
+    }
+
     public Object jsFunction_getAllInHierarchy(Object keyObject) {
         Integer id = keyObjectToId(keyObject);
         // Create cache, or check to see if the object is in it.

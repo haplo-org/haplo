@@ -39,4 +39,9 @@ TEST(function() {
     // Deliver a message, the result of which is tested in the ruby test
     genericTemplate.deliver("test@example.com", "Test Person", "Random Subject", "<p>XXX-MESSAGE-FROM-JAVASCRIPT-XXX</p>");
 
+    // Try to deliver a message to a bad email address (autocorrected unicode character)
+    TEST.assert_exceptions(function() {
+        genericTemplate.deliver("test’@example.com", "Test Person", "Random Subject", "<p>Should not be delivered</p>");
+    }, "org.jruby.exceptions.RaiseException: (RuntimeError) Email address has non-ASCII characters: Test Person <test’@example.com>");
+
 });

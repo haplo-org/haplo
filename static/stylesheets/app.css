@@ -233,18 +233,8 @@ input[type=text], input[type=password], input[type=email], textarea {
 #z__header_haplo a:hover {
     text-decoration: none;
 }
-#z__header_haplo.z__with_haplo_logo a:before {
-    font-family: $SPECIAL_FONT_FAMILY;
-    position: absolute;
-    content: "HAPLO";
-    font-size: 48px;
-    line-height: 48px;
-    letter-spacing: 6px;
-    font-weight: bold;
-    top: 1px;
-    left: 16px;
-    color: #33A3D4;
-    text-shadow: rgba(0,0,0,0.3) -1px 1px 3px;
+#z__header_haplo.z__with_haplo_logo a {
+    background: url(/images/haplo-trademark-logo.svg) 16px 4px no-repeat;
 }
 
 /* ---------------------------------------------------------------------------- */
@@ -261,19 +251,7 @@ input[type=text], input[type=password], input[type=email], textarea {
 #z__logo_display {
     height: 64px;
     border: 0;
-    position: relative; /* to set :after position */
-}
-#z__logo_display:after {
-    font-family: $SPECIAL_FONT_FAMILY;
-    font-weight: bold;
-    content: "HAPLO";
-    color: #ddd;
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    font-size: 32px;
-    letter-spacing: 6px;
-    line-height: 32px;
+    background: url(/images/haplo-trademark-logo-footer.svg) 840px 6px no-repeat;
 }
 
 #z__logo_display a {

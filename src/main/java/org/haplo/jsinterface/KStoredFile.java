@@ -247,6 +247,12 @@ public class KStoredFile extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+
+    public String getDiskPathname() {
+        return this.storedFile.disk_pathname();
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
     // Interface to Ruby functions
     public interface Ruby {
         public AppText makeIdentifierForFile(AppStoredFile storedFile);

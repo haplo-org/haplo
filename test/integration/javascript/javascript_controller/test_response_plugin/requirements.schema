@@ -1,0 +1,7 @@
+
+group test:group:test-response-service-group as ServiceGroup
+    title: Test Response Service Group
+
+service-user test:service-user:test-response
+    title: Test Resource Service User
+    group test:group:test-response-service-group

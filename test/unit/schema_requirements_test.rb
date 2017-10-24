@@ -9,6 +9,7 @@ class SchemaRequirementsTest < Test::Unit::TestCase
   include KConstants
 
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/schema_requirements/with_requirements")
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/schema_requirements/with_bad_requirements")
 
   def test_parsing_and_value_choice
     parser = parser_for <<-__E
@@ -27,10 +28,17 @@ class SchemaRequirementsTest < Test::Unit::TestCase
         title: Group One
       OPTIONAL group test:group:group-optional as OptionalGroup
         title: Optional
+      group test:group:group-three
+        title: Three1
+      group test:group:group-three
+        title: Three2
+        FORCE-REMOVE title: Three1
+        # Add this twice, because force removes aren't deduplicated
+        FORCE-REMOVE title: Three1
     __E
     assert_equal 0, parser.errors.length
     group_reqs = parser.requirements['group']
-    assert_equal 3, group_reqs.length
+    assert_equal 4, group_reqs.length
     group1 = group_reqs['test:group:group-one']
     group1_title = group1.values['title']
     assert_equal [['Old Group One'], 'Group One Name 2'], group1_title.single_value
@@ -38,6 +46,8 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     group2 = group_reqs['test:group:group-two']
     assert_equal [[], '2'], group2.values['title'].single_value
     assert_equal [[], ['2']], group2.values['title'].multi_value
+    group3 = group_reqs['test:group:group-three']
+    assert_equal [['Three1'], ['Three2']], group3.values['title'].multi_value
     assert_equal({"test_plugin"=>{
         "group"=>{"One"=>'test:group:group-one'},
         "_optional"=>{"group"=>{"OptionalGroup"=>"test:group:group-optional"}}
@@ -229,9 +239,15 @@ class SchemaRequirementsTest < Test::Unit::TestCase
       :header => 'INITIAL_VALUE'
     }).save!
 
+    assert nil != KObjectStore.read(O_TYPE_STAFF) # check standard sub-type exists for check in requirements below
+
     parser = parser_for <<-__E
+      # refer to sub-type from standard schema
+      type std:type:person:staff as Staff
+
       qualifier test:qualifier:templated-qualifier
         title: Templated Qualifier
+        search-name: templated qualifier
 
       schema-template test:template:add-a-qualifier
         qualifier test:qualifier:templated-qualifier
@@ -241,7 +257,6 @@ class SchemaRequirementsTest < Test::Unit::TestCase
         search-name: test-link  search, name 
         data-type link
         linked-type test:type:test-type
-        linked-type test:type:not-mentioned-anywhere
         apply-schema-template test:template:add-a-qualifier
 
       label test:label:random
@@ -251,9 +266,6 @@ class SchemaRequirementsTest < Test::Unit::TestCase
       label test:label:two
         title: 2
         category: Sensitivity
-
-      label test:label:three
-        title: three
 
       type test:type:test-type
         title: Test Type
@@ -274,6 +286,7 @@ class SchemaRequirementsTest < Test::Unit::TestCase
 
       type test:type:test-type:sub-type
         title: Subtype for Test Type
+        search-name: subtype for test type
         parent-type test:type:test-type
         attribute-hide std:attribute:file
 
@@ -301,14 +314,13 @@ class SchemaRequirementsTest < Test::Unit::TestCase
       # Type for generic object defined inbetween objects using this type
       type test:type:test-list as TestList
           title: Test list
+          search-name: test list
           behaviour classification
           behaviour hierarchical
           attribute dc:attribute:title
           attribute std:attribute:notes
           attribute std:attribute:related-term
           attribute test:nonstd-aliased-attr:alias1
-          # This uses :aliased-attribute: in the string to trigger alias
-          attribute test:aliased-attribute:alias2
           render-type classification
           label-base std:label:concept
 
@@ -350,17 +362,13 @@ class SchemaRequirementsTest < Test::Unit::TestCase
       email-template test:email-template:test-remove
         REMOVE part: {"1000":["html","both","INITIAL_VALUE"]}
 
-      feature unknown:feature
-        unknown-key 1
-
-      qualifier test:qualifier:no-details
-
       # Special built in types
       qualifier std:qualifier:null as Null
       type std:type:label as Label
 
       # Optional flag for schema objects
       OPTIONAL qualifier test:qualifier:option1
+        search-name: option-1
         title: Option1 [sort=1100]
       qualifier test:qualifier:option1
         title: Option One [sort=100]
@@ -370,13 +378,33 @@ class SchemaRequirementsTest < Test::Unit::TestCase
       # Use a non-standard code for the aliased attribute so first condition is tested
       aliased-attribute test:nonstd-aliased-attr:alias1
         title: Aliased 1
+        search-name: aliased 1
         alias-of std:attribute:works-for
+
+      qualifier test:qualifier:random
+        title: Random
+        search-name: random
+
+      attribute test:attribute:for-force-remove
+        title: For Force Remove
+        search-name: for force remove
+        data-type text
+        qualifier std:qualifier:null
+        qualifier test:qualifier:random
+
+      attribute test:attribute:for-force-remove
+        FORCE-REMOVE qualifier std:qualifier:null
+
+      type std:type:person
+        REMOVE attribute std:attribute:notes
+      type std:type:person
+        attribute std:attribute:notes
 
     __E
     applier = SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new(parser))
     applier.apply.commit
-    # Some errors will be reported
-    assert_equal ["Unknown requirement for feature unknown:feature"], applier.errors
+    # No errors
+    assert_equal [], applier.errors
     # Special built-in aren't created, but are set for the plugin's local schema
     assert_equal nil, KObjectStore.schema.type_descs_sorted_by_printable_name.find { |t| t.code == "std:type:label" }
     assert_equal nil, KObjectStore.schema.all_qual_descs.map { |i| KObjectStore.schema.qualifier_descriptor(i) } .find { |t| t.code == "std:qualifier:null" }
@@ -407,19 +435,6 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     aliased_attr_desc = KObjectStore.schema.all_aliased_attr_descriptor_objs.find { |a| a.code == 'test:nonstd-aliased-attr:alias1' }
     assert aliased_attr_desc != nil
     assert_equal 'Aliased 1', aliased_attr_desc.printable_name.to_s
-    # Check heuristic to create aliased attr given code alone
-    assert nil != KObjectStore.schema.all_aliased_attr_descriptor_objs.find { |a| a.code == 'test:aliased-attribute:alias2' }
-    # Check type which was mentioned but there was no explicit requirement was created
-    not_mentioned_type = KObjectStore.schema.type_descs_sorted_by_printable_name.find { |t| t.code == "test:type:not-mentioned-anywhere" }
-    assert not_mentioned_type != nil
-    assert_equal "NO TITLE SET IN SCHEMA REQUIREMENTS", not_mentioned_type.printable_name.to_s
-    assert_equal ["no title set in schema requirements"], not_mentioned_type.short_names
-    assert_equal [A_TITLE], not_mentioned_type.attributes
-    # And a qualifier
-    not_mentioned_qualifier = nil
-    KObjectStore.schema.each_qual_descriptor { |q| not_mentioned_qualifier = q if q.code == "test:qualifier:no-details" }
-    assert_equal "NO TITLE SET IN SCHEMA REQUIREMENTS", not_mentioned_qualifier.printable_name.to_s
-    assert_equal "no-title-set-in-schema-requirements", not_mentioned_qualifier.short_name.to_s
     # Check group & service user creation
     test_group = User.find(:first, :conditions => {:kind => User::KIND_GROUP, :code => 'test:group:test-group'})
     test_service_user = User.find(:first, :conditions => {:kind => User::KIND_SERVICE_USER, :code => 'test:service-user:one'})
@@ -460,12 +475,6 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     label_two = load_object.call('test:label:two', A_CODE, O_TYPE_LABEL)
     assert_equal '2', label_two.first_attr(A_TITLE).to_s
     assert_equal O_LABEL_CATEGORY_SENSITIVITY, label_two.first_attr(A_LABEL_CATEGORY)
-    unnamed_category = KObjectStore.read(O_LABEL_CATEGORY_UNNAMED)
-    assert nil != unnamed_category
-    assert_equal "UNNAMED", unnamed_category.first_attr(A_TITLE).to_s
-    assert_equal O_TYPE_LABEL_CATEGORY, unnamed_category.first_attr(A_TYPE)
-    label_three = load_object.call('test:label:three', A_CODE, O_TYPE_LABEL)
-    assert_equal O_LABEL_CATEGORY_UNNAMED, label_three.first_attr(A_LABEL_CATEGORY)
     # Home page feature
     assert_equal "std:group:everyone left std:browser_check\nstd:group:everyone left std:noticeboard\nstd:group:everyone left test:element", KApp.global(:home_page_elements)
     # Config data feature
@@ -497,6 +506,13 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     assert_equal "Option1", option1_qual.printable_name.to_s
     # option2 wasn't created, because there was nothing else which wanted it
     assert_equal nil, KObjectStore.schema.all_qual_descs.map { |i| KObjectStore.schema.qualifier_descriptor(i) } .find { |t| t.code == "test:qualifier:option2" }
+    # Force remove of a multi-value
+    for_force_remove_attr = KObjectStore.schema.all_attr_descriptor_objs.find { |a| a.code == 'test:attribute:for-force-remove' }
+    assert !for_force_remove_attr.allowed_qualifiers.include?(Q_NULL)
+    assert_equal 1, for_force_remove_attr.allowed_qualifiers.length
+    # Check REMOVE & no remove rules
+    type_person = KObjectStore.read(O_TYPE_PERSON)
+    assert type_person.has_attr?(KObjRef.from_desc(A_NOTES), A_RELEVANT_ATTR)
     # Quick test for schema requirement generation
     context = SchemaRequirements::AppContext.new # no parser
     # KObjectStore.query_and.link(O_TYPE_APP_VISIBLE, A_TYPE).execute(:all,:any).each { |o| puts context.generate_requirements_definition(o) }
@@ -543,6 +559,87 @@ __E
     ensure
       KPlugin.uninstall_plugin('with_requirements')
     end
+  end
+
+  # ---------------------------------------------------------------------------------------------------------------
+
+  def test_errors_from_schema_requirements
+    parser = parser_for <<-__E
+      label test:label:three
+        title: three
+
+      feature unknown:feature
+        unknown-key 1
+
+      qualifier test:qualifier:no-details
+
+      qualifier test:qualifier:no-search-name
+        title: No Search Name
+
+      type test:type:no-details
+
+      aliased-attribute test:aliased-attribute:no-alias-of
+
+      object object:sort-of-object
+
+      not-a-requirement-kind test:not-requirement:something
+
+      attribute test:attribute:no-details
+
+      label test:label:no-details
+
+      restriction test:restriction:one
+
+    __E
+    expected_errors = [
+        "Unknown kind 'not-a-requirement-kind'",
+        "Unknown requirement for feature unknown:feature",
+        "object:sort-of-object must have a title",
+        "object:sort-of-object must have a type",
+        "test:label:three must have a category",
+        "test:label:no-details must have a title",
+        "test:label:no-details must have a category",
+        "test:attribute:no-details must have a title",
+        "test:attribute:no-details must have a search-name",
+        "test:attribute:no-details must have a data-type",
+        "test:aliased-attribute:no-alias-of must have a title",
+        "test:aliased-attribute:no-alias-of must have a search-name",
+        "test:aliased-attribute:no-alias-of must have an alias-of",
+        "test:qualifier:no-details must have a title",
+        "test:qualifier:no-details must have a search-name",
+        "test:qualifier:no-search-name must have a search-name",
+        "test:restriction:one must have a title",
+        "test:type:no-details must have a title",
+        "test:type:no-details must have a search-name",
+        "test:type:no-details must have at least one attribute"
+      ]
+    applier = SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new(parser))
+    applier.apply
+    assert_equal expected_errors.sort, applier.errors.sort
+  end
+
+  # ---------------------------------------------------------------------------------------------------------------
+
+  def test_install_of_plugin_with_bad_requirements_is_not_allowed
+    # Installation isn't allowed if requirements fail to apply
+    result = KPlugin.install_plugin_returning_checks('with_bad_requirements')
+    assert_equal "Failed to apply schema requirements", result.failure
+    expected_message = <<__E
+with-bad-requirements:attribute:some-attribute must have a search-name
+
+with-bad-requirements:attribute:some-attribute must have a data-type
+
+with-bad-requirements:type:some-type must have a title
+
+with-bad-requirements:type:some-type must have a search-name
+
+with-bad-requirements:type:some-type must have at least one attribute
+__E
+    assert_equal expected_message.strip, result.warnings
+    # Check nothing was done
+    assert_equal nil, KPlugin.get('with_bad_requirements')
+    schema = KObjectStore.schema
+    assert_equal nil, schema.all_attr_descriptor_objs.find { |a| a.code == 'with-bad-requirements:attribute:some-attribute' }
   end
 
   # ---------------------------------------------------------------------------------------------------------------

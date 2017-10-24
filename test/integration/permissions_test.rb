@@ -144,6 +144,26 @@ class PermissionsTest < IntegrationTest
     joan.get thumbnail_path(:o2)
     assert joan.response.body =~ /IHDR/ # PNG header
 
+    # Restrict file attributes...
+    restriction1 = KObject.new([O_LABEL_STRUCTURE])
+    restriction1.add_attr(O_TYPE_RESTRICTION, A_TYPE)
+    restriction1.add_attr(KObjRef.new(100), A_RESTRICTION_UNRESTRICT_LABEL)
+    restriction1.add_attr(KObjRef.new(A_FILE), A_RESTRICTION_ATTR_RESTRICTED)
+    KObjectStore.create(restriction1)
+    # ...now the file can't be downloaded...
+    joan.get_403 file_path(:o2)
+    # ... unless it's lifted explicitly by a plugin...
+    begin
+      KPlugin.install_plugin('permissions_test_plugin')
+      joan.get file_path(:o2)
+      check_file_download(joan, :o2)
+    ensure
+      KPlugin.uninstall_plugin('permissions_test_plugin')
+    end
+    joan.get_403 file_path(:o2)
+    # Remove the restriction completely
+    KObjectStore.erase(restriction1)
+
     # Check JavaScript plugins report permission denied properly
     begin
       KPlugin.install_plugin('permissions_test_plugin')

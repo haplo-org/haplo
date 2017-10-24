@@ -324,6 +324,7 @@ Publication.prototype._handleRequest2 = function(method, path) {
         }
     }
     E.response.headers["Server"] = "Haplo Web Publisher";
+    O.serviceMaybe("std:web-publisher:observe:request", this, E, renderingContext);
     return E.response;
 };
 

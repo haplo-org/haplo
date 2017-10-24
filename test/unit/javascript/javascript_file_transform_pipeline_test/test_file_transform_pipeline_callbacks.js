@@ -37,6 +37,7 @@ TEST(function() {
     TEST.assert(errorCalled === undefined);
     TEST.assert_equal(true, successCalled.success);
     TEST.assert_equal("y", successCalled.data.x);
+    TEST.assert(_.isEqual({}, successCalled.information));
 
     // Try an error in the pipeline
     successCalled = undefined; errorCalled = undefined;
@@ -48,6 +49,7 @@ TEST(function() {
     TEST.assert(errorCalled !== undefined);
     TEST.assert_equal(false, errorCalled.success);
     TEST.assert_equal("test error message", errorCalled.errorMessage);
+    TEST.assert(_.isEqual({"error-transform-test":"test-value"}, errorCalled.information));
 
     // Verification failure
     var pipeline3 = O.fileTransformPipeline("testpipeline");

@@ -96,6 +96,10 @@ public class KUploadedFile extends KBinaryData {
         return false;
     }
 
+    public String getDiskPathname() {
+        return this.file.getSavedPathname();
+    }
+
     public String getDiskPathnameForResponse() {
         // Temporary file will have been deleted by the time it would be opened for responding
         throw new OAPIException("Responding with uploaded file not supported");

@@ -1,0 +1,17 @@
+<table>
+  each(values) {
+    <tr>
+      each(.) {
+        if(th) {
+          <th colspan=colspan> th </th>
+        } else {
+          if(isZero) {
+            <td class="z__std_reporting_value_0"> </td>
+          } else {
+            <td> display </td>
+          }
+        }
+      }
+    </tr>
+  }
+</table>

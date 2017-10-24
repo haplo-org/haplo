@@ -58,7 +58,9 @@ module JSStdReportingSupport
         has_rebuilds = KApp.get_pg_database.exec("SELECT 1 FROM j_#{db_namespace}_rebuilds LIMIT 1").length
         if has_rebuilds != 0
           sleep(0.5) # hopefully the triggering runtime will no longer be in use and can be reused here
-          logger.info("Starting #{PLUGIN_NAME} updates for application #{KApp.current_application}")
+          logger.info("Starting #{PLUGIN_NAME} updates for application #{KApp.current_application} (full logs after completion)")
+          logger.flush_buffered # so logs show what is happening currently
+          logger.info("Start of #{PLUGIN_NAME} updates for application #{KApp.current_application}")
           begin
             KJSPluginRuntime.current.call_callback(UPDATE_CALLBACK_NAME, [])
           rescue => e

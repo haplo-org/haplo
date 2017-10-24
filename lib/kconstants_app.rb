@@ -229,7 +229,7 @@ module KConstants
 
   # Optional editable app category & labels
   O_LABEL_CATEGORY_SENSITIVITY  = KObjRef.new(BASE_APP_LABEL_DEFINITIONS + 41)
-  O_LABEL_CATEGORY_UNNAMED      = KObjRef.new(BASE_APP_LABEL_DEFINITIONS + 42) # created by schema requirements if it needs it
+  # was O_LABEL_CATEGORY_UNNAMED      = KObjRef.new(BASE_APP_LABEL_DEFINITIONS + 42) -- not always created
   O_LABEL_COMMON                = KObjRef.new(BASE_APP_LABEL_DEFINITIONS + 51)
   O_LABEL_CONFIDENTIAL          = KObjRef.new(BASE_APP_LABEL_DEFINITIONS + 52)
 

@@ -1,5 +1,5 @@
 each(sections) {
-  <div id=unsafeAttributeValue(unsafeId)>
+  <div id=unsafeAttributeValue(unsafeId) class="z__docstore_form_display">
     <h2> title </h2>
     std:document(instance)
   </div>

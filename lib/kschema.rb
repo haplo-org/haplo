@@ -145,8 +145,7 @@ class KSchema
     attr_reader :root_type    # objref, may be this object's objref
     attr_reader :parent_type  # objref
     attr_reader :children_types # array of objrefs
-    attr_reader :attributes_restrictions # Hash of attribute descriptor to list of label object IDs (not KObjRef)
-    attr_reader :attributes_read_only # Hash of attribute descriptor to list of label object IDs
+    attr_reader :restrictions # array of Restriction objects
 
     def initialize(obj, schema, store)
       # TODO: Internationalisation
@@ -184,9 +183,8 @@ class KSchema
         @relevancy_weight ||= parent_type_desc.relevancy_weight
         @term_inclusion ||= parent_type_desc.term_inclusion
       else
-        # Set no restrictions, filled in later when loading restrictions
-        @attributes_restrictions = Hash.new
-        @attributes_read_only = Hash.new
+        # Restrictions array, filled in later when loading restrictions
+        @restrictions = []
       end
       @children_types.each do |child_objref|
         ch = schema.type_descriptor(child_objref)
@@ -511,26 +509,88 @@ private
 
   # ----------------------------------------------------------------------------------------------------------
 
+public
+
+  # Object store internal API returning a RestrictedAttributesForObject
+  # Note that unrestrict_labels is an array of ints, not obj refs.
+  def _get_restricted_attributes_for_object(object, unrestrict_labels = [])
+    hidden = {}
+    read_only = {}
+    type = object.first_attr(A_TYPE)
+    if type
+      td = self.type_descriptor(type)
+      td = self.type_descriptor(td.root_type) if td != nil
+      if td
+        td.restrictions.each do |restriction|
+          restriction._gather_restricted_attributes(object, unrestrict_labels, hidden, read_only)
+        end
+      end
+    end
+    RestrictedAttributesForObject.new(hidden, read_only)
+  end
+
+private
+
+  # hidden and read_only are Hash of attribute descriptor to list of label object IDs (not KObjRef)
+  RestrictedAttributesForObject = Struct.new(:hidden, :read_only)
+
+  class Restriction
+    include KConstants
+    attr_reader :unrestrict_labels
+    def initialize(object)
+      # NOTE: A_RESTRICTION_TYPE is not included in this object deliberately, because this is implied
+      # by which TypeDescriptors uses it.
+      @if_labels = object.all_attrs(A_RESTRICTION_IF_LABEL)
+      @unrestrict_labels = object.all_attrs(A_RESTRICTION_UNRESTRICT_LABEL).map { |l| l.to_i }
+      @attr_restricted = object.all_attrs(A_RESTRICTION_ATTR_RESTRICTED).map { |a| a.to_desc }
+      @attr_read_only = object.all_attrs(A_RESTRICTION_ATTR_READ_ONLY).map { |a| a.to_desc }
+    end
+    def _matches?(object, match_unrestrict_labels)
+      # Matching type is implied
+      # Only match when no "if labels", or object is labelled with at least one
+      unless @if_labels.empty?
+        if nil == @if_labels.find() { |l| object.labels.include?(l) }
+          return false 
+        end
+      end
+      # Restriction lifted if unrestrict labels includes any unrestrict label
+      if (match_unrestrict_labels & @unrestrict_labels).length > 0
+        return false
+      end
+      true
+    end
+    def _gather_restricted_attributes(object, unrestrict_labels, hidden, read_only)
+      if _matches?(object, unrestrict_labels)
+        [
+          [@attr_restricted, hidden],
+          [@attr_read_only, read_only]
+        ].each do |descs, lookup|
+          descs.each do |d|
+            list = lookup[d]
+            lookup[d] = list = [] unless list
+            list.concat(@unrestrict_labels)
+            list.uniq! # may return nil
+            list.sort!
+          end
+        end
+      end
+    end
+  end
+
   def load_restrictions(store)
     query = store.query_and.link(O_TYPE_RESTRICTION, A_TYPE)
     query.add_label_constraints([O_LABEL_STRUCTURE])
     restriction_labels = {}
     restriction_objects = query.execute(:all, :any)
-    restriction_objects.each do |restriction|
-      label_ids = restriction.all_attrs(A_RESTRICTION_LABEL).map { |l| l.to_i }
-      next if label_ids.empty?
-      label_ids.each { |l| restriction_labels[l] = true }
-      restriction.each(A_RESTRICTION_TYPE) do |type,d,q|
+    restriction_objects.each do |restriction_object|
+      restriction = Restriction.new(restriction_object)
+      restriction.unrestrict_labels.each { |l| restriction_labels[l.to_i] = true }
+      types = restriction_object.all_attrs(A_RESTRICTION_TYPE)
+      types = @root_types if types.empty? # if no type specified, applies to all types
+      types.each do |type|
         td = @types_by_objref[type]
         next unless td && (td = @types_by_objref[td.root_type])
-        [
-          [td.attributes_restrictions, A_RESTRICTION_ATTR_RESTRICTED],
-          [td.attributes_read_only,    A_RESTRICTION_ATTR_READ_ONLY]
-        ].each do |lookup, restriction_desc|
-          restriction.each(restriction_desc) do |v,d,q|
-            lookup[v.to_desc] = (lookup[v.to_desc] || []).concat(label_ids).uniq.sort
-          end
-        end
+        td.restrictions << restriction
       end
     end
     @all_restriction_labels = restriction_labels.keys.sort

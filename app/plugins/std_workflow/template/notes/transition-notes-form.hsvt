@@ -1,6 +1,6 @@
 <div class="z__workflow_note_header">
   <b> "Notes" </b>
-  if(canSeePrivateNotes) { if(everyoneNoteExplaination) { " (" everyoneNoteExplaination ")" } }
+  if(everyoneNoteExplaination) { " (" everyoneNoteExplaination ")" }
 </div>
 <div class="z__workflow_note_container">
   <textarea name="notes" cols="80" rows="6"> notes </textarea>

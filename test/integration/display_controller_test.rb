@@ -57,5 +57,75 @@ class DisplayControllerTest < IntegrationTest
     end
   end
 
+  # -------------------------------------------------------------------------
+
+  def test_restrictions_are_tested_against_unmodified_object
+    db_reset_test_data
+    restore_store_snapshot("basic")
+
+    obj = KObject.new
+    obj.add_attr(O_TYPE_BOOK, A_TYPE)
+    obj.add_attr("Object for restrictions", A_TITLE)
+    obj.add_attr("NOTES GO HERE", A_NOTES)
+    KObjectStore.create(obj)
+
+    assert_login_as('user1@example.com', 'password')
+
+    get object_urlpath(obj)
+    assert_select('h1', 'Object for restrictions')
+    assert(response.body =~ /NOTES GO HERE/)
+
+    # Add restriction
+    restriction1 = KObject.new([O_LABEL_STRUCTURE])
+    restriction1.add_attr(O_TYPE_RESTRICTION, A_TYPE)
+    restriction1.add_attr(O_TYPE_BOOK, A_RESTRICTION_TYPE)
+    restriction1.add_attr(KObjRef.new(100), A_RESTRICTION_UNRESTRICT_LABEL)
+    restriction1.add_attr(KObjRef.new(A_NOTES), A_RESTRICTION_ATTR_RESTRICTED)
+    KObjectStore.create(restriction1)
+
+    # Notes aren't displayed
+    get object_urlpath(obj)
+    assert_select('h1', 'Object for restrictions')
+    assert(response.body !~ /NOTES GO HERE/)
+
+    # Install plugin which conditionally removes notes
+    assert KPlugin.install_plugin("display_controller_test/display_controller_restrictions_test")
+
+    get object_urlpath(obj)
+    assert_select('h1', 'Replaced title')
+    assert(response.body =~ /NOTES GO HERE/)  # as restriction is lifted by hook
+
+    # But change title...
+    obj = obj.dup
+    obj.delete_attrs!(A_TITLE)
+    obj.add_attr("New title", A_TITLE)
+    KObjectStore.update(obj)
+
+    get object_urlpath(obj)
+    assert_select('h1', 'Replaced title')
+    assert(response.body !~ /NOTES GO HERE/)  # restriction not lifted
+
+  ensure
+    KPlugin.uninstall_plugin("display_controller_test/display_controller_restrictions_test")
+  end
+
+  class DisplayControllerRestrictionsTestPlugin < KTrustedPlugin
+    include KConstants
+    _PluginName "Display Controller Restrictions Test Plugin"
+    _PluginDescription "Test"
+    def hPreObjectDisplay(response, object)
+      # Modifies object changing title, to check hObjectAttributeRestrictionLabelsForUser uses the original title
+      r = object.dup
+      r.delete_attrs!(A_TITLE)
+      r.add_attr("Replaced title", A_TITLE)
+      response.replacementObject = r
+    end
+    def hObjectAttributeRestrictionLabelsForUser(response, user, object)
+      if object.first_attr(A_TITLE).to_s == "Object for restrictions"
+        response.userLabelsForObject.add(KObjRef.new(100))
+      end
+    end
+  end
+
 end
 

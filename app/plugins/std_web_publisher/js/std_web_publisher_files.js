@@ -25,39 +25,40 @@ P.Publication.prototype.addFileDownloadPermissionHandler = function(fn) {
 P.Publication.prototype.permitFileDownloadsForServiceUser = function() {
     var publication = this;
     return this.addFileDownloadPermissionHandler(function(fileOrIdentifier, result) {
-        O.impersonating(O.serviceUser(publication._serviceUserCode), function() {
-            var objects = O.query().identifier(fileOrIdentifier.identifier()).setSparseResults().execute();
-            if(objects.length > 0) {
-                result.allow = true;
-            }
-        });
+        var permittingRef = $StdWebPublisher.checkFileReadPermittedByReadableObjects(
+                fileOrIdentifier.identifier(),
+                O.serviceUser(publication._serviceUserCode));
+        if(permittingRef) {
+            result.allow = true;
+            result.permittingRef = permittingRef;
+        }
     });
 };
 
 // Public API for checking whether a file download is permitted
 P.Publication.prototype.isFileDownloadPermitted = function(fileOrIdentifier) {
+    return !!this._checkFileDownloadPermitted(fileOrIdentifier);
+};
+
+P.Publication.prototype._checkFileDownloadPermitted = function(fileOrIdentifier) {
     // Permissions for positive outcomes are cached
     var permitted = false;
     if(permittedDownloadsCacheAge++ > MAX_PERMITTED_DOWNLOAD_CACHE_AGE) {
         resetPermittedDownloadCache();
     }
     var cacheKey = fileOrIdentifier.digest+'-'+fileOrIdentifier.fileSize;
-    if(permittedDownloadsCache[cacheKey]) {
-        permitted = true;
-    } else {
-        var result = {
+    var result = permittedDownloadsCache[cacheKey];
+    if(!result) {
+        result = {
             allow: false,
             deny: false
         };
         this._fileDownloadPermissionFunctions.forEach(function(fn) {
             fn(fileOrIdentifier, result);
         });
-        if(result.allow && !(result.deny)) {
-            permitted = true;
-            permittedDownloadsCache[cacheKey] = true;
-        }
+        permittedDownloadsCache[cacheKey] = result;
     }
-    return permitted;
+    return (result.allow && !(result.deny)) ? result : null;
 };
 
 P.Publication.urlForFileDownload = function(fileOrIdentifier) {
@@ -116,7 +117,9 @@ P.Publication.prototype._handleFileDownload = function(E) {
         return;
     }
     if(!file) { return; }
-    if(this.isFileDownloadPermitted(file)) {
+    var checkResult = this._checkFileDownloadPermitted(file);
+    if(checkResult) {
+        O.serviceMaybe("std:web-publisher:observe:file-download", this, E, checkResult);
         E.response.setExpiry(86400); // 24 hours
         E.response.body = file;
     }

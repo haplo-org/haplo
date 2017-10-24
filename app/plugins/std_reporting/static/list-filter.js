@@ -33,8 +33,10 @@
             if(selector) {
                 $('#z__std_reporting_list_filterable_table tbody tr').hide();
                 $('#z__std_reporting_list_filterable_table tbody tr'+selector).show();
+                $('.z__std_reporting_export_form > :submit').val("Export (filtered)");
             } else {
                 $('#z__std_reporting_list_filterable_table tbody tr').show();
+                $('.z__std_reporting_export_form > :submit').val("Export");
             }
             lastSelector = selector;
         };
@@ -73,6 +75,7 @@
                     this.disabled = used[this.value] ? '' : 'disabled';
                 });
             });
+
         });
 
     });

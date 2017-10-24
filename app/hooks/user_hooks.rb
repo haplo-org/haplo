@@ -30,6 +30,14 @@ module KHooks
 
   define_hook :hUserAttributeRestrictionLabels do |h|
     h.argument    :user,   User,             "SecurityPrincipal being queried"
-    h.result      :labels, KLabelList, nil, "Labels enabling the user to view or edit restricted attributes"
+    h.result      :labels, KLabelList, nil, "DEPRECATED (will be removed in later version): Labels enabling the user to view or edit restricted attributes"
+    h.result      :userLabels, KLabelChanges,  nil,  "Labels enabling the user to view or edit restricted attributes, specified as changes from the empty label list."
   end
+
+  define_hook :hObjectAttributeRestrictionLabelsForUser do |h|
+    h.argument    :user,   User,            "SecurityPrincipal being queried"
+    h.argument    :object, KObject,         "Object being queries"
+    h.result      :userLabelsForObject, KLabelChanges,  nil,  "Per-object labels enabling the user to view or edit restricted attributes, specified as changes from the empty label list."
+  end
+
 end

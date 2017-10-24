@@ -10,6 +10,12 @@
 module JSStdWebPublisherSupport
   extend KPlugin::HookSite
 
+  def self.checkFileReadPermittedByReadableObjects(file_identifier, user)
+    raise JavaScriptAPIError, "Not file identifier" unless file_identifier.kind_of?(KIdentifierFile)
+    permitting_ref, _  = FileController.check_file_read_permitted_by_readable_objects(file_identifier, user, nil)
+    permitting_ref
+  end
+
   # =========================================================================
   #          WARNING: Security sensitive code; modify with care.
   # =========================================================================
@@ -21,7 +27,7 @@ module JSStdWebPublisherSupport
       object = h.replacementObject if h.replacementObject != nil
     end
     # Apply Restrictions
-    object = object.dup_restricted(AuthContext.user.attribute_restriction_labels)
+    object = AuthContext.user.kobject_dup_restricted(object)
 
     # Get permissions of current user, for manual permission checks
     permissions = AuthContext.user.permissions

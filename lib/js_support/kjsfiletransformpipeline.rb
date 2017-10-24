@@ -63,7 +63,7 @@ class KJSFileTransformPipeline < KJob
           transform_implementation = TRANSFORMS[transform_name]
           raise JavaScriptAPIError, "No transform implemented for name #{transform_name}" unless transform_implementation
           transform = transform_implementation.new(transform_specification)
-          transform.execute(self)
+          transform.execute(self, result)
         end
       rescue => e
         # report exception to JS
@@ -138,14 +138,19 @@ class KJSFileTransformPipeline < KJob
   class Result
     def initialize(pipeline)
       @pipeline = pipeline
+      @information = {}
     end
     attr_accessor :name, :error_message
     attr_writer :data
+    attr_reader :information
     def success
       @error_message == nil
     end
     def dataJSON
       JSON.generate(@data || {});
+    end
+    def informationJSON
+      JSON.generate(@information)
     end
     def get_stored_file(name, filename)
       file = @pipeline.get_file(name)
@@ -166,7 +171,7 @@ class KJSFileTransformPipeline < KJob
       # Nothing by default
       # Subclass should throw a JavaScriptAPIError if @specification isn't valid
     end
-    def execute(pipeline)
+    def execute(pipeline, result)
       raise "No implementation"
     end
     # Default input/output names
@@ -191,7 +196,7 @@ class KJSFileTransformPipeline < KJob
         end
       end
     end
-    def execute(pipeline)
+    def execute(pipeline, result)
       # Rename in two steps so files could be swapped
       (@specification['rename'] || []).map do |from_name, to_name|
         [pipeline.get_file(from_name), to_name]
@@ -218,7 +223,7 @@ class KJSFileTransformPipeline < KJob
       raise JavaScriptAPIError, "No output MIME type specified" unless @specification.has_key?('mimeType')
       conversion_options() # to check options are valid
     end
-    def execute(pipeline)
+    def execute(pipeline, result)
       input = pipeline.get_file(self.input_name)
       output_mime_type = @specification['mimeType']
       if (input.mime_type == output_mime_type) && !(@specification.has_key?('options'))

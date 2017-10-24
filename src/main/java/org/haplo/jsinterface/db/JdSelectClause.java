@@ -46,6 +46,16 @@ public class JdSelectClause extends KScriptable {
     // --------------------------------------------------------------------------------------------------------------
     // API for describing queries
     public Scriptable jsFunction_where(String qualifiedFieldName, String comparison, Object value) {
+        return whereImpl(qualifiedFieldName, null, comparison, value);
+    }
+
+    // TODO: Add JSON property indexing so whereJSONProperty() is fast (currently should only be used if you've done other where() clauses)
+    // TODO: Better and generic API for whereJSONProperty(), eg q.where(q.fn("json:property", "field", "property"))
+    public Scriptable jsFunction_whereJSONProperty(String qualifiedFieldName, String jsonProperty, String comparison, Object value) {
+        return whereImpl(qualifiedFieldName, jsonProperty, comparison, value);
+    }
+
+    private Scriptable whereImpl(String qualifiedFieldName, String jsonProperty, String comparison, Object value) {
         checkNotExecutedYet();
 
         // Be paranoid about String types
@@ -88,6 +98,9 @@ public class JdSelectClause extends KScriptable {
         if(field == null) {
             throw new OAPIException("Bad field '" + fieldName + "' for table '" + fieldTable.jsGet_name() + "'");
         }
+        if((jsonProperty != null) && !(field.isJSONCompatible())) {
+            throw new OAPIException("Cannot extract JSON property from '" + fieldName + "' for table '" + fieldTable.jsGet_name() + "'");
+        }
 
         // Validate the comparison operator
         boolean comparisonOK = false;
@@ -129,8 +142,22 @@ public class JdSelectClause extends KScriptable {
             }
         }
 
+        // Value need to be transformed in SQL?
+        JdTable.ValueTransformer valueTransformer = null;
+        if(jsonProperty != null) {
+            valueTransformer = new JdTable.ValueTransformer() {
+                public String transform(String sqlValue) {
+                    return "json_extract_path_text(("+sqlValue+")::json,?)";
+                }
+                public int setWhereValue(JdTable.Field field, int parameterIndex, PreparedStatement statement, Object value) throws java.sql.SQLException {
+                    statement.setString(parameterIndex, jsonProperty);
+                    return field.setWhereValue(parameterIndex+1, statement, value);
+                }
+            };
+        }
+
         // Validate the value
-        if(!(field.jsObjectIsCompatibleForWhereClause(value))) {
+        if(!(field.jsObjectIsCompatibleForWhereClause(value, valueTransformer))) {
             throw new OAPIException("Comparison value for field '" + fieldName + "' "
                     + ((value == null) ? "must not be null as this field is not marked as nullable" : "is not a compatible data type."));
         }
@@ -139,7 +166,7 @@ public class JdSelectClause extends KScriptable {
         }
 
         // Add the clause to the list
-        addWhereClause(new WhereClause(joinField, field, comparison, value));
+        addWhereClause(new WhereClause(joinField, field, valueTransformer, comparison, value));
 
         return this;
     }
@@ -260,12 +287,14 @@ public class JdSelectClause extends KScriptable {
     private static class WhereClause {
         public final JdTable.LinkField joinField;
         public final JdTable.Field field;
+        public final JdTable.ValueTransformer valueTransformer;
         public final String comparison;
         public final Object value;
 
-        WhereClause(JdTable.LinkField joinField, JdTable.Field field, String comparison, Object value) {
+        WhereClause(JdTable.LinkField joinField, JdTable.Field field, JdTable.ValueTransformer valueTransformer, String comparison, Object value) {
             this.joinField = joinField;
             this.field = field;
+            this.valueTransformer = valueTransformer;
             this.comparison = comparison;
             this.value = value;
         }
@@ -273,11 +302,15 @@ public class JdSelectClause extends KScriptable {
         public void appendWhereSql(StringBuilder where, String tableAlias) {
             // If this is in a joined table, use the alias for that join, not the main table alias
             String ta = (this.joinField != null) ? this.joinField.getNameForQueryAlias() : tableAlias;
-            this.field.appendWhereSql(where, ta, this.comparison, this.value);
+            this.field.appendWhereSql(where, ta, this.comparison, this.value, this.valueTransformer);
         }
 
         public int setWhereValue(int parameterIndex, PreparedStatement statement) throws java.sql.SQLException {
-            return this.field.setWhereValue(parameterIndex, statement, this.value);
+            if(this.valueTransformer != null) {
+                return valueTransformer.setWhereValue(this.field, parameterIndex, statement, this.value);
+            } else {
+                return this.field.setWhereValue(parameterIndex, statement, this.value);
+            }
         }
     }
 
@@ -285,7 +318,7 @@ public class JdSelectClause extends KScriptable {
         private JdSelectClause subClause;
 
         WhereSubClauseClause(JdSelectClause subClause) {
-            super(null, null, null, null);
+            super(null, null, null, null, null);
             this.subClause = subClause;
         }
 
@@ -308,7 +341,7 @@ public class JdSelectClause extends KScriptable {
         public final int groupId;
 
         WhereUserIsMemberOfClause(JdTable.Field field, int groupId) {
-            super(null, field, null, null);
+            super(null, field, null, null, null);
             this.groupId = groupId;
         }
 

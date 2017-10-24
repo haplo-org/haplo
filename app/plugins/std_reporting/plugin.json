@@ -12,6 +12,7 @@
       "js/std_reporting_api.js",
       "js/std_reporting_dashboards.js",
       "js/std_reporting_dashboard_list.js",
+      "js/std_reporting_dashboard_aggregate.js",
       "js/std_reporting_dashboard_summary_statistics.js",
       "js/std_reporting_statistics_panel.js",
       "js/std_reporting_admin_ui.js"

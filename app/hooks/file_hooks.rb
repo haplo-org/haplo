@@ -10,6 +10,7 @@ module KHooks
   define_hook :hPreFileDownload do |h|
     h.argument    :file,        StoredFile, "The file being downloaded"
     h.argument    :transform,   String,     "A string specifying the requested transform, or the empty string if none requested."
+    h.argument    :permittingRef, KObjRef,  "The ref of the object which contained a file identified and was readable by the user, permitting this download. May be null."
     h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of downloading the file"
   end
 

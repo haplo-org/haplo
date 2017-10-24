@@ -49,9 +49,5 @@ public interface AppObject {
 
     public boolean restricted();
 
-    public boolean can_read(Integer desc, int[] labels);
-
-    public boolean can_modify(Integer desc, int[] labels);
-
-    public AppObject dup_restricted(int[] labels);
+    public AppObject dup_restricted(AppObjectRestrictedAttributes restrictedAttributes);
 }

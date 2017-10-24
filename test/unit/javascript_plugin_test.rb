@@ -15,6 +15,7 @@ class JavascriptPluginTest < Test::Unit::TestCase
   1.upto(3) { |i| KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_plugin/test_depend#{i}") }
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_plugin/test_plugin")
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_plugin/test_plugin3")
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_plugin/test_attr_restrictions")
 
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_plugin/test_provide_feature")
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_plugin/test_use_feature")
@@ -149,16 +150,20 @@ restriction test:restriction:lock-book-titles
 __E
     SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new(parser)).apply.commit
 
-    assert_equal(true, KPlugin.install_plugin("test_plugin"))
+    assert_equal(true, KPlugin.install_plugin("test_attr_restrictions"))
 
     run_javascript_test(:file, 'unit/javascript/javascript_plugin/test_attribute_restrictions.js') do |runtime|
       runtime.host.setTestCallback(proc { |email|
-                                     start_test_request(nil, User.find_first_by_email(email))
-                                     ""
-                                   })
+        u = User.find_first_by_email(email)
+        AuthContext.set_user(u,u)
+        ''
+      })
     end
 
-    KPlugin.uninstall_plugin("test_plugin")
+    # Test backwards compatibility in hUserAttributeRestrictionLabels by checking deprecated labels property in hook response works
+    assert_equal [O_LABEL_COMMON.to_i, 123456], User.find(42).attribute_restriction_labels.sort
+
+    KPlugin.uninstall_plugin("test_attr_restrictions")
   end
 
   # -------------------------------------------------------------------------------------------------------------

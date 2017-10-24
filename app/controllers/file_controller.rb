@@ -113,7 +113,7 @@ class FileController < ApplicationController
     as_attachment = true if params.has_key?(:attachment)
 
     call_hook(:hPreFileDownload) do |hooks|
-      h = hooks.run(stored_file, filespec.join('/'))
+      h = hooks.run(stored_file, filespec.join('/'), @permitting_object_ref)
       # Plugins can redirect away from file download
       if h.redirectPath
         redirect_to h.redirectPath
@@ -599,33 +599,50 @@ private
         end
       end
     end
-    # If the user has read permission on at least one object which has a file identifer value referring to this file,
-    # they are permitted to read this file.
+    # Check by searching for objects the user can read
     unless permitted
-      query = KObjectStore.query_and.identifier(KIdentifierFile.new(stored_file))
-      query.add_exclude_labels([KConstants::O_LABEL_STRUCTURE])
-      objects = query.execute(:all, :date_asc)
-      if objects.length > 0
-        permitted = true
-        # Check to see if the filename is in one of the file values in these objects
-        if @requested_filename
-          objects.each do |obj|
-            obj.each do |v,d,q|
-              if v.kind_of? KIdentifierFile
-                if (v.digest == stored_file.digest) && (v.size == stored_file.size) && (v.presentation_filename == @requested_filename)
-                  # File identifier contains this filename, so it can be used for the download
-                  @verified_download_filename = @requested_filename
-                  break
-                end
+      @permitting_object_ref, @verified_download_filename =
+          FileController.check_file_read_permitted_by_readable_objects(KIdentifierFile.new(stored_file), @request_user, @requested_filename)
+      permitted = !!@permitting_object_ref
+    end
+    # Bail out if not permitted
+    permission_denied unless permitted
+    true
+  end
+
+  def self.check_file_read_permitted_by_readable_objects(file_identifier, user, requested_filename)
+    # If the user has read permission on at least one object which has a file identifer value referring to this file,
+    # they are permitted to read this file. This, however, is complicated by per-object per-user restriction lifting.
+    # So, the query is done without permission enforcement so that objects will be found, even if the unlifted
+    # restriction would have prevented that object being found with the user's permissions. Then the permissions are
+    # implemented manually, by checking the read permission on the object, then searching for the identifier in the
+    # restricted version of the object.
+    permitted = false
+    verified_download_filename = nil
+    query = KObjectStore.query_and.identifier(file_identifier)
+    query.add_exclude_labels([KConstants::O_LABEL_STRUCTURE])
+    objects = KObjectStore.with_superuser_permissions { query.execute(:all, :date_asc) }
+    permitting_object_ref = nil
+    objects.each do |obj|
+      # 1) Check basic read permission, because the permission-less search won't have checked this
+      if user.permissions.allow?(:read, obj.labels)
+        obj = user.kobject_dup_restricted(obj)
+        obj.each do |v,d,q|
+          # 2) Check that the restricted version of the object still includes an identifier for this file
+          if v.kind_of? KIdentifierFile
+            if (v.digest == file_identifier.digest) && (v.size == file_identifier.size)
+              permitting_object_ref = obj.objref
+              # Check filename?
+              if requested_filename && (v.presentation_filename == requested_filename)
+                # File identifier contains this filename, so it can be used for the download
+                @verified_download_filename = requested_filename
               end
             end
           end
         end
       end
     end
-    # Bail out if not permitted
-    permission_denied unless permitted
-    true
+    [permitting_object_ref, verified_download_filename]
   end
 
   def file_is_up_to_date_in_client_cache

@@ -37,12 +37,16 @@ module Application_RenderHelper
       return RENDER_OBJ_FOR_UNAUTHORISED_READ
     end
 
-    # Actually work with a version of the object with all the
-    # restricted attributes taken away.
+    # Display a restricted copy of the rendered object:
     if @request_user.kind == User::KIND_SUPER_USER
       obj = render_object
     else
-      obj = render_object.dup_restricted(@request_user.attribute_restriction_labels)
+      # Because plugins can modify objects radically before they're displayed, use the unmodified
+      # object for determining the permissions. This means the two hooks won't interact and confuse.
+      restricted_attributes = @request_user.kobject_restricted_attributes(
+        (render_options||{})[:unmodified_object] || render_object
+      )
+      obj = render_object.dup_restricted(restricted_attributes)
     end
 
     # Make a new options structure, so it can be modified by rendering to pass data around.

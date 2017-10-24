@@ -96,6 +96,21 @@ module JSKObjectSupport
     false
   end
 
+  def self.objectIsKindOfTypeAnnotated(object, annotation)
+    schema = KObjectStore.schema
+    object.each(KConstants::A_TYPE) do |obj_type, d, q|
+      td = schema.type_descriptor(obj_type)
+      safety = 64
+      while safety > 0 && td != nil
+        safety -= 1
+        return true if td.annotations.include?(annotation)
+        next if td.parent_type == nil
+        td = schema.type_descriptor(td.parent_type)
+      end
+    end
+    false
+  end
+
   def self.objectTitleAsString(object)
     (object.first_attr(A_TITLE) || '').to_s
   end

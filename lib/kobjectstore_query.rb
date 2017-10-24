@@ -140,25 +140,25 @@ class KObjectStore
       # Use the raw connection for efficiency to avoid a whole load of copying
       conn = @store.get_pgdb
 
-      # Setup Xapian interface
-      start_query_sql = 'SELECT oxp_reset(); '
-      required_text_indicies = collect_required_textidx(0)
-      if (required_text_indicies & Clause::TEXTIDX_FULL) == Clause::TEXTIDX_FULL
-        start_query_sql << %Q!SELECT oxp_open(0,'#{@store.get_text_index_path(:full)}');!
-      end
-      if (required_text_indicies & Clause::TEXTIDX_FIELDS) == Clause::TEXTIDX_FIELDS
-        start_query_sql << %Q!SELECT oxp_open(1,'#{@store.get_text_index_path(:fields)}');!
-      end
-      # Disable the relevancy tracking when it's not needed
-      if required_text_indicies != 0 && sort_by != :relevance
-        start_query_sql << 'SELECT oxp_disable_relevancy();'
-      end
-      conn.perform(start_query_sql);
-
       res = nil
-
       begin
-        sql = create_sql(results, sort_by, options)
+        # Setup Xapian interface
+        sql = 'SELECT oxp_reset(); '
+        required_text_indicies = collect_required_textidx(0)
+        if (required_text_indicies & Clause::TEXTIDX_FULL) == Clause::TEXTIDX_FULL
+          sql << %Q!SELECT oxp_open(0,'#{@store.get_text_index_path(:full)}');!
+        end
+        if (required_text_indicies & Clause::TEXTIDX_FIELDS) == Clause::TEXTIDX_FIELDS
+          sql << %Q!SELECT oxp_open(1,'#{@store.get_text_index_path(:fields)}');!
+        end
+        # Disable the relevancy tracking when it's not needed
+        if required_text_indicies != 0 && sort_by != :relevance
+          sql << 'SELECT oxp_disable_relevancy();'
+        end
+        # Append query SQL then execute -- that create_sql() may call into plugins for restriction
+        # labels if they're not cached, which could do more queries, so everything has to be executed
+        # as one block of SQL.
+        sql << create_sql(results, sort_by, options)
         res = conn.exec(sql)
       ensure
         # Clear any results in the Xapian interface

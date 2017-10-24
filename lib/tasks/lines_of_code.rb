@@ -7,6 +7,7 @@
 
 DIRS = [
     ['Server side', ['framework', 'app', 'lib', 'src']],
+    ['Components', ['components']],
     ['Deployment', ['deploy']],
     ['Client side', ['static']],
     ['Tests', ['test']]

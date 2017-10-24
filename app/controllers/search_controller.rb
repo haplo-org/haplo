@@ -227,7 +227,8 @@ class SearchController < ApplicationController
       builder.response(:status => 'success', :searched => (did_search ? 'true' : 'false')) do |response|
         response.results(:result_count => num_results, :start_index => start_index, :results_included => results_included) do |results|
           start_index.upto(start_index + results_included - 1) do |i|
-            found_objects[i].build_xml(results, required_attributes)
+            obj = @request_user.kobject_dup_restricted(found_objects[i])
+            obj.build_xml(results, required_attributes)
           end
         end
       end

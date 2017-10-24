@@ -46,6 +46,7 @@ P.use("std:workflow");
 
 var Delegate = function() { };
 Delegate.prototype = {
+    __formSubmissionDoesNotCompleteProcess: true,
     keyToKeyId: function(key) { return key.workUnit.id; }
 };
 

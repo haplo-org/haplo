@@ -10,6 +10,7 @@ import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
 import org.haplo.javascript.JsConvert;
 import org.haplo.jsinterface.KScriptable;
+import org.haplo.jsinterface.util.JsBigDecimal;
 import org.mozilla.javascript.*;
 
 import org.haplo.jsinterface.KBinaryData;
@@ -339,6 +340,13 @@ public class KGenerateTable extends KBinaryData {
                         continue;
                     }
                 }
+
+                if(c instanceof JsBigDecimal) {
+                    // Converting it to a double is the best that can be done because Excel stores everything as doubles
+                    c = (Double)(((JsBigDecimal)c).jsFunction_toDouble());
+                    this.row.set(i, c);
+                }
+
                 if(c != null && (c instanceof Scriptable)) {
                     // See if this is a wrapper for a KObject
                     if(c instanceof KObject) {

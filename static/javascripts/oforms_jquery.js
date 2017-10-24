@@ -14,7 +14,7 @@
  *
  * ********************************************* */
 
-/*! oForms | (c) Haplo Services Ltd 2012 - 2016 | MIT License */
+/*! oForms | (c) Haplo Services Ltd 2012 - 2017 | MIT License */
 
 /////////////////////////////// jquery_preamble.js ///////////////////////////////
 
@@ -32,9 +32,6 @@ root.oForms.client = {
         registeredBundles[id] = bundle;
     }
 };
-
-// List of functions to call when initialising a new repeating section element
-var onCreateNewRepeatingSectionRow = [];
 
 /////////////////////////////// ui_utils.js ///////////////////////////////
 
@@ -174,6 +171,11 @@ $(document).ready(function() {
         // to access the information from the server.
 
         // ...
+
+// List of functions to call when initialising a new repeating section element
+// Defined here, so each form has own local list of functions; otherwise you'd
+// get one function per form on the page.
+var onCreateNewRepeatingSectionRow = [];
 
 // This function is terminated in the postamble.js file.
 
@@ -780,6 +782,13 @@ oform.on({
 // There's a single guidance note UI for all forms on a page.
 oform.on('focus', 'input,textarea,select', guidanceNoteOnFocus);
 oform.on('blur', 'input,textarea,select', guidanceNoteOnBlur);
+
+/////////////////////////////// element_support/inline_guidance_note.js ///////////////////////////////
+
+oform.on('click', '.oforms-inline-guidance-view', function(evt) {
+    evt.preventDefault();
+    $('.oforms-inline-guidance', $(this).parents('.controls').first()).toggle();
+});
 
 /////////////////////////////// element_support/postamble.js ///////////////////////////////
     });

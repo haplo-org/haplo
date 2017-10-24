@@ -171,7 +171,8 @@ module SchemaRequirements
   RESTRICTION_RULES = {
     "title"             => StoreObjectRuleSingle.new(A_TITLE),
     "restrict-type"     => StoreObjectRuleMulti.new(A_RESTRICTION_TYPE, *mappers_for(O_TYPE_APP_VISIBLE)),
-    "label-unrestricted" => StoreObjectRuleMulti.new(A_RESTRICTION_LABEL, *mappers_for(O_TYPE_LABEL)),
+    "restrict-if-label" => StoreObjectRuleMulti.new(A_RESTRICTION_IF_LABEL, *mappers_for(O_TYPE_LABEL)),
+    "label-unrestricted" => StoreObjectRuleMulti.new(A_RESTRICTION_UNRESTRICT_LABEL, *mappers_for(O_TYPE_LABEL)),
     "attribute-restricted" => StoreObjectRuleMulti.new(A_RESTRICTION_ATTR_RESTRICTED, *mappers_for(O_TYPE_ATTR_DESC)),
     "attribute-read-only" => StoreObjectRuleMulti.new(A_RESTRICTION_ATTR_READ_ONLY, *mappers_for(O_TYPE_ATTR_DESC))
   }
@@ -454,48 +455,49 @@ module SchemaRequirements
   module PlatformRequirements
     include KConstants
     TYPES_REQUIRING_SHORT_NAME = [O_TYPE_APP_VISIBLE, O_TYPE_ATTR_DESC, O_TYPE_ATTR_ALIAS_DESC, O_TYPE_QUALIFIER_DESC]
-    def self.fix(object)
+    def self.check(requirement, object, e)
+      # Some special objects shouldn't be checked
+      code = requirement.code
+      return if code == "std:qualifier:null" || code == "std:type:label"
+
       # All objects must have a title
-      object.add_attr("NO TITLE SET IN SCHEMA REQUIREMENTS", A_TITLE) unless object.first_attr(A_TITLE)
+      e << "#{code} must have a title" unless object.first_attr(A_TITLE)
       # All objects must have a type
       type = object.first_attr(A_TYPE)
-      object.add_attr(type = O_TYPE_UNKNOWN, A_TYPE) unless type
-      # Short names are required by schema objects. Default to title downcased
+      e << "#{code} must have a type" unless type
+      # Short names are required by schema objects.
       if TYPES_REQUIRING_SHORT_NAME.include?(type) && !(object.first_attr(A_ATTR_SHORT_NAME))
-        short_name = object.first_attr(A_TITLE).to_s
-        object.add_attr(((type == O_TYPE_APP_VISIBLE) ?
-              KSchemaApp.to_short_name_for_type(short_name) :
-              KSchemaApp.to_short_name_for_attr(short_name)),
-           A_ATTR_SHORT_NAME)
+        e << "#{code} must have a search-name"
       end
       # Other per-schema object requirements
       case type
       when O_TYPE_APP_VISIBLE
-        object.add_attr(KObjRef.from_desc(A_TITLE), A_RELEVANT_ATTR) unless object.first_attr(A_RELEVANT_ATTR)
-      when O_TYPE_ATTR_DESC
-        object.add_attr(KObjRef.from_desc(Q_NULL), A_ATTR_QUALIFIER) unless object.first_attr(A_ATTR_QUALIFIER)
-        object.add_attr(T_TEXT, A_ATTR_DATA_TYPE) unless object.first_attr(A_ATTR_DATA_TYPE)
-      when O_TYPE_ATTR_ALIAS_DESC
-        object.add_attr(KObjRef.from_desc(A_TITLE), A_ATTR_ALIAS_OF) unless object.first_attr(A_ATTR_ALIAS_OF)
-      when O_TYPE_LABEL
-        unless object.first_attr(A_LABEL_CATEGORY)
-          self.ensure_UNNAMED_label_category_exists
-          object.add_attr(O_LABEL_CATEGORY_UNNAMED, A_LABEL_CATEGORY)
+        if object.first_attr(A_PARENT).nil?
+          # Only root types should have relevant attributes
+          e << "#{code} must have at least one attribute" unless object.first_attr(A_RELEVANT_ATTR)
         end
+      when O_TYPE_ATTR_DESC
+        e << "#{code} must have a data-type" unless object.first_attr(A_ATTR_DATA_TYPE)
+      when O_TYPE_ATTR_ALIAS_DESC
+        e << "#{code} must have an alias-of" unless object.first_attr(A_ATTR_ALIAS_OF)
+      when O_TYPE_LABEL
+        e << "#{code} must have a category" unless object.first_attr(A_LABEL_CATEGORY)
       end
     end
-
-    def self.ensure_UNNAMED_label_category_exists
-      unless nil != KObjectStore.read(O_LABEL_CATEGORY_UNNAMED)
-        category = KObject.new([O_LABEL_STRUCTURE])
-        category.add_attr(O_TYPE_LABEL_CATEGORY, A_TYPE)
-        category.add_attr("UNNAMED", A_TITLE)
-        KObjectStore.create(category, nil, O_LABEL_CATEGORY_UNNAMED)
+    def self.fix(object)
+      type = object.first_attr(A_TYPE)
+      # Automatically add in Q_NULL for attributes if nothing is specified
+      if type == O_TYPE_ATTR_DESC
+        object.add_attr(KObjRef.from_desc(Q_NULL), A_ATTR_QUALIFIER) unless object.first_attr(A_ATTR_QUALIFIER)
       end
     end
   end
 
   class ApplyToStoreObjectWithPlatformRequirements < ApplyToStoreObject
+    def apply(requirement, errors, context)
+      super
+      PlatformRequirements.check(requirement, @object, errors)
+    end
     def do_commit()
       PlatformRequirements.fix(@object)
       super
@@ -503,6 +505,10 @@ module SchemaRequirements
   end
 
   class ApplyToStoreObjectWithoutCommit < ApplyToStoreObject
+    def apply(requirement, errors, context)
+      super
+      PlatformRequirements.check(requirement, @object, errors)
+    end
     def info_for_commit_logging
       " DELAYED#{super()}"
     end
@@ -816,6 +822,8 @@ module SchemaRequirements
     ms = Benchmark.ms do
       applier = applier_for_plugins(plugins)
       applier.apply
+      # Don't commit if there are any errors, as the schema won't work
+      return [false, applier] unless applier.errors.empty?
       # Make sure that all plugins have the 'attribute' schema local defined, because A.Type etc are required to be defined
       schema_for_plugin = applier.parser.schema_for_plugin
       schema_for_plugin.each do |plugin_name,schema|
@@ -828,16 +836,16 @@ module SchemaRequirements
       applier.commit
     end
     KApp.logger.info("Applied schema requirements: #{applier.parser.number_of_files} files, #{applier.changes.length} changes, took #{ms.to_i}ms")
-    applier
+    [true, applier]
   end
 
   KNotificationCentre.when(:plugin_pre_install, :check) do |name, detail, will_install_plugin_names, plugins, result|
     KApp.logger.info("Applying schema requirements for plugin install:")
-    applier = SchemaRequirements.apply_schema_requirements_for_plugins(plugins)
-    unless applier.errors.empty?
-      # Schema requirements errors count as warnings
-      result.append_warnings("Errors in requirements.schema files:")
-      result.append_warnings(applier.errors.join("\n"))
+    success, applier = SchemaRequirements.apply_schema_requirements_for_plugins(plugins)
+    unless success
+      # TODO: When plugin installation is improved, this mechanism should be sorted out properly
+      result.failure = "Failed to apply schema requirements"
+      applier.errors.each { |w| result.append_warnings(w) }
     end
   end
 

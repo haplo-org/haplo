@@ -9,6 +9,10 @@
 
 /* BEGIN-STANDARD */
 /* ----- DO NOT MODIFY CONTENTS OF THE STANDARD BLOCK, update with lib/tasks/update_oforms.sh ----- */
+.oform {
+    position: relative;
+}
+
 .oform .oforms-row {
     margin-bottom: 9px;
 }
@@ -260,6 +264,34 @@
     margin-top: 18px;
 }
 
+.oforms-inline-guidance-view {
+    border-radius: 20px;
+    width: 20px;
+    height: 20px;
+    font-family: Georgia, serif;
+    font-weight: bold;
+    color: #eee;
+    font-size: 15px;
+    background: #c2c2c2;
+    text-align: center;
+    text-decoration: none;
+    margin-left: 10px;
+    position: absolute;
+    right: -22px;
+}
+
+.oforms-inline-guidance {
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    background: #eee;
+    padding: 4px 8px;
+    width: 90%;
+    margin: 4px 0 24px 0;
+}
+.oforms-inline-guidance p {
+    margin: 6px 6px;
+}
+
 /* DATES */
 
 .oform span.oforms-date input { /* enough CSS specificity to select elements with a table */
@@ -358,6 +390,15 @@
 }
 .oforms-file-error-text {
     color: red;
+}
+
+/* CHANGES */
+
+.oforms-changes-add {
+  background: #dfd !important;
+}
+.oforms-changes-remove {
+  background: #fdd !important;
 }
 
 /* END-STANDARD */
@@ -460,3 +501,9 @@
     position: absolute;
     left: 84px;
 }
+
+/* apply application colour to guidance note view button */
+.oforms-inline-guidance-view {
+    background: COLOUR[:highlight];
+}
+

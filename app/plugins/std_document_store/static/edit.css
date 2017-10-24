@@ -6,7 +6,8 @@
 
 .z__docstore_nav_top,
 .z__docstore_nav_bottom {
-    white-space: nowrap;
+    position: relative;
+    width: 770px;
     padding: 2px 0;
 }
 .z__docstore_nav_top {

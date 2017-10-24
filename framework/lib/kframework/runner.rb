@@ -24,6 +24,7 @@ class KFramework
     rescue => e
       KApp.logger.log_exception(e)
       puts "EXCEPTION IN RUNNER: #{e.inspect} (see server logs for more details)"
+      raise
     ensure
       KApp.logger.flush_buffered
     end

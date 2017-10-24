@@ -17,6 +17,10 @@ import org.haplo.jsinterface.KText;
 import org.haplo.jsinterface.app.AppText;
 import org.haplo.jsinterface.KObject;
 import org.haplo.jsinterface.app.AppObject;
+import org.haplo.jsinterface.KObjRef;
+import org.haplo.jsinterface.app.AppObjRef;
+import org.haplo.jsinterface.KUser;
+import org.haplo.jsinterface.app.AppUser;
 
 import org.haplo.template.driver.rhinojs.JSFunctionThis;
 import org.haplo.template.driver.rhinojs.HaploTemplateDeferredRender;
@@ -38,6 +42,15 @@ public class StdWebPublisher extends ScriptableObject {
     public String getClassName() {
         return "$StdWebPublisher";
     }
+
+    // ----------------------------------------------------------------------
+
+    public static Scriptable jsStaticFunction_checkFileReadPermittedByReadableObjects(KText identifier, KUser user) {
+        AppObjRef ref = rubyInterface.checkFileReadPermittedByReadableObjects(identifier.toRubyObject(), user.toRubyObject());
+        return (ref == null) ? null : KObjRef.fromAppObjRef(ref);
+    }
+
+    // ----------------------------------------------------------------------
 
     public static Scriptable jsStaticFunction_generateObjectWidgetAttributes(KObject object, String optionsJSON) {
         if(!(object instanceof KObject)) {
@@ -186,6 +199,7 @@ public class StdWebPublisher extends ScriptableObject {
     // ----------------------------------------------------------------------
     // Interface to Ruby functions
     public interface Ruby {
+        AppObjRef checkFileReadPermittedByReadableObjects(AppText stored_file, AppUser user);
         RenderedAttributeList generateObjectWidgetAttributes(AppObject object, String optionsJSON, WebPublisher callback);
         String renderFirstValue(AppObject object, int desc, WebPublisher callback);
         String[] renderEveryValue(AppObject object, int desc, WebPublisher callback);

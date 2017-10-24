@@ -171,19 +171,20 @@ DocumentInstance.prototype._displayForms = function(document) {
 };
 
 // Render as document
-DocumentInstance.prototype._renderDocument = function(document, deferred) {
+DocumentInstance.prototype._renderDocument = function(document, deferred, idPrefix) {
     var html = [];
     var delegate = this.store.delegate;
     var key = this.key;
     var sections = [];
     var forms = this._displayForms(document);
+    idPrefix = idPrefix || '';
     _.each(forms, function(form) {
         var instance = form.instance(document);
         if(delegate.prepareFormInstance) {
             delegate.prepareFormInstance(key, form, instance, "document");
         }
         sections.push({
-            unsafeId: form.formId,
+            unsafeId: idPrefix+form.formId,
             title: form.formTitle,
             instance: instance
         });
@@ -356,8 +357,17 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         if(delegate.getAdditionalUIForEditor) {
             additionalUI = delegate.getAdditionalUIForEditor(instance.key, instance, cdocument, activePage.form);
         }
+        var saveButtonStyle = "continue";
+        if(!delegate.__formSubmissionDoesNotCompleteProcess) {
+            if(isSinglePage) {
+                saveButtonStyle = "save";
+            } else if(activePage.isLastPage) {
+                saveButtonStyle = "finish";
+            }
+        }
         actions.render(this, E, P.template("edit").deferredRender({
             isSinglePage: isSinglePage,
+            saveButtonStyle: saveButtonStyle,
             navigation: navigation,
             pages: pages,
             showFormError: showFormError,

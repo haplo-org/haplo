@@ -1,0 +1,9 @@
+{
+  "pluginName": "plugin_with_xml_file",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Plugin with XML file",
+  "displayDescription": "For testing",
+  "apiVersion": 4,
+  "load": []
+}

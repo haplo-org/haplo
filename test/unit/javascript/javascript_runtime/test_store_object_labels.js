@@ -21,6 +21,7 @@ TEST(function() {
     TEST.assert("[" + LABEL["std:label:common"] + "]", object.labels);
     TEST.assert_equal(O.labelList(LABEL["std:label:common"]).toString(), object.labels.toString());
 
+    // Default labels on book object
     object = O.object();
     object.append(TYPE["std:type:book"], ATTR.Type);
     object.save();
@@ -28,11 +29,10 @@ TEST(function() {
         O.labelList(LABEL["std:label:common"], TYPE["std:type:book"]).toString(),
         object.labels.toString());
 
-
+    // Check default labelling of an equipment object
     object = O.object();
     object.append(TYPE["std:type:equipment:laptop"], ATTR.Type);
     object.save();
-
     TEST.assert_equal(
         O.labelList(LABEL["std:label:common"], LABEL["test:label:mine"], object.ref).toString(),
         object.labels.toString());
@@ -53,6 +53,16 @@ TEST(function() {
                                     LABEL["std:label:common"],
                                     object.ref]));
     TEST.assert_equal("[" + LABEL["std:label:unlabelled"] + "]", object.labels.toString());
+
+    // Try adding labels on constructor and on initial save()
+    var otherLabel = object.ref;
+    object = O.object([otherLabel]);
+    TEST.assert_equal(O.labelList(otherLabel).toString(), object.labels.toString());
+    object.append(TYPE["std:type:equipment:laptop"], ATTR.Type);
+    object.save(O.labelChanges([], [LABEL["test:label:mine"]]));
+    TEST.assert_equal(
+        O.labelList(LABEL["std:label:common"], otherLabel, object.ref).toString(),
+        object.labels.toString());
 
     // Remove unrelated labels
     object = O.object();

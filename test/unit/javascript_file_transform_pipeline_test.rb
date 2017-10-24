@@ -160,13 +160,14 @@ __E
   # -------------------------------------------------------------------------
 
   class NullTransform < KJSFileTransformPipeline::TransformImplementation
-    def execute(pipeline)
+    def execute(pipeline, result)
       # do nothing
     end
   end
 
   class ErrorTransform < KJSFileTransformPipeline::TransformImplementation
-    def execute(pipeline)
+    def execute(pipeline, result)
+      result.information["error-transform-test"] = "test-value"
       raise @specification['message']
     end
   end

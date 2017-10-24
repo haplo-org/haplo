@@ -52,6 +52,7 @@ TEST(function() {
     TEST.assert_equal(xls, xls.cell("ping"));   // for chaining
     xls.cell(O.user(41));
     xls.cell(undefined);
+    xls.cell(O.bigDecimal(1234560.123));
 
     // Bad ref, which will fail when it's loaded
     xls.cell(O.ref(2398547));

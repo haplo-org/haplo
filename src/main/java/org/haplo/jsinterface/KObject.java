@@ -110,8 +110,7 @@ public class KObject extends KScriptable {
     public Scriptable jsFunction_restrictedCopy(Scriptable user) {
         if(this.appObject.restricted()) throw new OAPIException("Restricted objects cannot be restricted again.");
         if(!(user instanceof KUser)) throw new OAPIException("restrictedCopy must be passed a user object");
-        return KObject.fromAppObject(this.appObject.dup_restricted
-                                     ((((KUser)user).toRubyObject().attribute_restriction_labels())),
+        return KObject.fromAppObject(((KUser)user).toRubyObject().kobject_dup_restricted(this.appObject),
                                       false /* immutable */);
     }
 
@@ -132,28 +131,28 @@ public class KObject extends KScriptable {
         return this.appObject.restricted();
     }
 
-    public boolean jsFunction_canRead(Object desc, Scriptable user) {
+    public boolean jsFunction_canReadAttribute(Object desc, Scriptable user) {
         KUser kuser = (KUser)user;
         if (kuser.jsGet_isSuperUser()) {
             return true;
         } else {
-            int[] labels = (kuser.toRubyObject().attribute_restriction_labels());
-            Object result = this.withCheckedArgs("canRead", desc, true, null, null, false,
+            AppObjectRestrictedAttributes ra = (kuser.toRubyObject().kobject_restricted_attributes(this.appObject));
+            Object result = this.withCheckedArgs("canReadAttribute()", desc, true, null, null, false,
                                                  (d,q,i) ->
-                                                 this.appObject.can_read(d, labels));
+                                                 ra.can_read_attribute(d));
             return ((Boolean)result).booleanValue();
         }
     }
 
-    public boolean jsFunction_canModify(Object desc, Scriptable user) {
+    public boolean jsFunction_canModifyAttribute(Object desc, Scriptable user) {
         KUser kuser = (KUser)user;
         if (kuser.jsGet_isSuperUser()) {
             return true;
         } else {
-            int[] labels = (kuser.toRubyObject().attribute_restriction_labels());
-            Object result = this.withCheckedArgs("canModify", desc, true, null, null, false,
+            AppObjectRestrictedAttributes ra = (kuser.toRubyObject().kobject_restricted_attributes(this.appObject));
+            Object result = this.withCheckedArgs("canModifyAttribute()", desc, true, null, null, false,
                                                  (d,q,i) ->
-                                                 this.appObject.can_modify(d, labels));
+                                                 ra.can_modify_attribute(d));
             return ((Boolean)result).booleanValue();
         }
     }
@@ -225,6 +224,11 @@ public class KObject extends KScriptable {
     public boolean jsFunction_isKindOf(Object ref) {
         if(ref == null || !(ref instanceof KObjRef)) { return false; }
         return rubyInterface.objectIsKindOf(this.toRubyObject(), ((KObjRef)ref).jsGet_objId());
+    }
+
+    public boolean jsFunction_isKindOfTypeAnnotated(String annotation) {
+        if(annotation == null) { return false; }
+        return rubyInterface.objectIsKindOfTypeAnnotated(this.toRubyObject(), annotation);
     }
 
     public String jsFunction_url(boolean asFullURL) {
@@ -550,6 +554,8 @@ public class KObject extends KScriptable {
         public void reindexText(AppObject object);
 
         public boolean objectIsKindOf(AppObject object, int objId);
+
+        public boolean objectIsKindOfTypeAnnotated(AppObject object, String annotation);
 
         public String objectTitleAsString(AppObject object);
 

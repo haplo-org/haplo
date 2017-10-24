@@ -55,6 +55,9 @@ var Transition = P.Transition = function(M, name, destination, destinationTarget
     this.destination = destination;
     this.destinationTarget = destinationTarget;
 };
+Transition.prototype.__defineGetter__('destinationFinishesWorkflow', function() {
+    return !!((this.M.$states[this.destination] || {}).finish);
+});
 Transition.prototype.__defineGetter__('label', function() {
     return this.M._getText(['transition'], [this.name, this.M.state]);
 });
@@ -388,6 +391,7 @@ WorkflowInstanceBase.prototype = {
             target: initial.target || null,
             state: initial.state
         }).save();
+        this._callHandler('$observeStart');
         return this;
     },
 
@@ -701,6 +705,14 @@ Workflow.prototype = {
 
     // ----------------------------------------------------------------------
 
+    // Sometimes it's necessary to get a workflow name without an instance of the workflow being available.
+    // A slightly grubby way of getting it, but the full text system is not available without an instance.
+    getWorkflowProcessName: function() {
+        return this.$instanceClass.prototype.$textLookup['workflow-process-name'] || 'Workflow';
+    },
+
+    // ----------------------------------------------------------------------
+
     // Implement special purpose functions, rather than allowing access to
     // all state information, to avoid consumers doing things they shouldn't
     // or encouraging hacky implementations of things.
@@ -725,6 +737,7 @@ implementFunctionList('findEntityRootObjectRefWhenUnknown');
 // text() function list implemented above with exception for text dictionary
 implementHandlerList('preWorkUnitSave');
 implementHandlerList('setWorkUnitProperties');
+implementHandlerList('observeStart');
 implementHandlerList('observeEnter');
 implementHandlerList('observeExit');
 implementHandlerList('observeFinish');
@@ -737,6 +750,7 @@ implementHandlerList('notificationModifySendEmail');
 implementHandlerList('actionPanel');
 implementHandlerList('actionPanelStatusUI');
 implementHandlerList('actionPanelTransitionUI');
+implementHandlerList('currentlyWithDisplayName');
 implementHandlerList('resolveDispatchDestination');
 implementHandlerList('resolveTransitionDestination');
 implementHandlerList('filterTransition');

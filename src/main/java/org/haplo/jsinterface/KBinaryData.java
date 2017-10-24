@@ -124,8 +124,16 @@ public class KBinaryData extends KScriptable {
         throw new OAPIException("Attempt to use base class");
     }
 
+    public byte[] getInMemoryByteArray() {
+        return getInMemoryByteArrayForResponse();
+    }
+
     public byte[] getInMemoryByteArrayForResponse() {
         return getDataAsBytes();
+    }
+
+    public String getDiskPathname() {
+        return this.getDiskPathnameForResponse();
     }
 
     public String getDiskPathnameForResponse() {

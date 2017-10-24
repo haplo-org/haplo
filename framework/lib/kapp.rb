@@ -42,7 +42,7 @@ module KApp
       # Abort any database transaction in progress, to avoid making the next use of this connection problematic
       conn = ActiveRecord::Base.connection_pool.current_connection
       if conn != nil
-        KApp.logger.warn("Exception during in KApp.in_application(), performing database ROLLBACK")
+        KApp.logger.warn("Exception during KApp.in_application(), performing database ROLLBACK")
         self.get_pg_database.perform("ROLLBACK")
       end
       # Propagate the exception
@@ -69,12 +69,13 @@ module KApp
         # Set database for each
         apps.each do |app_id|
           begin
-            # Set up the database connection for this app
             set_database_connection_for_app(ActiveRecord::Base.connection_pool().current_connection.raw_connection.connection, app_id)
-            # Switch to this application
             switch_by_id(app_id)
-            # Yield to the caller
             yield app_id
+          rescue => e
+            KApp.logger.warn("Exception during KApp.in_every_application(), performing database ROLLBACK")
+            self.get_pg_database.perform("ROLLBACK")
+            raise
           ensure
             # Make sure the app is cleared, but don't return the database connection so it's reused
             clear_app(:do_not_check_in_database)

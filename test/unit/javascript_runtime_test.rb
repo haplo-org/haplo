@@ -394,6 +394,11 @@ type std:type:file
     annotation test:annotation:x2
 type std:type:book
     annotation test:annotation:x2
+type std:type:book:special
+    annotation test:annotation:special
+    title: Special Book
+    search-name: special book
+    parent-type std:type:book
 __E
     SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new(parser)).apply.commit
     # And some tests in a .js file
@@ -726,6 +731,12 @@ __E
 
   # ===============================================================================================
 
+  def test_bigdecimal
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_bigdecimal.js')
+  end
+
+  # ===============================================================================================
+
   def run_audit_test(filename)
     restore_store_snapshot("basic")
     AuditEntry.delete_all
@@ -792,7 +803,8 @@ __E
     begin
       run_javascript_test(:file, "unit/javascript/javascript_runtime/test_audit_entry_permissions.js") do |runtime|
         runtime.host.setTestCallback(proc { |email|
-          start_test_request(nil, User.find_first_by_email(email))
+          u = User.find_first_by_email(email)
+          AuthContext.set_user(u,u)
           ""
         })
       end
@@ -906,7 +918,7 @@ __E
     file1 = StoredFile.from_upload(fixture_file_upload('files/example10.tiff', 'image/tiff'))
     file2 = StoredFile.from_upload(fixture_file_upload('files/example7.html', 'text/html'))
     # Run test which defines tables
-    runtime = run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_database.js', nil, "grant_privileges_plugin") do |runtime|
+    runtime = run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_database.js', nil, "grant_privileges_plugin", :preserve_js_runtime) do |runtime|
       # Before running tests, tell the namespace the name to use, via the host
       runtime.host.setNextPluginToBeRegistered("dummy_plugin_name!", "dbtest")
       # The test callback is called in the middle of the tests, after the tables have been defined
@@ -940,6 +952,8 @@ __E
         ""
       })
     end
+    # Test is split into two parts to avoid the function being too long
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_database2.js', nil, "grant_privileges_plugin")
     # Check columns for the dynamic table
     column_defns = KApp.get_pg_database.exec("SELECT column_name,data_type FROM information_schema.columns WHERE table_schema='a#{KApp.current_application}' AND table_name='j_dbtest_dyn1'").to_a.sort
     assert_equal [ ["_name", "text"],

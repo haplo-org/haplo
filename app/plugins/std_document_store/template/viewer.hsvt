@@ -2,6 +2,27 @@ std:plugin:resources("viewer.css")
 
 if(additionalUI.top) { render(additionalUI.top) }
 
+// Only show changes UI if there are options (more than one version, show versions enabled)
+if(_changesVersionView.length) {
+  <div style="text-align:right">
+    if(showChangesFromDocument) {
+      "Changes from " <select id="z__docstore_choose_version">
+        each(_changesVersionView) {
+            <option
+                value=url(? version=^{version} from=row.version)
+                selected=if(selected) { "selected" }
+              >
+              std:date(datetime) " (" row.user.name ")"
+            </option>
+        }
+      </select><br>
+      <label><input type="checkbox" id="z__docstore_show_unchanged"> "Show unchanged"</label>
+    } else {
+      <a href=url(? version=version from="previous") class="z__button_link"> "Show changes" </a>
+    }
+  </div>
+}
+
 unless(document) {
   std:ui:notice("The form has not yet been completed.")
 } else {
@@ -10,7 +31,17 @@ unless(document) {
       std:ui:notice(_uncommittedChangesWarningText)
     }
   }
-  render(_viewerBody)
+  <div id="z__docstore_body">
+    render(_viewerBody)
+  </div>
 }
 
 if(additionalUI.bottom) { render(additionalUI.bottom) }
+
+if(showChangesFromDocument) {
+  <div id="z__docstore_previous_version" style="display:none">
+    render(_viewerShowChangesFromDocumentDeferred)
+  </div>
+  template:std:oforms:changes()
+  std:plugin:resources("changes.js")
+}

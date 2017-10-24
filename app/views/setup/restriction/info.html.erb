@@ -18,7 +18,9 @@
     end
   %></td></tr>
 
-  <tr><th>Unrestricted with labels</th><td><% @restriction.each(KConstants::A_RESTRICTION_LABEL) do |label_ref,d,q| %><%= label_html(label_ref) %><br><% end %></td></tr>
+  <tr><th>Restrict if any label</th><td><% @restriction.each(KConstants::A_RESTRICTION_IF_LABEL) do |label_ref,d,q| %><%= label_html(label_ref) %><br><% end %></td></tr>
+
+  <tr><th>Unrestricted with labels</th><td><% @restriction.each(KConstants::A_RESTRICTION_UNRESTRICT_LABEL) do |label_ref,d,q| %><%= label_html(label_ref) %><br><% end %></td></tr>
 
   <% [
     [KConstants::A_RESTRICTION_ATTR_RESTRICTED, 'Restricted attributes'],

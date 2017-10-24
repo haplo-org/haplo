@@ -7,9 +7,14 @@
   new_labels = []
   obj.labels.each { |l| new_labels << l.to_presentation }
 
+  # Determine restrictions & check with plugins
+  edit_behaviour = KEditor.determine_read_only_attributes_and_plugin_object_modifications(@request_user, obj, true, true)
+  editor_options = {:read_only_attributes => edit_behaviour.read_only_attributes}
+
   # Use the KEditor class to build the javascript
   type = obj.first_attr(KConstants::A_TYPE)
-  editor_js_type, editor_js_attrs = KEditor.js_for_obj_attrs(obj, info[:editor_options] || {})
+  editor_options.merge!(info[:editor_options] || {})
+  editor_js_type, editor_js_attrs = KEditor.js_for_obj_attrs(obj, editor_options)
 
   # Get basic labelling information
   permission_denied unless @labeller = KEditor.labeller_for(obj, @request_user)

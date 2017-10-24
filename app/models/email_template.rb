@@ -93,6 +93,10 @@ class EmailTemplate < ActiveRecord::Base
     if html != nil && plain.length > MAX_PLAIN_EQUIVALENT_LENGTH
       plain = nil
     end
+    # RMail gives an encoding error with non-ASCII email addresses
+    if to =~ /[^[:ascii:]]/
+      raise "Email address has non-ASCII characters: #{to}"
+    end
     # Assemble the email into a message
     message = RMail::Message.new
     message.header.to = to

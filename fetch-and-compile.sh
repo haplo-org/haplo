@@ -232,7 +232,7 @@ g++ framework/support/haplo.cpp -O2 -o framework/haplo
 
 echo "Compiling Java sources with maven..."
 mvn package
-cp target/haplo-3.20170812.0922.dcba43b686.jar framework/haplo.jar
+cp target/haplo-3.20171024.0944.c89e2fa298.jar framework/haplo.jar
 
 mvn -Dmdep.outputFile=target/classpath.txt dependency:build-classpath
 

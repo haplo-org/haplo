@@ -15,6 +15,7 @@ import org.haplo.appserver.FileUploads;
 import org.haplo.jsinterface.app.*;
 import org.haplo.jsinterface.stdplugin.StdWebPublisher;
 import org.haplo.jsinterface.db.JdNamespace;
+import org.haplo.jsinterface.xml.XmlDocument;
 import org.haplo.jsinterface.template.TemplateIncludedRenderer;
 import org.haplo.jsinterface.template.TemplatePlatformFunctions;
 import org.haplo.template.driver.rhinojs.HaploTemplate;
@@ -326,12 +327,12 @@ public class KHost extends KScriptable {
             // Perhaps it's a generated file?
             Object body = response.get("body", response); // ConsString is checked
             if((body != null) &&
-                   ((body instanceof KBinaryData) || (body instanceof KStoredFile))) {
+                   ((body instanceof KBinaryData) || (body instanceof KStoredFile) || (body instanceof XmlDocument))) {
                 // Send it to the Ruby side, which knows how to handle it
                 info[RESPONSE_BODY_INDEX] = body;
             } else if(body != UniqueTag.NOT_FOUND) {
                 throw new OAPIException("The response body (usually E.response.body)"
-                        + " is not valid, must be a String, StoredFile, or a generator (O.generate) object. "
+                        + " is not valid, must be a String, StoredFile, XML document, or a generator (O.generate) object. "
                         + "JSON responses should be encoded using JSON.stringify by the request handler.");
             }
         }

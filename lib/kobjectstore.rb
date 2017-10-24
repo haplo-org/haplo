@@ -102,8 +102,6 @@ class KObjectStore
     @statistics = Statistics.new
     # Create a delegate object -- TODO: Don't hardcode this.
     @delegate = KObjectStoreApplicationDelegate.new
-    @hidden_attrs_for_type = {}
-    @readonly_attrs_for_type = {}
   end
 
   def _delegate
@@ -350,25 +348,39 @@ class KObjectStore
     end
     # :create must allow the new labels
     new_labels = changes.change(obj.labels)
-    unless @act_as_superuser || @user_permissions.has_permission?(:create, obj.dup_with_new_labels(new_labels))
+    relabelled_obj = obj.dup_with_new_labels(new_labels)
+    unless @act_as_superuser || @user_permissions.has_permission?(:create, relabelled_obj)
       raise PermissionDenied, "Not permitted to relabel with proposed new labels for object #{obj.objref}"
     end
     # Shortcut returning the fresh copy of the existing object if there are no changes
     return obj if changes.empty?
+    # Update database (using relabelled_obj as attribute visibility will be determined by this object)
+    index_sql, has_text_to_index = _generate_index_update_sql(schema, obj.objref.obj_id, relabelled_obj, is_schema_obj?(obj), false)
+    pg = KApp.get_pg_database
     modified_obj = nil
-    # Update labels, applying changes in SQL, returning the results
-    r = KApp.get_pg_database.exec("UPDATE os_objects SET labels=#{changes._sql_expression('labels')} WHERE id=#{obj.objref.obj_id.to_i} RETURNING id,object,labels")
-    case r.length
-    when 0
-      raise "Relablled object does not exist"
-    when 1
-      # All good - uncache, inform delegate using definitive object from the database
-      modified_obj = KObjectStore._deserialize_object(r.first[1], r.first[2])
-      @object_cache.delete(obj.objref.obj_id)
-      schema_update_and_inform_delegate(obj, modified_obj, :relabel)
-    else
-      raise "Internal logic error: relabelling operation affects more than one row"
+    begin
+      _with_object_update_database_transaction_and_retry(pg, obj.objref.obj_id) do
+        # Update labels, applying changes in SQL, returning the results
+        r = pg.exec("UPDATE os_objects SET labels=#{changes._sql_expression('labels')} WHERE id=#{obj.objref.obj_id.to_i} RETURNING id,object,labels")
+        case r.length
+        when 0
+          raise "Relabelled object does not exist"
+        when 1
+          # Deserialize the object from the database
+          modified_obj = KObjectStore._deserialize_object(r.first[1], r.first[2])
+        else
+          raise "Internal logic error: relabelling operation affects more than one row"
+        end
+        # Update the index, because restrictions might have changed visibility of attributes
+        pg.exec(index_sql)
+      end
     end
+    if has_text_to_index
+      TEXTIDX_FLAG_GENERAL.setFlag()
+    end
+    # All good - uncache, inform delegate using definitive object from the database
+    @object_cache.delete(obj.objref.obj_id)
+    schema_update_and_inform_delegate(obj, modified_obj, :relabel)
     modified_obj
   end
 
@@ -621,28 +633,6 @@ class KObjectStore
 
   # ----------------------------------------------------------------------------------------------------------
 
-  # Attribute restriction cache, used by KObject
-  def attribute_restrictions_for_type(type)
-    @hidden_attrs_for_type[type] ||= (_restrictions_for_type(type) { |td| td.attributes_restrictions })
-  end
-
-  def attribute_readonly_for_type(type)
-    @readonly_attrs_for_type[type] ||= (_restrictions_for_type(type) { |td| td.attributes_read_only })
-  end
-
-  def _restrictions_for_type(type)
-    td = schema.type_descriptor(type)
-    td = schema.type_descriptor(td.root_type) if td != nil
-    (td ? yield(td) : nil) || {}
-  end
-
-  def _test_set_restrictions_for_type(type, hidden, readonly)
-    @hidden_attrs_for_type[type] = hidden
-    @readonly_attrs_for_type[type] = readonly
-  end
-
-  # ----------------------------------------------------------------------------------------------------------
-
 private
 
   # Types for index tables
@@ -837,8 +827,6 @@ private
       sql << "INSERT INTO os_objects_old (id,version,labels,creation_time,updated_at,created_by,updated_by,retired_by,type_object_id,sortas_title,object) SELECT id,version,labels,creation_time,updated_at,created_by,updated_by,#{self.external_user_id},type_object_id,sortas_title,object FROM os_objects WHERE id=#{obj_id.to_i};"
       # Update to create a new current version
       sql << "UPDATE os_objects SET version=#{obj.version.to_i},labels='#{obj_labels._to_sql_value}',creation_time='#{PGconn.escape_string(creation_time)}',updated_at=NOW(),updated_by=#{self.external_user_id},type_object_id=#{type_object_id},sortas_title='#{PGconn.escape_string(obj_title_sortas)}',object=E'#{PGconn.escape_bytea(data)}' WHERE id=#{obj_id};"
-      # Delete rows from the indicies which refer to the object, as they're going to be recreated next
-      sql << (ALL_INDEX_TABLES.map { |type| "DELETE FROM os_index_#{type} WHERE id=#{obj_id};" } .join)
     end
     # Update parent paths?
     if parent_path_update_sql
@@ -846,7 +834,70 @@ private
     end
     # -----------------------------------------------------------------------------------
 
-    # Basic fragement for SQL generation
+    index_sql, has_text_to_index = _generate_index_update_sql(schema, obj_id, obj, obj_is_schema_obj, create_operation)
+    sql << index_sql
+
+    # Commit to store, checking that state hasn't changed
+    begin
+      _with_object_update_database_transaction_and_retry(pg, obj_id) do
+
+        # Check parent path hasn't changed
+        if parent != nil
+          if parent_path != full_obj_id_path(parent)
+            raise "KObjectStore detected concurrent modification, aborting update"
+          end
+        end
+
+        if create_operation
+          # -- CREATE
+          if obj_id_required != nil
+            # check that this object hasn't already been created (again)
+            r = pg.exec("SELECT id FROM os_objects WHERE id=#{obj_id_required} LIMIT 1").result
+            if r.length > 0
+              raise "KObject ref #{obj_id_required} already exists"
+            end
+          end
+        else
+          # -- UPDATE
+          # Check the database wasn't changed since the previous checked
+          i = pg.exec("SELECT id,object,labels FROM os_objects WHERE id=#{obj_id}").result
+          if i.length == 0 || i.first != previous_version_database_row
+            raise "KObjectStore detected concurrent modification, aborting update"
+          end
+        end
+
+        # Do the precalculated database updates
+        pg.exec(sql)
+
+        # For updates, need to update indicies of objects linking to this object?
+        if !create_operation && generate_reindex_entries_for_linking_objects(pg, obj_id, previous_version_of_obj, obj)
+          # Make sure reindexer is triggered
+          has_text_to_index = true
+        end
+      end
+    ensure
+      # Must invalidate the cache after the database has committed, as there are plenty of opportunities
+      # for plugins to cause a read during an update operation.
+      @object_cache.delete(obj_id)
+    end
+
+    if has_text_to_index
+      # Start the index job AFTER the transaction has been committed in the db
+      TEXTIDX_FLAG_GENERAL.setFlag()
+    end
+
+    obj.freeze
+
+    schema_update_and_inform_delegate(previous_version_of_obj, obj, create_operation ? :create : :update)
+  end
+
+  def _generate_index_update_sql(schema, obj_id, obj, obj_is_schema_obj, create_operation)
+    sql = ''
+    unless create_operation
+      # Delete rows from the indicies which refer to the object, as they're going to be recreated next
+      sql << (ALL_INDEX_TABLES.map { |type| "DELETE FROM os_index_#{type} WHERE id=#{obj_id};" } .join)
+    end
+    # Basic fragment for SQL generation
     sql_fragment1 = ' (id,attr_desc,qualifier,value'
     sql_fragment2 = ",restrictions) VALUES (#{obj_id},"
     sql_fragment = sql_fragment1 + sql_fragment2
@@ -855,17 +906,14 @@ private
     # Write new index entries. Delegate may want to alter the object which is indexed.
     obj_indexable = @delegate.indexed_version_of_object(obj, obj_is_schema_obj)
 
-    td = KObjectStore.schema.type_descriptor(obj_indexable.first_attr(A_TYPE))
+    td = schema.type_descriptor(obj_indexable.first_attr(A_TYPE))
 
     if td != nil
       td = schema.type_descriptor(td.root_type)
     end
 
-    if td != nil
-      restrictions = td.attributes_restrictions
-    else
-      restrictions = {}
-    end
+    # Get restrictions from the _unmodified_ object, as the delegate may have modified it in a way which changes which restrictions match
+    restrictions = schema._get_restricted_attributes_for_object(obj).hidden
 
     obj_indexable.each do |value,desc,qualifier_v|
       if restrictions.has_key?(desc)
@@ -901,59 +949,20 @@ private
 
     if has_text_to_index
       sql << "INSERT INTO os_dirty_text(app_id,osobj_id) VALUES(#{@application_id.to_i},#{obj_id});"
-      # Note semaphore trigger after COMMIT
+      # Note semaphore trigger must be called by caller after database COMMIT
     end
 
-    # Commit to store, checking that state hasn't changed
+    [sql, has_text_to_index]
+  end
+
+  def _with_object_update_database_transaction_and_retry(pg, obj_id)
     retries = 3
     while true
-
       pg.perform('BEGIN TRANSACTION ISOLATION LEVEL SERIALIZABLE')
       begin
-        # Check parent path hasn't changed
-        if parent != nil
-          if parent_path != full_obj_id_path(parent)
-            raise "KObjectStore detected concurrent modification, aborting update"
-          end
-        end
-
-        if create_operation
-          # -- CREATE
-          if obj_id_required != nil
-            # check that this object hasn't already been created (again)
-            r = pg.exec("SELECT id FROM os_objects WHERE id=#{obj_id_required} LIMIT 1").result
-            if r.length > 0
-              raise "KObject ref #{obj_id_required} already exists"
-            end
-          end
-        else
-          # -- UPDATE
-          # Check the database wasn't changed since the previous checked
-          i = pg.exec("SELECT id,object,labels FROM os_objects WHERE id=#{obj_id}").result
-          if i.length == 0 || i.first != previous_version_database_row
-            raise "KObjectStore detected concurrent modification, aborting update"
-          end
-        end
-
-        # Do the precalculated database updates
-        pg.exec(sql)
-
-        # For updates, need to update indicies of objects linking to this object?
-        if !create_operation && generate_reindex_entries_for_linking_objects(pg, obj_id, previous_version_of_obj, obj)
-          # Make sure reindexer is triggered
-          has_text_to_index = true
-        end
-
+        yield
         pg.perform('COMMIT')
-
-        if has_text_to_index
-          # Start the index job AFTER the transaction has been committed in the db
-          TEXTIDX_FLAG_GENERAL.setFlag()
-        end
-
-        # Everything worked
-        break
-
+        break # No exception, stop the loop
       rescue Java::OrgPostgresqlUtil::PSQLException => e
         pg.perform('ROLLBACK')
         KApp.logger.error("KObjectStore caught postgresql retryable exception on object commit for application #{@application_id}, object #{obj_id}, retries left #{retries}, exception #{e}")
@@ -965,16 +974,8 @@ private
         pg.perform('ROLLBACK')
         KApp.logger.error("KObjectStore caught misc exception (won't retry) on object commit for application #{@application_id}, object #{obj_id}, retries left #{retries}, exception #{e}")
         raise
-      ensure
-        # Must invalidate the cache after the database has committed, as there are plenty of opportunities
-        # for plugins to cause a read during an update operation.
-        @object_cache.delete(obj_id)
       end
-    end # Retry loop
-
-    obj.freeze
-
-    schema_update_and_inform_delegate(previous_version_of_obj, obj, create_operation ? :create : :update)
+    end
   end
 
   # ----------------------------------------------------------------------------------------------------------
@@ -1102,8 +1103,8 @@ public
     # If the object doesn't have a type, it's not a schema object.
     obj_type = obj.first_attr(A_TYPE)
     return false if obj_type == nil
-    # The basic schema object types known are the attribute and qualifier descriptors
-    return true if obj_type == O_TYPE_ATTR_DESC || obj_type == O_TYPE_QUALIFIER_DESC
+    # The basic schema object types are attribute and qualifier descriptors & restrictions
+    return true if obj_type == O_TYPE_ATTR_DESC || obj_type == O_TYPE_QUALIFIER_DESC || obj_type == O_TYPE_RESTRICTION
     # Ask the application delegate
     return true if @delegate.is_schema_obj?(obj, obj_type)
     # Otherwise it's not
