@@ -14,6 +14,8 @@ P.dashboardConstructors["statistics"] = DashboardSummaryStatistics;
 
 DashboardSummaryStatistics.prototype = new P.Dashboard();
 
+DashboardSummaryStatistics.prototype.kind = "statistics";
+
 DashboardSummaryStatistics.prototype.render = function() {
     return P.template("dashboard/statistics/summary_statistics_dashboard").render({dashboard:this});
 };

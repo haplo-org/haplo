@@ -7,13 +7,42 @@
     @breadcrumbs = [:work_units]
     @title_bar_buttons['*TASKS'] = [['/do/tasks/future', 'Show future tasks']]
   end
+
+  heading_needed = (@workunits_deadline_passed.length > 0 || 
+      @workunits_deadline_near.length > 0) && 
+      @workunits_normal.length > 0 
 -%>
 
-<div id="z__work_unit_tasks_page">
 <%
-  @work_units.each do |work_unit|
-    %><%= render_work_unit(work_unit, :list) %><%
+  if @workunits_deadline_passed.length > 0 %>
+    <div class="z__work_unit_tasks_section" id="z__work_unit_tasks_section_passed">
+      <span class="z__work_unit_tasks_section_title">Overdue</span>
+      <%
+        @workunits_deadline_passed.each do |work_unit|
+          %><%= render_work_unit(work_unit, :list) %><%
+        end
+      %>
+    </div><% 
+  end
+  if @workunits_deadline_near.length > 0%> 
+    <div class="z__work_unit_tasks_section" id="z__work_unit_tasks_section_near">
+      <span class="z__work_unit_tasks_section_title">Deadline approaching</span>
+      <%
+        @workunits_deadline_near.each do |work_unit|
+          %><%= render_work_unit(work_unit, :list) %><%
+        end
+      %>
+    </div><% 
   end
 %>
-</div>
 
+<div class="z__work_unit_tasks_section" id="z__work_unit_tasks_section_normal">
+  <%
+    if heading_needed
+      %><span class="z__work_unit_tasks_section_title">Latest</span><% 
+    end
+    @workunits_normal.each do |work_unit|
+      %><%= render_work_unit(work_unit, :list) %><%
+    end
+  %>
+</div>

@@ -36,6 +36,21 @@ var DocumentStore = P.DocumentStore = function(P, delegate) {
     // Keep references to the databases
     this.currentTable = P.db[currentDbName];
     this.versionsTable = P.db[versionsDbName];
+    // Create comments table, if in use by this document store
+    this.enablePerElementComments = delegate.enablePerElementComments;
+    if(this.enablePerElementComments) {
+        var commentsDbName = "dsComment"+dbNameFragment;
+        P.db.table(commentsDbName, {
+            keyId:        { type:delegate.keyIdType || "int", indexed:true, indexedWith:"datetime" },
+            version:      { type:"bigint" },
+            userId:       { type:"int" },   // don't use 'user' to avoid unnecessary creation of user objects
+            datetime:     { type:"datetime"},
+            formId:       { type:"text" },
+            elementUName: { type:"text" },
+            comment:      { type:"text" }
+        });
+        this.commentsTable = P.db[commentsDbName];
+    }
 };
 
 // ----------------------------------------------------------------------------

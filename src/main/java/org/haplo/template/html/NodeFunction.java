@@ -90,6 +90,22 @@ public abstract class NodeFunction extends Node {
         return (name == Node.BLOCK_ANONYMOUS) ? this.anonymousBlock : findBlockNamed(name);
     }
 
+    public String[] getAllNamedBlockNames() {
+        if(this.blocksHead == null) { return new String[0]; }
+        int count = 0;
+        Block block = this.blocksHead;
+        while(block != null) { count++; block = block.nextBlock; }
+        String[] names = new String[count];
+        int index = 0;
+        block = this.blocksHead;
+        while(block != null) {
+            names[index] = block.name;
+            index++;
+            block = block.nextBlock;
+        }
+        return names;
+    }
+
     protected boolean checkBlocksWhitelistForLiteralStringOnly() {
         if((this.anonymousBlock != null) && !(this.anonymousBlock.whitelistForLiteralStringOnly())) {
             return false;

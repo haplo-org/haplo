@@ -543,7 +543,7 @@ module Application_RenderHelper
       toa.attributes.each do |value,desc,qualifier|
         html << '<div class="z__keyvalue_row">'
         # Descriptor name?
-        html << %Q!<div class="z__keyvalue_col1">#{toa.descriptor.printable_name.to_s}</div>! if first_in_section
+        html << %Q!<div class="z__keyvalue_col1">#{h(toa.descriptor.printable_name.to_s)}</div>! if first_in_section
         if qualifier != nil
           qual_descriptor = schema.qualifier_descriptor(qualifier)
           if qual_descriptor != nil

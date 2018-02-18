@@ -43,7 +43,7 @@ module KHooks
       elsif klass.equal?(KObjRef)
         @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KObjRef.fromAppObjRef(args[#{@js_call_index}]))!
       elsif klass.equal?(WorkUnit)
-        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KWorkUnit.fromAppWorkUnit(args[#{@js_call_index}]))!
+        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KWorkUnit.fromAppWorkUnit(args[#{@js_call_index}], true))!
       elsif klass.equal?(User)
         @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KUser.fromAppUser(args[#{@js_call_index}]))!
       elsif klass.equal?(AuditEntry)

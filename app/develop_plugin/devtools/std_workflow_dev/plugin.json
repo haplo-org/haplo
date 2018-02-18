@@ -1,0 +1,16 @@
+{
+  "pluginName": "std_workflow_dev",
+  "pluginAuthor": "Haplo Services",
+  "pluginVersion": 1,
+  "displayName": "Workflow Development",
+  "displayDescription": "Development tools for workflow plugin",
+  "apiVersion": 4,
+  "depend": ["std_workflow"],
+  "privilegesRequired": ["pDatabase"],
+  "use": ["std:workflow"],
+  "loadPriority": 1011,
+  "load": [
+      "js/std_workflow_debug.js"
+    ],
+  "respond": ["/do/workflow-dev"]
+}

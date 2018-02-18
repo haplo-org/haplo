@@ -244,6 +244,10 @@ final public class Parser {
             case "within":      return new NodeFunctionWithin();
             case "if":          return new NodeFunctionConditional(false);
             case "unless":      return new NodeFunctionConditional(true);
+            case "ifAny":       return new NodeFunctionConditionalMulti(false, true);
+            case "ifAll":       return new NodeFunctionConditionalMulti(false, false);
+            case "unlessAny":   return new NodeFunctionConditionalMulti(true, true);
+            case "unlessAll":   return new NodeFunctionConditionalMulti(true, false);
             case "each":        return new NodeFunctionEach();
             case "switch":      return new NodeFunctionSwitch();
             case "do"    :      return new NodeFunctionDo();

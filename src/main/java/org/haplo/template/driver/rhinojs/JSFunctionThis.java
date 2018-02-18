@@ -17,6 +17,8 @@ import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.Undefined;
 
+import java.util.Arrays;
+
 public class JSFunctionThis extends ScriptableObject {
     private StringBuilder builder;
     private FunctionBinding binding;
@@ -51,6 +53,10 @@ public class JSFunctionThis extends ScriptableObject {
         return this.binding.getFunctionName();
     }
 
+    public Object jsGet_view() {
+        return this.binding.getView();
+    }
+
     public JSFunctionThis jsFunction_assertContext(String context) throws RenderException {
         try {
             Context expectedContext = Context.valueOf(context);
@@ -76,6 +82,14 @@ public class JSFunctionThis extends ScriptableObject {
 
     public boolean jsFunction_hasBlock(Object blockName) throws RenderException {
         return this.binding.hasBlock(checkedBlockName(blockName));
+    }
+
+    public Scriptable jsFunction_getAllNamedBlockNames() {
+        String[] names = this.binding.getFunction().getAllNamedBlockNames();
+        return org.mozilla.javascript.Context.getCurrentContext().newArray(
+            this.getParentScope(),
+            Arrays.copyOf(names, names.length, Object[].class) // input array must have class exactly Object[]
+        );
     }
 
     public JSFunctionThis jsFunction_writeBlock(Object blockName) throws RenderException {

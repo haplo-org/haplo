@@ -1,0 +1,40 @@
+<h2>"Committed document"</h2>
+<table>
+  <tr>
+    <td> "Version" </td>
+    <td> entry.version </td>
+  </tr>
+  <tr>
+    <td> "User" </td>
+    <td> entry.user.name </td>
+  </tr>
+  <tr>
+    <td> "Date" </td>
+    <td> std:date:time(entry.date) </td>
+  </tr>
+</table>
+
+<h2>"Document"</h2>
+
+<form method="POST"> std:form:token()
+  <textarea name="document" rows="30" cols="80">document</textarea>
+</form>
+
+<h2>"History"</h2>
+
+<table>
+  <tr>
+    <th> "Version" </th>
+    <th> "Date" </th>
+    <th> "User" </th>
+  </tr>
+  each(instance.history) {
+  <tr>
+    <td> <a href=[^{path} "/admin/view-document/" ^{M.workUnit.id} "/" version]>version</a> </td>
+    <td> std:date:time(date) </td>
+    <td> user.name </td>
+  </tr>
+  }
+</table>
+
+

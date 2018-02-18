@@ -110,6 +110,10 @@ public class KObjRef extends KScriptable {
         return behaviour;
     }
 
+    public String jsFunction_getBehaviourExactMaybe() {
+        return rubyInterface.exactBehaviourOfObjRef(this.objId);
+    }
+
     public static KObjRef jsStaticFunction_behaviourRef(String behaviour) {
         HashMap<String, KObjRef> cache = Runtime.getCurrentRuntime().getHost().getBehaviourRefCache();
         KObjRef cachedRef = cache.get(behaviour);
@@ -206,6 +210,7 @@ public class KObjRef extends KScriptable {
         public AppObjRef constructObjRef(int objID);
 
         public String behaviourOfObjRef(Integer objID);
+        public String exactBehaviourOfObjRef(Integer objID);
 
         public Integer refOfBehaviour(String behaviour);
     }

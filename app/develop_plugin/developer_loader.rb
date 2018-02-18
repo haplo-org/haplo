@@ -344,42 +344,86 @@ class DeveloperLoader
     _PostOnly
     def handle_apply_api
       plugin_loaded_ids = (params[:plugins] || '').split(' ')
-      apply_plugin_names = []
+      turbo_mode = (params[:turbo] == '1')
+      static_only = (params[:static_only] == '1')
+      template_change = (params[:template_change] == '1')
+
+      # Turbo quick applies?
+      need_apply = true
+      if turbo_mode
+        if static_only
+          # Don't need to reload plugins to refresh static files
+          KApp.current_java_app_info.resetAllowedPluginFilePaths()
+          KDynamicFiles.invalidate_all_cached_files_in_current_app()
+          KApp.logger.info("Developer plugin loader performed quick static file refresh")
+          need_apply = false
+        elsif template_change
+          # Developer JS Runtimes flush templates on each checkout, so just need
+          # to increment the cache version (to ensure non-devmode runtims are flushed)
+          # but preserving a devmode runtime.
+          preserved = KApp._devmode__cache_invalidate_maybe_preserving_cached_objects(KJSPluginRuntime::RUNTIME_CACHE) do |runtime|
+            runtime.kind_of?(DeveloperJSPluginRuntime)
+          end
+          if preserved
+            # Rebuild template lookup in plugins, in case this is an addition or a removal
+            plugin_loaded_ids.each do |loaded_plugin|
+              return unless setup_plugin_id_info(loaded_plugin)
+              plugin = KPlugin.get(JSON.parse(File.read("#{@loaded_plugin_pathname}/plugin.json"))["pluginName"])
+              if plugin.kind_of?(KJavaScriptPlugin)
+                plugin_templates = plugin.instance_variable_get(:@templates)
+                plugin_templates.clear
+                plugin_templates.update(plugin._generate_template_kind_lookup())
+              end
+            end
+            need_apply = false
+            KApp.logger.info("Developer plugin loader performed quick invalidation as only templates changed")
+          end
+        end
+      end
+
       error_messages = []
-      name_to_id_update = {}
-      plugin_loaded_ids.each do |loaded_plugin|
-        return unless setup_plugin_id_info(loaded_plugin)
-        load_info
-        # Check all the files mentioned in plugin.json exist
-        missing_files = find_missing_plugin_js_files()
-        if missing_files.empty?
-          # (Re-)register the plugin, mark it for installation
-          plugin = KJavaScriptPlugin.new(@loaded_plugin_pathname)
-          KPlugin.register_plugin(plugin, KApp.current_application)
-          apply_plugin_names << plugin.name
-          # Store ID for update
-          name_to_id_update[plugin.name] = @loaded_plugin_id
-        else
-          KJSPluginRuntime.invalidate_all_runtimes  # Although we're going to avoid a broken install, the plugin should still break
-          error_messages << "Some of the files required to be loaded in plugin.json are missing: #{missing_files.join(', ')}"
+      if need_apply
+        apply_plugin_names = []
+        name_to_id_update = {}
+        plugin_loader_version = java.lang.System.currentTimeMillis()
+        plugin_loaded_ids.each do |loaded_plugin|
+          return unless setup_plugin_id_info(loaded_plugin)
+          load_info
+          # Check all the files mentioned in plugin.json exist
+          missing_files = find_missing_plugin_js_files()
+          if missing_files.empty?
+            # (Re-)register the plugin, mark it for installation
+            plugin = KJavaScriptPlugin.new(@loaded_plugin_pathname)
+            plugin.__loader_version = plugin_loader_version
+            KPlugin.register_plugin(plugin, KApp.current_application)
+            apply_plugin_names << plugin.name
+            # Store ID for update
+            name_to_id_update[plugin.name] = @loaded_plugin_id
+          else
+            KJSPluginRuntime.invalidate_all_runtimes  # Although we're going to avoid a broken install, the plugin should still break
+            error_messages << "Some of the files required to be loaded in plugin.json are missing: #{missing_files.join(', ')}"
+          end
         end
-      end
-      # Install the plugins which passed the tests
-      unless apply_plugin_names.empty?
-        begin
-          # :developer_loader_apply reason avoids lots of audit entries
-          installation = KPlugin.install_plugin_returning_checks(apply_plugin_names, :developer_loader_apply)
-          # Report failures and warnings
-          [installation.failure, installation.warnings].compact.each { |m| error_messages << m }
-        rescue => e
-          KApp.logger.error("Exception during plugin loader apply")
-          KApp.logger.log_exception(e)
-          error_messages << (KFramework.reportable_exception_error_text(e, :text) || GENERIC_FAILURE_MESSAGE)
+        # Install the plugins which passed the tests
+        unless apply_plugin_names.empty?
+          begin
+            DeveloperRuntimeModeSwitch.faster_loading = true if turbo_mode
+            # :developer_loader_apply reason avoids lots of audit entries
+            installation = KPlugin.install_plugin_returning_checks(apply_plugin_names, :developer_loader_apply)
+            # Report failures and warnings
+            [installation.failure, installation.warnings].compact.each { |m| error_messages << m }
+          rescue => e
+            KApp.logger.error("Exception during plugin loader apply")
+            KApp.logger.log_exception(e)
+            error_messages << (KFramework.reportable_exception_error_text(e, :text) || GENERIC_FAILURE_MESSAGE)
+          ensure
+            DeveloperRuntimeModeSwitch.faster_loading = false
+          end
         end
-      end
-      # Update registered plugin tracking
-      DeveloperLoader::LOADED_PLUGINS_MUTEX.synchronize do
-        DeveloperLoader::LOADED_PLUGINS[KApp.current_application].merge!(name_to_id_update)
+        # Update registered plugin tracking
+        DeveloperLoader::LOADED_PLUGINS_MUTEX.synchronize do
+          DeveloperLoader::LOADED_PLUGINS[KApp.current_application].merge!(name_to_id_update)
+        end
       end
       if error_messages.empty?
         render :text => JSON.generate(:result => "success")
@@ -458,6 +502,18 @@ class DeveloperLoader
           render :text => JSON.generate(:result => "error", :message => "Failed to uninstall plugin.")
         end
       end
+    end
+
+    # Devtools install/uninstall
+    _PostOnly
+    def handle_devtools_install_api
+      DeveloperTools.install_applicable_devtools
+      render :text => 'OK'
+    end
+    _PostOnly
+    def handle_devtools_uninstall_api
+      DeveloperTools.uninstall_devtools
+      render :text => 'OK'
     end
 
     # -----------------------------------------------------------------------------------------------------------------------------
@@ -570,4 +626,18 @@ class DeveloperLoader
     KFRAMEWORK__BOOT_OBJECT.instance_variable_get(:@namespace).class.const_get(:MAIN_MAP)['api'].last['development-plugin-loader'] = [:controller, {}, Controller]
   end
 
+end
+
+# Hack into the rendering system to display an indicator on the
+# rendered page when an interpreter runtime is being used.
+module Templates::Application
+  FRM__RENDER_TEMPLATE_METHODS["_render_template_layouts_standard"] = :_render_template_layouts_standard__with_interpreter_indicator
+  def _render_template_layouts_standard__with_interpreter_indicator(data_for_template)
+    html = _render_template_layouts_standard(data_for_template)
+    runtime = KJSPluginRuntime.current_if_active
+    if runtime.kind_of?(DeveloperJSPluginRuntime)
+      html << '<div style="position:fixed;top:4px;right:4px;background:#f00;color:#fff;font-weight:bold;padding:2px 6px;border:2px solid #000;border-radius:4px;box-shadow: -2px 2px 8px rgba(0,0,0,0.3)">TURBO</div>'
+    end
+    html
+  end
 end

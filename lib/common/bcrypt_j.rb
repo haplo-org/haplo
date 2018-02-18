@@ -9,6 +9,7 @@
 
 module BCrypt
   JAVA_BCRYPT = Java::OrgHaploCommonUtils::BCrypt
+  BCRYPT_ROUNDS = 13
 
   class Password
 
@@ -16,9 +17,9 @@ module BCrypt
       @hash = hash
     end
 
-    def self.create(password)
+    def self.create(password, rounds = BCRYPT_ROUNDS)
       raise "Bad password" if password == nil || password.class != String || password.length == 0
-      Password.new(JAVA_BCRYPT.hashpw(password, JAVA_BCRYPT.gensalt()).to_s)
+      Password.new(JAVA_BCRYPT.hashpw(password, JAVA_BCRYPT.gensalt(rounds)).to_s)
     end
 
     def ==(password)

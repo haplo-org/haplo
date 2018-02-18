@@ -214,6 +214,8 @@ module SchemaRequirements
     def info_for_commit_logging
       ''
     end
+    def check(requirement, errors, context)
+    end
     def commit
       if @has_changes
         do_commit()
@@ -429,6 +431,8 @@ module SchemaRequirements
   # Apply requirements to a schema
 
   class Context
+    def perform_final_checks(errors)
+    end
     def while_committing(applier)
       yield
     end
@@ -452,6 +456,7 @@ module SchemaRequirements
           @errors << "Unknown kind '#{kind}'"
         end
       end
+      pending_checks = []
       @kinds.each do |kind, kind_applier|
         requirements = @parser.requirements[kind]
         requirements.each_value do |requirement|
@@ -459,12 +464,17 @@ module SchemaRequirements
           object_applier = kind_applier.call(kind, requirement.code, @context)
           if object_applier
             object_applier.apply(requirement, @errors, @context)
+            pending_checks << [object_applier, requirement]
             @changes << object_applier if object_applier.has_changes?
           else
             @errors << "Unknown requirement for #{kind} #{requirement.code}"
           end
         end
       end
+      pending_checks.each do |object_applier, requirement|
+        object_applier.check(requirement, @errors, @context)
+      end
+      @context.perform_final_checks(@errors)
       self
     end
     def commit

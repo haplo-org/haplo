@@ -10,6 +10,7 @@ import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
 import org.mozilla.javascript.*;
 import org.haplo.javascript.JsConvert;
+import org.haplo.javascript.JsJavaInterface;
 
 import java.util.Date;
 
@@ -49,10 +50,10 @@ public class KAuditEntryQuery extends KScriptable {
         } else if(value instanceof KObjRef) {
             value = (Object)(((KObjRef)value).jsGet_objId());
         }
-        if(!(value instanceof Integer)) {
+        if(!(value instanceof Number)) {
             throw new OAPIException("auditEntryQuery.ref() must be passed an O.ref type.");
         }
-        this.objId = (Integer)value;
+        this.objId = (Integer)((Number)value).intValue();
         return this;
     }
 
@@ -98,13 +99,13 @@ public class KAuditEntryQuery extends KScriptable {
 
     public Scriptable jsFunction_userId(Object value) {
         checkNotExecuted();
-        this.userId = valueToUserIdNullAllowed(value, "userId");
+        this.userId = JsJavaInterface.valueToUserIdNullAllowed(value, "userId");
         return this;
     }
 
     public Scriptable jsFunction_authenticatedUserId(Object value) {
         checkNotExecuted();
-        this.authenticatedUserId = valueToUserIdNullAllowed(value, "authenticatedUserId");
+        this.authenticatedUserId = JsJavaInterface.valueToUserIdNullAllowed(value, "authenticatedUserId");
         return this;
     }
 
@@ -181,20 +182,6 @@ public class KAuditEntryQuery extends KScriptable {
         }
         results = KAuditEntry.executeQuery(this, firstResultOnly);
         this.executedForFirstResult = firstResultOnly;
-    }
-
-    // --------------------------------------------------------------------------------------------------------------
-    private Integer valueToUserIdNullAllowed(Object value, String propertyName) {
-        if(value != null) {
-            if(value instanceof Integer) {
-                return ((Integer)value == 0) ? null : (Integer)value;
-            } else if(value instanceof KUser) {
-                return ((KUser)value).jsGet_id();
-            } else {
-                throw new OAPIException("Bad type of argument for audit entry query criteria " + propertyName);
-            }
-        }
-        return null;
     }
 
     // --------------------------------------------------------------------------------------------------------------

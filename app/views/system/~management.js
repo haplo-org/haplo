@@ -130,7 +130,7 @@ function j__makeSubmenuItemUnder(name, link, other_link, is_temp_item) {
                     item_li.id = 'mng_temp';
                 }
                 ul.appendChild(item_li);
-                item_li.innerHTML = '<a href="'+link+'" class="z__selected"'+(is_temp_item?'':' target="workspace"')+'>'+name+'</a>';
+                item_li.innerHTML = '<a href="'+link+'" class="z__selected"'+(is_temp_item?'':' target="workspace"')+'>'+_.escape(name)+'</a>';
                 if(!is_temp_item) {
                     var a = item_li.getElementsByTagName('a')[0];
                     jQuery(a).click(_.bind(j__mngLinkClickHandler, window, 'submenu', a));
@@ -162,7 +162,7 @@ function j__updateSubmenuItem(name, link, under_link, iconHTML) {
         if(lists.length > 0) {
             var li = frame.document.createElement('li');
             lists[0].appendChild(li);
-            li.innerHTML = '<a href="'+link+'" target="workspace" class="z__selected">'+name+'</a>';
+            li.innerHTML = '<a href="'+link+'" target="workspace" class="z__selected">'+_.escape(name)+'</a>';
             var a = li.getElementsByTagName('a')[0];
             jQuery(a).click(_.bind(j__mngLinkClickHandler, window, 'submenu', a));
         }

@@ -99,16 +99,10 @@ public class Boot {
         }
 
         System.out.println("===============================================================================");
-        System.out.println("               Haplo Platform (c) Haplo Services Ltd 2006 - 2017");
+        System.out.println("               Haplo Platform (c) Haplo Services Ltd 2006 - 2018");
         System.out.println("             Licensed under the Mozilla Public License Version 2.0");
         System.out.println("===============================================================================");
         System.out.println("Starting framework in " + rootDir + " with environment " + envName);
-
-        SSLContext publicSSLContext = loadSSLCerticates(envName, "server", null);
-        if(publicSSLContext == null) {
-            System.out.println("Failed to load public SSL certificates");
-            return;
-        }
 
         // Get a ruby runtime
         RubyInstanceConfig rubyConfig = new RubyInstanceConfig();
@@ -163,6 +157,13 @@ public class Boot {
         framework.startApplication();
 
         boolean inDevelopmentMode = (envName.equals("development"));
+
+        // SSL certificates
+        SSLContext publicSSLContext = loadSSLCerticates(envName, "server", null);
+        if(publicSSLContext == null) {
+            System.out.println("Failed to load public SSL certificates");
+            return;
+        }
 
         // Thread pool for Jetty
         QueuedThreadPool jettyThreadPool = new QueuedThreadPool(128 /* maximum number of threads */);

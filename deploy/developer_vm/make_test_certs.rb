@@ -16,7 +16,7 @@ FileUtils.mkdir(CERTS_DIR)
 
 # Keys and certs
 def make_key(filename)
-  fail "Make key #{filename} failed" unless system "openssl genrsa -out #{CERTS_DIR}/#{filename} 1024"
+  fail "Make key #{filename} failed" unless system "openssl genrsa -out #{CERTS_DIR}/#{filename} 2048"
 end
 def make_cert(filename, key, common_name, signextra = '')
   crt = IO.popen("openssl req -new -key #{CERTS_DIR}/#{key} -out #{CERTS_DIR}/#{filename}.csr", "w")
@@ -32,7 +32,7 @@ def make_cert(filename, key, common_name, signextra = '')
 
 
 __E
-  sign_cmd = "openssl x509 -req -sha1 #{signextra} -days 3650 -in #{CERTS_DIR}/#{filename}.csr -out #{CERTS_DIR}/#{filename}"
+  sign_cmd = "openssl x509 -req -sha256 #{signextra} -days 3650 -in #{CERTS_DIR}/#{filename}.csr -out #{CERTS_DIR}/#{filename}"
   # Self-sign unless a CA is signing this cert
   sign_cmd << " -signkey #{CERTS_DIR}/#{key}" unless sign_cmd =~ /CAkey/
   fail "Sign cert #{filename} failed" unless system sign_cmd

@@ -133,7 +133,8 @@ class JavaScriptSyntaxTester
       # Client side?
       client_side = !!(pathname =~ /(static|app\/views)\//)  # also gets plugin client side
       # Plugin?
-      plugin_js = !!(pathname =~ /\Aapp\/plugins\//) && !(pathname =~ /\/shared\//)
+      plugin_js = !!(pathname =~ /\Aapp\/(plugins|develop_plugin\/devtools)\//) && !(pathname =~ /\/shared\//)
+      plugin_js = true if pathname =~ /\Acomponents\/.+\/plugins\//
 
       # Load file
       script = File.open(pathname) { |f| f.read }
@@ -156,16 +157,6 @@ class JavaScriptSyntaxTester
         g['Q'] = false
         g['Label'] = false
         g['Group'] = false
-        # Predefine the plugin name global?
-        plugin_json = File.dirname(pathname).gsub(/\/js\z/,'') + '/plugin.json'
-        pathname =~ /\/(js\/.+?)\z/
-        filename = $1 # js/...
-        description = File.open(plugin_json) { |f| JSON.parse(f.read) }
-        if description["load"].index(filename) != 0
-          # Not the first file, so needs to include the plugin name in the globals
-          g = g.dup
-          g[description["pluginName"]] = false
-        end
         g
       elsif !client_side
         @server_side_predefined_globals

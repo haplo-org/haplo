@@ -127,6 +127,10 @@ public class KUser extends KScriptable {
         return (ar != null) ? KObjRef.fromAppObjRef(ar) : null;
     }
 
+    public String jsGet_code() {
+        return this.user.code();
+    }
+
     public Scriptable jsGet_groupIds() {
         return JsConvert.integerArrayToJs(rubyInterface.getGroupIds(this.user));
     }

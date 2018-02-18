@@ -54,7 +54,7 @@ P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow,
     // with shared roles and don't need to be overriden)
     workflow.getActionableBy(function(M, actionableBy) {
         if(!(actionableBy in workflow.$entitiesBase.$entityDefinitions)) { return; }
-        if(-1 === sharedEntities.indexOf(actionableBy)) { return; }
+        if(-1 === sharedEntitiesForWorkflow[workflow.fullName].indexOf(actionableBy)) { return; }
         if(!M.workUnit.isSaved) { return; } // doesn't have an ID until saved, but couldn't have been delegated either
         var row = tableSharedRolesSelect(M, actionableBy);
         if(row) {
@@ -77,7 +77,9 @@ P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow,
         var stateDefinition = M.$states[M.state];
         if(stateDefinition &&
                 stateDefinition.actionableBy &&
-                (-1 !== sharedEntities.indexOf(stateDefinition.actionableBy))) {
+                (-1 !== sharedEntitiesForWorkflow[workflow.fullName].
+                    indexOf(stateDefinition.actionableBy))
+                ) {
             return true;
         }
     });
@@ -90,7 +92,7 @@ P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow,
         if(M.workUnit.closed) { return; }
         var stateDefinition = M.$states[M.state],
             actionableBy = stateDefinition ? stateDefinition.actionableBy : undefined;
-        if(-1 === sharedEntities.indexOf(actionableBy)) { return; }
+        if(-1 === sharedEntitiesForWorkflow[workflow.fullName].indexOf(actionableBy)) { return; }
         var list = M.entities[actionableBy+"_refList"];
         if(list.length > 1) {
             var userRef = O.currentUser.ref;
@@ -114,7 +116,7 @@ P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow,
     workflow.notification({}, function(M, notify) {
         var stateDefinition = M.$states[M.state],
             actionableBy = stateDefinition ? stateDefinition.actionableBy : undefined;
-        if(-1 === sharedEntities.indexOf(actionableBy)) { return; }
+        if(-1 === sharedEntitiesForWorkflow[workflow.fullName].indexOf(actionableBy)) { return; }
         var row = tableSharedRolesSelect(M, actionableBy);
         if(row) {
             var delegatingUser = row.setByUser;

@@ -13,11 +13,17 @@
 
 PLUGIN_DIR=$1
 PLUGIN_NAME=`basename ${PLUGIN_DIR}`
-echo "Updating ${PLUGIN_NAME}"
+DESTINATION_DIR=app/plugins/
+IS_DEVTOOL=`echo $PLUGIN_NAME | sed -e 's?^std_.*_dev$?DEVTOOL?'`
+if [ ${IS_DEVTOOL} = DEVTOOL ]
+then
+  DESTINATION_DIR=app/develop_plugin/devtools/
+fi
+echo "Updating ${PLUGIN_NAME} into ${DESTINATION_DIR}"
 
 set -e
 
 rm -rf app/plugins/${PLUGIN_NAME}
-cp -R ${PLUGIN_DIR} app/plugins/
+cp -R ${PLUGIN_DIR} $DESTINATION_DIR
 
 echo "Remember to run fossil addremove"

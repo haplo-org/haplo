@@ -1,3 +1,7 @@
 {
-  "syntaxCheckGlobalsServer": ["$GenericDeferredRender","$User"]
+  "syntaxCheckGlobalsServer": [
+    "$GenericDeferredRender",
+    "$User",
+    "$StoreObject"
+  ]
 }

@@ -7,6 +7,7 @@
 package org.haplo.jsinterface.app;
 
 import java.util.Date;
+import org.haplo.jsinterface.KWorkUnit;
 
 public interface AppWorkUnit {
     // Data access
@@ -67,6 +68,8 @@ public interface AppWorkUnit {
     public String jsGetTagsAsJson();
 
     public void jsSetTagsAsJson(String tags);
+
+    public void jsStoreJSObject(KWorkUnit workUnit);
 
     // Querying
     public boolean can_be_actioned_by(AppUser user);

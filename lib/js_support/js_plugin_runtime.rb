@@ -40,8 +40,6 @@ class KJSPluginRuntime
   end
 
   def initialize
-    # This is repeated in the rescue for kapp_cache_checkout to recover
-    @runtime = Runtime.new
   end
 
   def runtime
@@ -69,6 +67,10 @@ class KJSPluginRuntime
     @runtime.makeJsonParser()
   end
 
+  def ensure_java_js_runtime
+    @runtime ||= Runtime.new
+  end
+
   def kapp_cache_checkout
     raise "Bad state for KJSPluginRuntime" if @support_root != nil
     # Set the SYSTEM user as active during code loading (which could do things like making queries),
@@ -77,6 +79,7 @@ class KJSPluginRuntime
     # all the objects it needs.
     AuthContext.with_system_user do
       AuthContext.lock_current_state
+      ensure_java_js_runtime()
       # JSSupportRoot implementation requires that a new object is created every time the runtime is checked out
       @support_root = JSSupportRoot.new
       @runtime.useOnThisThread(@support_root)
@@ -100,26 +103,38 @@ class KJSPluginRuntime
                   database_namespace = db_namespaces[plugin.name]
                   raise "Logic error; plugin db namespace should have been allocated" unless database_namespace
                 end
-                # This check prevents unexpected registrations by plugin code, and sets the database namespace for the plugin.
-                @runtime.host.setNextPluginToBeRegistered(plugin.name, database_namespace)
-                plugin.javascript_load(@runtime, schema_for_js_runtime)
-                @runtime.host.setNextPluginToBeRegistered(nil, nil)
+                load_plugin_into_runtime(plugin, schema_for_js_runtime, database_namespace)
               end
+              finalise_plugin_load(db_namespaces)
               @runtime.host.callAllPluginOnLoad()
             end
             @plugins_loaded = true
           end
           KApp.logger.info("Initialised application JavaScript runtime, took #{ms.to_i}ms\n")
         end
+        finalise_runtime_checkout()
       rescue
         # If there's an exception when loading, reset the state of the runtime so the Java side doesn't think there's a Runtime on this thread
         clear_runtime_run_state
-        # and then replace the runtime itself so everything is nice and clean for the next run
-        @runtime = Runtime.new
+        # and then reset the runtime itself so everything is nice and clean for the next run
+        @runtime = nil
         # then re-raise the error
         raise
       end
     end
+  end
+
+  def load_plugin_into_runtime(plugin, schema_for_js_runtime, database_namespace)
+    # This check prevents unexpected registrations by plugin code, and sets the database namespace for the plugin.
+    @runtime.host.setNextPluginToBeRegistered(plugin.name, database_namespace)
+    plugin.javascript_load(@runtime, schema_for_js_runtime)
+    @runtime.host.setNextPluginToBeRegistered(nil, nil)
+  end
+
+  def finalise_plugin_load(db_namespaces)
+  end
+
+  def finalise_runtime_checkout()
   end
 
   KNotificationCentre.when(:plugin_pre_install, :allocations) do |name, detail, will_install_plugin_names, plugins|

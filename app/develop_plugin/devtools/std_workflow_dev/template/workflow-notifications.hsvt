@@ -1,0 +1,24 @@
+pageTitle("Notifications: " M.title)
+backLink(M.url)
+
+unless(notifications.length) {
+    std:ui:notice("There are no notifications defined for this workflow")
+} else {
+    <form method="POST"> std:form:token()
+        <table>
+            <tr>
+                <th> "Name" </th>
+                <th> "Test?" </th>
+            </tr>
+            each(notifications) {
+                <td style="width:100px"> name </td>
+                <td>
+                    <input type="submit" name="notification" value=["Test send: " name]> // value must end with ': <name of notification>'
+                    if(testSend) {
+                        " (email sent)"
+                    }
+                </td>
+            }
+        </table>
+    </form>
+}

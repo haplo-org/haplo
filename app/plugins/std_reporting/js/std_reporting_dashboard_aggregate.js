@@ -29,16 +29,22 @@ var DEFAULT_X = [{}],
 
 DashboardAggregate.prototype = new P.Dashboard();
 
-// Support but ignore some functions from list dashboard to make common setup easier
-DashboardAggregate.prototype.columns = function() {};
-DashboardAggregate.prototype.hasColumnBasedOnFact = function() { return false; };
+DashboardAggregate.prototype.kind = "aggregate";
 
 DashboardAggregate.prototype._calculateValues = function() {
     var x = cells(this.specification.x, DEFAULT_X),
         y = cells(this.specification.y, DEFAULT_Y),
-        yHasTitles = !!y[0].title,
         outerX = cells(this.specification.outerX, DEFAULT_OUTER_X),
-        outerY = cells(this.specification.outerY, DEFAULT_OUTER_Y),
+        outerY = cells(this.specification.outerY, DEFAULT_OUTER_Y);
+
+    // Check dimensions have at least one entry, otherwise dashboard is empty
+    [x, y, outerX, outerY].forEach(function(dimension) {
+        if(!(_.isArray(dimension) && dimension.length > 0)) {
+            O.stop("This dashboard cannot be displayed because the data which determines the rows and columns is missing.", "Cannot display dashboard");
+        }
+    });
+
+    var yHasTitles = !!y[0].title,
         outerXhasTitles = !!outerX[0].title,
         outerYhasTitles = !!outerY[0].title;
 

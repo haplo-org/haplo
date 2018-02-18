@@ -12,6 +12,7 @@ class ApiKey < ActiveRecord::Base
   belongs_to :user
 
   PART_A_LENGTH = 16
+  PART_B_BCRYPT_ROUNDS = 5 # because the secret is good, and checking is performance sensitive (especially for plugin tool)
 
   def valid_for_request?(request, params)
     request.request_uri.start_with?(self.path)
@@ -24,7 +25,7 @@ class ApiKey < ActiveRecord::Base
   def _set_api_key(secret)
     raise "Expected longer secret" unless secret.length > (PART_A_LENGTH*2)
     self.a = secret[0,PART_A_LENGTH]
-    self.b = BCrypt::Password.create(secret[PART_A_LENGTH,secret.length]).to_s
+    self.b = BCrypt::Password.create(secret[PART_A_LENGTH,secret.length],PART_B_BCRYPT_ROUNDS).to_s
     secret
   end
 

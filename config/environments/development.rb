@@ -25,6 +25,9 @@ KMESSAGE_QUEUE_DIR = ENV_DATA_ROOT+'/messages'
 # File store
 KFILESTORE_PATH = ENV_DATA_ROOT+'/files'
 
+# Generic 'run' directory
+KFRAMEWORK_RUN_DIR = DEV_ENV_TEST_DATA
+
 # Accounting preserved data file
 KACCOUNTING_PRESERVED_DATA = ENV_DATA_ROOT+'/accounting-data.development'
 
@@ -41,7 +44,7 @@ SSL_CERTIFICATE_AUTHORITY_ROOTS_FILE = 'config/cacert.pem'
 KInstallProperties.load_from("#{KFRAMEWORK_ROOT}/tmp/properties", {
   :register_mdns_hostnames => 'yes',
   :domainname => 'local',
-  :management_server_url => "https://kmanager.#{ENV['KSERVER_HOSTNAME'].chomp}.local:2443"
+  :management_server_url => "https://#{ENV['KSERVER_HOSTNAME'].chomp}.local"
 })
 
 # Plugins

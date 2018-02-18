@@ -1,4 +1,17 @@
-std:plugin:resources("edit.css")
+std:plugin:resources("edit.css" "viewer.css")
+
+if(viewComments) {
+    std:plugin:resources("comments.css" "comments.js")
+    // Configuration of commenting system for viewing _only_of comments
+    <div id="z__docstore_comments_configuration"
+        data-displayedversion=versionForComments
+        data-view=if(viewComments){"1"}
+        data-onlyform=activePage.form.formId
+        data-url=commentsUrl
+    >
+        std:form:token()
+    </div>
+}
 
 if(additionalUI.top) { render(additionalUI.top) }
 
@@ -11,6 +24,10 @@ if(showFormError) {
 }
 
 if(additionalUI.formTop) { render(additionalUI.formTop) }
+
+if(showFormTitles) {
+    <h1 class="z__docstore_form_title"> activePage.form.formTitle </h1>
+}
 
 std:form(activePage.instance)
 

@@ -15,6 +15,7 @@
 // Delegate has properties:
 //    name - of store (short string) - REQUIRED
 //    keyIdType - type of keyId, if not "int"
+//    enablePerElementComments - true if users can comment on individual elements in form
 //    __formSubmissionDoesNotCompleteProcess -- (internal) if true, UI adjusted with expectation submitting form is not last step
 //       TODO: public API for __formSubmissionDoesNotCompleteProcess equivalent
 // Delegate has methods:

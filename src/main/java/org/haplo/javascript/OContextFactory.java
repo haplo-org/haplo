@@ -15,7 +15,7 @@ class OContextFactory extends ContextFactory {
 
     protected Context makeContext() {
         Context cx = super.makeContext();
-        cx.setLanguageVersion(Context.VERSION_1_7);
+        cx.setLanguageVersion(Context.VERSION_ES6);
         cx.setClassShutter(new OClassShutter());
         cx.setWrapFactory(new SandboxedWrapFactory());
         return cx;

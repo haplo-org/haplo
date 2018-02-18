@@ -43,7 +43,6 @@ public class Runtime {
     private Context currentContext;
     private Scriptable runtimeScope;
     private KHost host;
-    private boolean haveInitialisedSchema;
     private PluginTestingSupport testingSupport;
 
     // Interface to load standard templates
@@ -64,9 +63,6 @@ public class Runtime {
             throw new RuntimeException("Runtime.initializeSharedEnvironment() not called yet");
         }
 
-        // Flag for schema initialisation
-        this.haveInitialisedSchema = false;
-
         Context cx = Runtime.enterContext();
         try {
             // Generate a new scope for the runtime, which borrows the objects in the main shared scope
@@ -74,20 +70,33 @@ public class Runtime {
             scope.setPrototype(sharedScope);
             scope.setParentScope(null);
 
-            // Initialise the scope and set the $host object
-            Object initialiser = sharedScope.get("$haplo_framework_initialiser", scope); // ConsString is checked
-            if(initialiser == null || initialiser == Scriptable.NOT_FOUND || !(initialiser instanceof Function)) {
-                throw new RuntimeException("JavaScript Runtime can't find the initialiser function");
-            } else {
-                Function f = (Function)initialiser;
-                Object result = f.call(cx, scope, scope, null); // ConsString is checked
-                if(!(result instanceof KHost)) {
-                    throw new RuntimeException("JavaScript Runtime initialiser returned something unexpected");
-                }
-                host = (KHost)result;
-            }
+            callFrameworkInitialiser(cx, scope);
 
             runtimeScope = scope;
+        } finally {
+            cx.exit();
+        }
+    }
+
+    private void callFrameworkInitialiser(Context cx, ScriptableObject scope) {
+        // Initialise the scope and set the $host object
+        Object initialiser = sharedScope.get("$haplo_framework_initialiser", scope); // ConsString is checked
+        if(initialiser == null || initialiser == Scriptable.NOT_FOUND || !(initialiser instanceof Function)) {
+            throw new RuntimeException("JavaScript Runtime can't find the initialiser function");
+        } else {
+            Function f = (Function)initialiser;
+            Object result = f.call(cx, scope, scope, null); // ConsString is checked
+            if(!(result instanceof KHost)) {
+                throw new RuntimeException("JavaScript Runtime initialiser returned something unexpected");
+            }
+            host = (KHost)result;
+        }
+    }
+
+    public void reinitialiseRuntime() {
+        Context cx = Runtime.enterContext();
+        try {
+            callFrameworkInitialiser(cx, (ScriptableObject)this.runtimeScope);
         } finally {
             cx.exit();
         }
@@ -277,7 +286,7 @@ public class Runtime {
      * A subsitute for the Rhino Context.enter() which sets up options for the
      * context.
      */
-    private static Context enterContext() {
+    public static Context enterContext() {
         Context cx = Context.enter();
         return cx;
     }
@@ -404,6 +413,7 @@ public class Runtime {
 
             // Add the host object classes. The sealed option works perfectly, so no need to use a special seal function.
             defineSealedHostClass(scope, KHost.class);
+            defineSealedHostClass(scope, KPlatformGenericInterface.class);
             defineSealedHostClass(scope, KObjRef.class);
             defineSealedHostClass(scope, KScriptable.class);
             defineSealedHostClass(scope, KLabelList.class);

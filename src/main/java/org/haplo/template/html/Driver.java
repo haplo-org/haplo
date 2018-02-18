@@ -33,6 +33,11 @@ abstract public class Driver {
         return false;
     }
 
+    // Fallback for render() - render an arbitary object from the view as HTML in TEXT context
+    public boolean renderObjectFromView(Object object, StringBuilder builder) {
+        return false;
+    }
+
     // ----------------------------------------------------------------------
 
     final public Driver getParentDriver() {
@@ -130,6 +135,7 @@ abstract public class Driver {
         Driver driver = this.driverWithNewRoot(rootView);
         driver.parentDriver = this;
         driver.nestingDepth = newNestingDepth;
+        driver.rememberedViews = this.rememberedViews;
         driver.includedTemplateRenderer = this.includedTemplateRenderer;
         driver.functionRenderer = this.functionRenderer;
         return driver;

@@ -1,0 +1,14 @@
+{
+  "pluginName": "std_document_store_dev",
+  "pluginAuthor": "Haplo Services",
+  "pluginVersion": 1,
+  "displayName": "Document Store Development",
+  "displayDescription": "Development tools for document store plugin",
+  "apiVersion": 4,
+  "loadPriority": 1013,
+  "depend": ["std_workflow"],
+  "use": ["std:workflow"],
+  "load": [
+      "js/docstore_workflow_debug.js"
+    ]
+}

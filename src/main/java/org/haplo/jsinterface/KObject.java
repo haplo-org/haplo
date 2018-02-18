@@ -387,6 +387,14 @@ public class KObject extends KScriptable {
         return this;
     }
 
+    public Object jsFunction_appendWithIntValue(Object value, int desc, int qual) {
+        mustBeMutableObject("appendWithIntValue()");
+        if(!(value instanceof Number)) {
+            throw new OAPIException("Not a numeric type when calling appendWithIntValue()");
+        }
+        return jsFunction_append(((Number)value).intValue(), desc, qual);
+    }
+
     public Object jsFunction_appendParent(Object value, int qual) { return jsFunction_append(value, A_PARENT, qual); }
     public Object jsFunction_appendType(Object value, int qual) { return jsFunction_append(value, A_TYPE, qual); }
     public Object jsFunction_appendTitle(Object value, int qual) { return jsFunction_append(value, A_TITLE, qual); }

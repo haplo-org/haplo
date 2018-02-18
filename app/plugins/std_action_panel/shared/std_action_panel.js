@@ -14,6 +14,7 @@
         std_action_panel.hElementRender = hElementRenderImpl;
         std_action_panel.$renderFail = renderFailImpl;
         std_action_panel.implementService("std_action_panel:build_panel", buildPanelService);
+        return std_action_panel;
     };
 
     var makePriorityDecode = function(priorityLookup) {

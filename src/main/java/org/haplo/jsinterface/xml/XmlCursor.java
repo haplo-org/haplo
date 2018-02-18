@@ -20,11 +20,14 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Attr;
 import org.w3c.dom.NamedNodeMap;
 
+import java.util.regex.Pattern;
+
 public class XmlCursor extends KScriptable {
     private Document document;
     private Node node;
     private String namespaceURI;
     private String namespacePrefix;
+    private ControlCharacterPolicy controlCharacterPolicy = ControlCharacterPolicy.ENTITY_ENCODE;
 
     public XmlCursor() {
     }
@@ -50,9 +53,10 @@ public class XmlCursor extends KScriptable {
         return this.node;
     };
 
-    public void setNamespace(String namespaceURI, String namespacePrefix) {
+    protected void setCursorConfigForCopy(String namespaceURI, String namespacePrefix, ControlCharacterPolicy controlCharacterPolicy) {
         this.namespaceURI = namespaceURI;
         this.namespacePrefix = namespacePrefix;
+        this.controlCharacterPolicy = controlCharacterPolicy;
     }
 
     // ----------------------------------------------------------------------
@@ -313,10 +317,32 @@ public class XmlCursor extends KScriptable {
 
     public XmlCursor jsFunction_text(String text) {
         this.node.appendChild(
-            this.document.createTextNode(text)
+            this.document.createTextNode(
+                this.controlCharacterPolicy.apply(text)
+            )
         );
         return this;
     }
+
+    // ----------------------------------------------------------------------
+
+    public enum ControlCharacterPolicy {
+        ENTITY_ENCODE() {
+            public String apply(String text) { return text; }
+        },
+        REMOVE() {
+            public String apply(String text) { return text == null ? null : XmlCursor.CONTROL_CHARACTERS.matcher(text).replaceAll(""); }
+        },
+        REPLACE_WITH_SPACE() {
+            public String apply(String text) { return text == null ? null : XmlCursor.CONTROL_CHARACTERS.matcher(text).replaceAll(" "); }
+        },
+        REPLACE_WITH_QUESTION_MARK() {
+            public String apply(String text) { return text == null ? null : XmlCursor.CONTROL_CHARACTERS.matcher(text).replaceAll("?"); }
+        };
+        public abstract String apply(String text);
+    };
+
+    static private Pattern CONTROL_CHARACTERS = Pattern.compile("[\\x00-\\x08\\x0b-\\x1f]"); // control chars minus \t & \n
 
     // ----------------------------------------------------------------------
     // Copy nodes into document given another document / cursor
@@ -375,13 +401,13 @@ public class XmlCursor extends KScriptable {
 
     public XmlCursor jsFunction_cursor() {
         XmlCursor cursor = XmlCursor.constructWithNode(this.node, this.document);
-        cursor.setNamespace(this.namespaceURI, this.namespacePrefix);
+        cursor.setCursorConfigForCopy(this.namespaceURI, this.namespacePrefix, this.controlCharacterPolicy);
         return cursor;
     }
 
     public XmlCursor jsFunction_cursorSettingDefaultNamespace(String newDefaultNamespaceURI) {
         XmlCursor cursor = XmlCursor.constructWithNode(this.node, this.document);
-        cursor.setNamespace(newDefaultNamespaceURI, null);
+        cursor.setCursorConfigForCopy(newDefaultNamespaceURI, null, this.controlCharacterPolicy);
         return cursor;
     }
 
@@ -394,7 +420,22 @@ public class XmlCursor extends KScriptable {
             }
         }
         XmlCursor cursor = XmlCursor.constructWithNode(this.node, this.document);
-        cursor.setNamespace(namespaceURI, prefix);
+        cursor.setCursorConfigForCopy(namespaceURI, prefix, this.controlCharacterPolicy);
+        return cursor;
+    }
+
+    public XmlCursor jsFunction_cursorWithControlCharacterPolicy(String policyName) {
+        ControlCharacterPolicy policy = null;
+        switch(policyName) {
+            case "entity-encode":               policy = ControlCharacterPolicy.ENTITY_ENCODE;              break;
+            case "remove":                      policy = ControlCharacterPolicy.REMOVE;                     break;
+            case "replace-with-space":          policy = ControlCharacterPolicy.REPLACE_WITH_SPACE;         break;
+            case "replace-with-question-mark":  policy = ControlCharacterPolicy.REPLACE_WITH_QUESTION_MARK; break;
+            default:
+                throw new OAPIException("Unknown control character policy: "+policyName);
+        }
+        XmlCursor cursor = XmlCursor.constructWithNode(this.node, this.document);
+        cursor.setCursorConfigForCopy(this.namespaceURI, this.namespacePrefix, policy);
         return cursor;
     }
 

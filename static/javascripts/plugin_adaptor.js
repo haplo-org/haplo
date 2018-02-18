@@ -190,6 +190,11 @@ var ONEIS = Haplo;
             };
         };
 
+        // Ref lookup redirection registration
+        Haplo.editor.registerRefLookupRedirector = function(fn) {
+            KEditor.p__refLookupRedirectorFunctions.push(fn);
+        };
+
         // Wrapped editor lookup control
         var RefLookupControl = KEditor.p__KEdObjRef;
         setupBasicControlAliases(RefLookupControl.prototype);

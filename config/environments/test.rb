@@ -25,6 +25,9 @@ KMESSAGE_QUEUE_DIR = TEST_ENV_TEST_DATA+'/messages'
 # File store
 KFILESTORE_PATH = TEST_ENV_TEST_DATA+'/files-test'
 
+# Generic 'run' directory
+KFRAMEWORK_RUN_DIR = TEST_ENV_TEST_DATA
+
 # Accounting preserved data file
 KACCOUNTING_PRESERVED_DATA = TEST_ENV_TEST_DATA+'/accounting-data.test'
 

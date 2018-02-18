@@ -148,6 +148,10 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     assert_equal "SomethingXYZ", created.first_attr(A_TITLE).to_s
     assert_equal 4, created.first_attr(45, Q_ALTERNATIVE)
     assert_equal 56, created.first_attr(563)
+    assert created.first_attr(564).kind_of?(Fixnum)
+    assert_equal 57, created.first_attr(564)
+    assert created.first_attr(565).kind_of?(Fixnum)
+    assert_equal 58, created.first_attr(565)
     created_notes = created.first_attr(A_NOTES)
     assert created_notes.class == KTextParagraph
     assert_equal "Ping\ncarrots", created_notes.to_s

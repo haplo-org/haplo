@@ -73,7 +73,7 @@ class AuthApiKeyTest < IntegrationTest
     key1._set_api_key(KEY1)
     key1.save!
     assert_equal KEY1_LEFT, key1.a
-    assert key1.b.start_with?('$2a$') # bcrypt
+    assert key1.b.start_with?('$2a$05$') # bcrypt with small number of round for performance
     assert key1.b_matchs?(KEY1_RIGHT)
     assert ! key1.b_matchs?(KEY1_RIGHT_MOD)
     check_api_key(KEY1, 42)

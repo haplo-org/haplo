@@ -26,3 +26,10 @@ div.z__docstore_nav_title {
     background: #eee;
     font-weight: bold;
 }
+
+.z__docstore_form_title {
+    font-size: 20px;
+    color: #777;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 4px;
+}

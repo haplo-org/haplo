@@ -20,6 +20,7 @@ import java.sql.Connection;
 
 public class JdNamespace extends KScriptable {
     private String name;
+    private String pluginName;
     private String postgresSchemaName;
     private ArrayList<JdTable> tables;
 
@@ -31,12 +32,13 @@ public class JdNamespace extends KScriptable {
     public void jsConstructor() {
         // The namespace name isn't passed into any constructor to ensure that only trusted code sets namespace names.
         KHost host = Runtime.currentRuntimeHost();
-        String nextNamespace = host.getNextDatabaseNamespace();
+        KHost.DbNamespaceInformation nextNamespace = host.getNextDatabaseNamespace();
         if(nextNamespace == null) {
             throw new RuntimeException("No new database namespace is expected to be created.");
         }
-        this.name = nextNamespace;
-        this.postgresSchemaName = host.getSupportRoot().getPostgresSchemaName();
+        this.name = nextNamespace.name;
+        this.pluginName = nextNamespace.pluginName;
+        this.postgresSchemaName = nextNamespace.postgresSchemaName;
     }
 
     public String getClassName() {
@@ -46,6 +48,10 @@ public class JdNamespace extends KScriptable {
     // --------------------------------------------------------------------------------------------------------------
     public String getName() {
         return name;
+    }
+
+    public String getPluginName() {
+        return pluginName;
     }
 
     public String getPostgresSchemaName() {

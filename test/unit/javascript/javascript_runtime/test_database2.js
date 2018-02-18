@@ -193,7 +193,7 @@ TEST(function() {
             number: {type:"int"},
             nonnullable: {type:"text"}
         });
-    }, "Cannot automatically migrate table definition: field nonnullable is not nullable");
+    }, "Cannot automatically migrate table definition: in plugin dummy_plugin_name!, table dyn1, column nonnullable is not nullable");
     // Redefine back to the basics, the Ruby test checks that all the expected fields are there.
     dyn1 = db._dynamicTable("dyn1", {
         name: {type:"text"},

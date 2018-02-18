@@ -1,9 +1,0 @@
-<div class="z__sidebar_menu">
-  <h2>System administrator<% if @admins.length != 1 %>s<% end %></h2>
-  <p>
-    <% @admins.each do |admin| %>
-      <a href="mailto:<%= h(admin.email) %>"><%= h(admin.name) %></a><br>
-    <% end %>
-  </p>
-  <p>Contact <% if @admins.length != 1 %>an<% else %>the<% end %> administrator for help with your account.</p>
-</div>

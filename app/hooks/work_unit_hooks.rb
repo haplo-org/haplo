@@ -13,4 +13,8 @@ module KHooks
     h.result      :html,        String,   nil,    "The HTML to output for this work unit in the given context"
   end
 
+  define_hook :hPreWorkUnitSave do |h|
+    h.argument    :workUnit, WorkUnit, "The work unit that will be saved"
+  end
+
 end

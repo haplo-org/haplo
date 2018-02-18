@@ -1,8 +1,6 @@
 <% @breadcrumbs = [:account] -%>
 <% @page_title = h(possessive_case_of(@request_user.name))+" account information" -%>
 
-<% in_right_column render :partial => 'info_right' %>
-
 <h2>Log in email address</h2>
 <p>You log into <%= KApp.global(:product_name) %> with your email address, <b><%= h(@user.email) %></b>.</p>
 <p>Contact an administrator if you need to change this.</p>

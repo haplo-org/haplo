@@ -8,6 +8,6 @@
 // Plugin is defined in lib/javascript/feature/std_action_panel.js and loaded
 // into shared runtime to save memory.
 
-O.$private.$createActionPanelPluginInRuntime(
+var std_action_panel = O.$private.$createActionPanelPluginInRuntime(
     O.plugin("std_action_panel")
 );

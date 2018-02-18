@@ -3513,12 +3513,26 @@ _OBJS
       refs[sym] = o.objref
     end
     assert_equal('test:behaviour:foo', KObjectStore.behaviour_of(refs[:foo]))
+    assert_equal('test:behaviour:foo', KObjectStore.behaviour_of_exact(refs[:foo]))
+
     assert_equal('test:behaviour:foo', KObjectStore.behaviour_of(refs[:foochild]))
+    assert_equal(nil, KObjectStore.behaviour_of_exact(refs[:foochild]))
+
     assert_equal('test:behaviour:foo', KObjectStore.behaviour_of(refs[:foochild2]))
+    assert_equal(nil, KObjectStore.behaviour_of_exact(refs[:foochild2]))
+
     assert_equal('test:behaviour:foo', KObjectStore.behaviour_of(refs[:foochild3]))
+    assert_equal('test:behaviour:foochild3', KObjectStore.behaviour_of_exact(refs[:foochild3]))
+
     assert_equal('test:behaviour:bar', KObjectStore.behaviour_of(refs[:bar]))
+    assert_equal('test:behaviour:bar', KObjectStore.behaviour_of(refs[:bar]))
+
     assert_equal('test:behaviour:bar', KObjectStore.behaviour_of(refs[:barchild]))
+    assert_equal('test:behaviour:barchild', KObjectStore.behaviour_of_exact(refs[:barchild]))
+
     assert_equal(nil, KObjectStore.behaviour_of(refs[:nothing]))
+    assert_equal(nil, KObjectStore.behaviour_of_exact(refs[:nothing]))
+
     assert_equal(refs[:foo], KObjectStore.behaviour_ref('test:behaviour:foo'))
     assert_equal(refs[:bar], KObjectStore.behaviour_ref('test:behaviour:bar'))
     assert_equal(refs[:foochild3], KObjectStore.behaviour_ref('test:behaviour:foochild3'))

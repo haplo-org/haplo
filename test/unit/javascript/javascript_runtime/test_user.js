@@ -157,6 +157,12 @@ TEST(function() {
     TEST.assert_equal(4, GROUP["std:group:everyone"]); // make sure it is the special group
     checkMembers([41,42,43], O.group(GROUP["std:group:everyone"])); // this is special cased
 
+    // Access to API codes
+    TEST.assert_equal("std:group:everyone", O.group(GROUP["std:group:everyone"]).code);
+    TEST.assert_equal("test:group:group1", O.group(21).code);
+    TEST.assert_equal(null, O.group(23).code); // not specified for this group
+    TEST.assert_equal(null, O.user(41).code); // and users don't have them
+
     // Check group membership
     TEST.assert(_.isEqual([16,21,4], _(O.user(41).groupIds).sort()));
     TEST.assert(_.isEqual([16,21], _(O.user(41).directGroupIds).sort()));   // everyone not a direct membership, as implied

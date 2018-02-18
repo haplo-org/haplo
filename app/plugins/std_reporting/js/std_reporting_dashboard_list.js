@@ -18,6 +18,8 @@ P.dashboardConstructors["list"] = DashboardList;
 
 DashboardList.prototype = new P.Dashboard();
 
+DashboardList.prototype.kind = "list";
+
 DashboardList.prototype.columns = function(priority, columns) {
     var collection = this.collection;
     this.columnGroups.push({
@@ -248,6 +250,7 @@ P.registerReportingFeature("std:row_object_filter", function(dashboard, spec) {
         // Render!
         return P.template("dashboard/list/widget_object_filter").deferredRender({
             fact: fact.toLowerCase(),
+            upperCaseFact: fact,
             placeholder: placeholder,
             objects: objects
         });

@@ -89,7 +89,7 @@ module JSRubyTemplateControllerSupport
     data_for_template = {:object => object}
     data_for_template[:success_redirect] = success_redirect if success_redirect
     if read_only_attributes
-      data_for_template[:editor_options] = {:read_only_attributes => read_only_attributes}
+      data_for_template[:read_only_attributes] = read_only_attributes
     end
     render :partial => 'shared/editor_for_new_object', :data_for_template => data_for_template
   end

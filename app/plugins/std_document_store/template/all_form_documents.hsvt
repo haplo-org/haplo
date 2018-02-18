@@ -1,6 +1,8 @@
+std:plugin:resources("viewer.css")
+
 each(sections) {
   <div id=unsafeAttributeValue(unsafeId) class="z__docstore_form_display">
-    <h2> title </h2>
+    <h2 class="z__docstore_form_title"> title </h2>
     std:document(instance)
   </div>
 }

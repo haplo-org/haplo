@@ -25,20 +25,26 @@ class KJavaScriptPlugin < KPlugin
         @controller_factories << JavaScriptPluginControllerFactory.new($1 == 'api', $2, !!(@plugin_json['allowAnonymousRequests']), @name)
       end
     end
-    # Make a hash of template name -> template kind from files on disc. Names from the JS side will be checked against this before trusting.
-    @templates = Hash.new
-    template_root = "#{plugin_path}/template/"
-    Dir.glob("#{template_root}**/*.*") do |filename|
-      if filename[template_root.length,filename.length] =~ /\A(.+?)\.([a-z0-9A-Z]+)\z/
-        @templates[$1] = $2
-      end
-    end
+    # Prepare for template loading with untrusted names from JS plugins
+    @templates = _generate_template_kind_lookup()
     # Collect information
     @uses_database = !!(@plugin_json.has_key?("privilegesRequired") && @plugin_json["privilegesRequired"].include?("pDatabase"))
     @plugin_display_name = @plugin_json['displayName'].dup.freeze
     @plugin_description = @plugin_json['displayDescription'].dup.freeze
     @plugin_load_priority = (@plugin_json["loadPriority"] || KPlugin::DEFAULT_PLUGIN_LOAD_PRIORITY).to_i
     @api_version = @plugin_json['apiVersion'].to_i
+  end
+
+  # Make a hash of template name -> template kind from files on disc. Names from the JS side will be checked against this before trusting.
+  def _generate_template_kind_lookup
+    templates = Hash.new
+    template_root = "#{plugin_path}/template/"
+    Dir.glob("#{template_root}**/*.*") do |filename|
+      if filename[template_root.length,filename.length] =~ /\A(.+?)\.([a-z0-9A-Z]+)\z/
+        templates[$1] = $2
+      end
+    end
+    templates
   end
 
   def name
@@ -100,21 +106,31 @@ class KJavaScriptPlugin < KPlugin
   }
 
   def javascript_load(runtime, schema_for_js_runtime)
+    global_javascript = javascript_generate_global_js()
+    runtime.evaluateString(global_javascript, "p/#{name}/global.js") if global_javascript.length > 0
+    prefix, suffix = javascript_file_wrappers(schema_for_js_runtime)
+    javascript_load_all_js(runtime, prefix, suffix)
+  end
+
+  def javascript_generate_global_js()
     # Load global.js file, if appropraite, set up prefix and suffix for wrapping loaded scripts.
     name = self.name
-    generated_javascript = ''
+    global_javascript = ''
     global_js = "#{@plugin_path}/global.js"
     if File.exist?(global_js)
-      runtime.loadScript(global_js, "p/#{name}/global.js", nil, nil)
+      global_javascript = File.read(global_js)
+      global_javascript << "\n\n"
     else
-      generated_javascript << "var #{name} = O.plugin('#{name}');\n"
+      global_javascript << "var #{name} = O.plugin('#{name}');\n"
     end
     use_features = @plugin_json['use']
     if use_features && !(use_features.empty?)
-      generated_javascript << "#{JSON.generate(use_features)}.forEach(function(f) { #{name}.use(f); });\n"
+      global_javascript << "#{JSON.generate(use_features)}.forEach(function(f) { #{name}.use(f); });\n"
     end
-    runtime.evaluateString(generated_javascript, "p/#{name}/auto-generated-global.js") if generated_javascript.length > 0
-    prefix, suffix = javascript_file_wrappers(schema_for_js_runtime)
+    global_javascript
+  end
+
+  def javascript_load_all_js(runtime, prefix, suffix)
     # Load the JavaScript files
     @plugin_json["load"].each do |filename|
       raise "Bad plugin script filename" if filename =~ /\.\./ || filename =~ /\A\//
@@ -125,11 +141,11 @@ class KJavaScriptPlugin < KPlugin
   def javascript_file_wrappers(schema_for_js_runtime)
     name = self.name
     prefix = "(function(P"
-    suffix = "\n})(#{name}"
+    loadargs = name.dup
     (@plugin_json["locals"] || {}).each do |k,v|
       # these values are checked, so can be trusted to be OK
       prefix << ", #{k}"
-      suffix << ", #{name}.#{v}"
+      loadargs << ", #{name}.#{v}"
     end
     if self.api_version >= 4
       reqs = schema_for_js_runtime.for_plugin(name)
@@ -137,12 +153,11 @@ class KJavaScriptPlugin < KPlugin
         locals_name = SCHEMA_LOCALS[kind]
         next unless locals_name # ignore "_optional" key
         prefix << ", #{locals_name}"
-        suffix << ", $registry.pluginSchema.#{name}['#{kind}']"
+        loadargs << ", $registry.pluginSchema.#{name}['#{kind}']"
       end
     end
     prefix << "){"
-    suffix << ");\n"
-    [prefix, suffix]
+    [prefix, "\n})(#{loadargs});\n", loadargs]
   end
 
   # JavaScript plugins use their own on install mechanism, and don't implement on_install
@@ -184,7 +199,7 @@ class KJavaScriptPlugin < KPlugin
     return nil if kind == nil
     # name is now trusted, as it has been checked against the list of templates found when registering the plugin
     File.open("#{@plugin_path}/template/#{name}.#{kind}") do |f|
-      [f.read.strip, kind]
+      [f.read, kind]
     end
   end
 

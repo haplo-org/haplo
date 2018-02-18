@@ -21,7 +21,7 @@
         });
 
         // On form submission, if there's no uid and only only entry visible, select that
-        $('form').on('submit', function(evt) {
+        $('#z__ws_content form').on('submit', function(evt) {
             var uid = $('form input[name=uid]')[0];
             if(!uid.value) {
                 var visibleUsers = $('#z__impersonate a:visible');

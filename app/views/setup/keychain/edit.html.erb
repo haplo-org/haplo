@@ -3,6 +3,8 @@
 %>
 <%= sys_mng_header %>
 
+<% if @ui[:notes_edit] %><div style="padding:4px 8px"><%= text_simple_format(@ui[:notes_edit]) %></div><% end %>
+
 <form method="POST"><%= form_csrf_token %>
   <table>
     <tr><td>Name</td><td><input type="text" name="name" value="<%= h(@credential.name) %>" size="60"></td></tr>
@@ -20,7 +22,7 @@
     %>
     <%
       @credential.secret.each do |key,value|
-        %><tr><td><%= h(key) %></td><td><input type="password" autocomplete="off" name="secret[<%= h(key) %>]" value="<%= value.to_s.length == 0 ? '' : Setup_KeychainController::NOT_CHANGED %>" size="60"></td></tr><%
+        %><tr><td><%= h(key) %></td><td><input type="password" autocomplete="off" name="password[<%= h(key) %>]" value="<%= value.to_s.length == 0 ? '' : Setup_KeychainController::NOT_CHANGED %>" size="60"></td></tr><%
       end
     %>
     <tr><td></td><td><input type="submit" value="Save"></td></tr>

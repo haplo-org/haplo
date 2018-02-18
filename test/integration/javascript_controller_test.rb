@@ -251,14 +251,14 @@ class JavaScriptControllerTest < IntegrationTest
       assert_equal "text/html", response.content_type
     end
     post "/do/plugin_test/template2", {:name => "Fred"}
-    assert_equal "Hello: Fred", response.body
+    assert_equal "Hello: Fred\n", response.body
     assert_equal "text/plain", response.content_type
     get "/do/plugin_test/template_partial"
     assert_equal response.body, "Partial test: 42\nP1: ping=pong\nP2: hello there!"
     get "/do/plugin_test/template_partial2"
     assert_equal response.body, "Partial test: 42\nP1: ping=pong\nP2: hello there!"
     get "/do/plugin_test/template_partial_in_dir"
-    assert_equal response.body, "DIR: Hello: ABC123"
+    assert_equal response.body, "DIR: Hello: ABC123\n"
     get "/do/plugin_test/auto_template/junk/elements"
     assert_select '#testresponse', "Automatically chosen template."
     get "/do/plugin_test/auto_template2"
@@ -649,7 +649,7 @@ __E
 
     # Layouts
     get '/do/plugin_test/layouts?layout=false&value=hello' # no layout
-    assert_equal '<p>VALUE="hello"</p>', response.body
+    assert_equal %Q!<p>VALUE="hello"</p>\n!, response.body
     get '/do/plugin_test/layouts?layout=undefined&value=hello2' # standard layout
     assert response.body =~ /<div id="?z__page"?>/ # check for standard layout, regex to allow for minimisation
     assert response.body.include?('<p>VALUE="hello2"</p>')
@@ -665,7 +665,7 @@ __E
     get '/do/plugin_test/layouts?layout=test_layout&value=hello5' # layout defined by plugin
     assert ! (response.body =~ /<div id="?z__page"?>/) # check NOT standard layout
     assert ! (response.body =~ /<body class="?z__minimal_layout"?>/) # check for minimal layout
-    assert_equal '<html><body><p>Using example layout</p><p>VALUE="hello5"</p></body></html>', response.body
+    assert_equal %Q!<html><body><p>Using example layout</p><p>VALUE="hello5"</p>\n</body></html>!, response.body
     # NOTE: Bad standard template name reporting checked in javascript_debug_reporting_test.rb
 
     # Tray

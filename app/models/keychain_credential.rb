@@ -29,6 +29,8 @@ class KeychainCredential < ActiveRecord::Base
       }
     ]
 
+  USER_INTERFACE = {}
+
   def account
     JSON.parse(self.account_json)
   end

@@ -484,12 +484,29 @@ h2 + .z__crm_note {
     left: 12px;
 }
 
+.z__work_unit_tasks_section_title {
+    font-size: 12px;
+    text-transform: uppercase;
+    font-weight: bold;
+    letter-spacing: 1px;
+    color: #888;
+    padding: 0;
+}
+
 /* slightly different display on tasks page */
-#z__work_unit_tasks_page .z__work_unit_obj_display {
+.z__work_unit_tasks_section .z__work_unit_obj_display {
     border-width: 0 0 1px 0;
     border-color: #eee;
     padding-bottom: 18px;
     margin-top: 8px;
+}
+
+#z__work_unit_tasks_section_passed .z__work_unit_obj_display:before {
+    color: #f00;
+}
+
+#z__work_unit_tasks_section_near .z__work_unit_obj_display:before {
+    color: #f80;
 }
 
 .z__work_unit_obj_display input[type=submit] {

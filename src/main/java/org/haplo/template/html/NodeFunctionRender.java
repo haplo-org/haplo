@@ -33,7 +33,9 @@ final class NodeFunctionRender extends NodeFunction.ExactlyOneValueArgument {
         if(value instanceof DeferredRender) {
             ((DeferredRender)value).renderDeferred(builder, context);
         } else if(value != null) {
-            throw new RenderException(driver, "Can't use render() on the value found in the view");
+            if(!driver.renderObjectFromView(value, builder)) {
+                throw new RenderException(driver, "Can't use render() on the value found in the view");
+            }
         }
     }
 

@@ -365,6 +365,19 @@ __E
 
   # -------------------------------------------------------------------------------------------------------------
 
+  def test_plugin_app_info
+    begin
+      assert_equal(true, KPlugin.install_plugin(["test_provide_feature", "test_plugin", "no_privileges_plugin", "std_display_elements"]))
+      run_javascript_test(:file, 'unit/javascript/javascript_plugin/test_plugin_app_info.js')
+    ensure
+      KPlugin.uninstall_plugin("test_provide_feature")
+      KPlugin.uninstall_plugin("test_plugin")
+      KPlugin.uninstall_plugin("no_privileges_plugin")
+    end
+  end
+
+  # -------------------------------------------------------------------------------------------------------------
+
   def test_plugin_callbacks
     begin
       assert_equal(true, KPlugin.install_plugin("test_plugin"))

@@ -203,6 +203,7 @@ class AuthenticationController < ApplicationController
         if nil != @otp_result && @otp_result.ok
           # OTP was correct, log in user
           session[:uid] = session[:pending_uid]
+          session[:last_otp] = Time.now.to_i
           @was_autologin = session[:pending_was_autologin]
           session.delete(:pending_uid)
           session.delete(:pending_was_autologin)

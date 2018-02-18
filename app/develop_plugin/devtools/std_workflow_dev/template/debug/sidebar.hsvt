@@ -1,0 +1,18 @@
+
+<div class="z__workflow_debug_sidebar">
+  each(debugEntities) {
+  <form class="impersonate" method="POST" action="/do/authentication/impersonate"> 
+    std:form:token()
+    if(uid) { 
+      <input type="hidden" name="uid" value=uid>
+      <input type="hidden" name="rdr" value=^{M.url}>
+      <button type="submit">
+        entity <br>
+        <span class="z__workflow_debug_sidebar_person_name">personName</span>
+      </button>
+    } else {
+      <input type="submit" disabled="disabled" value=entity>
+    }
+  </form>
+  }
+</div>

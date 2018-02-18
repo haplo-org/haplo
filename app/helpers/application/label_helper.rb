@@ -25,7 +25,7 @@ module Application_LabelHelper
   end
 
   def label_html(label_id)
-    %Q!<span class="z__label">#{ERB::Util::h(label_name(label_id))}</span>!
+    %Q!<span class="z__label" data-ref="#{ERB::Util::h(KObjRef.new(label_id.to_i).to_presentation)}">#{ERB::Util::h(label_name(label_id))}</span>!
   end
 
   # --------------------------------------------------------------------------

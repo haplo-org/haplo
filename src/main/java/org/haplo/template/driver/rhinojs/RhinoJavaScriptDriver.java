@@ -112,6 +112,19 @@ class RhinoJavaScriptDriver extends Driver {
         }
     }
 
+    public boolean renderObjectFromView(Object object, StringBuilder builder) {
+        if(!(object instanceof Scriptable)) { return false; }
+        Scriptable jsObject = (Scriptable)object;
+        if(ScriptableObject.hasProperty(jsObject, "toHTML")) {
+            Object html = ScriptableObject.callMethod(jsObject, "toHTML", new Object[] {});
+            if(html instanceof CharSequence) {
+                builder.append((CharSequence)html);
+                return true;
+            }
+        }
+        return false;
+    }
+
     // ----------------------------------------------------------------------
 
     private static boolean hasValue(Object object) {

@@ -374,7 +374,9 @@ public class FileUploads {
                 if(file.exists()) {
                     // Log the unexpected deletion
                     Logger logger = Logger.getLogger("org.haplo.app");
-                    logger.warn("Deleting unused uploaded file: " + pathname);
+                    logger.warn("Deleting unused uploaded file: " + pathname +
+                        " size " + upload.getFileSize() +
+                        " digest " + upload.getDigest());
                     file.delete();
                 }
             }

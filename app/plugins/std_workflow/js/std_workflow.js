@@ -124,6 +124,7 @@ var WorkflowInstanceBase = P.WorkflowInstanceBase = function() {
         instance[list] = [impl];
     });
     this.$textLookup = {};
+    this.$notifications = {};
 };
 
 WorkflowInstanceBase.prototype = {
@@ -199,6 +200,7 @@ WorkflowInstanceBase.prototype = {
             this._callHandler('$observeExit', transition);
             this.workUnit.tags.state = destination;
             this.workUnit.tags.target = destinationTarget;
+            this._maybeSendNotificationOnEnterState(destination);
 
             // Dispatch states are used to make decisions which skip other states
             var safety = 256;
@@ -209,11 +211,17 @@ WorkflowInstanceBase.prototype = {
                 var possibleDestinations = stateDefinition.dispatch;
                 var dispatchedDestination = this._callHandler("$resolveDispatchDestination", transition, destination, destinationTarget, possibleDestinations) || possibleDestinations[0];
                 if(!dispatchedDestination) { throw new Error("Can't resolve dispatch destination for "+destination); }
+                if(typeof(dispatchedDestination) !== "string") {
+                    // resolveDispatchDestination is specifying the target as well as the state
+                    this.workUnit.tags.target = destinationTarget = dispatchedDestination.target;
+                    dispatchedDestination = dispatchedDestination.state;
+                }
                 if(-1 === possibleDestinations.indexOf(dispatchedDestination)) { throw new Error("Not a valid dispatch destination for state: "+destination); }
                 destination = dispatchedDestination;
                 stateDefinition = this.$states[destination];
                 if(!stateDefinition) { throw new Error("Workflow does not have destination state after dispatch: "+destination); }
                 this.workUnit.tags.state = destination;
+                this._maybeSendNotificationOnEnterState(destination);
             }
             if(safety <= 0) { throw new Error("Went through too many dispatch states when attempting transition (possible loop)"); }
 
@@ -266,6 +274,7 @@ WorkflowInstanceBase.prototype = {
             this._setPendingTransition(undefined);
         }
         this._callHandler('$observeEnter', entry.action, entry.previousState);
+        this._maybeSendNotificationOnEnterState(entry.state);
         this._saveWorkUnit();
         this.$timeline.create({
             workUnitId: this.workUnit.id,
@@ -308,6 +317,23 @@ WorkflowInstanceBase.prototype = {
             if(returnValue !== undefined) { break; }
         }
         return returnValue;
+    },
+
+    // NOTE: Order of calling implementation is reversed compared to O.service() for consistency with workflow function lists
+    workflowService: function(name /* arg1, arg2, ... */) {
+        var listName = "$wfsrv$ "+name;
+        if(!(listName in this)) {
+            throw new Error("No provider for workflow service "+name+" on workType "+this.workUnit.workType);
+        }
+        return this._call.apply(this, [listName].concat(_.tail(arguments)));
+    },
+
+    workflowServiceMaybe: function(name /* arg1, arg2, ... */) {
+        return this._call.apply(this, ["$wfsrv$ "+name].concat(_.tail(arguments)));
+    },
+
+    workflowServiceImplemented: function(name) {
+        return !!("$wfsrv$ "+name in this);
     },
 
     // Call function list in reverse order with single argument, with the
@@ -631,9 +657,7 @@ var Workflow = P.Workflow = function(plugin, name, description) {
 var implementFunctionList = function(name) {
     var listInternalName = '$'+name;
     Workflow.prototype[name] = function(fn) {
-        var prototype = this.$instanceClass.prototype;
-        if(!(listInternalName in prototype)) { prototype[listInternalName] = []; }
-        prototype[listInternalName].push(fn);
+        this._addFunctionToList(listInternalName, fn);
     };
 };
 
@@ -666,6 +690,19 @@ Workflow.prototype = {
     states: function(states) {
         _.extend(this.$instanceClass.prototype.$states, states);
         return this;
+    },
+
+    addAdditionalTransitionToState: function(state, transition, destination) {
+        var states = this.$instanceClass.prototype.$states;
+        if(!(state in states)) {
+            throw new Error("State "+state+" is not defined.");
+        }
+        if(!(destination in states)) {
+            throw new Error("Destination state "+destination+" is not defined.");
+        }
+        var defn = states[state];
+        if(!defn.transitions) { defn.transitions = []; }
+        defn.transitions.push([transition, destination]);
     },
 
     // ----------------------------------------------------------------------
@@ -705,6 +742,12 @@ Workflow.prototype = {
 
     // ----------------------------------------------------------------------
 
+    implementWorkflowService: function(name, serviceFunction) {
+        this._addFunctionToList("$wfsrv$ "+name, serviceFunction);
+    },
+
+    // ----------------------------------------------------------------------
+
     // Sometimes it's necessary to get a workflow name without an instance of the workflow being available.
     // A slightly grubby way of getting it, but the full text system is not available without an instance.
     getWorkflowProcessName: function() {
@@ -722,6 +765,12 @@ Workflow.prototype = {
             a.push(state.actionableBy);
         });
         return _.uniq(_.compact(a));
+    },
+
+    _addFunctionToList: function(listInternalName, fn) {
+        var prototype = this.$instanceClass.prototype;
+        if(!(listInternalName in prototype)) { prototype[listInternalName] = []; }
+        prototype[listInternalName].push(fn);
     }
 };
 implementFunctionList('start');

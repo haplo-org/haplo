@@ -9,6 +9,9 @@
 //    version - version number to display (overrides version)
 //    showVersions - true to allow user to select a version to view
 //    showCurrent - allow the user to see the current version
+//    viewComments - show comments in this viewer
+//    addComment - user is allowed to add comments
+//    commentsUrl - path of comment server (required if viewComments or addComment is true)
 //    hideFormNavigation - hide the interform links from the sidebar
 //    uncommittedChangesWarningText - specify (or disable) the uncommitted changes warning text
 //    style - specify the style of the viewer
@@ -25,7 +28,8 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
     if("version" in this.options) {
         this.version = this.options.version;
     } else if(this.options.showVersions && ("version" in E.request.parameters)) {
-        this.version = parseInt(E.request.parameters.version, 10);
+        var vstr = E.request.parameters.version;
+        this.version = (vstr === '') ? undefined : parseInt(vstr,10);
     }
 
     // Requested change?
@@ -104,6 +108,31 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
         this.showChangesFromDocument = JSON.parse(requestedPrevious[0].json);
     }
 
+    // Commenting? (but only if we're not showing changes)
+    if(!(this.showChangesFrom) && (this.options.viewComments || this.options.addComment)) {
+        this.requiresComments = true;
+        if(!this.options.commentsUrl) {
+            throw new Error("viewComments or addComment used in docstore viewer, but commentsUrl not specified");
+        }
+        this.versionForComments = this.version;
+        if(!this.versionForComments) {
+            this.versionForComments = instance.committedVersionNumber;
+        }
+        if(!this.versionForComments) {
+            this.requiresComments = false;  // disable if there isn't a committed version yet, so won't have comments anyway
+        }
+        // Don't want to clutter up display of final versions, so comments can be turned off
+        if(this.requiresComments && this.options.hideCommentsByDefault && (E.request.parameters.comments !== "1")) {
+            this.requiresComments = false;  // just turn it all off
+            var numberOfComments = store.commentsTable.select().
+                where("keyId","=",instance.keyId).
+                count();
+            if(numberOfComments > 0) {
+                this.couldShowNumberOfComments = numberOfComments;
+            }
+        }
+    }
+
     // Get any additional UI to display
     var delegate = this.instance.store.delegate;
     if(delegate.getAdditionalUIForViewer) {
@@ -141,7 +170,7 @@ DocumentViewer.prototype.__defineGetter__("_viewerBody", function() {
 });
 
 DocumentViewer.prototype.__defineGetter__("_viewerDocumentDeferred", function() {
-    return this.instance._renderDocument(this.document, true);
+    return this.instance._renderDocument(this.document, true, undefined, this.requiresComments /* so needs unames */);
 });
 
 DocumentViewer.prototype.__defineGetter__("_viewerSelectedForm", function() {

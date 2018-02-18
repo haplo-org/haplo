@@ -10,6 +10,7 @@ import org.haplo.jsinterface.KScriptable;
 import org.haplo.jsinterface.KObjRef;
 import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
+import org.haplo.javascript.JsJavaInterface;
 
 import org.mozilla.javascript.*;
 
@@ -73,16 +74,6 @@ public class WorkUnitTags extends KScriptable {
     }
 
     static public String valueToTagString(Object value) {
-        if(value == null || value instanceof org.mozilla.javascript.Undefined) {
-            return null;
-        } else if(value instanceof CharSequence) {
-            return value.toString();
-        } else if(value instanceof KObjRef) {
-            return ((KObjRef)value).jsFunction_toString();
-        } else if(value instanceof Number) {
-            return value.toString();
-        } else {
-            throw new OAPIException("Only Strings, numbers and Refs can be used as WorkUnit tags.");
-        }
+        return JsJavaInterface.jsValueToString(value);
     }
 }

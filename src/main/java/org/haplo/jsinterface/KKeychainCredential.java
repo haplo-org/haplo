@@ -11,6 +11,7 @@ import org.mozilla.javascript.json.JsonParser.ParseException;
 
 import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
+import org.haplo.javascript.JsJavaInterface;
 
 import org.haplo.jsinterface.app.AppKeychainCredential;
 
@@ -108,7 +109,7 @@ public class KKeychainCredential extends KScriptable {
         }
         AppKeychainCredential credential = rubyInterface.load(id, name);
         if(credential == null) {
-            throw new OAPIException("Credential not found: "+identifier);
+            throw new OAPIException("Credential not found: "+JsJavaInterface.jsValueToString(identifier));
         }
         return fromAppKeychainCredential(credential);
     }

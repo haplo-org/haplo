@@ -23,6 +23,7 @@ import org.haplo.httpclient.HTTPClient;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.WeakHashMap;
 
 /**
@@ -32,7 +33,7 @@ public class KHost extends KScriptable {
     private AppRoot supportRoot;
     private TemplatePlatformFunctions templatePlatformFunctions;
     private String userTimeZone;
-    private HashMap<String, Scriptable> plugins;
+    private LinkedHashMap<String, Scriptable> plugins; // use LinkedHashMap so iterator is plugin load order
     private String nextPluginToBeRegistered;
     private boolean nextPluginToBeRegisteredUsesDatabase;
     private String nextPluginDatabaseNamespace;
@@ -43,7 +44,7 @@ public class KHost extends KScriptable {
     private HashMap<Integer, String> refBehaviourCache;
 
     public KHost() {
-        this.plugins = new HashMap<String, Scriptable>(8);
+        this.plugins = new LinkedHashMap<String, Scriptable>(8);
         this.sessionStore = null;
     }
 
@@ -104,6 +105,15 @@ public class KHost extends KScriptable {
         return this.supportRoot.getApplicationConfigurationDataJSON();
     }
 
+    public String jsFunction_getApplicationInformationPlugins() {
+        StringBuilder builder = new StringBuilder();
+        for(String name : this.plugins.keySet()) {
+            if(builder.length() != 0) { builder.append(','); }
+            builder.append(name);
+        }
+        return builder.toString();
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     public void setNextPluginToBeRegistered(String pluginName, String databaseNamespace) {
         this.nextPluginToBeRegistered = pluginName;
@@ -111,11 +121,19 @@ public class KHost extends KScriptable {
         nextPluginDatabaseNamespace = databaseNamespace;
     }
 
-    public String getNextDatabaseNamespace() // for JdNamespace
-    {
-        String r = nextPluginDatabaseNamespace;
-        nextPluginDatabaseNamespace = null;
-        return r;
+    static public class DbNamespaceInformation {
+        public String name;
+        public String pluginName;
+        public String postgresSchemaName;
+    }
+
+    public DbNamespaceInformation getNextDatabaseNamespace() { // for JdNamespace
+        if(this.nextPluginDatabaseNamespace == null) { return null; }
+        DbNamespaceInformation info = new DbNamespaceInformation();
+        info.name = this.nextPluginDatabaseNamespace;
+        info.pluginName = this.nextPluginToBeRegistered;
+        info.postgresSchemaName = this.supportRoot.getPostgresSchemaName();
+        return info;
     }
 
     public boolean pluginImplementsHook(String pluginName, String hookName) {
@@ -401,7 +419,7 @@ public class KHost extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    private class FunctionRunner implements Runnable {
+    private static class FunctionRunner implements Runnable {
         private Function action;
         public Object result;
 
@@ -412,8 +430,9 @@ public class KHost extends KScriptable {
         @Override
         public void run() {
             Runtime runtime = Runtime.getCurrentRuntime();
-            this.result = action.call(runtime.getContext(), runtime.getJavaScriptScope(), action, null);
+            this.result = action.call(runtime.getContext(), runtime.getJavaScriptScope(), action, EMPTY_ARGS);
         }
+        private static final Object[] EMPTY_ARGS = new Object[] {};
     }
 
     public Object jsFunction_impersonating(KUser user, Function action) {
@@ -520,6 +539,10 @@ public class KHost extends KScriptable {
 
     public String jsFunction_getRightColumnHTML() {
         return this.supportRoot.getRightColumnHTML();
+    }
+
+    public boolean jsFunction_hasFileForPlugin(String pluginName, String pathname) {
+        return this.supportRoot.hasFileForPlugin(pluginName, pathname);
     }
 
     public Scriptable jsFunction_loadFileForPlugin(String pluginName, String pathname) {

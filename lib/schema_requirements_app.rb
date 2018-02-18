@@ -494,8 +494,8 @@ module SchemaRequirements
   end
 
   class ApplyToStoreObjectWithPlatformRequirements < ApplyToStoreObject
-    def apply(requirement, errors, context)
-      super
+    def check(requirement, errors, context)
+      context.have_checked(@object)
       PlatformRequirements.check(requirement, @object, errors)
     end
     def do_commit()
@@ -505,8 +505,8 @@ module SchemaRequirements
   end
 
   class ApplyToStoreObjectWithoutCommit < ApplyToStoreObject
-    def apply(requirement, errors, context)
-      super
+    def check(requirement, errors, context)
+      context.have_checked(@object)
       PlatformRequirements.check(requirement, @object, errors)
     end
     def info_for_commit_logging
@@ -529,6 +529,7 @@ module SchemaRequirements
       KObjectStore.with_superuser_permissions do
         @new_objects = []
         @new_objects_generic = []
+        @have_checked_object_by_objref = {}
         @objects = {}
         SCHEMA_TYPES.each do |type_ref|
           @objects[type_ref] = lookup = {}
@@ -722,6 +723,25 @@ module SchemaRequirements
 
     def service_user_group_requirement(group_requirement, user)
       @service_user_group_requirements << [group_requirement, user]
+    end
+
+    def have_checked(object)
+      @have_checked_object_by_objref[object.objref] = true
+    end
+
+    def perform_final_checks(errors)
+      super
+      [@new_objects, @new_objects_generic].each do |objects|
+        objects.each do |object|
+          unless @have_checked_object_by_objref[object.objref]
+            # Label categories are objects, but use titles rather than codes and are always complete, so don't need to be checked
+            if object.first_attr(A_TYPE) != O_TYPE_LABEL_CATEGORY
+              code = (object.first_attr(A_CODE) || object.first_attr(A_CONFIGURED_BEHAVIOUR) || '(unknown code)').to_s
+              errors << "#{code} is mentioned, but no requirements are specified"
+            end
+          end
+        end
+      end
     end
 
     def while_committing(applier)

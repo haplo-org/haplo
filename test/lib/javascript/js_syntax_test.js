@@ -12,6 +12,7 @@
     // ******************** Update the documentation if this is altered ********************
     var makeOptions = function() {
         return {
+            moz: true,
             asi: false,
             bitwise: false,
             boss: false,

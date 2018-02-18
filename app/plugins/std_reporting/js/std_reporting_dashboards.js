@@ -28,7 +28,7 @@ P.REPORTING_API.dashboard = function(E, specification) {
     dashboard.E = E;
     dashboard.specification = specification;
     // dashboard filters on specification.filter
-    dashboard.isExporting = (E.request.method === "POST");
+    dashboard.isExporting = E && (E.request.method === "POST");
 
     // Collect extra columns and other configuration in a standardised way
     var callServices = [

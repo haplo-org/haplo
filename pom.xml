@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.haplo</groupId>
   <artifactId>haplo</artifactId>
-  <version>3.20171024.0944.c89e2fa298</version>
+  <version>3.20180217.1537.1f284d22c3</version>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -27,7 +27,7 @@
     <dependency>
       <groupId>org.mozilla</groupId>
       <artifactId>rhino</artifactId>
-      <version>1.7.7</version>
+      <version>1.7.8</version>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>

@@ -389,6 +389,23 @@ TEST(function() {
         inserting(O.xml.parse('<insert><e/></insert>').cursor())); // cursor is at #document node
 
     // ----------------------------------------------------------------------
+    // Control character policy
+
+    var testCCPolicy = function(policy, expected) {
+        var ccpDoc = O.xml.document();
+        var c = ccpDoc.cursor();
+        if(policy !== '$NO_POLICY') { c = c.cursorWithControlCharacterPolicy(policy); }
+        c.element("e").text("ABC\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x0d\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1fDEF");
+        TEST.assert_equal('<?xml version="1.0" encoding="UTF-8" standalone="no"?><e>ABC'+expected+'DEF</e>', ccpDoc.toString());
+    };
+
+    testCCPolicy("$NO_POLICY", "&#0;&#1;&#2;&#3;&#4;&#5;&#6;&#7;&#8;\t\n&#11;&#12;&#13;&#14;&#15;&#16;&#17;&#18;&#19;&#20;&#21;&#22;&#23;&#24;&#25;&#26;&#27;&#28;&#29;&#30;&#31;");
+    testCCPolicy("entity-encode", "&#0;&#1;&#2;&#3;&#4;&#5;&#6;&#7;&#8;\t\n&#11;&#12;&#13;&#14;&#15;&#16;&#17;&#18;&#19;&#20;&#21;&#22;&#23;&#24;&#25;&#26;&#27;&#28;&#29;&#30;&#31;");
+    testCCPolicy("remove", "\t\n");
+    testCCPolicy("replace-with-space", "         \t\n                     ");
+    testCCPolicy("replace-with-question-mark", "?????????\t\n?????????????????????");
+
+    // ----------------------------------------------------------------------
     // Exceptions
 
     var problemsDocument = O.xml.parse("<root><child1/><child2><nested/></child2></root>");
@@ -461,5 +478,16 @@ TEST(function() {
     TEST.assert_exceptions(function() {
         c.attribute("x", "y");
     }, "XML Cursor is not on an Element");
+
+    var ccpDoc = O.xml.document();
+    TEST.assert_exceptions(function() {
+        ccpDoc.cursor().cursorWithControlCharacterPolicy("pants");
+    }, "Unknown control character policy: pants");
+    TEST.assert_exceptions(function() {
+        ccpDoc.cursor().cursorWithControlCharacterPolicy(undefined);
+    }, "Unknown control character policy: undefined");
+    TEST.assert_exceptions(function() {
+        ccpDoc.cursor().cursorWithControlCharacterPolicy(null);
+    }, "Unknown control character policy: null");
 
 });

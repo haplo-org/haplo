@@ -57,7 +57,25 @@ module PluginDebugging
       return exception.inspect
     end
 
+    RHINO_LINE_PREFIX = /\Aorg\/mozilla\/javascript\/gen\//
+
     def self.presentable_exception(exception)
+      backtrace = []
+      if exception.kind_of?(org.mozilla.javascript.RhinoException)
+        # Try to get the stack trace from the exception directly
+        last_line = nil
+        exception.getScriptStack().each do |sse|
+          fn = sse.fileName.gsub(RHINO_LINE_PREFIX,'')
+          if fn =~ /\Ap\/(.+)/
+            line = "#{$1} (line #{sse.lineNumber})"
+            if last_line != line
+              backtrace << line
+              last_line = line
+            end
+          end
+        end
+      end
+
       # Unwrap exceptions which have passed through one or more intepreters
       original_exception = exception
       if exception.kind_of?(org.mozilla.javascript.WrappedException)
@@ -73,12 +91,13 @@ module PluginDebugging
       message = message.dup
 
       # Build a santized backtrace (from the wrapped exception)
-      backtrace = []
-      original_exception.backtrace.each do |line|
-        if line =~ /\Aorg[\/\.]mozilla[\/\.]javascript[\/\.]gen[\/\.].+?\(p\/(.+?\.js)\:([0-9-]+)\)/i
-          file = $1
-          line = $2.to_i
-          backtrace << "#{file} (line #{line})" if line > 0
+      if backtrace.empty?
+        original_exception.backtrace.each do |line|
+          if line =~ /\Aorg[\/\.]mozilla[\/\.]javascript[\/\.]gen[\/\.].+?\(p\/(.+?\.js)\:([0-9-]+)\)/i
+            file = $1
+            line = $2.to_i
+            backtrace << "#{file} (line #{line})" if line > 0
+          end
         end
       end
 

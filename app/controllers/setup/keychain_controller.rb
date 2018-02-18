@@ -21,6 +21,7 @@ class Setup_KeychainController < ApplicationController
 
   def handle_info
     @credential = KeychainCredential.find(params[:id].to_i)
+    @ui = get_ui(@credential)
   end
 
   _GetAndPost
@@ -40,6 +41,7 @@ class Setup_KeychainController < ApplicationController
     else
       @credential = KeychainCredential.find(params[:id].to_i)
     end
+    @ui = get_ui(@credential)
     # Update/create credential
     if request.post?
       @credential.name = (params[:name] || '').strip
@@ -48,7 +50,8 @@ class Setup_KeychainController < ApplicationController
       # Secrets aren't sent to the browser, so need to be checked against a sentinal value
       old_secrets = @credential.secret || {}
       new_secrets = {}
-      (params[:secret] || {}).each do |key,value|
+      # Use password so parameters are filtered out of the logs
+      (params[:password] || {}).each do |key,value|
         if value == NOT_CHANGED
           if old_secrets.has_key?(key)
             new_secrets[key] = old_secrets[key]
@@ -60,7 +63,11 @@ class Setup_KeychainController < ApplicationController
         end
       end
       @credential.secret= new_secrets
-      @credential.save!
+      ActiveRecord::Base.logger.silence do
+        # Don't log save, as it would put secrets in the logs
+        @credential.save!
+      end
+      KApp.logger.info("KeychainCredential saved")
       redirect_to "/do/setup/keychain/info/#{@credential.id}?update=1"
     end
   end
@@ -79,6 +86,12 @@ class Setup_KeychainController < ApplicationController
   end
 
   def handle_about
+  end
+
+  # -------------------------------------------------------------------------
+
+  def get_ui(credential)
+    KeychainCredential::USER_INTERFACE[[credential.kind,credential.instance_kind]] || {}
   end
 
 end

@@ -70,6 +70,7 @@ public interface AppRoot {
     String userTimeZone();
 
     // Files
+    boolean hasFileForPlugin(String pluginName, String pathname);
     boolean loadFileForPlugin(String pluginName, String pathname, KBinaryDataStaticFile data);
 
     // Plugin functions

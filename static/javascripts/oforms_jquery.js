@@ -14,7 +14,7 @@
  *
  * ********************************************* */
 
-/*! oForms | (c) Haplo Services Ltd 2012 - 2017 | MIT License */
+/*! oForms | (c) Haplo Services Ltd 2012 - 2018 | MPLv2 License */
 
 /////////////////////////////// jquery_preamble.js ///////////////////////////////
 
@@ -662,7 +662,7 @@ var calendarPopup = (function() {
     var currentMonth;
     var monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-    var makePopupContents = function(dateComponents) {
+    var makePopupContents = function(dateComponents, minDate) {
         var d, year, month, day;
         if(dateComponents) {
             year = dateComponents[0]; month = dateComponents[1]; day = dateComponents[2];
@@ -690,10 +690,14 @@ var calendarPopup = (function() {
         // Output links for the used days
         while(d.getMonth() === (month - 1)) {
             var dd = d.getDate();
-            if(dd === day) {
-                html.push('<span class="oforms-calendar-popup-selected">', dd, '</span>');
+            if(d.getTime() < minDate) {
+                html.push('<span class="oforms-calendar-popup-invalid">', dd, '</span>');
             } else {
-                html.push('<a href="#" data-date="', year, ' ', month, ' ', dd, '">', dd, '</a>');
+                if(dd === day) {
+                    html.push('<span class="oforms-calendar-popup-selected">', dd, '</span>');
+                } else {
+                    html.push('<a href="#" data-date="', year, ' ', month, ' ', dd, '">', dd, '</a>');
+                }
             }
             d.setDate(dd+1);    // next day, will wrap to next month
         }
@@ -702,7 +706,7 @@ var calendarPopup = (function() {
 
     // Public interface
     return {
-        _display: function(input, dateComponents, clickFn) {
+        _display: function(input, dateComponents, clickFn, minDate) {
             if(!popup) {
                 // Create popup
                 popup = document.createElement('div');
@@ -718,7 +722,7 @@ var calendarPopup = (function() {
                             if(currentClickFn) {
                                 currentClickFn(components);
                             }
-                            popup.innerHTML = makePopupContents(components);
+                            popup.innerHTML = makePopupContents(components, minDate);
                         } else if(this.className === 'oforms-calendar-popup-month-move') {
                             // Back or forward on the months
                             var dir = (this.previousSibling) ? 1 : -1;  // back is first node in popup
@@ -730,11 +734,11 @@ var calendarPopup = (function() {
                                 m = 1;
                                 y++;
                             }
-                            popup.innerHTML = makePopupContents([y, m]);
+                            popup.innerHTML = makePopupContents([y, m], minDate);
                         }
                     });
             }
-            popup.innerHTML = makePopupContents(dateComponents);
+            popup.innerHTML = makePopupContents(dateComponents, minDate);
             // Position and show
             positionClone(popup, input, input.offsetWidth - 64, -192);
             $(popup).show();
@@ -759,9 +763,10 @@ oform.on({
         var userInput = this;
         // When element get the focus, remove the error marker, as it's distracting
         $(userInput).removeClass('oforms-invalid-date');
+        var minDate = $(this).parent().attr("data-min-date");
         calendarPopup._display(userInput, forgivingDateParse(userInput.value, true), function(dateComponents) {
             setDateFieldFromComponents(userInput, dateComponents);
-        });
+        }, minDate);
     },
     'blur': function() {
         // When element loses the focus, display an error marker on the field

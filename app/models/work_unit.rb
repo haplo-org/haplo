@@ -6,6 +6,7 @@
 
 
 class WorkUnit < ActiveRecord::Base
+  include KPlugin::HookSite
   include Java::OrgHaploJsinterfaceApp::AppWorkUnit
   composed_of :objref, :allow_nil => true, :class_name => 'KObjRef', :mapping => [[:obj_id,:obj_id]]
   belongs_to :created_by,     :class_name => 'User', :foreign_key => 'created_by_id'
@@ -49,6 +50,15 @@ class WorkUnit < ActiveRecord::Base
       wu.visible = true
     end
   }
+
+  before_save do
+    call_hook(:hPreWorkUnitSave) do |hooks|
+      hooks.run(self)
+    end
+    if @_js_object
+      Java::OrgHaploJsinterface::KWorkUnit.updateWorkUnit(@_js_object)
+    end
+  end
 
   # Delete all work units for an erased object, as this implies removing everything about the object
   KNotificationCentre.when(:os_object_change, :erase) do |name, detail, previous_obj, modified_obj, is_schema_object|
@@ -160,6 +170,10 @@ class WorkUnit < ActiveRecord::Base
 
   def jsSetTagsAsJson(tags)
     write_attribute('tags', tags ? PgHstore.generate_hstore(JSON.parse(tags)) : nil)
+  end
+
+  def jsStoreJSObject(object)
+    @_js_object = object
   end
 
   # TODO: Can jsSetOpenedAt and jsSetDeadline be done better? Workaround for change from JRuby 1.5.3 -> 1.6.0

@@ -75,14 +75,33 @@ KFRAMEWORK_DATABASE_NAME = KFRAMEWORK_DATABASE_CONFIG[KFRAMEWORK_ENV]["database"
 # Load environment, library code, and components
 require "config/environments/#{KFRAMEWORK_ENV}"
 require 'config/load'
+KFRAMEWORK_COMPONENT_INFO = []
 KFRAMEWORK_LOADED_COMPONENTS = []
-Dir.glob("#{KFRAMEWORK_ROOT}/components/*/load.rb").sort.each do |load_component|
-  raise "Bad component filename" unless load_component =~ /\/components\/(.+?)\/load\.rb\z/
-  KFRAMEWORK_LOADED_COMPONENTS << $1
-  require load_component
+PlatformComponentInfo = Struct.new(:path, :name, :display_name, :should_load)
+component_configuration =JSON.parse(KInstallProperties.get(:component_configuration, '{}'))
+load_all_components = (KFRAMEWORK_ENV != 'production') # 'testing' environments need everything loaded
+Dir.glob("#{KFRAMEWORK_ROOT}/components/*/component.json").sort.each do |component_json|
+  raise "Bad component filename" unless component_json =~ /\/components\/(.+?)\/component\.json\z/
+  cname = $1
+  cjson = JSON.parse(File.read(component_json))
+  raise "Bad component.json: #{component_json}" unless cname == cjson['componentName']
+  should_load = !(cjson['defaultDisable'])
+  should_load = true if !should_load && (component_configuration['enable'] || []).include?(cname)
+  should_load = false if should_load && (component_configuration['disable'] || []).include?(cname)
+  should_load = true if load_all_components
+  cinfo = PlatformComponentInfo.new(File.dirname(component_json), cname, cjson['displayName'], should_load)
+  KFRAMEWORK_COMPONENT_INFO << cinfo
+  KFRAMEWORK_LOADED_COMPONENTS << cinfo.name if cinfo.should_load
 end
-puts "Platform components available: #{KFRAMEWORK_LOADED_COMPONENTS.join(' ')}"
 KFRAMEWORK_IS_MANAGED_SERVER = KFRAMEWORK_LOADED_COMPONENTS.include?('management')
+KFRAMEWORK_COMPONENT_INFO.sort_by! { |i| [i.should_load ? 0 : 1, i.name] } # want sort by name, different to pathname of component.json
+KFRAMEWORK_COMPONENT_INFO.each do |cinfo|
+  require "#{cinfo.path}/load.rb" if cinfo.should_load
+end
+puts "Components:"
+KFRAMEWORK_COMPONENT_INFO.each do |cinfo|
+  puts sprintf("%08s %-20s %-50s", cinfo.should_load ? 'enable' : 'disable', cinfo.name, cinfo.display_name)
+end
 
 # Setup logging
 KApp.logger_configure(KFRAMEWORK_LOG_FILE, 40, 4*1024*1024)

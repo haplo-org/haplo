@@ -15,6 +15,10 @@ module JSObjRefSupport
     KObjectStore.behaviour_of(KObjRef.new(objID))
   end
 
+  def self.exactBehaviourOfObjRef(objID)
+    KObjectStore.behaviour_of_exact(KObjRef.new(objID))
+  end
+
   def self.refOfBehaviour(behaviour)
     objref = KObjectStore.behaviour_ref(behaviour.to_s)
     objref ? objref.obj_id : nil

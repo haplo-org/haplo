@@ -21,10 +21,14 @@ class BCryptJTest < Test::Unit::TestCase
 
     # Another one
     encode1 = BCrypt::Password.create('hello123').to_s
+    assert encode1.start_with?('$2a$13$') # 13 matches BCrypt::BCRYPT_ROUNDS
     assert encode1 != PASSWORD_BCRYPTED
     assert encode1 =~ /\A\$\w+\$/ # general form
-    assert   (BCrypt::Password.new(encode1) == 'hello123')
-    assert ! (BCrypt::Password.new(encode1) == 'afd98fij')
+    time_to_check_two_passwords_in_ms = Benchmark.ms do
+      assert   (BCrypt::Password.new(encode1) == 'hello123')
+      assert ! (BCrypt::Password.new(encode1) == 'afd98fij')
+    end
+    assert time_to_check_two_passwords_in_ms > 800 # as it's supposed to be slow
 
     # Encoding again shouldn't have the same output
     encode2 = BCrypt::Password.create('hello123').to_s
@@ -41,6 +45,16 @@ class BCryptJTest < Test::Unit::TestCase
     assert encode_na != encode1
     assert   (BCrypt::Password.new(encode_na) == 'abc日本語')
     assert ! (BCrypt::Password.new(encode_na) == 'abc???')  # old version of library had security flaw which converted non-ASCII chars to ?
+
+    # Check configuration
+    assert BCrypt::BCRYPT_ROUNDS > Java::OrgHaploCommonUtils::BCrypt::GENSALT_DEFAULT_LOG2_ROUNDS
+
+    # Can create with smaller numbers of rounds, and it's quicker
+    encode_lowrounds = BCrypt::Password.create('hello1234', 6).to_s
+    time_to_check_lowrounds_in_ms = Benchmark.ms do
+      assert (BCrypt::Password.new(encode_lowrounds) == 'hello1234')
+    end
+    assert time_to_check_lowrounds_in_ms < 100
 
   end
 

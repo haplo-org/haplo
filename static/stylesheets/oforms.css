@@ -22,6 +22,11 @@
     margin-bottom: 5px;
 }
 
+.oform .oforms-explanation p {
+    margin: 0 0 4px 0;
+    color: #666;
+}
+
 .oform input[type=text], .oform textarea {
     width: 400px;
 }
@@ -353,6 +358,10 @@
     color: #fff;
 }
 
+#oforms-calendar-popup span.oforms-calendar-popup-invalid {
+    color: #999;
+}
+
 #oforms-calendar-popup :nth-child(7n+4), #oforms-calendar-popup :nth-child(7n+10) {
     background: #fff; /* saturdays and sundays */
 }
@@ -451,6 +460,15 @@
 #z__ws_content table tr.oforms-display-table-headings th {
     text-align: center;
     width: auto;
+}
+
+.oform .oforms-explanation p {
+    font-size: 12px;
+    line-height: 16px;
+}
+
+.oform h2 {
+    border-bottom: 1px solid #ddd;
 }
 
 /* file remove links */

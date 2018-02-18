@@ -282,6 +282,13 @@ class JSSupportRoot
     controller._right_column_html_for_js()
   end
 
+  def hasFileForPlugin(pluginName, pathname)
+    plugin = KPlugin.get(pluginName)
+    return false if plugin == nil
+    disk_pathname, filename, mime_type = plugin.get_plugin_data_file(pathname)
+    return !!disk_pathname
+  end
+
   def loadFileForPlugin(pluginName, pathname, binaryData)
     plugin = KPlugin.get(pluginName)
     return false if plugin == nil

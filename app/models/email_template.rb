@@ -58,7 +58,7 @@ class EmailTemplate < ActiveRecord::Base
   #   Message sending
   # ------------------------------------------------------------------------------------------------------------
 
-  EmailDelivery = Struct.new(:message, :to_address, :prevent_default_delivery)
+  EmailDelivery = Struct.new(:message, :to_address, :smtp_sender, :prevent_default_delivery)
 
   # send an email using this template
   # e.g.
@@ -115,13 +115,13 @@ class EmailTemplate < ActiveRecord::Base
       message.body = [make_part(plain, 'text/plain'), make_part(html, 'text/html')]
     end
     # Send the email
-    delivery = EmailDelivery.new(message, to_addr_only, false)
+    delivery = EmailDelivery.new(message, to_addr_only, self.from_email_address, false)
     KNotificationCentre.notify(:email, :send, delivery)
     if delivery.prevent_default_delivery
       KApp.logger.info("--- Normal email delivery was prevented. ---")
     else
       Net::SMTP.start('127.0.0.1', 25) do |smtp|
-        smtp.open_message_stream(self.from_email_address, to_addr_only) do |stream|
+        smtp.open_message_stream(delivery.smtp_sender, to_addr_only) do |stream|
           RMail::Serialize.write(stream, message)
         end
       end
@@ -144,7 +144,6 @@ class EmailTemplate < ActiveRecord::Base
   def checked_email_url(url)
     # Don't change empty URLs, or URLs which begin with a scheme name
     return url if !url || url =~ /\A[A-Za-z][A-Za-z0-9+\.-]*:/
-    KNotificationCentre.notify(:email, :bad_url, url)
     %!#{KApp.url_base()}#{url =~ /\A\// ? '' : '/'}#{url}!
   end
 

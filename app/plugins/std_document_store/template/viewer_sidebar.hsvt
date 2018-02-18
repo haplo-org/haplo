@@ -1,5 +1,14 @@
 std:plugin:resources("viewer.css")
 
+if(couldShowNumberOfComments) {
+    <div style="margin-bottom:16px">
+        <a href=url(? comments="1") class="z__button_link">
+            switch(couldShowNumberOfComments) { "Show " couldShowNumberOfComments " comments" }
+                "1" { "Show comment" }
+        </a>
+    </div>
+}
+
 if(_showFormNavigation) {
   <div class="z__docstore_nav_box">
     <div class="z__docstore_nav_title"> "Sections" </div>

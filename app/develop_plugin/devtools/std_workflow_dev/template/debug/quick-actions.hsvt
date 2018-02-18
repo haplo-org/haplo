@@ -1,0 +1,16 @@
+
+std:plugin:resources("debug.css")
+
+<div class="z__workflow_debug_quick_action">
+  if(uid) {
+  <form class="impersonate" method="POST" action="/do/authentication/impersonate"> 
+    std:form:token()
+    <input type="hidden" name="uid" value=uid>
+    <input type="hidden" name="rdr" value=M.url>
+    <input type="submit" value="Impersonate">
+  </form>
+  }
+  <form method="GET" action=["/do/workflow-dev/debug/transition-to-previous-state/" M.workUnit.id]>
+    <input type="submit" value="Previous state">
+  </form>
+</div>

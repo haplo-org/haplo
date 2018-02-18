@@ -21,6 +21,7 @@ class AuthenticationControllerTest < IntegrationTest
       @_users[app_id].kind = User::KIND_USER
       @_users[app_id].password = 'pass1234'
       @_users[app_id].save!
+      assert @_users[app_id].read_attribute('password').start_with?('$2a$13$') # check BCrypt rounds
     end
   end
 
@@ -205,6 +206,10 @@ class AuthenticationControllerTest < IntegrationTest
     post "/do/authentication/change-password", {:old => 'pass1234', :pw1 => 'pants9872', :pw2 => 'pants9872'}
     assert_select 'h1', 'Password changed'
     assert_audit_entry(:kind => 'USER-CHANGE-PASS', :user_id => @_users[_TEST_APP_ID].id, :entity_id => @_users[_TEST_APP_ID].id, :displayable => false)
+    # Check changed password
+    changed_user = User.find(@_users[_TEST_APP_ID].id)
+    assert changed_user.read_attribute('password') != @_users[_TEST_APP_ID].read_attribute('password')
+    assert changed_user.read_attribute('password').start_with?('$2a$13$') # check BCrypt rounds
 
     # Log out
     get_a_page_to_refresh_csrf_token

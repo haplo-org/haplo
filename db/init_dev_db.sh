@@ -17,6 +17,8 @@ mkdir -p $HOME/haplo-dev-support/khq-dev/textweighting
 mkdir -p $HOME/haplo-dev-support/khq-dev/plugins
 mkdir -p $HOME/haplo-dev-support/khq-dev/messages/app_create
 mkdir -p $HOME/haplo-dev-support/khq-dev/messages/app_modify
+mkdir -p $HOME/haplo-dev-support/khq-dev/messages/app_update
+mkdir -p $HOME/haplo-dev-support/khq-dev/messages/app_sync
 mkdir -p $HOME/haplo-dev-support/khq-dev/messages/spool
 
 # Initialise database

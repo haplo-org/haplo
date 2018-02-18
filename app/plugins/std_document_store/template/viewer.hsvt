@@ -1,5 +1,19 @@
 std:plugin:resources("viewer.css")
 
+if(requiresComments) {
+    std:plugin:resources("comments.css" "comments.js")
+    // Configuration of commenting system
+    <div id="z__docstore_comments_configuration"
+        data-displayedversion=versionForComments
+        data-view=if(options.viewComments){"1"}
+        data-add=if(options.addComment){"1"}
+        data-url=options.commentsUrl
+        data-isviewer="1"
+    >
+        std:form:token()
+    </div>
+}
+
 if(additionalUI.top) { render(additionalUI.top) }
 
 // Only show changes UI if there are options (more than one version, show versions enabled)

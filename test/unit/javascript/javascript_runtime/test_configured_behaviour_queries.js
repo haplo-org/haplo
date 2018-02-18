@@ -12,16 +12,28 @@ TEST(function() {
     var foo = O.ref(FOO);
     TEST.assert_equal('test:behaviour:foo', foo.behaviour);
     TEST.assert_equal('test:behaviour:foo', foo.behaviour);
+    TEST.assert_equal('test:behaviour:foo', foo.getBehaviourExactMaybe());
 
     TEST.assert(O.behaviourRef('test:behaviour:foo') instanceof $Ref);
     TEST.assert_equal(FOO, O.behaviourRef('test:behaviour:foo').objId);
 
     TEST.assert_equal('test:behaviour:foo', O.ref(FOOCHILD).behaviour);
+    TEST.assert_equal(null, O.ref(FOOCHILD).getBehaviourExactMaybe());
+
     TEST.assert_equal('test:behaviour:foo', O.ref(FOOCHILD2).behaviour);
+    TEST.assert_equal(null, O.ref(FOOCHILD2).getBehaviourExactMaybe());
+
     TEST.assert_equal('test:behaviour:foo', O.ref(FOOCHILD3).behaviour);
+    TEST.assert_equal('test:behaviour:foochild3', O.ref(FOOCHILD3).getBehaviourExactMaybe());
+
     TEST.assert_equal('test:behaviour:bar', O.ref(BAR).behaviour);
+    TEST.assert_equal('test:behaviour:bar', O.ref(BAR).getBehaviourExactMaybe());
+
     TEST.assert_equal('test:behaviour:bar', O.ref(BARCHILD).behaviour);
+    TEST.assert_equal('test:behaviour:barchild', O.ref(BARCHILD).getBehaviourExactMaybe());
+
     TEST.assert_equal(null, O.ref(NOTHING).behaviour);
+    TEST.assert_equal(null, O.ref(NOTHING).getBehaviourExactMaybe());
 
     TEST.assert_equal(FOO, O.behaviourRef('test:behaviour:foo').objId);
     TEST.assert_equal(FOO, O.behaviourRef('test:behaviour:foo').objId); // repeated

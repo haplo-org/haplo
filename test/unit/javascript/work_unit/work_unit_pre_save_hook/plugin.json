@@ -1,0 +1,10 @@
+{
+  "pluginName": "work_unit_pre_save_hook",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Work Unit Pre-save Hook Test Plugin",
+  "displayDescription": "For testing",
+  "installSecret": "ABC123",
+  "apiVersion": 4,
+  "load": ["js/test_work_unit_pre_save_hook.js"]
+}

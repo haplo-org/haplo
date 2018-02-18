@@ -1,6 +1,18 @@
 <% @page_title = 'Keychain Credential: '+h(@credential.name) %>
 <%= sys_mng_header %>
 
+<%
+  if @ui[:information]
+    @ui[:information].call(@credential).each do |kind,text|
+      if kind == :warning
+        %><p class="z__management_notice"><%= h(text) %></p><%
+      else
+        %><p><b><%= h(text) %></b></p><%
+      end
+    end
+  end
+%>
+
 <table class="z__mangement_kv_table">
   <tr><th>Name</th><td><%= h(@credential.name) %></td></tr>
   <tr><th>Kind</th><td><%= h(@credential.kind) %></td></tr>
@@ -19,6 +31,8 @@
     end
   %>
 </table>
+
+<% if @ui[:notes_display] %><div style="padding:12px 8px 0 8px"><%= text_simple_format(@ui[:notes_display]) %></div><% end %>
 
 <div class="z__management_extra_buttons_holder">
   <form method="GET" action="/do/setup/keychain/delete/<%= @credential.id %>">

@@ -79,6 +79,11 @@ static/images/ubuntu-*
   http://font.ubuntu.com/
   Ubuntu Font Licence: http://font.ubuntu.com/licence/
 
+Font Awesome (comment icon)
+app/plugins/std_document_store/static/comment.svg
+  http://fontawesome.io/
+  http://fontawesome.io/license/
+
 html-scanner
 test/lib/vendor/html-scanner/html/*
   Licensed under MIT and/or CC By license.

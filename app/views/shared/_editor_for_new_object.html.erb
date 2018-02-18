@@ -13,6 +13,9 @@
 
   # Use the KEditor class to build the javascript
   type = obj.first_attr(KConstants::A_TYPE)
+  if info.has_key?(:read_only_attributes)
+    editor_options[:read_only_attributes] = (editor_options[:read_only_attributes]||[]) + info[:read_only_attributes]
+  end
   editor_options.merge!(info[:editor_options] || {})
   editor_js_type, editor_js_attrs = KEditor.js_for_obj_attrs(obj, editor_options)
 

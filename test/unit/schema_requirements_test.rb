@@ -590,6 +590,9 @@ __E
 
       restriction test:restriction:one
 
+      type std:type:person
+          attribute test:attribute:used-on-type-but-not-defined
+
     __E
     expected_errors = [
         "Unknown kind 'not-a-requirement-kind'",
@@ -602,6 +605,7 @@ __E
         "test:attribute:no-details must have a title",
         "test:attribute:no-details must have a search-name",
         "test:attribute:no-details must have a data-type",
+        "test:attribute:used-on-type-but-not-defined is mentioned, but no requirements are specified",
         "test:aliased-attribute:no-alias-of must have a title",
         "test:aliased-attribute:no-alias-of must have a search-name",
         "test:aliased-attribute:no-alias-of must have an alias-of",

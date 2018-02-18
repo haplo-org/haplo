@@ -497,6 +497,11 @@ class KObjectStore
     result.length > 0 ? result.first.first.to_s : nil
   end
 
+  def behaviour_of_exact(ref)
+    result = KApp.get_pg_database.perform("SELECT value FROM os_index_identifier WHERE id=#{ref.obj_id.to_i} AND identifier_type=#{T_IDENTIFIER_CONFIGURATION_NAME} AND attr_desc=#{A_CONFIGURED_BEHAVIOUR} LIMIT 1")
+    result.length > 0 ? result.first.first.to_s : nil
+  end
+
   # Return the ref of the object with the given behaviour, may return non-root objects
   # so child behaviours can be addressed. 
   def behaviour_ref(behaviour)

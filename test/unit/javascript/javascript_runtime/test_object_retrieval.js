@@ -186,6 +186,10 @@ TEST(function() {
     x.append("SomethingXYZ", ATTR.Title);
     x.append(4, 45, QUAL["dc:qualifier:alternative"]);
     x.append(56, 563);
+    x.appendWithIntValue(57.5, 564);
+    x.appendWithIntValue(58, 565);
+    TEST.assert_exceptions(function() { x.appendWithIntValue(undefined); }, "Not a numeric type when calling appendWithIntValue()");
+    TEST.assert_exceptions(function() { x.appendWithIntValue("12"); }, "Not a numeric type when calling appendWithIntValue()");
     x.append(O.text(O.T_TEXT_PARAGRAPH, "Ping\ncarrots"), ATTR["std:attribute:notes"]);
     x.save();
     TEST.assert(x.ref !== null);

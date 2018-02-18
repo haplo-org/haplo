@@ -946,7 +946,7 @@ var KApp = (function($) {
             if($('#z__aep_tools_popup_menu').length === 0) {
                 $(document.body).append('<div id="z__aep_tools_popup_menu">'+KApp.p__spinnerHtml+'</div>');
                 // Start an AJAX request to populate it
-                $.ajax('/do/tools?pop=1', {
+                $.ajax('/do/tools?pop=1&t='+(new Date()).getTime(), {   // include time to help stop pesky browsers caching things they shouldn't. (Hello Safari).
                     dataType: "text",
                     success: function(html) {
                         $('#z__aep_tools_popup_menu').html(html);

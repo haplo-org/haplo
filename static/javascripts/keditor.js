@@ -662,6 +662,13 @@ _.extend(KEdObjRef.prototype, {
                 } else if(!disable_server_call) {
                     // Make a request to the server if there isn't one already in progress
                     if(!this.q__lookupRequestText && text !== '') {
+                        // Try seeing if a plugin wants to take over the query
+                        var queryUrl;
+                        for(var f = 0; f < KEditor.p__refLookupRedirectorFunctions.length; ++f) {
+                            queryUrl = KEditor.p__refLookupRedirectorFunctions[f](this.p__keditorValueControl.q__defn.p__desc, text);
+                            if(queryUrl) { break; }
+                        }
+
                         // Check that truncated versions of the text haven't returned zero results
                         var ok_to_ask_server = true;
                         for(var n = text.length - 1; n > 0; n--) {
@@ -673,10 +680,14 @@ _.extend(KEdObjRef.prototype, {
                         }
 
                         // Make the request from the server if it's worth doing
-                        if(ok_to_ask_server) {
+                        // If there is a queryUrl set now, a plugin has overriden the query, and the assumption about truncated text is not valid
+                        if(queryUrl || ok_to_ask_server) {
                             // Fire off the request
-                            $.ajax('/api/edit/controlled_lookup?desc='+this.p__keditorValueControl.q__defn.p__desc+
-                                '&text='+encodeURIComponent(text)+this.j__extraInfoForControlledLookupRequest(),
+                            if(!queryUrl) {
+                                queryUrl = '/api/edit/controlled_lookup?desc='+this.p__keditorValueControl.q__defn.p__desc+
+                                    '&text='+encodeURIComponent(text)+this.j__extraInfoForControlledLookupRequest();
+                            }
+                            $.ajax(queryUrl,
                                 {
                                     dataType:"json",
                                     success:this.q__lookupReceived,
@@ -2912,6 +2923,7 @@ KEditor.p__delegate_constructors = {};
 KEditor.p__pluginTextTypeValueConstructor = {};
 KEditor.p__KAttrContainer = KAttrContainer;
 KEditor.p__KEdObjRef = KEdObjRef;
+KEditor.p__refLookupRedirectorFunctions = [];
 
 
 // ----------------------------------------------------------------------------------------------------

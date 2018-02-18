@@ -8,6 +8,7 @@ package org.haplo.jsinterface;
 
 import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
+import org.haplo.javascript.JsJavaInterface;
 import org.haplo.jsinterface.util.WorkUnitTags;
 import org.mozilla.javascript.*;
 
@@ -40,19 +41,27 @@ public class KWorkUnit extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    static public KWorkUnit fromAppWorkUnit(AppWorkUnit workUnit) {
+    /* 
+        The storeJSObject flag exists specifically for the hPreWorkUnitSave hook. As jsFunction_save() stores the data and
+        tags before calling workUnit.save, the hook needs to be able to call the update function itself, to allow the hook to change
+        the data or the tags. This requires the ruby object to have access to the JS object.
+    */
+    static public KWorkUnit fromAppWorkUnit(AppWorkUnit workUnit, boolean storeJSObject) {
         KWorkUnit w = (KWorkUnit)Runtime.createHostObjectInCurrentRuntime("$WorkUnit");
         w.setWorkUnit(workUnit);
+        if(storeJSObject) {
+            workUnit.jsStoreJSObject(w);
+        }
         return w;
     }
 
     // --------------------------------------------------------------------------------------------------------------
     public static KWorkUnit jsStaticFunction_constructNew(String workType) {
-        return KWorkUnit.fromAppWorkUnit(rubyInterface.constructWorkUnit(workType));
+        return KWorkUnit.fromAppWorkUnit(rubyInterface.constructWorkUnit(workType), false);
     }
 
     public static KWorkUnit jsStaticFunction_load(int id) {
-        return KWorkUnit.fromAppWorkUnit(rubyInterface.loadWorkUnit(id));
+        return KWorkUnit.fromAppWorkUnit(rubyInterface.loadWorkUnit(id), false);
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -234,8 +243,8 @@ public class KWorkUnit extends KScriptable {
 
     // --------------------------------------------------------------------------------------------------------------
     public boolean jsFunction_isActionableBy(Object userValue) {
-        if(userValue instanceof Integer) {
-            userValue = KUser.jsStaticFunction_getUserById((Integer)userValue);
+        if(userValue instanceof Number) {
+            userValue = KUser.jsStaticFunction_getUserById(((Number)userValue).intValue());
         }
         KUser user = (KUser)userValue;
         if(user.jsGet_isGroup()) {
@@ -246,28 +255,32 @@ public class KWorkUnit extends KScriptable {
 
     // --------------------------------------------------------------------------------------------------------------
     public KWorkUnit jsFunction_save() {
-        if(this.gotData) {
-            // Data needs updating
-            if(this.data == null) {
-                this.workUnit.jsSetDataRaw(null);
-            } else {
-                Runtime runtime = Runtime.getCurrentRuntime();
-                this.workUnit.jsSetDataRaw(runtime.jsonStringify(this.data));
-            }
-        }
-        if(this.gotTags) {
-            // Tags need updating
-            if(this.tags == null) {
-                this.workUnit.jsSetTagsAsJson(null);
-            } else {
-                Runtime runtime = Runtime.getCurrentRuntime();
-                this.workUnit.jsSetTagsAsJson(runtime.jsonStringify(this.tags));
-            }
-        }
+        updateWorkUnit(this);
         if(!this.workUnit.save()) {
             throw new OAPIException("Failed to save work unit");
         }
         return this;
+    }
+
+    public static void updateWorkUnit(KWorkUnit workUnit) {
+        if(workUnit.gotData) {
+            // Data needs updating
+            if(workUnit.data == null) {
+                workUnit.workUnit.jsSetDataRaw(null);
+            } else {
+                Runtime runtime = Runtime.getCurrentRuntime();
+                workUnit.workUnit.jsSetDataRaw(runtime.jsonStringify(workUnit.data));
+            }
+        }
+        if(workUnit.gotTags) {
+            // Tags need updating
+            if(workUnit.tags == null) {
+                workUnit.workUnit.jsSetTagsAsJson(null);
+            } else {
+                Runtime runtime = Runtime.getCurrentRuntime();
+                workUnit.workUnit.jsSetTagsAsJson(runtime.jsonStringify(workUnit.tags));
+            }
+        }  
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -279,25 +292,12 @@ public class KWorkUnit extends KScriptable {
     private int valueToRequiredUserId(Object value, String propertyName) {
         Integer id = null;
         if(value != null) {
-            id = valueToUserIdNullAllowed(value, propertyName);
+            id = JsJavaInterface.valueToUserIdNullAllowed(value, propertyName);
         }
         if(id == null) {
             throw new OAPIException("null not allowed for work unit property " + propertyName);
         }
         return id;
-    }
-
-    private Integer valueToUserIdNullAllowed(Object value, String propertyName) {
-        if(value != null) {
-            if(value instanceof Integer) {
-                return ((Integer)value == 0) ? null : (Integer)value;
-            } else if(value instanceof KUser) {
-                return ((KUser)value).jsGet_id();
-            } else {
-                throw new OAPIException("Bad type of argument for work unit property " + propertyName);
-            }
-        }
-        return null;
     }
 
     private Date convertAndCheckDate(Object date, boolean required, String property) {
@@ -331,7 +331,7 @@ public class KWorkUnit extends KScriptable {
 
         KWorkUnit[] results = new KWorkUnit[units.length];
         for(int i = 0; i < units.length; ++i) {
-            results[i] = KWorkUnit.fromAppWorkUnit(units[i]);
+            results[i] = KWorkUnit.fromAppWorkUnit(units[i], false);
         }
         return results;
     }
@@ -349,7 +349,7 @@ public class KWorkUnit extends KScriptable {
     public static String fastWorkUnitRender(AppWorkUnit workUnit, String context) {
         Runtime runtime = Runtime.getCurrentRuntime();
         Object result = runtime.callSharedScopeJSClassFunction("$Plugin", "$fastWorkUnitRender", new Object[] {
-            fromAppWorkUnit(workUnit), context
+            fromAppWorkUnit(workUnit, false), context
         });
         return ((result != null) && (result instanceof CharSequence)) ? result.toString() : null;
     }
@@ -357,7 +357,7 @@ public class KWorkUnit extends KScriptable {
     public static String workUnitRenderForEvent(String eventName, AppWorkUnit workUnit) {
         Runtime runtime = Runtime.getCurrentRuntime();
         Object result = runtime.callSharedScopeJSClassFunction("$Plugin", "$workUnitRenderForEvent", new Object[] {
-            eventName, fromAppWorkUnit(workUnit)
+            eventName, fromAppWorkUnit(workUnit, false)
         });
         return ((result != null) && (result instanceof CharSequence)) ? result.toString() : null;
     }

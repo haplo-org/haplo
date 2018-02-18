@@ -25,6 +25,9 @@ KMESSAGE_QUEUE_DIR = ENV_DATA_ROOT+'/messages'
 # File store
 KFILESTORE_PATH = ENV_DATA_ROOT+'/files'
 
+# Generic 'run' directory
+KFRAMEWORK_RUN_DIR = '/oneis/run'
+
 # Accounting preserved data file
 KACCOUNTING_PRESERVED_DATA = ENV_DATA_ROOT+'/run/accounting-data'
 

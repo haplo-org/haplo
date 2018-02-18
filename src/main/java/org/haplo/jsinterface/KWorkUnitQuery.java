@@ -163,7 +163,7 @@ public class KWorkUnitQuery extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public int jsFunction_count() {
+    public Integer jsFunction_count() {
         return KWorkUnit.executeCount(this);
     }
 
@@ -241,8 +241,10 @@ public class KWorkUnitQuery extends KScriptable {
     // --------------------------------------------------------------------------------------------------------------
     private Integer valueToUserIdNullAllowed(Object value, String propertyName) {
         if(value != null) {
-            if(value instanceof Integer) {
-                return ((Integer)value == 0) ? null : (Integer)value;
+            if(value instanceof Number) {
+                // Interpreter and compiler use different types
+                int intvalue = ((Number)value).intValue();
+                return (intvalue == 0) ? null : (Integer)intvalue;
             } else if(value instanceof KUser) {
                 return ((KUser)value).jsGet_id();
             } else {

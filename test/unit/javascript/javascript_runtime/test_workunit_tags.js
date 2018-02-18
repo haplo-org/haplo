@@ -112,10 +112,10 @@ TEST(function() {
 
     TEST.assert_exceptions(function() {
         O.work.query("test:tags").tag("t1",{});
-    }, "Only Strings, numbers and Refs can be used as WorkUnit tags.");
+    }, "Invalid type of object for conversion to string.");
     TEST.assert_exceptions(function() {
         O.work.query("test:tags").tag("t1",[]);
-    }, "Only Strings, numbers and Refs can be used as WorkUnit tags.");
+    }, "Invalid type of object for conversion to string.");
     TEST.assert_exceptions(function() {
         O.work.query("test:tags").tag("t1",undefined);
     }, "undefined cannot be used with WorkUnitQuery tag()");

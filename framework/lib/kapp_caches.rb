@@ -116,8 +116,10 @@ module KApp
     thread_context = self._thread_context
     app_info = thread_context.current_app_info
     raise "No app selected" if app_info == nil
+    old_caches = nil
     app_info.lock.synchronize do
       cache_list = app_info.caches[cache_number]
+      old_caches = cache_list.caches
       cache_list.caches = Array.new
       # Increment serial number so old caches don't get checked in
       cache_list.serial = cache_list.serial + 1
@@ -132,6 +134,29 @@ module KApp
         checkouts[cache_number] = nil
       end
     end
+    # Tell any inactive objects they were invalidated?
+    if old_caches
+      old_caches.each do |cache|
+        cache.kapp_cache_invalidated_inactive if cache.respond_to?(:kapp_cache_invalidated_inactive, false)
+      end
+    end
+  end
+
+  # Very specific functionality Used by developer loader
+  def self._devmode__cache_invalidate_maybe_preserving_cached_objects(cache_number)
+    did_preservation = false
+    thread_context = self._thread_context
+    app_info = thread_context.current_app_info
+    app_info.lock.synchronize do
+      cache_list = app_info.caches[cache_number]
+      filtered_caches = cache_list.caches.select { |o| yield o }
+      if filtered_caches.length > 0
+        cache_list.caches = filtered_caches
+        cache_list.serial = cache_list.serial + 1
+        did_preservation = true
+      end
+    end
+    did_preservation
   end
 
   def self.cache_checkin_all_caches

@@ -1443,13 +1443,6 @@ span.z__drag_handle {  /* drag handle */
     padding-top: 10px;
 }
 
-.z__help_system_popup_link {
-    display: block;
-    margin: 0;
-    padding: 1px 0 0 18px;
-    background: url(/images/newwindow.gif) 0 no-repeat;
-}
-
 /* ---------------------------------------------------------------------------- */
 /* Put 3D border around spinner */
 .z__spinner {

@@ -11,6 +11,7 @@
       "js/docstore_instance.js",
       "js/docstore_viewer.js",
       "js/docstore_store.js",
+      "js/docstore_comments.js",
       "js/docstore_workflow.js"
     ]
 }

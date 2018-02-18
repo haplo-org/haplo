@@ -374,7 +374,11 @@ public class JdTable extends KScriptable {
             for(Field field : fields) {
                 if(!existingFields.containsKey(field.getDbNameForExistenceTest())) {
                     if(!field.isNullable()) {
-                        throw new OAPIException("Cannot automatically migrate table definition: field "+field.getJsName()+" is not nullable");
+                        throw new OAPIException(
+                            "Cannot automatically migrate table definition: in plugin "+this.namespace.getPluginName()+
+                            ", table "+this.jsName+
+                            ", column "+field.getJsName()+
+                            " is not nullable");
                     }
                     if(firstColumn) { firstColumn = false; } else { alter.append(","); }
                     alter.append("\nADD COLUMN ");

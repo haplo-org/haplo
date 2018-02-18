@@ -9,6 +9,8 @@ class WorkUnitTest < Test::Unit::TestCase
 
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/work_unit/work_unit_notifications")
 
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/work_unit/work_unit_pre_save_hook")
+
   def setup
     db_reset_test_data
   end
@@ -337,4 +339,50 @@ class WorkUnitTest < Test::Unit::TestCase
     end
   end
 
+  def test_work_unit_pre_save_hook
+    tags = {"a"=>"b", "c"=>"d"}
+    tags2 = {"test1"=>"testtest"}
+    begin
+      # Ruby plugin
+      raise "Failed to install plugin" unless KPlugin.install_plugin("work_unit_pre_save_hook_test")
+      wu = WorkUnit.new({
+        :work_type => 'test1',
+        :opened_at => Time.now,
+        :created_by_id  => 41,
+        :actionable_by_id => 42,
+        :data => {"x"=>2}
+      })
+      wu.save!
+      wu4 = WorkUnit.find(wu.id)
+      assert_equal tags, PgHstore.parse_hstore(wu4.tags)
+    ensure
+      KPlugin.uninstall_plugin("work_unit_pre_save_hook_test")
+    end
+
+    begin 
+      # Javascript plugin
+      raise "Failed to install plugin" unless KPlugin.install_plugin("work_unit_pre_save_hook")
+      wu2 = WorkUnit.new({
+        :work_type => 'test1',
+        :opened_at => Time.now,
+        :created_by_id  => 41,
+        :actionable_by_id => 42
+      })
+      wu2.save!
+      wu3 = WorkUnit.find(wu2.id)
+      assert_equal "123", wu3.data["test"]
+      assert_equal tags2, PgHstore.parse_hstore(wu3.tags)
+    ensure
+      KPlugin.uninstall_plugin("work_unit_pre_save_hook")
+    end
+  end
+
+end
+
+class WorkUnitPreSaveHookTestPlugin < KTrustedPlugin
+  _PluginName "Work Unit Pre-save Hook Test Plugin"
+  _PluginDescription "Test"
+  def hPreWorkUnitSave(response, workUnit)
+    workUnit.tags = PgHstore.generate_hstore({"a"=>"b", "c"=>"d"})
+  end
 end
