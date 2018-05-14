@@ -211,7 +211,8 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     group_two.code = 'test:group:test-group-two'
     group_two.save!
 
-    subject_for_notes = KObject.new
+    # Pre-existing archived objects should be found, and not recreated
+    subject_for_notes = KObject.new([O_LABEL_ARCHIVED])
     subject_for_notes.add_attr(O_TYPE_TAXONOMY_TERM, A_TYPE)
     subject_for_notes.add_attr(KIdentifierConfigurationName.new('test:generic-object:pre-existing-root'), A_CONFIGURED_BEHAVIOUR)
     subject_for_notes.add_attr("Pre-existing root", A_TITLE)

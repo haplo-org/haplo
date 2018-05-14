@@ -578,7 +578,7 @@ module Application_RenderHelper
 
   KOBJECT_REPRESENTING_UNAUTHORISED_READ = KObject.new()
   KOBJECT_REPRESENTING_UNAUTHORISED_READ.add_attr("ACCESS DENIED", A_TITLE)
-  KOBJECT_REPRESENTING_UNAUTHORISED_READ.freeze
+  KOBJECT_REPRESENTING_UNAUTHORISED_READ._freeze_without_computing_attrs!
 
   # ========================================================================================================
   # Templates for rendering objects

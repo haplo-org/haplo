@@ -8,6 +8,7 @@
 class UserPolicy
 
   def has_permission?(operation, object)
+    object.compute_attrs_if_required!
     allow = @user.permissions.allow?(operation, object.labels)
     # Hooks can allow read operations which were denied by labels, but this should be used very carefully
     # as those exceptions are not applied to queries. Queries implement permissions by labels only.

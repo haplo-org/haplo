@@ -7,6 +7,10 @@
 
 module KHooks
 
+  define_hook :hComputeAttributes do |h|
+    h.argument    :object,      "KObjectMutable", "The object to update with computed attributes"
+  end
+
   define_hook :hPostObjectChange do |h|
     h.argument    :object,      KObject,  "The object which has been changed"
     h.argument    :operation,   Symbol,   "What operation was performed: 'create', 'update', 'relabel' or 'erase'"

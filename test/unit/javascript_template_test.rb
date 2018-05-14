@@ -13,6 +13,7 @@ class JavascriptTemplateTest < Test::Unit::TestCase
   def test_platform_template_functions
     db_reset_test_data
     restore_store_snapshot("basic")
+    pdf = StoredFile.from_upload(fixture_file_upload('files/example_3page.pdf', 'application/pdf'))
     obj = KObject.new()
     obj.add_attr(O_TYPE_BOOK, A_TYPE)
     obj.add_attr("Test book<", A_TITLE)
@@ -20,7 +21,8 @@ class JavascriptTemplateTest < Test::Unit::TestCase
     KObjectStore.create(obj)
     with_request(nil, User.cache[User::USER_SYSTEM]) do
       run_javascript_test(:file, 'unit/javascript/javascript_template/test_platform_template_functions.js', {
-        "TEST_BOOK" => obj.objref.to_presentation
+        "PDF_DIGEST" => pdf.digest,
+        "TEST_BOOK" => obj.objref.to_presentation,
       })
     end
   end

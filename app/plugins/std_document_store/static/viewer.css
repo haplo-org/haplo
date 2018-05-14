@@ -33,3 +33,11 @@ div.z__docstore_nav_title {
     border-bottom: 1px solid #ccc;
     margin-bottom: 4px;
 }
+
+#z__docstore_show_changes {
+    display: inline-block;
+    background-color: #eee;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px 12px 4px 6px;
+}

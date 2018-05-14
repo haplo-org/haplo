@@ -6,5 +6,7 @@
   "displayDescription": "Standard Action Panel user interface for use by other plugins.",
   "apiVersion": 4,
   "loadPriority": 1000,
-  "load": []
+  "load": [
+    "js/std_action_panel.js"
+  ]
 }

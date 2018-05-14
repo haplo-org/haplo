@@ -1,0 +1,25 @@
+do() {
+  if(text) {
+    <table class="z__file_display">
+      <tr class="z__file_display_r1">
+        <td class="z__file_display_icon">
+          yield:thumbnail()
+        </td>
+        <td class="z__file_display_name">
+          <a href=url> text </a>
+        </td>
+      </tr>
+    </table>
+  
+  } else {
+    yield:thumbnail()
+  }
+
+} thumbnail {
+  <div class="z__thumbnail">
+    <a href=url>
+      unsafeHTML(unsafeThumbnail)
+    </a>
+  </div>
+}
+

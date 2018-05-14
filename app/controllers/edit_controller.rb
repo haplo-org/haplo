@@ -84,6 +84,7 @@ class EditController < ApplicationController
       raise "Couldn't preview object"
     end
     @preview_object = @object_to_edit
+    @preview_object.compute_attrs_if_required!
     render(:layout => false)
   end
 

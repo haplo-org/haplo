@@ -480,6 +480,13 @@ class KObjectStore
 
   # ----------------------------------------------------------------------------------------------------------
 
+  # Interface to delegate for computed attributes
+  def _compute_attrs_for_object(obj)
+    @delegate.compute_attrs_for_object(obj, is_schema_obj?(obj))
+  end
+
+  # ----------------------------------------------------------------------------------------------------------
+
   # Configured behaviours are a way to avoid plugins having hard code or do complicated queries for
   # well known objects, eg in Lists of classification objects. Although this could be looked up
   # using the normal queries and object traversal, this is such an important use it's worth having
@@ -647,6 +654,10 @@ private
   def create_or_update(create_operation, obj, label_changes, obj_id_required = nil)
     raise "Object is frozen" if obj.frozen? # only mutable objects can be saved
     raise "Object is restricted" if obj.restricted?
+
+    # First, update computed attributes, as other logic may rely on the attribute values
+    obj.compute_attrs_if_required!
+
     obj_id = nil
     operation = (create_operation ? :create : :update)
     label_changes ||= KLabelChanges.new # default to making no changes

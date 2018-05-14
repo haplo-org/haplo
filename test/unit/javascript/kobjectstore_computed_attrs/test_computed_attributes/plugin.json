@@ -1,0 +1,10 @@
+{
+  "pluginName": "test_computed_attributes",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test Computed Attributes",
+  "displayDescription": "For testing",
+  "installSecret": "ABC123",
+  "apiVersion": 4,
+  "load": ["js/test_computed_attributes.js"]
+}

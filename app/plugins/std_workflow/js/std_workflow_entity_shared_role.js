@@ -73,7 +73,7 @@ P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow,
 
     // If shared roles are active, we'd prefer that anything checking on roles
     // would use strict actionable by checks.
-    workflow._preferStrictActionableBy({}, function(M) {
+    workflow._preferStrictActionableBy({closed:false}, function(M) {
         var stateDefinition = M.$states[M.state];
         if(stateDefinition &&
                 stateDefinition.actionableBy &&

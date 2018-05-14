@@ -11,8 +11,11 @@
 class KAppImporter
   include KConstants
 
-  def self.cmd_import(filename_base)
+  def self.cmd_import(filename_base, new_hostname = nil, new_application_id = nil)
     raise "Reached app limit on this zone" unless KAccounting.room_for_another_app
+
+    raise "Bad new hostname" unless new_hostname.nil? || (new_hostname.kind_of?(String) && new_hostname.length > 0)
+    raise "Bad new app ID" unless new_application_id.nil? || (new_application_id.kind_of?(Fixnum) && new_application_id > 0)
 
     # Remove any suffix from filename base, as auto-completion willl leave a '.'
     filename_base = filename_base.gsub(/\.+\z/,'')
@@ -35,7 +38,8 @@ class KAppImporter
     data = File.open("#{filename_base}.json",'r') { |f| JSON.parse(f.read) }
     raise "Bad data file" unless data && data.has_key?("applicationId") && data.has_key?("hostnames")
 
-    app_id = data["applicationId"]
+    source_app_id = data["applicationId"].to_i
+    app_id = new_application_id || source_app_id
 
     # Check the SQL file has the right app_id in it
     sql_check_length = 512 # assume statements within this number of bytes of file start
@@ -48,21 +52,26 @@ class KAppImporter
     else
       File.read("#{filename_base}.sql", sql_check_length)
     end
-    raise "Bad schema create in SQL file" unless sql_start =~ /CREATE SCHEMA a#{app_id};/
-    raise "Bad schema set in SQL file" unless sql_start =~ /SET search_path = a#{app_id}, pg_catalog;/
+    raise "Bad schema create in SQL file" unless sql_start =~ /CREATE SCHEMA a#{source_app_id};/
+    raise "Bad schema set in SQL file" unless sql_start =~ /SET search_path = a#{source_app_id}, pg_catalog;/
+
+    hostnames = data["hostnames"]
+    hostnames = [new_hostname] unless new_hostname.nil?
 
     KApp.in_application(:no_app) do
       db = KApp.get_pg_database
 
       db.perform('BEGIN')
       # Check the application ID hasn't been used
-      r = db.exec("SELECT * FROM public.applications WHERE application_id=#{app_id}")
-      if r.length > 0
-        raise "Application ID #{app_id} is already in use"
+      [source_app_id,app_id].each do |id|
+        r = db.exec("SELECT * FROM public.applications WHERE application_id=#{id.to_i}")
+        if r.length > 0
+          raise "Application ID #{id} is already in use"
+        end
+        r.clear
       end
-      r.clear
       # Add the rows for each hostname
-      data["hostnames"].each do |hostname|
+      hostnames.each do |hostname|
         db.update(%Q!INSERT INTO applications (hostname,application_id) VALUES($1,#{app_id})!, hostname)
       end
       db.perform('COMMIT')
@@ -85,11 +94,18 @@ class KAppImporter
     end
     remote_process.remote_system load_cmd
 
+    # Rename the schema?
+    if source_app_id != app_id
+      KApp.in_application(:no_app) do
+        KApp.get_pg_database.perform("ALTER SCHEMA a#{source_app_id.to_i} RENAME TO a#{app_id.to_i}")
+      end
+    end
+
     # Final initialisation
     KApp.in_application(app_id) do
       # Check hostname set in app_globals -- makes it easier to rename on import just by editing the json file
       [:url_hostname, :ssl_hostname].each do |key|
-        KApp.set_global(key, data["hostnames"].first) unless data["hostnames"].include?(KApp.global(key))
+        KApp.set_global(key, hostnames.first) unless hostnames.include?(KApp.global(key))
       end
 
       remote_process.remote_system "cd #{StoredFile.disk_root}; gunzip --stdout #{File.expand_path(filename_base)}.tgz | tar xf - "

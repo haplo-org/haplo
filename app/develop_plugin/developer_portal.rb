@@ -36,7 +36,13 @@ class StdDeveloperPortalPlugin < KTrustedPlugin
 
     app_html = []
     apps.each do |application_id,hostname|
-      system_name = db.exec("SELECT value_string FROM a#{application_id}.app_globals WHERE key='system_name'").first.first
+      system_name = nil
+      begin
+        system_name = db.exec("SELECT value_string FROM a#{application_id}.app_globals WHERE key='system_name'").first.first
+      rescue => e
+        KApp.logger.info("Temporary error reading system_name app global from app ID #{application_id}")
+        system_name = 'UNKNOWN (APPLICATION MAY NOT BE READY)'
+      end
       description = app_descriptions[application_id.to_s]
       app_html.push <<__E
         <form method="POST" action="/do/std_developer_portal/login">

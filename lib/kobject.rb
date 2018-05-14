@@ -47,6 +47,7 @@ class KObject
   end
 
   def freeze
+    self.compute_attrs_if_required!
     @attrs.freeze
     super
   end
@@ -104,6 +105,7 @@ class KObject
 
   def add_attr(value, desc, qualifier = Q_NULL)
     raise "Restricted objects are read-only" if @restricted
+    @needs_to_compute_attrs = true
     value = convert_attr_value(value)
     @attrs << [desc.to_i, qualifier.to_i, value]
     value
@@ -138,6 +140,7 @@ class KObject
   def delete_attrs!(desc, qualifier = nil)
     raise "Restricted objects are read-only" if @restricted
     @attrs.delete_if { |i| i[0] == desc && (qualifier == nil || i[1] == qualifier) }
+    @needs_to_compute_attrs = true
   end
 
   def all_attrs(desc, qualifier = nil)
@@ -151,6 +154,7 @@ class KObject
 
   def replace_values!
     raise "Can't call replace_values! on a frozen KObject" if self.frozen?
+    @needs_to_compute_attrs = true
     @attrs.each do |i|
       r = yield i[2],i[0],i[1]
       raise "Can't store nil" if r == nil
@@ -188,6 +192,7 @@ class KObject
 
   # Delete attributes
   def delete_attr_if
+    @needs_to_compute_attrs = true
     @attrs.delete_if do |i|
       yield i[2],i[0],i[1]
     end
@@ -196,6 +201,7 @@ class KObject
   # XML output
   #  required_attributes = Array of descs of attributes to be output
   def build_xml(builder, required_attributes = nil)
+    self.compute_attrs_if_required!
     schema = self.store.schema
     attrs = Hash.new
     attrs[:ref] = @objref.to_presentation if @objref != nil
@@ -282,6 +288,29 @@ class KObject
   end
 
   # =============================================================================================================
+  #   Computing attributes
+  # =============================================================================================================
+
+  def needs_to_compute_attrs?
+    !!@needs_to_compute_attrs
+  end
+
+  def compute_attrs_if_required!
+    return unless @needs_to_compute_attrs
+    self.store._compute_attrs_for_object(self)
+    # Unset flag by deleting it, so that it doesn't inflate the size of the serialised attributes
+    self.__send__(:remove_instance_variable, :@needs_to_compute_attrs)
+  end
+
+  alias :jsComputeAttrsIfRequired :compute_attrs_if_required!
+
+  # Allows creation of special singleton objects
+  def _freeze_without_computing_attrs!
+    self.__send__(:remove_instance_variable, :@needs_to_compute_attrs)
+    self.freeze
+  end
+
+  # =============================================================================================================
   #   Attribute restrictions
   # =============================================================================================================
 
@@ -291,6 +320,7 @@ class KObject
 
   # Duplicate the object, without the restricted attributes
   def dup_restricted(restricted_attributes)
+    self.compute_attrs_if_required!
     raise "Already restricted" if @restricted
     obj = self.dup
     obj._restrict_to(restricted_attributes)

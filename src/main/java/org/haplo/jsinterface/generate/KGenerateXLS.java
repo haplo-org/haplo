@@ -15,9 +15,11 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.BorderStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.DataFormat;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.util.WorkbookUtil;
 import org.apache.poi.ss.util.CellRangeAddress;
@@ -132,9 +134,9 @@ public class KGenerateXLS extends KGenerateTable {
             this.sheet.createFreezePane(0, 1, 0, 1);
             // Style the row
             CellStyle style = this.workbook.createCellStyle();
-            style.setBorderBottom(CellStyle.BORDER_THIN);
+            style.setBorderBottom(BorderStyle.THIN);
             Font font = this.workbook.createFont();
-            font.setBoldweight(Font.BOLDWEIGHT_BOLD);
+            font.setBold(true);
             style.setFont(font);
             r.setRowStyle(style);
             // Style the cells
@@ -200,21 +202,21 @@ public class KGenerateXLS extends KGenerateTable {
     private void styleBorder(SheetStyleInstruction i) {
         CellRangeAddress region = styleInstructionCellRangeAddress(i);
         // Border
-        RegionUtil.setBorderBottom(CellStyle.BORDER_MEDIUM, region, this.sheet, this.workbook);
-        RegionUtil.setBorderTop(CellStyle.BORDER_MEDIUM, region, this.sheet, this.workbook);
-        RegionUtil.setBorderLeft(CellStyle.BORDER_MEDIUM, region, this.sheet, this.workbook);
-        RegionUtil.setBorderRight(CellStyle.BORDER_MEDIUM, region, this.sheet, this.workbook);
+        RegionUtil.setBorderBottom(BorderStyle.MEDIUM, region, this.sheet);
+        RegionUtil.setBorderTop(BorderStyle.MEDIUM, region, this.sheet);
+        RegionUtil.setBorderLeft(BorderStyle.MEDIUM, region, this.sheet);
+        RegionUtil.setBorderRight(BorderStyle.MEDIUM, region, this.sheet);
         // Colour
         short colindex = styleFindColour(IndexedColors.BLACK.getIndex(), i.colour);
-        RegionUtil.setBottomBorderColor(colindex, region, this.sheet, this.workbook);
-        RegionUtil.setTopBorderColor(colindex, region, this.sheet, this.workbook);
-        RegionUtil.setLeftBorderColor(colindex, region, this.sheet, this.workbook);
-        RegionUtil.setRightBorderColor(colindex, region, this.sheet, this.workbook);
+        RegionUtil.setBottomBorderColor(colindex, region, this.sheet);
+        RegionUtil.setTopBorderColor(colindex, region, this.sheet);
+        RegionUtil.setLeftBorderColor(colindex, region, this.sheet);
+        RegionUtil.setRightBorderColor(colindex, region, this.sheet);
     }
 
     private void styleFill(SheetStyleInstruction i) {
         HashMap<String,Object> properties = new HashMap<String,Object>(2);
-        properties.put(CellUtil.FILL_PATTERN, CellStyle.SOLID_FOREGROUND);
+        properties.put(CellUtil.FILL_PATTERN, FillPatternType.SOLID_FOREGROUND);
         properties.put(CellUtil.FILL_FOREGROUND_COLOR, new Short(styleFindColour(IndexedColors.GREY_25_PERCENT.getIndex(), i.colour)));
         styleApplyToRegion(i, properties);
     }
@@ -224,8 +226,8 @@ public class KGenerateXLS extends KGenerateTable {
         Font font = this.workbook.createFont();
         if(i.colour instanceof CharSequence) {
             switch(i.colour.toString()) {
-                case "BOLD": font.setBold(true); font.setBoldweight(Font.BOLDWEIGHT_BOLD); break;
-                case "BOLD-ITALIC": font.setBold(true); font.setBoldweight(Font.BOLDWEIGHT_BOLD); font.setItalic(true); break;
+                case "BOLD": font.setBold(true); font.setBold(true); break;
+                case "BOLD-ITALIC": font.setBold(true); font.setBold(true); font.setItalic(true); break;
                 case "ITALIC": font.setItalic(true); break;
             }
         }
@@ -237,14 +239,14 @@ public class KGenerateXLS extends KGenerateTable {
     }
 
     private void styleAlign(SheetStyleInstruction i) {
-        short align = -1;
+        HorizontalAlignment align = null;
         if(i.colour instanceof CharSequence) {
             switch(i.colour.toString()) {
-                case "CENTRE": case "CENTER": align = CellStyle.ALIGN_CENTER; break;
-                case "RIGHT": align = CellStyle.ALIGN_RIGHT; break;
+                case "CENTRE": case "CENTER": align = HorizontalAlignment.CENTER; break;
+                case "RIGHT": align = HorizontalAlignment.RIGHT; break;
             }
         }
-        if(align == -1) { return; }
+        if(align == null) { return; }
         HashMap<String,Object> properties = new HashMap<String,Object>(1);
         properties.put(CellUtil.ALIGNMENT, align);
         styleApplyToRegion(i, properties);
@@ -255,7 +257,7 @@ public class KGenerateXLS extends KGenerateTable {
             Row r = this.sheet.getRow(rowNum);
             if(r == null) { r = sheet.createRow(rowNum); }
             for(int colNum = i.column0; colNum <= i.column1; colNum++) {
-                Cell c = r.getCell(colNum, Row.RETURN_BLANK_AS_NULL);
+                Cell c = r.getCell(colNum, Row.MissingCellPolicy.RETURN_BLANK_AS_NULL);
                 if(c == null) { c = r.createCell(colNum); }
                 CellUtil.setCellStyleProperties(c, properties);
             }

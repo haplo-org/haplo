@@ -40,6 +40,8 @@ module KHooks
         @js_call_args << %Q!, args[#{@js_call_index}].to_i!
       elsif klass.equal?(KObject)
         @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KObject.fromAppObject(args[#{@js_call_index}], false))!
+      elsif klass == "KObjectMutable"
+        @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KObject.fromAppObject(args[#{@js_call_index}], true))! # mutable
       elsif klass.equal?(KObjRef)
         @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KObjRef.fromAppObjRef(args[#{@js_call_index}]))!
       elsif klass.equal?(WorkUnit)

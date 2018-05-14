@@ -55,15 +55,19 @@ DocumentInstance.prototype.__defineGetter__("committedDocumentIsComplete", funct
         where("keyId","=",this.keyId).
         order("version", true).
         limit(1);
+    var instance = this,
+        delegate = this.store.delegate;
     if(committed.length > 0) {
         var record = committed[0];
         var document = JSON.parse(record.json);
         var isComplete = true;
         var forms = this.forms;
         _.each(forms, function(form) {
-            var instance = form.instance(document);
-            if(!instance.documentWouldValidate()) {
-                isComplete = false;
+            if(!delegate.shouldEditForm || delegate.shouldEditForm(instance.key, form, document)) {
+                var formInstance = form.instance(document);
+                if(!formInstance.documentWouldValidate()) {
+                    isComplete = false;
+                }
             }
         });
         return isComplete;
@@ -266,8 +270,15 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         requiresUNames = !!actions.viewComments,
         forms,
         pages, isSinglePage,
-        activePage;
+        activePage,
+        pagesWithComments = [],
+        version = instance.committedVersionNumber;
     instance.store._updateDocumentBeforeEdit(instance.key, instance, cdocument);
+    if(instance.store.enablePerElementComments) {
+        pagesWithComments = instance.store.commentsTable.select().where("keyId", "=", instance.keyId).
+            aggregate("COUNT", "id", "formId");
+        pagesWithComments = _.pluck(pagesWithComments, "group");
+    }
     var updatePages = function() {
         forms = instance.store._formsForKey(instance.key, instance, cdocument);
         if(forms.length === 0) { throw new Error("No form definitions"); }
@@ -281,11 +292,13 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
                 if(delegate.prepareFormInstance) {
                     delegate.prepareFormInstance(instance.key, form, formInstance, "form");
                 }
+                var hasComments = pagesWithComments.indexOf(form.formId) !== -1;
                 pages.push({
                     index: j,
                     form: form,
                     instance: formInstance,
-                    complete: formInstance.documentWouldValidate()
+                    complete: formInstance.documentWouldValidate(),
+                    hasComments: hasComments
                 });
                 if(form.formId === untrustedRequestedFormId) {
                     activePage = pages[j];

@@ -486,6 +486,7 @@ input[type=text], input[type=password], input[type=email], textarea {
 /* Button styling */
 
 a.z__button_link,
+span.z__button_link_disabled,
 #z__button_bar a,
 .z__menu_section a,
 #z__heading_back_nav a {
@@ -519,6 +520,17 @@ a.z__button_link:active,
     color: #333;
     border: 1px solid #666;
     background-color: #ccc;
+}
+
+a.z__button_link_active {
+    color: #222;
+    background: #ccc;
+    box-shadow: inset 0 -1px 1px #eee;
+}
+
+span.z__button_link_disabled {
+    color: #888;
+    background: #f8f8f8;
 }
 
 /* overrides for specific buttons */

@@ -94,6 +94,21 @@ class KFramework
     @@reportable_error_reporter.call(e, format)
   end
 
+  # Special handling for SAML2 integration
+  def handleSaml2IntegrationFromJava(path, request, response, app)
+    begin
+      KApp.in_application(app.getApplicationID()) do
+        # TODO: Avoid hardcoding name of special controller class of things
+        Saml2ServiceProviderController.handle(path, request, response)
+      end
+    rescue => e
+      KApp.logger.log_exception(e)
+      raise
+    ensure
+      KApp.logger.flush_buffered
+    end
+  end
+
   def handle_from_java(servlet_request, application, body_as_bytes, is_ssl, file_uploads)
     begin
       # Turn the byte[] body from java into a string
@@ -217,13 +232,23 @@ class KFramework
     end
   end
 
+  def self.with_request_context(controller, exchange)
+    raise "Request context is already active" if self.request_context
+    Thread.current[:_frm_request_context] = RequestHandlingContext.new(controller, exchange)
+    begin
+      yield
+    ensure
+      clear_request_context()
+    end
+  end
+
   # Returns nil is there's no context
   def self.request_context
     Thread.current[:_frm_request_context]
   end
 
   def self.clear_request_context
-    # NOTE: This method must raise an exception
+    # NOTE: This method must not raise an exception
     Thread.current[:_frm_request_context] = nil
   end
 

@@ -299,6 +299,10 @@ class KObjectStore
         user_permissions = KObjectStore.user_permissions
         if user_permissions
           label_filter_sql = " AND #{user_permissions.sql_for_read_query_filter("labels", @exclude_labels)}"
+        else 
+          unless @exclude_labels.empty?
+            label_filter_sql = "AND (NOT labels && '{#{@exclude_labels.map { |l| l.to_i } .uniq.sort.join(',')}}'::int[])"
+          end
         end
         if @label_constraints
           # Use @> not && because must match *all* of them

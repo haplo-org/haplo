@@ -10,6 +10,12 @@ import org.haplo.template.html.ParserConfiguration;
 
 public class TemplateParserConfiguration extends ParserConfiguration {
     public boolean functionArgumentsAreURL(String functionName) {
-        return "backLink".equals(functionName);
+        switch(functionName) {
+            case "backLink":
+            case "std:ui:button-link":
+            case "std:ui:button-link:active":
+                return true;
+        }
+        return false;
     }
 }

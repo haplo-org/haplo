@@ -389,7 +389,8 @@ oform.on('keydown', '.oforms-lookup-input', function(event) {
 // --------------------------------------------------------------------------------------------------------
 
 // Do queries on keyup so the input value is up-to-date
-oform.on('keyup', '.oforms-lookup-input', function(event) {
+// input needed to handle case where the clear button is click in IE
+oform.on('keyup input', '.oforms-lookup-input', function(event) {
     var info = findLookupElementInfo(this);
     var lookupElement = $(this);
     var originalValue = lookupElement.val();

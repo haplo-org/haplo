@@ -7,6 +7,7 @@
 package org.haplo.framework;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.haplo.appserver.Response;
 import org.haplo.appserver.FileUploads;
@@ -26,6 +27,8 @@ public interface Framework {
 
     // Request handling
     Response handleFromJava(HttpServletRequest request, Application app, byte[] body, boolean isRequestSSL, FileUploads fileUploads);
+
+    void handleSaml2IntegrationFromJava(String path, HttpServletRequest request, HttpServletResponse response, Application app);
 
     String checkHealth() throws Exception;
 

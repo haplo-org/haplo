@@ -15,6 +15,32 @@ module JSRemoteAuthenticationServiceSupport
       details[:service_name] = name if haveName
       details[:user_data] = data if haveData
       details[:extra_configuration] = JSON.parse(extraConfiguration)
+
+      # See whether our service name is associated with AD FS credentials in the keychain:
+      if haveName
+        conditions = {
+          :name => name,
+          :kind => Saml2ServiceProviderController::ADFS_KEYCHAIN_CRED_KIND,
+          :instance_kind => Saml2ServiceProviderController::ADFS_KEYCHAIN_CRED_INSTANCE_KIND
+        }
+        credentials = KeychainCredential.find(:first, :conditions => conditions, :order => :id)
+        if credentials
+          # Check that the name is URL safe
+          unless name =~ Saml2ServiceProviderController::ADFS_KEYCHAIN_VALID_NAME_REGEXP
+            raise JavaScriptAPIError, "Invalid name for SAML2 keychain entry: '#{name}' (name must be URL safe)"
+          end
+          # AD FS authentication is hardwired
+          adfs_login_url = "/do/saml2-sp/" + name + "/login"
+          if haveData
+            #Append the user-supplied data as an HTTP query param
+            adfs_login_url += "?RelayState=" + ERB::Util.url_encode(data)
+          end
+          return adfs_login_url
+        end
+      end
+
+      # No AD FS keychain exists, so do generic OAuth stuff.
+
       # Create client, and generate the redirect URL
       rc = KFramework.request_context
       raise JavaScriptAPIError, "Request not in progress" unless rc

@@ -533,7 +533,7 @@ module SchemaRequirements
         @objects = {}
         SCHEMA_TYPES.each do |type_ref|
           @objects[type_ref] = lookup = {}
-          KObjectStore.query_and.link(type_ref, A_TYPE).execute(:all,:any).each do |object|
+          KObjectStore.query_and.link(type_ref, A_TYPE).include_archived_objects(:include_archived).execute(:all,:any).each do |object|
             code = object.first_attr(A_CODE)
             lookup[code.to_s] = object.dup if code
           end
@@ -543,7 +543,7 @@ module SchemaRequirements
         @objects[O_TYPE_QUALIFIER_DESC]['std:qualifier:null'] = KObjectStore.read(KObjRef.from_desc(Q_NULL))
         # Label categories use titles, not codes, because categories are only used in the UI
         @label_category_ref = {}
-        KObjectStore.query_and.link(O_TYPE_LABEL_CATEGORY, A_TYPE).execute(:all,:any).each do |category|
+        KObjectStore.query_and.link(O_TYPE_LABEL_CATEGORY, A_TYPE).include_archived_objects(:include_archived).execute(:all,:any).each do |category|
           @label_category_ref[category.first_attr(A_TITLE).to_s] = category.objref
         end
         # Speculatively load some generic objects, assuming that objects with configured behaviours are
@@ -595,6 +595,7 @@ module SchemaRequirements
       @generic_objects[code] ||= begin
         q = KObjectStore.query_and.
               identifier(KIdentifierConfigurationName.new(code), A_CONFIGURED_BEHAVIOUR).
+              include_archived_objects(:include_archived).
               execute(:all,:any)
         if q.length > 0
           q[0].dup

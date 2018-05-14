@@ -209,7 +209,7 @@ a.z__link_to_hidden_object {
     clear: both;
 }
 
-/* File display */
+/* File display (objects and plugin std:file* template functions) */
 
 #z__ws_content table.z__file_display {
     position: relative; /* so file icon can be positioned inside it */
@@ -246,7 +246,7 @@ a.z__link_to_hidden_object {
     bottom: 4px;
 }
 
-.z__thumbnail {
+table.z__file_display .z__thumbnail {
     position: relative;
     float: right;
 }

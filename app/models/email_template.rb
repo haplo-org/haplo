@@ -21,6 +21,10 @@ class EmailTemplate < ActiveRecord::Base
   ID_LATEST_UPDATES = 3
   ID_NEW_USER_WELCOME = 4
 
+  after_commit do
+    KNotificationCentre.notify(:email, :template_changed, self)
+  end
+
   # ------------------------------------------------------------------------------------------------------------
   #   Validation
   # ------------------------------------------------------------------------------------------------------------
@@ -58,7 +62,7 @@ class EmailTemplate < ActiveRecord::Base
   #   Message sending
   # ------------------------------------------------------------------------------------------------------------
 
-  EmailDelivery = Struct.new(:message, :to_address, :smtp_sender, :prevent_default_delivery)
+  EmailDelivery = Struct.new(:message, :to_address, :smtp_sender, :template, :prevent_default_delivery)
 
   # send an email using this template
   # e.g.
@@ -115,7 +119,7 @@ class EmailTemplate < ActiveRecord::Base
       message.body = [make_part(plain, 'text/plain'), make_part(html, 'text/html')]
     end
     # Send the email
-    delivery = EmailDelivery.new(message, to_addr_only, self.from_email_address, false)
+    delivery = EmailDelivery.new(message, to_addr_only, self.from_email_address, self, false)
     KNotificationCentre.notify(:email, :send, delivery)
     if delivery.prevent_default_delivery
       KApp.logger.info("--- Normal email delivery was prevented. ---")

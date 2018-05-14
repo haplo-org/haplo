@@ -356,7 +356,9 @@ P.globalTemplateFunction("M:switch-role", function(user) {
     var M = this.view.M;
     var haveRenderedBlock = false;
     this.getAllNamedBlockNames().forEach(function(name) {
-        if(M.hasRole(user, name)) {
+        // If user is a Group, hasRole() won't match as groups are not members of themselves.
+        // In this case compare against the group API code, so group roles work usefully.
+        if(M.hasRole(user, name) || (user.isGroup && user.code === name)) {
             this.writeBlock(name);
             haveRenderedBlock = true;
         }

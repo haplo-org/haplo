@@ -115,6 +115,7 @@ var showChangesInChildren = function(current, previous) {
     var previousList = elementsToArrayWithOrder(previous);
     var count = Math.max(currentList.length, previousList.length);
     var insertPoint, insertedNode, copyInPrevious;
+    var hasChanges = false;
 
     for(var i = 0; i < count; i++) {
         var cur = currentList[i],
@@ -124,6 +125,7 @@ var showChangesInChildren = function(current, previous) {
         if(cur && !prev) {
             // Element was inserted
             $(cur.element).addClass('oforms-changes-add');
+            hasChanges = true;
         } else if(!cur && prev) {
             // Element was deleted - patch in from previous
             copyInPrevious = true;
@@ -141,15 +143,17 @@ var showChangesInChildren = function(current, previous) {
                     copyInPrevious = true;
                 } else if($('> [data-order]', currentControlsElement).length) {
                     // Nested directly at this level
-                    showChangesInChildren(currentControlsElement[0], previousControlElement[0]);
+                    hasChanges = showChangesInChildren(currentControlsElement[0], previousControlElement[0]) || hasChanges;
                 } else {
                     genericDiff(currentControlsElement[0], previousControlElement[0]);
+                    hasChanges = true;
                 }
             } else {
                 $(cur.element).addClass('oforms-changes-unchanged');
             }
         }
         if(copyInPrevious) {
+            hasChanges = true;
             var copied = $(prev.html);
             if(insertPoint) {
                 copied.insertAfter(insertPoint);
@@ -165,14 +169,16 @@ var showChangesInChildren = function(current, previous) {
             insertPoint = cur.element;
         }
     }
+    return hasChanges;
 };
 
 // NOTE: Elements will be moved out of previous
 oFormsChanges.display = function(current, previous, showUnchanged) {
-    showChangesInChildren(current, previous);
+    var hasChanges = showChangesInChildren(current, previous);
     if(!showUnchanged) {
         oFormsChanges.unchangedVisibility(current, false);
     }
+    return hasChanges;
 };
 
 oFormsChanges.unchangedVisibility = function(element, visible) {

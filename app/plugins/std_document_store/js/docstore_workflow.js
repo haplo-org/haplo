@@ -211,18 +211,14 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         workflow.actionPanel({}, function(M, builder) {
             var instance = docstore.instance(M);
             var haveDocument = instance.hasCommittedDocument;
-            if(haveDocument && can(M, O.currentUser, spec, 'view')) {
+            if(instance.currentDocumentIsEdited && can(M, O.currentUser, spec, 'viewDraft')) {
+                var draftTitle = M.getTextMaybe("docstore-panel-draft-link:"+spec.name) || "Draft "+spec.title.toLowerCase();
+                builder.panel(spec.panel).
+                    link(spec.priority || "default", spec.path+'/draft/'+M.workUnit.id, draftTitle);
+            } else if(haveDocument && can(M, O.currentUser, spec, 'view')) {
                 var viewTitle = M.getTextMaybe("docstore-panel-view-link:"+spec.name) || spec.title;
                 builder.panel(spec.panel).
                     link(spec.priority || "default", spec.path+'/view/'+M.workUnit.id, viewTitle);
-            }
-
-            if(can(M, O.currentUser, spec, 'viewDraft')) {
-                if(!haveDocument && instance.currentDocumentIsEdited) {
-                    var draftTitle = M.getTextMaybe("docstore-panel-draft-link:"+spec.name) || "Draft "+spec.title.toLowerCase();
-                    builder.panel(spec.panel).
-                        link(spec.priority || "default", spec.path+'/draft/'+M.workUnit.id, draftTitle);
-                }
             }
         });
     }
@@ -423,11 +419,16 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             showVersions: spec.history ? can(M, O.currentUser, spec, 'history') : true,
             showCurrent: canEdit,
             addComment: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'addComment'),
-            viewComments: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'viewComments'),
+            privateCommentsEnabled: !!spec.viewPrivateComments ? "1" : "0", // if someone can see private comments, others can leave private comments
+            privateCommentMessage: spec.privateCommentMessage || NAME("hres:document_store:private_comment_message", "This comment is private."),
+            addPrivateCommentLabel: spec.addPrivateCommentLabel || NAME("hres:document_store:add_private_comment_label", "Private comment"),
+            // TODO: review the inclusion of separate viewComments and viewCommentsOtherUsers. The below may need to be changed following this.
+            viewComments: delegate.enablePerElementComments && (can(M, O.currentUser, spec, 'viewCommentsOtherUsers') || can(M, O.currentUser, spec, 'addComment')),
             commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined,
             hideCommentsByDefault: delegate.enablePerElementComments ? M.selected(spec.hideCommentsByDefault||DEFAULT_HIDE_COMMENTS_WHEN) : true,
             uncommittedChangesWarningText: M.getTextMaybe("docstore-uncommitted-changes-warning-text:"+
-                spec.name)
+                spec.name),
+            url: spec.path+'/view/'+workUnit.id
         });
         if(canEdit) {
             E.appendSidebarHTML(P.template("std:ui:panel").render({
@@ -450,6 +451,12 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         var checkPermissions = function(M, action) {
             if((action === "viewCommentsOtherUsers") && !spec.viewCommentsOtherUsers) {
                 action = "viewComments";
+            } else if(action === "viewPrivateComments") {
+                if(spec.viewPrivateComments) {
+                    return spec.viewPrivateComments(M, O.currentUser);
+                } else {
+                    return false;
+                }
             }
             return can(M, O.currentUser, spec, action);
         };

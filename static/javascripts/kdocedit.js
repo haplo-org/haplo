@@ -704,14 +704,20 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
         if(!(this.q__editable)) {return null;}
         var e, scan;
         var u = null;       // output
-        var b = document.body;
-        if(b.createTextRange) {
+        if(window.getSelection) {
+            var s = window.getSelection();
+            if(s) {
+                if(s.anchorNode) {
+                    u = s.anchorNode;
+                }
+            }
+        } else if(document.body.createTextRange) {
             // Internet Explorer
             try {
                 var r = document.selection.createRange();
                 e = this.j__getEditContainer();
                 scan = e.firstChild;
-                var bt = b.createTextRange();
+                var bt = document.body.createTextRange();
                 if(bt && r && bt.inRange(r)) {
                     // Check it's not before the document
                     var t = r.duplicate();
@@ -731,23 +737,6 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
                 }
             }
             catch(e2) {} // do nothing -- exception handler protects against weird errors in IE6 popping up and causing problems.
-        } else {
-            var s = window.getSelection();
-            if(s) {
-                if(s.focusNode) {
-                    u = s.focusNode;
-                }
-/*                // Safari 3 implements this, but differently to Mozilla, perhaps only having a range when
-                // there's a real selection.
-                if(s.getRangeAt && s.rangeCount > 0) {
-                    // Mozilla
-                    u = s.getRangeAt(0).startContainer.parentNode;
-                }
-                // Try again for Safari / WebKit
-                if(u == null && s.baseNode) {
-                    var u = s.baseNode.parentNode;
-                }*/
-            }
         }
 
         if(u) {

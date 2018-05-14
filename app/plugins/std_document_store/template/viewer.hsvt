@@ -1,5 +1,17 @@
 std:plugin:resources("viewer.css")
 
+if(showChanges) {
+  <div id="z__docstore_previous_version" style="display:none">
+    render(_viewerShowChangesFromDocumentDeferred)
+  </div>
+  std:plugin:resources("changes.js")
+  <div id="z__docstore_changes_configuration"
+      data-filter=currentParams.filter
+  >
+    template:std:oforms:changes()
+  </div>
+}
+
 if(requiresComments) {
     std:plugin:resources("comments.css" "comments.js")
     // Configuration of commenting system
@@ -9,6 +21,12 @@ if(requiresComments) {
         data-add=if(options.addComment){"1"}
         data-url=options.commentsUrl
         data-isviewer="1"
+        data-showcomments=currentParams.comment
+        data-filter=currentParams.filter
+        data-changes=currentParams.changes
+        data-privatecommentsenabled=options.privateCommentsEnabled
+        data-addprivatecommentlabel=options.addPrivateCommentLabel
+        data-privatecommentmessage=options.privateCommentMessage
     >
         std:form:token()
     </div>
@@ -16,26 +34,43 @@ if(requiresComments) {
 
 if(additionalUI.top) { render(additionalUI.top) }
 
-// Only show changes UI if there are options (more than one version, show versions enabled)
-if(_changesVersionView.length) {
-  <div style="text-align:right">
-    if(showChangesFromDocument) {
-      "Changes from " <select id="z__docstore_choose_version">
+<div>
+  if(options.viewComments) {
+    if(currentParams.comment) {
+      std:ui:button-link:active(url ? *currentParams !comment) { "Showing comments" }
+    } else {
+      std:ui:button-link(url ? *currentParams comment="1") { "Show comments" }
+    }
+  }
+  if(showChangesFrom) {
+    if(currentParams.changes) {
+      std:ui:button-link:active(url ? *currentParams !changes) { "Changes from:" }
+      <select id="z__docstore_choose_version" style="max-width:19%;">
         each(_changesVersionView) {
             <option
-                value=url(? version=^{version} from=row.version)
+                value=url(? *^{currentParams} version=^{version} from=row.version)
                 selected=if(selected) { "selected" }
               >
               std:date(datetime) " (" row.user.name ")"
             </option>
         }
-      </select><br>
-      <label><input type="checkbox" id="z__docstore_show_unchanged"> "Show unchanged"</label>
+      </select>
     } else {
-      <a href=url(? version=version from="previous") class="z__button_link"> "Show changes" </a>
+      std:ui:button-link(url ? *currentParams changes="1") { "Show changes" }
     }
+  }
+  <div style="float:right;">
+  if(canFilter) {
+    if(currentParams.filter) {
+      std:ui:button-link:active(url ? *currentParams !filter) { "Filtering questions" }
+    } else {
+      std:ui:button-link(url ? *currentParams filter="1") { "Filter questions" }
+    }
+  }
   </div>
-}
+  <div id="z__no_changes_warning" style="display:none;">std:ui:notice("No changes to display")</div>
+  <div id="z__no_comments_warning" style="display:none;">std:ui:notice("No comments to display")</div>
+</div>
 
 unless(document) {
   std:ui:notice("The form has not yet been completed.")
@@ -51,11 +86,3 @@ unless(document) {
 }
 
 if(additionalUI.bottom) { render(additionalUI.bottom) }
-
-if(showChangesFromDocument) {
-  <div id="z__docstore_previous_version" style="display:none">
-    render(_viewerShowChangesFromDocumentDeferred)
-  </div>
-  template:std:oforms:changes()
-  std:plugin:resources("changes.js")
-}

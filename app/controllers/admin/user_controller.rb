@@ -128,7 +128,7 @@ class Admin_UserController < ApplicationController
               template = EmailTemplate.find(welcome_template_id)
               template.deliver(
                 :to => @user,
-                :subject => "Welcome to #{KApp.global(:product_name)}",
+                :subject => "Welcome to #{ERB::Util.h(KApp.global(:system_name))}",
                 :message => render(:partial => 'admin/user/email_welcome')  # need to use full path to template so subclassing works
               )
             end

@@ -179,7 +179,7 @@ module KAppInit
         :purpose => 'New user welcome',
         :from_name => 'Haplo',
         :from_email_address => email_from_address,
-        :header => %Q!<p>%%RECIPIENT_FIRST_NAME%%</p>\n<p>Welcome to the <b>#{app_title}</b> Haplo. Your account has been created, and to get started you need to set your password.</p>!,
+        :header => %Q!<p>%%RECIPIENT_FIRST_NAME%%</p>\n<p>Welcome to <b>#{app_title}</b>. Your account has been created, and to get started you need to set your password.</p>!,
         :footer => %Q!<p>This link will work only once. Once you've set your password, you can discard this email.</p>\n<p>Your Haplo home page is</p>\n<blockquote><a href="https://%%DEFAULT_HOSTNAME%%/">https://%%DEFAULT_HOSTNAME%%/</a></blockquote>\n<p>Remember to bookmark your Haplo home page in your web browser.</p>\n#{footer_html}!)
       welcome_template.save!
       db.perform("UPDATE email_templates SET id=#{EmailTemplate::ID_NEW_USER_WELCOME} WHERE id=#{welcome_template.id}")

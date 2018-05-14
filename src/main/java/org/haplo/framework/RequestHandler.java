@@ -185,6 +185,18 @@ public class RequestHandler extends AbstractHandler {
             }
         }
 
+        // SAML2 integration needs special handling
+        if(response == null && target.startsWith("/do/saml2-sp/")) {
+            final String hostname2 = hostname; // needs to be final for lambda expression
+            withPerApplicationRequestThrottle(app, () -> {
+                framework.handleSaml2IntegrationFromJava(target, request, servletResponse, app);
+                long handleTime = System.currentTimeMillis() - startTime;
+                logRequest(baseRequest, request, servletResponse, 0, hostname2, 0, 0, false, handleTime, handleTime);
+                return null;
+            });
+            return;
+        }
+
         // Get the Ruby framework to handle the request if nothing else handled it
         if(response == null) {
             long frameworkStartTime = System.currentTimeMillis();
@@ -468,17 +480,9 @@ public class RequestHandler extends AbstractHandler {
     }
 
     /**
-     * Use the Ruby framework to handle the request
+     * Implement the request throttle
      */
-    private Response handleWithFramework(Request baseRequest, HttpServletRequest request, Application app, FileUploads fileUploads) throws IOException {
-        // Read the body if it's a POST request and FileUploads haven't been triggered
-        byte[] body = null;
-        if(fileUploads == null) {
-            body = readRequestBodySizeLimited(request);
-        }
-
-        // Invoke a method on the framework to handle the request
-        Response response = null;
+    private Response withPerApplicationRequestThrottle(Application app, ThrottledHandlingAction action) {
         // Don't allow too many concurrent requests on a single application
         // Get the app sempahore first, so lots of requests for an app don't use up the global ruby runtime permits
         app.getRequestConcurrencySempahore().acquireUninterruptibly();
@@ -501,8 +505,7 @@ public class RequestHandler extends AbstractHandler {
             // Don't allow too many threads to go use the Ruby runtime at any one time
             ConcurrencyLimits.rubyRuntime.acquireUninterruptibly();
             try {
-                // Call into Ruby interpreter
-                response = framework.handleFromJava(request, app, body, isRequestSSL(baseRequest), fileUploads);
+                return action.respond();
             } finally {
                 // Always release the semaphore permit
                 ConcurrencyLimits.rubyRuntime.release();
@@ -513,11 +516,28 @@ public class RequestHandler extends AbstractHandler {
             // Notify other threads waiting to avoid concurrent requests 
             app.requestFinished();
         }
-        if(response == null) {
-            throw new RuntimeException("No response from Ruby interpreter");
-        }
+    }
 
-        return response;
+    private interface ThrottledHandlingAction {
+        public Response respond();
+    }
+
+    /**
+     * Use the Ruby framework to handle the request
+     */
+    private Response handleWithFramework(Request baseRequest, HttpServletRequest request, Application app, FileUploads fileUploads) throws IOException {
+        // Read the body if it's a POST request and FileUploads haven't been triggered
+        byte[] body = (fileUploads != null) ? null : readRequestBodySizeLimited(request);
+
+        // Invoke a method on the framework to handle the request
+        return withPerApplicationRequestThrottle(app, () -> {
+            // Call into Ruby interpreter
+            Response response = framework.handleFromJava(request, app, body, isRequestSSL(baseRequest), fileUploads);
+            if(response == null) {
+                throw new RuntimeException("No response from Ruby interpreter");
+            }
+            return response;
+        });
     }
 
     /**

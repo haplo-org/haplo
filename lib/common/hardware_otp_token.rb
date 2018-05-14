@@ -64,7 +64,7 @@ class HardwareOtpToken < ActiveRecord::Base
       raise "Bad time period" unless @time_period > 10
     end
     def expected_counter
-      (Time.new.to_i / 60)
+      (Time.new.to_i / @time_period)
     end
   end
 

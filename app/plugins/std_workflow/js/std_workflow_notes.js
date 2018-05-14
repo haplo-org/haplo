@@ -96,7 +96,7 @@ var notesDeferredRenderForNotificationEmail = function(toUser) {
         if(userCanSeePrivateNotes || !isPrivate) {
             notesForEmail.push({
                 text: entry.data.text,
-                dateAndTime: (new XDate(entry.datetime)).toString("dd MMM yyyy HH:mm"),
+                datetime: entry.datetime,
                 isPrivate: isPrivate,
                 author: entry.user.name
             });

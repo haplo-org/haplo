@@ -156,7 +156,7 @@ system "rm #{css_process_order_filename}"
 # Find all other files which might have IDs in them
 puts "Searching other files for css ids and classes..."
 examine_for_ids = []
-['erb', 'hsvt', 'js', 'rb', 'css', 'html'].each do |ext|
+['erb', 'hsvt', 'java', 'js', 'rb', 'css', 'html'].each do |ext|
   examine_for_ids.concat(`find #{export_dir} -name *.#{ext}`.split(/[\r\n]+/))
 end
 examine_for_ids.sort.reverse.each do |filename|
@@ -276,6 +276,7 @@ end
 # -----------------------------------------------------------------------------------------------
 puts "Process .rb, .hsvt, and server side .js & .js.erb files..."
 code_files = Dir.glob("#{export_dir}/**/*.rb").map { |f| [:rb, f] }
+Dir.glob("#{export_dir}/src/**/*.java").each { |f| code_files << [:java, f] }
 Dir.glob("#{export_dir}/app/**/*.js").each { |f| code_files << [:js, f] }
 Dir.glob("#{export_dir}/app/**/*.js.erb").each { |f| code_files << [:js, f] }
 Dir.glob("#{export_dir}/app/**/*.hsvt").each { |f| code_files << [:hvst, f] }

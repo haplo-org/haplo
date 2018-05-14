@@ -39,4 +39,3 @@ lib/javascript/lib/ui_panel.js
 lib/javascript/lib/message_bus.js
 lib/javascript/lib/http_client.js
 lib/javascript/lib/xml.js
-app/plugins/std_action_panel/shared/std_action_panel.js

@@ -24,6 +24,9 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
 
     var store = instance.store;
 
+    var currentParams = E.request.parameters;
+    this.currentParams = currentParams;
+    this.url = this.options.url;
     // Requested version?
     if("version" in this.options) {
         this.version = this.options.version;
@@ -31,12 +34,11 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
         var vstr = E.request.parameters.version;
         this.version = (vstr === '') ? undefined : parseInt(vstr,10);
     }
-
     // Requested change?
     if("showChangesFrom" in this.options) {
         this.showChangesFrom = this.options.showChangesFrom;
-    } else if(this.options.showVersions && ("from" in E.request.parameters)) {
-        if(E.request.parameters.from === "previous") {
+    } else if(this.options.showVersions) {
+        if(!E.request.parameters.from) {
             var v = store.versionsTable.select().
                 where("keyId","=",instance.keyId).
                 order("version",true).
@@ -109,7 +111,7 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
     }
 
     // Commenting? (but only if we're not showing changes)
-    if(!(this.showChangesFrom) && (this.options.viewComments || this.options.addComment)) {
+    if(this.options.viewComments || this.options.addComment) {
         this.requiresComments = true;
         if(!this.options.commentsUrl) {
             throw new Error("viewComments or addComment used in docstore viewer, but commentsUrl not specified");
@@ -122,7 +124,7 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
             this.requiresComments = false;  // disable if there isn't a committed version yet, so won't have comments anyway
         }
         // Don't want to clutter up display of final versions, so comments can be turned off
-        if(this.requiresComments && this.options.hideCommentsByDefault && (E.request.parameters.comments !== "1")) {
+        if(this.requiresComments && this.options.hideCommentsByDefault && !currentParams.comment) {
             this.requiresComments = false;  // just turn it all off
             var numberOfComments = store.commentsTable.select().
                 where("keyId","=",instance.keyId).
@@ -132,7 +134,8 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
             }
         }
     }
-
+    this.canFilter = currentParams.comment || currentParams.changes; // can only filter if have something to look at
+    this.showChanges = currentParams.changes && this.showChangesFrom;
     // Get any additional UI to display
     var delegate = this.instance.store.delegate;
     if(delegate.getAdditionalUIForViewer) {
@@ -178,7 +181,7 @@ DocumentViewer.prototype.__defineGetter__("_viewerSelectedForm", function() {
 });
 
 DocumentViewer.prototype.__defineGetter__("_viewerShowChangesFromDocumentDeferred", function() {
-    return this.instance._renderDocument(this.showChangesFromDocument, true, '_prev_');
+    return this.instance._renderDocument(this.showChangesFromDocument, true, '_prev_', this.requiresComments /* so needs unames */);
 });
 
 DocumentViewer.prototype.__defineGetter__("_uncommittedChangesWarningText", function() {
@@ -216,8 +219,10 @@ DocumentViewer.prototype.__defineGetter__("_changesVersionView", function() {
     var vv = this._versionsView; // cached
     var options = [];
     var changesVersion = this.showChangesFrom;
+    var selectedVersion = this.version;
     vv.forEach(function(version) {
-        if(!version.selected && !version.editedVersion) {
+        // selectedVersion is undefined if it is being edited, but then it will be the latest
+        if(!version.editedVersion && (!selectedVersion || version.row.version < selectedVersion)) {
             options.push({
                 row: version.row,
                 selected: changesVersion === version.row.version,

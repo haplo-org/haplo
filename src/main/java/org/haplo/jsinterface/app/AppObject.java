@@ -50,4 +50,8 @@ public interface AppObject {
     public boolean restricted();
 
     public AppObject dup_restricted(AppObjectRestrictedAttributes restrictedAttributes);
+
+    public boolean needs_to_compute_attrs();
+
+    public void jsComputeAttrsIfRequired();
 }

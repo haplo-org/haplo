@@ -81,6 +81,15 @@ class KObjectStoreApplicationDelegate
     obj_type == O_TYPE_APP_VISIBLE || obj_type == O_TYPE_ATTR_ALIAS_DESC
   end
 
+  # Call a hook to allow plugins to compute attributes
+  def compute_attrs_for_object(obj, is_schema_obj)
+    unless is_schema_obj
+      call_hook(:hComputeAttributes) do |hooks|
+        hooks.run(obj)
+      end
+    end
+  end
+
   # Updating labels for an object, given a particular operation, returning a new label_changes object
   def update_label_changes_for(store, operation, object, obj_previous_version, is_schema_obj, label_changes)
     # For create/update operations, ask plugins if they'd like to modify the labels

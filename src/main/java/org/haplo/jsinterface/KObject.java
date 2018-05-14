@@ -207,6 +207,17 @@ public class KObject extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+
+    public boolean jsGet_willComputeAttributes() {
+        return this.appObject.needs_to_compute_attrs();
+    }
+
+    public Scriptable jsFunction_computeAttributesIfRequired() {
+        this.appObject.jsComputeAttrsIfRequired();
+        return this;
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
     public Scriptable jsGet_history() {
         if(this.history == null) {
             AppObject[] history = rubyInterface.loadObjectHistory(this.appObject);

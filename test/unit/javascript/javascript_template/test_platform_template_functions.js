@@ -79,6 +79,94 @@ TEST(function() {
     template.render(objectUrlBackLinkView);
     TEST.assert_equal(objectUrlBackLinkView.backLink, object.url());
 
+    // std:file*()
+    var file = O.file(PDF_DIGEST);
+    template = new $HaploTemplate('<div> std:file(f) </div>');
+    var fileRendered = template.render({f:file});
+    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></td><td class="z__file_display_name"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf">example_3page.pdf</a></td></tr></table></div>');
+    var fileIdentifier = file.identifier().mutableCopy();
+    fileIdentifier.filename = 'TEST_modified_name.pdf'
+    fileRendered = template.render({f:fileIdentifier});
+    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></td><td class="z__file_display_name"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf">TEST_modified_name.pdf</a></td></tr></table></div>');
+    template = new $HaploTemplate('<div> std:file:thumbnail(f) </div>');
+    fileRendered = template.render({f:file});
+    TEST.assert_equal(fileRendered, '<div><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></div>');
+    fileRendered = template.render({f:fileIdentifier});
+    TEST.assert_equal(fileRendered, '<div><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></div>');
+    template = new $HaploTemplate('<div> std:file:link(f) </div>');
+    fileRendered = template.render({f:file});
+    TEST.assert_equal(fileRendered, '<div><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf">example_3page.pdf</a></div>');
+    fileRendered = template.render({f:fileIdentifier});
+    TEST.assert_equal(fileRendered, '<div><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf">TEST_modified_name.pdf</a></div>');
+    template = new $HaploTemplate('<div> std:file:transform(f "w100/jpeg") </div>');
+    fileRendered = template.render({f:file});
+    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/w100/jpeg/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></td><td class="z__file_display_name"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/w100/jpeg/example_3page.pdf">example_3page.pdf</a></td></tr></table></div>');
+    // With all the options...
+    template = new $HaploTemplate('<div> std:file(f "asFullURL" "authenticationSignature" "forceDownload") </div>');
+    fileRendered = template.render({f:file});
+    TEST.assert(/www\d+\.example\.com/.test(fileRendered));  // asFullURL
+    TEST.assert(/\?s=[a-f0-9]+/.test(fileRendered));  // authenticationSignature
+    TEST.assert(/attachment=1/.test(fileRendered));  // forceDownload
+    // Unknown options exception
+    template = new $HaploTemplate('<div> std:file(f "asFullURL" "UNKNOWN" "forceDownload") </div>');
+    TEST.assert_exceptions(function() {
+        template.render({f:file});
+    }, "Unknown option for file template function: UNKNOWN");
+    // Non-file objects exception
+    template = new $HaploTemplate('<div> std:file(f) </div>');
+    TEST.assert_exceptions(function() {
+        template.render({f:"a nice string"});
+    }, "Bad type of object passed to file template function");
+    // But undefined and null just output nothing
+    TEST.assert_equal(template.render({}), "<div></div>");
+    TEST.assert_equal(template.render({f:null}), "<div></div>");
+
+    // std:file*:with-link-url()
+    var file = O.file(PDF_DIGEST);
+    template = new $HaploTemplate('<div> std:file:with-link-url(f "/test") </div>');
+    var fileRendered = template.render({f:file});
+    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/test"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></td><td class="z__file_display_name"><a href="/test">example_3page.pdf</a></td></tr></table></div>');
+    var fileIdentifier = file.identifier().mutableCopy();
+    fileIdentifier.filename = 'TEST_modified_name.pdf'
+    fileRendered = template.render({f:fileIdentifier});
+    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/test"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></td><td class="z__file_display_name"><a href="/test">TEST_modified_name.pdf</a></td></tr></table></div>');
+    template = new $HaploTemplate('<div> std:file:thumbnail:with-link-url(f "/test") </div>');
+    fileRendered = template.render({f:file});
+    TEST.assert_equal(fileRendered, '<div><div class="z__thumbnail"><a href="/test"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></div>');
+    fileRendered = template.render({f:fileIdentifier});
+    TEST.assert_equal(fileRendered, '<div><div class="z__thumbnail"><a href="/test"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></div>');
+    // With valid options. "forceDownload" and "asFullURL" will be silently ignored
+    template = new $HaploTemplate('<div> std:file:with-link-url(f "/test" "asFullURL" "authenticationSignature" "forceDownload") </div>');
+    fileRendered = template.render({f:file});
+    TEST.assert(/\?s=[a-f0-9]+/.test(fileRendered));  // authenticationSignature
+    // Unknown options exception
+    template = new $HaploTemplate('<div> std:file:with-link-url(f "asFullURL" "UNKNOWN" "forceDownload") </div>');
+    TEST.assert_exceptions(function() {
+        template.render({f:file});
+    }, "Unknown option for file template function: UNKNOWN");
+    // Non-file objects exception
+    template = new $HaploTemplate('<div> std:file:with-link-url(f "/test") </div>');
+    TEST.assert_exceptions(function() {
+        template.render({f:"a nice string"});
+    }, "Bad type of object passed to file template function");
+    // Non-string links exception (including falsey urls)
+    template = new $HaploTemplate('<div> std:file:with-link-url(f url) </div>');
+    TEST.assert_exceptions(function() {
+        template.render({
+            f:file,
+            url: { t: "This is an object:" }
+        });
+    }, "Bad url passed to file-with-link template function");
+    TEST.assert_exceptions(function() {
+        template.render({
+            f:file,
+            url: null
+        });
+    }, "Bad url passed to file-with-link template function");
+    // But undefined and null files just output nothing
+    TEST.assert_equal(template.render({}), "<div></div>");
+    TEST.assert_equal(template.render({f:null, url: { t: "This is an object" }}), "<div></div>");
+
     // std:text:paragraph
     template = new $HaploTemplate('"START" std:text:paragraph(text) "END"');
     TEST.assert_equal(template.render({text:"a"}), "START<p>a</p>END");
@@ -109,6 +197,16 @@ TEST(function() {
     TEST.assert_equal(template.render({}), '<div><span class="z__plugin_ui_nav_arrow">&#xE016;</span></div>');
     TEST.assert_equal(template.render({year:null}), '<div><span class="z__plugin_ui_nav_arrow">&#xE016;</span></div>');
     TEST.assert_equal(template.render({year:"2016"}), '<div><a class="z__plugin_ui_nav_arrow" href="?year=2016">&#xE016;</a></div>');
+
+    // std:ui:button-link (with auto-urling)
+    template = new $HaploTemplate('<div> std:ui:button-link("/abc" ? def="345" x=y) { "Hello " <span> "world" </span> } </div>');
+    TEST.assert_equal(template.render({y:"ping"}), '<div><a class="z__button_link" href="/abc?def=345&x=ping">Hello <span>world</span></a></div>');
+    template = new $HaploTemplate('<div> std:ui:button-link("/abc" ? def="345" x=y z="x") </div>');
+    TEST.assert_equal(template.render({y:"ping"}), '<div><a class="z__button_link" href="/abc?def=345&x=ping&z=x"></a></div>');
+    template = new $HaploTemplate('<div> std:ui:button-link:active("/abc" ? def="xyz" x=y z="x") { "Active" } </div>');
+    TEST.assert_equal(template.render({y:"ping"}), '<div><a class="z__button_link z__button_link_active" href="/abc?def=xyz&x=ping&z=x">Active</a></div>');
+    template = new $HaploTemplate('<div> std:ui:button-link:disabled() { "Disabled text" } </div>');
+    TEST.assert_equal(template.render({}), '<div><span class="z__button_link_disabled">Disabled text</span></div>');
 
     // std:icon:*
     template = new $HaploTemplate('<div> std:icon:type(type "large") " ! " std:icon:object(ref "medium") " ! " std:icon:object(obj "small") " ! " std:icon:description(desc "medium") </div>');

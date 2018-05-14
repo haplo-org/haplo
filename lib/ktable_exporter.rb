@@ -281,9 +281,9 @@ class KTableExporter
     def write_headings(headings)
       row = write_row(headings)
       style = @workbook.createCellStyle()
-      style.setBorderBottom(Java::OrgApachePoiSsUsermodel::CellStyle.BORDER_THIN);
+      style.setBorderBottom(Java::OrgApachePoiSsUsermodel::BorderStyle::THIN)
       font = @workbook.createFont();
-      font.setBoldweight(Java::OrgApachePoiSsUsermodel::Font.BOLDWEIGHT_BOLD);
+      font.setBold(true)
       style.setFont(font);
       row.setRowStyle(style)
       row.each { |cell| cell.setCellStyle(style) }

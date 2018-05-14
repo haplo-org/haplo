@@ -72,6 +72,8 @@ module KEditor
         # Copy in the attributes to the object to edit, so that the non-attribute metadata isn't lost
         object.delete_attr_if { true }
         replacementObject.each { |v,d,q| object.add_attr(v,d,q) }
+        # Update the copy with computed attributes
+        object.compute_attrs_if_required!
       end
     end
 
@@ -104,6 +106,9 @@ module KEditor
       @user = user
       @operation = operation
       type = object.first_attr(KConstants::A_TYPE)
+
+      # Make sure all computed attributes have been updated
+      object.compute_attrs_if_required!
 
       if operation == :create
         # Work out the labels the object, as it stands now, would get. If the user's permissions wouldn't

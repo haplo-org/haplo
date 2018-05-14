@@ -16,6 +16,8 @@
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 4px 12px 4px 6px;
+    float: left;
+    margin-right: 4px;
 }
 
 .z__docstore_add_comment {
@@ -62,6 +64,8 @@
     position: relative;
     z-index: 8990; /* TODO: fix this hack properly (this obsurces 'delete' in repeating sections, as otherwise they'd overlap) */
     border: 1px solid #ddd;
+    box-shadow: -1px 0 #ddd; /* this is to keep the thin darker border after border-left is applied */
+    border-left: 4px solid #ececec;
     border-radius: 3px;
     margin: 4px 0 4px 24px;
 }
@@ -93,16 +97,17 @@
 }
 
 .z__docstore_comment_previous_version {
-    border: 2px solid #800;
+    border: 1px solid #800;
 }
 
 .z__docstore_comment_later_version {
-    border: 2px solid #080;
+    border: 1px solid #080;
 }
 
 .z__docstore_comment_different_version_msg {
     text-align: center;
     font-style: italic;
+    line-height: 17px;
 }
 
 .z__docstore_comment_enter_ui div {
@@ -123,4 +128,20 @@
 .z__docstore_comment_enter_ui textarea {
     width: 95%; /* needs to be % because width of box is variable (repeating section borders) */
     margin: 6px 0;
+}
+
+.z__docstore_comment_enter_ui p {
+    float: left;
+    padding-left: 10px;
+}
+
+.z__docstore_comment_enter_ui label {
+    float: left;
+    padding-left: 10px;
+}
+
+.z__docstore_comment_container.z__docstore_private_comment,
+.z__docstore_comment_enter_ui.z__docstore_private_comment {
+    border-left: 4px solid red;
+    box-shadow: unset;
 }

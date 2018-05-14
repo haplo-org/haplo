@@ -205,6 +205,12 @@ Collection.prototype.indexedFact = function(name, type, description) {
     return this;
 };
 
+Collection.prototype.useFactAsAdditionalKey = function(name) {
+    if(!("$additionalKeys" in this)) { this.$additionalKeys = []; }
+    this.$additionalKeys.push(name);
+    return this;
+};
+
 // Special filters should be access through symbolic names
 Collection.prototype.FILTER_DEFAULT = FILTER_DEFAULT;
 Collection.prototype.FILTER_ALL = FILTER_ALL;
@@ -403,37 +409,10 @@ var factValueComparisonFunctions = {
     "time": function(a,b) { return a.getTime() === b.getTime(); }   // compare ms from epoch
 };
 
-var updateFacts = function(collection, object, existingRow, timeNow) {
-    if($StdReporting.shouldStopUpdating()) {
-        var e = new Error("Updates interrupted");
-        e.$isPlatformStopUpdating = true;
-        throw e;
-    }
-    if(!timeNow) { timeNow = new Date(); }
-    if(!existingRow) {
-        // Attempt to load existing row if it wasn't passed into this functon
-        var q = collection.$table.select().where("ref","=",object.ref).where("xImplValidTo","=",null);
-        if(q.length) {
-            existingRow = q[0];
-        }
-    }
-    // Verify object is not deleted, and belongs in this collection
-    if(object.deleted || (collection.$objectVerifier && !(collection.$objectVerifier(object)))) {
-        var logExtra = '';
-        if(existingRow) {
-            existingRow.xImplValidTo = timeNow;
-            existingRow.save();
-            logExtra = "and marking end of validity for existing facts";
-        }
-        console.log("Object is not part of collection", collection.name, "or deleted, not collecting facts for", logExtra, object);
-        return false;
-    }
-    // Create a blank row
-    var row = collection.$table.create({
-        ref: object.ref,
-        xImplValidFrom: timeNow
-    });
-    // Ask other plugins to update the values
+var FactUpdater = function(collection) {
+    this.collection = collection;
+    this.timeNow = new Date();
+    // Which services to use?
     var serviceNames = [
         "std:reporting:collection:*:get_facts_for_object",
         "std:reporting:collection:"+collection.name+":get_facts_for_object"
@@ -441,15 +420,111 @@ var updateFacts = function(collection, object, existingRow, timeNow) {
     collection.$categories.forEach(function(category) {
         serviceNames.push("std:reporting:collection_category:"+category+":get_facts_for_object");
     });
-    serviceNames.forEach(function(serviceName) {
-        if(O.serviceImplemented(serviceName)) {
+    this.serviceNames = _.filter(serviceNames, function(n) { return O.serviceImplemented(n); });
+};
+
+FactUpdater.prototype.updateFacts = function(object) {
+    var updater = this,
+        collection = this.collection;
+
+    if($StdReporting.shouldStopUpdating()) {
+        var e = new Error("Updates interrupted");
+        e.$isPlatformStopUpdating = true;
+        throw e;
+    }
+
+    // Verify object is not deleted, and belongs in this collection
+    if(object.deleted || (collection.$objectVerifier && !(collection.$objectVerifier(object)))) {
+        var logExtra = '';
+        // Do query for all matching, to pick up all rows when additional keys are in use
+        _.each(collection.$table.select().where("ref","=",object.ref).where("xImplValidTo","=",null), function(row) {
+            row.xImplValidTo = updater.timeNow;
+            row.save();
+            logExtra = "and marking end of validity for existing facts";
+        });
+        console.log("Object is not part of collection", collection.name, "or deleted, not collecting facts for", logExtra, object);
+        return false;
+    }
+
+    return collection.$additionalKeys ?
+        this._updateFactsWithAdditionalKeys(object) :
+        this._updateFactsSingleRow(object);
+};
+
+FactUpdater.prototype._updateFactsSingleRow = function(object) {
+    var collection = this.collection;
+
+    var q = collection.$table.select().where("ref","=",object.ref).where("xImplValidTo","=",null);
+    var existingRow = q.length ? q[0] : undefined;
+
+    // Create a blank row
+    var row = collection.$table.create({
+        ref: object.ref,
+        xImplValidFrom: this.timeNow
+    });
+    // Ask other plugins to update the values
+    this.serviceNames.forEach(function(serviceName) {
+        O.service(serviceName, object, row, collection);
+    });
+    return this._conditionalUpdateOfRow(row, existingRow);
+};
+
+FactUpdater.prototype._updateFactsWithAdditionalKeys = function(object) {
+    var updater = this,
+        collection = this.collection,
+        changes = false;
+
+    // Get an array of JS objects, which must have a property for each of the additional keys
+    var additionalKeys = O.service("std:reporting:collection:"+collection.name+":get_additional_keys_for_object", object, collection);
+
+    var currentRowIds = [];
+    additionalKeys.forEach(function(keys) {
+        // Create a blank row
+        var row = collection.$table.create({
+            ref: object.ref,
+            xImplValidFrom: updater.timeNow
+        });
+        collection.$additionalKeys.forEach(function(factName) {
+            if(!(factName in keys)) {
+                throw new Error("Keys returned from get_additional_keys_for_object service did not include property "+factName+" for object "+object.ref);
+            }
+            row[factName] = keys[factName];
+        });
+        // Ask other plugins to update the values
+        updater.serviceNames.forEach(function(serviceName) {
             O.service(serviceName, object, row, collection);
+        });
+        // Find existing row?
+        var q = collection.$table.select().where("ref","=",object.ref).where("xImplValidTo","=",null);
+        collection.$additionalKeys.forEach(function(factName) {
+            // Set keys again, so plugins absolutely can't modify them to something else
+            row[factName] = keys[factName];
+            // Use the database query to find the row, so it handles equality rather than using JS hilarity
+            q.where(factName,"=",keys[factName]);
+        });
+        var existingRow = q.length ? q[0] : undefined;
+        if(updater._conditionalUpdateOfRow(row, existingRow)) {
+            changes = true;
+        }
+        currentRowIds.push(existingRow ? existingRow.id : row.id);
+    });
+
+    // Invalidate any rows that weren't updated or created.
+    // TODO: Do row invalidation with additional keys more efficently (wrap into solution for when objects are removed from collection)
+    _.each(collection.$table.select().where("ref","=",object.ref).where("xImplValidTo","=",null), function(row) {
+        if(-1 === currentRowIds.indexOf(row.id)) {
+            updater.invalidate(row);
         }
     });
+
+    return changes;
+};
+
+FactUpdater.prototype._conditionalUpdateOfRow = function(row, existingRow) {
     // New rows are just saved, updates checked to see if they actually need updating
     if(existingRow) {
         var needUpdate = false;
-        _.each(collection.$factFieldDefinition, function(defn, name) {
+        _.each(this.collection.$factFieldDefinition, function(defn, name) {
             // Some value types need special comparison, as JavaScript has
             // interesting views on equality.
             var comparisonFn = factValueComparisonFunctions[defn.type];
@@ -465,7 +540,7 @@ var updateFacts = function(collection, object, existingRow, timeNow) {
             }
         });
         if(needUpdate) {
-            existingRow.xImplValidTo = timeNow;
+            existingRow.xImplValidTo = this.timeNow;
             existingRow.save();
             row.save();
             return true;
@@ -477,10 +552,14 @@ var updateFacts = function(collection, object, existingRow, timeNow) {
     return false;
 };
 
+FactUpdater.prototype.invalidate = function(row) {
+    row.xImplValidTo = this.timeNow;
+    row.save();
+};
+
 // --------------------------------------------------------------------------
 
 var doFullRebuildOfCollection = function(collectionName, changesExpected) {
-    var timeNow = new Date();
     O.impersonating(O.SYSTEM, function() {
         var collection = getCollection(collectionName);
         if(!collection) {
@@ -488,6 +567,8 @@ var doFullRebuildOfCollection = function(collectionName, changesExpected) {
             return;
         }
         console.log("Collecting all facts for:", collection.name);
+
+        var updater = new FactUpdater(collection);
 
         var wasUpdated, updated = 0, updatedRefs = [];
 
@@ -503,35 +584,27 @@ var doFullRebuildOfCollection = function(collectionName, changesExpected) {
         // Find all the objects that should be in this collection
         var objects = collection.$currentObjectsFinder ? collection.$currentObjectsFinder() : [];
         var objectLookup = O.refdict();
-        _.each(objects, function(obj) { objectLookup.set(obj.ref, obj); });
 
-        // Find all the current rows
-        var seenRowForObject = O.refdict();
+        // Update all rows for current objects
+        var objectInCollection = O.refdict();
+        _.each(objects, function(object) {
+            if(updater.updateFacts(object)) {
+                wasUpdated(object.ref);
+            }
+            objectInCollection.set(object.ref, true);
+        });
+
+        // Invalidate any rows for objects that are no longer in the collection
+        // TODO: Do invalidation of old rows in collections more efficiently (see also invalidation of rows with additional keys)
         var currentRows = collection.$table.select().where("xImplValidTo","=",null);
         _.each(currentRows, function(row) {
-            var ref = row.ref;
-            seenRowForObject.set(ref, true);
-            var object = objectLookup.get(ref);
-            if(object) {
-                // Update the row
-                if(updateFacts(collection, object, row, timeNow)) {
-                    wasUpdated(ref);
-                }
-            } else {
+            if(!objectInCollection.get(row.ref)) {
                 // Object is no longer in the list, stop the row from being valid.
-                row.xImplValidTo = timeNow;
-                row.save();
-                wasUpdated(ref);
+                updater.invalidate(row);
+                wasUpdated(row.ref);
             }
         });
-        // Create new rows for any objects which weren't there already
-        objectLookup.each(function(ref, object) {
-            if(!seenRowForObject.get(ref)) {
-                if(updateFacts(collection, object, undefined, timeNow)) {
-                    wasUpdated(ref);
-                }
-            }
-        });
+
         if(!changesExpected && (updated > 0)) {
             if(REPORT_UNEXPECTED_CHANGES) {
                 O.reportHealthEvent("Unexpected update in std_reporting collection: "+collectionName,
@@ -546,14 +619,14 @@ var doFullRebuildOfCollection = function(collectionName, changesExpected) {
 var doUpdateFactsForObjects = function(collectionName, updates) {
     var collection = getCollection(collectionName);
     if(!collection) { return; }
-    var timeNow = new Date();
+    var updater = new FactUpdater(collection);
     O.impersonating(O.SYSTEM, function() {
         console.log("Updating facts for:", collectionName, ' ('+_.map(updates, function(r) { return r.toString(); }).join(',')+')');
         var updated = 0;
         _.each(updates, function(ref) {
             var object = ref.load();
             if(object) {
-                if(updateFacts(collection, object, undefined, timeNow)) { updated++; }
+                if(updater.updateFacts(object)) { updated++; }
             }
         });
         console.log("Updated:", updated);

@@ -73,6 +73,16 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
 
             case "NAME": name(builder, b); break;
 
+            case "std:ui:button-link":          buttonLink(builder, b, false, false); break;
+            case "std:ui:button-link:active":   buttonLink(builder, b, true,  false); break;
+            case "std:ui:button-link:disabled": buttonLink(builder, b, false, true ); break;
+
+            case "std:file":
+            case "std:file:link":
+            case "std:file:thumbnail":
+            case "std:file:transform":
+            case "std:file:with-link-url":
+            case "std:file:thumbnail:with-link-url":
             case "std:form":
             case "std:document":
             case "std:ui:notice":
@@ -283,6 +293,29 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
         Object translated = function.call(runtime.getContext(), rootScope, rootScope, args); // ConsString is checked
         if(translated instanceof CharSequence) {
             Escape.escape(translated.toString(), builder, b.getContext());
+        }
+    }
+
+    // ----------------------------------------------------------------------
+
+    private void buttonLink(StringBuilder builder, FunctionBinding b, boolean active, boolean disabled) throws RenderException {
+        if(b.getContext() != Context.TEXT) {
+            throw new RenderException(b.getDriver(), "Can't render std:ui:button-link outside TEXT context");
+        }
+        if(disabled) {
+            builder.append("<span class=\"z__button_link_disabled\">");
+            b.renderBlock(Node.BLOCK_ANONYMOUS, builder, b.getView(), Context.TEXT);
+            builder.append("</span>");
+        } else {
+            builder.append(active
+                ? "<a class=\"z__button_link z__button_link_active\" href=\""
+                : "<a class=\"z__button_link\" href=\""
+            );
+            b.getNextArgument(ArgumentRequirement.REQUIRED).
+              render(builder, b.getDriver(), b.getView(), Context.URL);
+            builder.append("\">");
+            b.renderBlock(Node.BLOCK_ANONYMOUS, builder, b.getView(), Context.TEXT);
+            builder.append("</a>");
         }
     }
 

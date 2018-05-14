@@ -297,6 +297,11 @@
     margin: 6px 6px;
 }
 
+/* Hide the X clear button on input fields in Internet Explorer, because it's unhelpful */
+.oform input::-ms-clear {
+    display:none;
+}
+
 /* DATES */
 
 .oform span.oforms-date input { /* enough CSS specificity to select elements with a table */
