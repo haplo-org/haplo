@@ -8,7 +8,8 @@
 # Called after the application files are loaded.
 
 # Check SSL certificates file exists and looks like it contains some certificates
-unless File.exist?(SSL_CERTIFICATE_AUTHORITY_ROOTS_FILE) && File.open(SSL_CERTIFICATE_AUTHORITY_ROOTS_FILE) { |f| f.read(1024) }.include?('BEGIN CERTIFICATE')
+# Need to read 8k in just in case it's padded with plaintext
+unless File.exist?(SSL_CERTIFICATE_AUTHORITY_ROOTS_FILE) && File.open(SSL_CERTIFICATE_AUTHORITY_ROOTS_FILE) { |f| f.read(8192) }.include?('BEGIN CERTIFICATE')
   puts "#{SSL_CERTIFICATE_AUTHORITY_ROOTS_FILE} does not exist or doesn't contain CA roots"
   exit 1
 end

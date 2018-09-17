@@ -7,9 +7,6 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# ================ WARNING ================
-# This script creates apps which aren't attached to a management server -- don't use for deployment.
-
 # usage: db/init_app.sh <product_name> <hostnames> <app_title> <syscreate_name> <app_id>
 # where hostnames are comma separated list of hostnames.
 # syscreate default is 'sme'

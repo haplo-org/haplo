@@ -121,7 +121,7 @@ public class KWorkUnitQuery extends KScriptable {
     public Scriptable jsFunction_ref(Object value) {
         checkNotExecuted();
         if(value == null) {
-            this.objId = null;
+            throw new OAPIException("null may not be passed to ref()");
         } else {
             if(!(value instanceof KObjRef)) {
                 throw new OAPIException("Ref object expected as argument to ref()");

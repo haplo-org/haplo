@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.haplo</groupId>
   <artifactId>haplo</artifactId>
-  <version>3.20180514.1936.6e451cf36a</version>
+  <version>3.20180917.0821.43f8f4a861</version>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -27,7 +27,7 @@
     <dependency>
       <groupId>org.mozilla</groupId>
       <artifactId>rhino</artifactId>
-      <version>1.7.8</version>
+      <version>1.7.9</version>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
@@ -57,17 +57,17 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.4.10.v20180503</version>
+      <version>9.4.12.v20180830</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-continuation</artifactId>
-      <version>9.4.10.v20180503</version>
+      <version>9.4.12.v20180830</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-client</artifactId>
-      <version>9.4.10.v20180503</version>
+      <version>9.4.12.v20180830</version>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>
@@ -112,7 +112,7 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>amazon-kinesis-client</artifactId>
-      <version>1.9.0</version>
+      <version>1.9.1</version>
     </dependency>
     <dependency>
       <groupId>com.onelogin</groupId>
@@ -122,7 +122,12 @@
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>pdfbox</artifactId>
-      <version>1.8.12</version>
+      <version>2.0.11</version>
+    </dependency>
+    <dependency>
+      <groupId>com.maxmind.geoip2</groupId>
+      <artifactId>geoip2</artifactId>
+      <version>2.12.0</version>
     </dependency>
   </dependencies>
   <properties>

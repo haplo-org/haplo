@@ -56,6 +56,14 @@ module JSKObjectSupport
     KObjectStore.read(KObjRef.new(obj_id))
   end
 
+  def self.readObjectVersion(obj_id, version)
+    KObjectStore.read_version(KObjRef.new(obj_id), version)
+  end
+
+  def self.readObjectVersionAtTime(obj_id, time)
+    KObjectStore.read_version_at_time(KObjRef.new(obj_id), time)
+  end
+
   def self.updateObject(obj, label_changes = nil)
     check_object_before_saving(obj)
     raise JavaScriptAPIError, "Object state is inconsistent, attempting an update on an object hasn't been created." unless obj.is_stored?

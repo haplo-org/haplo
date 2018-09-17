@@ -14,4 +14,13 @@ TEST(function() {
     obj.computeAttributesIfRequired();
     TEST.assert_equal(false, obj.willComputeAttributes);
 
+    obj.setWillComputeAttributes(true);
+    TEST.assert_equal(true, obj.willComputeAttributes);
+    obj.setWillComputeAttributes(false);
+    TEST.assert_equal(false, obj.willComputeAttributes);
+
+    // Check bug fix for force compute attributes when not required
+    TEST.assert_equal(false, obj.willComputeAttributes);
+    obj.computeAttributesForced();
+
 });

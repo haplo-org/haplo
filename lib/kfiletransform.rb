@@ -28,8 +28,8 @@ class KFileTransform
   MIME_TYPE_HTML_IN_ZIP = 'x-oneis/html-zipped'
 
   # These constants are also used by the KTextExtract module
-  THUMBNAIL_MAX_DIMENSION = 64.0  # float
-  THUMBNAIL_MIN_DIMENSION = 2     # int
+  THUMBNAIL_MAX_DIMENSION = 192.0 # float
+  THUMBNAIL_MIN_DIMENSION = 4     # int
   SIZE_TO_WIDTH = {'s' => 128, 'm' => 320, 'l' => 512}
   OPENOFFICE_MIME_TYPE_REGEXP = /\Aapplication\/vnd\.oasis\.opendocument\./
   MSOFFICE_MIME_TYPES =

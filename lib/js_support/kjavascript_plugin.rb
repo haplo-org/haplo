@@ -17,6 +17,7 @@ class KJavaScriptPlugin < KPlugin
     # Verify the plugin_json is as expected
     KJavaScriptPlugin.verify_plugin_json(@plugin_json)
     @name = @plugin_json["pluginName"].freeze
+    @restrict_to_application_id = @plugin_json["restrictToApplicationId"]
     # Build controller factory info
     @controller_factories = []
     if @plugin_json.has_key?("respond")
@@ -46,6 +47,8 @@ class KJavaScriptPlugin < KPlugin
     end
     templates
   end
+
+  attr_reader :restrict_to_application_id
 
   def name
     @name
@@ -223,7 +226,7 @@ class KJavaScriptPlugin < KPlugin
   # Register a global javascript plugin - available to all apps
   def self.register_javascript_plugin(plugin_path)
     plugin = KJavaScriptPlugin.new(plugin_path)
-    KPlugin.register_plugin(plugin)
+    KPlugin.register_plugin(plugin, plugin.restrict_to_application_id)
     plugin.name
   end
 
@@ -274,14 +277,15 @@ class KJavaScriptPlugin < KPlugin
     self.each_third_party_javascript_plugin do |pathname|
       # Read the version number
       plugin_json, version = self.read_plugin_json_and_version(pathname)
+      # If restricted to one app, prepend the app ID to the name to follow convention
       name = plugin_json["pluginName"]
-      if name != nil && before_scan[name] != version
+      restrict_app_id = plugin_json["restrictToApplicationId"]
+      name = "#{restrict_app_id}.#{name}" if restrict_app_id
+      if before_scan[name] != version
         # Re-register (or register) the plugin
         self.register_javascript_plugin(pathname)
-        # Does it require flushing the runtimes and caches in the running applications?
-        if before_scan.has_key?(name)
-          reload_required << name
-        end
+        # Mark it as requiring flushing the runtimes and caches in the running applications
+        reload_required << name
       end
     end
     # Stop now if nothing happened
@@ -294,8 +298,10 @@ class KJavaScriptPlugin < KPlugin
       KApp.in_every_application do |app_id|
         installed_plugins = KPlugin.get_plugin_names_for_current_app
         reload_in_app = []
-        reload_required.each do |name|
-          reload_in_app.push(name) if installed_plugins.include?(name)
+        installed_plugins.each do |name|
+          if reload_required.include?(name) || reload_required.include?("#{app_id}.#{name}")
+            reload_in_app.push(name)
+          end
         end
         unless reload_in_app.empty?
           log_lines = ["Application #{app_id} #{KApp.global(:url_hostname)}"]
@@ -338,6 +344,11 @@ class KJavaScriptPlugin < KPlugin
     KPlugin.each_registered_plugin do |plugin|
       if plugin.kind_of?(KJavaScriptPlugin)
         versions[plugin.name] = plugin.version
+      end
+    end
+    KPlugin.each_registered_private_plugin do |application_id, plugin|
+      if plugin.kind_of?(KJavaScriptPlugin)
+        versions["#{application_id}.#{plugin.name}"] = plugin.version
       end
     end
     versions
@@ -469,6 +480,7 @@ class KJavaScriptPlugin < KPlugin
 
   PLUGIN_JSON_VERIFY = [
       PluginJSONVerify.new("pluginName", true, String),
+      PluginJSONVerify.new("restrictToApplicationId", false, Fixnum),
       PluginJSONVerify.new("pluginAuthor", true, String),
       PluginJSONVerify.new("pluginVersion", true, Fixnum),
       PluginJSONVerify.new("displayName", true, String),

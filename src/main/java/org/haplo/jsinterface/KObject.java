@@ -93,6 +93,22 @@ public class KObject extends KScriptable {
         return KObject.fromAppObject(appObject, false /* not mutable */);
     }
 
+    static public Scriptable loadVersion(KObjRef ref, int version) {
+        AppObject appObject = rubyInterface.readObjectVersion(ref.jsGet_objId(), version);
+        if(appObject == null) {
+            return null;
+        }
+        return KObject.fromAppObject(appObject, false /* not mutable */);
+    }
+
+    static public Scriptable loadVersionAtTime(KObjRef ref, Date time) {
+        AppObject appObject = rubyInterface.readObjectVersionAtTime(ref.jsGet_objId(), JsConvert.convertJavaDateToRuby(time));
+        if(appObject == null) {
+            return null;
+        }
+        return KObject.fromAppObject(appObject, false /* not mutable */);
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     private void withReturnedAppObject(AppObject appObject, boolean forceImmutable) {
         this.appObject = appObject;
@@ -214,6 +230,16 @@ public class KObject extends KScriptable {
 
     public Scriptable jsFunction_computeAttributesIfRequired() {
         this.appObject.jsComputeAttrsIfRequired();
+        return this;
+    }
+
+    public Scriptable jsFunction_setWillComputeAttributes(boolean willCompute) {
+        this.appObject.set_need_to_compute_attrs(willCompute);
+        return this;
+    }
+
+    public Scriptable jsFunction_computeAttributesForced() {
+        this.appObject.jsComputeAttrs();
         return this;
     }
 
@@ -563,6 +589,8 @@ public class KObject extends KScriptable {
         public AppObject createObject(AppObject object, AppLabelChanges labelChanges);
 
         public AppObject readObject(int objID);
+        public AppObject readObjectVersion(int objID, int version);
+        public AppObject readObjectVersionAtTime(int objID, Object time);
 
         public AppObject updateObject(AppObject object, AppLabelChanges labelChanges);
 

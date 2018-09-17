@@ -19,9 +19,8 @@ class JavascriptRemoteAuthenticationTest < Test::Unit::TestCase
       user42 = User.find(42)
       user42.password = 'abcd5432'
       user42.save!
-      # Create a credential for the LDAP server
-      credential = KeychainCredential.new({:name => 'test-ldap', :kind => 'Authentication Service', :instance_kind => 'LDAP' })
-      credential.account = {
+      # Create credentials for the LDAP server
+      ldap_account = {
         "URL" => 'ldaps://127.0.0.1:1636',
         "Certificate" => "test.#{KHostname.hostname}",
         "CA" => File.open(File.expand_path("~/haplo-dev-support/certificates/server.crt")) { |f| f.read }, # expect CA
@@ -29,8 +28,18 @@ class JavascriptRemoteAuthenticationTest < Test::Unit::TestCase
         "Search" => "uid={0}",
         "Username" => "cn=service_account"
       }
+      credential = KeychainCredential.new({:name => 'test-ldap', :kind => 'Authentication Service', :instance_kind => 'LDAP' })
+      credential.account = ldap_account
       credential.secret = {"Password" => 'abcd9876'}
       credential.save
+      # And another with a different set of attributes
+      ldap_account2 = ldap_account.dup
+      ldap_account2['Attributes (single value)'] = 'uid cn notarealattribute'
+      ldap_account2['Attributes (multi-value)'] = 'notarealmultivalue'
+      credential2 = KeychainCredential.new({:name => 'test-ldap-reduced-attributes', :kind => 'Authentication Service', :instance_kind => 'LDAP' })
+      credential2.account = ldap_account2
+      credential2.secret = {"Password" => 'abcd9876'}
+      credential2.save
       # Wait for LDAP server to start (probably have started by now anyway, so no point in doing anything fancy with mutexes etc)
       sleep(0.1) while ! @@test_ldap_server_started
       # Check normal use

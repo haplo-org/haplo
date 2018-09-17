@@ -298,6 +298,9 @@ class KObjectStore
 
       req.object_ids[objrange] = []
 
+      KApp.logger.info("Full index progress: #{req.object_ids.length} left for application #{req.app_id}")
+      KApp.logger.flush_buffered
+
       done_something = true
     end
 

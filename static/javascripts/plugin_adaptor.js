@@ -176,6 +176,7 @@ var ONEIS = Haplo;
             });
         };
         c.getContainerDOMElement = function() { return this.q__domObj; };
+        c.getContainerChoosesQualifier = function() { return this.q__defn.p__chooseQualifier; };
 
         // Plugin delegate registration function
         Haplo.editor.registerDelegate = function(name, constructor) {

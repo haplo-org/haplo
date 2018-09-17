@@ -24,9 +24,10 @@ if(requiresComments) {
         data-showcomments=currentParams.comment
         data-filter=currentParams.filter
         data-changes=currentParams.changes
-        data-privatecommentsenabled=options.privateCommentsEnabled
+        data-privatecommentsenabled=if(options.privateCommentsEnabled){"1"}
         data-addprivatecommentlabel=options.addPrivateCommentLabel
         data-privatecommentmessage=options.privateCommentMessage
+        data-addprivatecommentonly=if(options.addPrivateCommentOnly){"1"}
     >
         std:form:token()
     </div>

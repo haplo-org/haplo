@@ -37,6 +37,12 @@ class ServiceUserTest < Test::Unit::TestCase
       :SVR0_USER_ID => srv0.id
     })
 
+    # Policy: Service users must have identity
+    assert srv0.policy.is_not_anonymous?
+
+    # Compare to ANONYMOUS, which doesn't have identity
+    assert User.cache[User::USER_ANONYMOUS].policy.is_anonymous?
+
   end
 
 end

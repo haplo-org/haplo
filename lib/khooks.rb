@@ -52,6 +52,8 @@ module KHooks
         @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KAuditEntry.fromAppAuditEntry(args[#{@js_call_index}]))!
       elsif klass.equal?(StoredFile)
         @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KStoredFile.fromAppStoredFile(args[#{@js_call_index}]))!
+      elsif klass == "JSRequest"
+        @js_call_args << %Q!, Java::OrgHaploJsinterface::KPluginResponse.constructJsRequestObject(JSON.generate(args[#{@js_call_index}]))!
       elsif klass == "bool"
         @js_call_args << %Q@, !!(args[#{@js_call_index}])@
       else

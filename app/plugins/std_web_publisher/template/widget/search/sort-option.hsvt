@@ -1,0 +1,6 @@
+" "
+if(selected) {
+  <b> label </b>
+} else {
+  <a href=url(? *params)> label </a>
+}

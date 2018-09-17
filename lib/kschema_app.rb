@@ -369,6 +369,9 @@ class KSchemaApp < KSchema
         @control_by_types
       end
     end
+    def control_relaxed
+      @alias_of_desc.control_relaxed
+    end
 
     # Utility function; used by schema_controller to determine whether this is a suitable replacement for A_TITLE
     # in the editor for validation.

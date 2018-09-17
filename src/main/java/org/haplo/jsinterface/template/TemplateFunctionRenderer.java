@@ -65,6 +65,8 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
             case "std:layout:standard": layout(b, "std:standard"); break;
             case "std:layout:minimal": layout(b, "std:minimal"); break;
             case "std:layout:wide": layout(b, "std:wide"); break;
+            case "std:layout:empty": layout(b, "std:empty"); break;
+            case "std:layout:clear": layout(b, "std:clear"); break;
             case "std:layout:none": layout(b, false); break;
 
             case "std:icon:type": std_icon_type(builder, b); break;

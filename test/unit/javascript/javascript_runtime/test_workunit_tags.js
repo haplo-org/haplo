@@ -172,4 +172,22 @@ TEST(function() {
     test_tag_counts([INJECT_STRING1], {"":7});
     test_tag_counts([INJECT_STRING2], {"":7});
 
+    // --------------------------------------------------------------------------------------------
+
+    // Tags without any key/values work
+    var unitNoTags = O.work.create({
+        workType: "test:simple_tags",
+        createdBy: 21,
+        actionableBy: 21
+    });
+    unitNoTags.save();
+    unitNoTags.tags['t0'] = '1';
+    unitNoTags.save();
+    TEST.assert_equal('[WorkUnitTags {"t0":"1"}]', $KScriptable.forConsole(unitNoTags.tags));
+    delete unitNoTags.tags['t0'];
+    unitNoTags.save();
+    var unitNoTagsReload = O.work.load(unitNoTags.id);
+    TEST.assert_equal('[WorkUnitTags {}]', $KScriptable.forConsole(unitNoTagsReload.tags));
+    TEST.assert_equal(undefined, unitNoTagsReload.tags['t0']);
+
 });

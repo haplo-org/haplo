@@ -21,7 +21,8 @@
             showingChanges = configDiv.getAttribute('data-changes') === "1",
             privateCommentsEnabled = configDiv.getAttribute('data-privatecommentsenabled') === "1",
             addPrivateCommentLabel = configDiv.getAttribute('data-addprivatecommentlabel'),
-            privateCommentMessage = configDiv.getAttribute('data-privatecommentmessage');
+            privateCommentMessage = configDiv.getAttribute('data-privatecommentmessage'),
+            addPrivateCommentOnly = configDiv.getAttribute('data-addprivatecommentonly') === "1";
 
         // ------------------------------------------------------------------
 
@@ -147,7 +148,8 @@
                 commentBoxHtml += privateCommentsEnabled ? ' z__docstore_private_comment"' : '"'; // private by default if enabled
                 commentBoxHtml += '><span><textarea rows="4"></textarea></span>';
                 if(privateCommentsEnabled) {
-                    commentBoxHtml += '<label><input type="checkbox" id="commment_is_private" name="private" value="yes" checked="checked">';
+                    commentBoxHtml += '<label>';
+                    commentBoxHtml += addPrivateCommentOnly ? '' : '<input type="checkbox" id="commment_is_private" name="private" value="yes" checked="checked">';
                     commentBoxHtml += _.escape(addPrivateCommentLabel);
                     commentBoxHtml += '</label>';
                 }
@@ -178,7 +180,8 @@
                 evt.preventDefault();
                 var element = $(this).parents('[data-uname]').first();
                 var comment = $.trim($('textarea', element).val());
-                var isPrivate = element.find("#commment_is_private").first().is(":checked");
+                var isPrivate = addPrivateCommentOnly ||
+                    (privateCommentsEnabled && element.find("#commment_is_private").first().is(":checked"));
                 $('.z__docstore_comment_enter_ui', element).remove();
                 $('.z__docstore_add_comment_button', element).show();
 

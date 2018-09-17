@@ -3,5 +3,7 @@ switch(layoutChoice) {}
   w { std:layout:wide() }
   m { std:layout:minimal() }
   n { std:layout:none() }
+  c { std:layout:clear() }
+  e { std:layout:empty() }
 
 <p> "Text" </p>

@@ -15,12 +15,13 @@ public class RenderException extends Exception {
     }
 
     public String getMessage() {
-        Template template = driver.getLastTemplate();
-        String templateName = (template == null) ? "(no template)" : template.getName();
+        String templateName = "(no template)";
+        if(this.driver != null) {
+            Template template = driver.getLastTemplate();
+            if(template != null) {
+                templateName = template.getName();
+            }
+        }
         return "When rendering template '"+templateName+"': "+super.getMessage();
-    }
-
-    public Driver getDriver() {
-        return this.driver;
     }
 }

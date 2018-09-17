@@ -95,6 +95,52 @@ class KObjectStoreComputedAttrsTest < Test::Unit::TestCase
 
   # -------------------------------------------------------------------------
 
+  def test_computed_attrs_can_be_controlled_manually
+    assert KPlugin.install_plugin("k_object_store_computed_attrs_test/test_computed_attributes_counter_ruby")
+    obj = KObject.new([1,2,3,4])
+    obj.add_attr("Some title", A_TITLE)
+    obj.add_attr(1, 42)     # counter for compute attributes called
+
+    # Check counter plugin works
+    assert_equal true, obj.needs_to_compute_attrs?
+    obj.compute_attrs_if_required!
+    assert_equal false, obj.needs_to_compute_attrs?
+    assert_equal 2, obj.first_attr(42)
+
+    # Check compute attr can be turned off
+    obj.add_attr("title2", A_TITLE)
+    assert_equal true, obj.needs_to_compute_attrs?
+    obj.set_need_to_compute_attrs(false)
+    assert_equal false, obj.needs_to_compute_attrs?
+    obj.compute_attrs_if_required!
+    assert_equal false, obj.needs_to_compute_attrs?
+    assert_equal 2, obj.first_attr(42)
+
+    # Check compute attr can be turned on
+    obj.set_need_to_compute_attrs(true)
+    assert_equal true, obj.needs_to_compute_attrs?
+    obj.compute_attrs_if_required!
+    assert_equal false, obj.needs_to_compute_attrs?
+    assert_equal 3, obj.first_attr(42)
+
+    # Check objects can be forced to compute, even if they're not marked as needing it
+    assert_equal false, obj.needs_to_compute_attrs?
+    obj.compute_attrs!
+    assert_equal 4, obj.first_attr(42)
+  ensure
+    KPlugin.uninstall_plugin("k_object_store_computed_attrs_test/test_computed_attributes_counter_ruby")
+  end
+
+  class TestComputedAttributesCounterRubyPlugin < KTrustedPlugin
+    def hComputeAttributes(result, object)
+      count = object.first_attr(42)
+      object.delete_attrs!(42)
+      object.add_attr(count+1, 42)
+    end
+  end
+
+  # -------------------------------------------------------------------------
+
   def test_plugin_hook_is_called_to_compute_attributes
     assert KPlugin.install_plugin("k_object_store_computed_attrs_test/test_computed_attributes_ruby")
     Thread.current[:test_compute_attributes_plugin_run_count] = 0

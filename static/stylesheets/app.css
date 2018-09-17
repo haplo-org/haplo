@@ -767,8 +767,13 @@ span.z__button_link_disabled {
     margin-bottom: 13px;
 }
 #z__ws_content li {
-    list-style-type: disc;
     margin: 0 0 4px 22px;
+}
+#z__ws_content ul li {
+    list-style-type: disc;
+}
+#z__ws_content ol li {
+    list-style-type: decimal;
 }
 #z__ws_content dt {
     font-style: italic;

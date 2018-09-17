@@ -151,6 +151,10 @@ module JSRemoteAuthenticationServiceSupport
             # ' : ' separated list of paths to search for user, entries may contain spaces
         "Search" => "(&(sAMAccountName={0})(objectClass=user))",
             # search criteria, no spaces allowed, {0} is username. Could also query userPrincipalName as username@domain.tld
+        "Attributes (single value)" => LDAPAuthenticationService::DEFAULT_ATTRS_SINGLE.join(' '),
+            # space separated list of single value attributes to include in results
+        "Attributes (multi-value)" => LDAPAuthenticationService::DEFAULT_ATTRS_MULTIPLE.join(' '),
+            # space separated list of multi-value attributes to include in results
         "Username" => ""
       },
       :secret => {
@@ -166,15 +170,23 @@ module JSRemoteAuthenticationServiceSupport
     DEFAULT_TRUSTED_ROOTS_KEYSTORE = "#{java.lang.System.getProperty('java.home')}/lib/security/cacerts"
 
     # Which attributes should be extracted for the user info?
-    ATTRS_SINGLE = ['distinguishedName', 'personalTitle', 'mail', 'uid', 'name', 'uidNumber', 'sn', 'cn', 'givenName', 'displayName', 'userPrincipalName', 'sAMAccountName', 'description']
-    ATTRS_MULTIPLE = ['memberOf']
-    ATTRS_REQUESTED = ATTRS_SINGLE.concat(ATTRS_MULTIPLE).map {|a| a.to_java_string}
+    DEFAULT_ATTRS_SINGLE = ['distinguishedName', 'personalTitle', 'mail', 'uid', 'name', 'uidNumber', 'sn', 'cn', 'givenName', 'displayName', 'userPrincipalName', 'sAMAccountName', 'description']
+    DEFAULT_ATTRS_MULTIPLE = ['memberOf']
 
     def initialize(credential)
       @credential = credential
+      @attrs_single = _attribute_list("Attributes (single value)", DEFAULT_ATTRS_SINGLE)
+      @attrs_multi = _attribute_list("Attributes (multi-value)", DEFAULT_ATTRS_MULTIPLE)
+      @attrs_requested = @attrs_single.concat(@attrs_multi).map {|a| a.to_java_string}
     end
     def getName
       @credential.name
+    end
+
+    def _attribute_list(name, default_list)
+      str = @credential.account[name]
+      return default_list if str.nil?
+      str.strip.split(/\s+/)
     end
 
     # -----------------------------------------------------------------------
@@ -258,11 +270,11 @@ module JSRemoteAuthenticationServiceSupport
 
     def get_ldap_user_information(ldap_user)
       user = {}
-      ATTRS_SINGLE.each do |attrName|
+      @attrs_single.each do |attrName|
         value = ldap_user.getAttribute(attrName)
         user[attrName] = value.getValue() if value
       end
-      ATTRS_MULTIPLE.each do |attrName|
+      @attrs_multi.each do |attrName|
         value = ldap_user.getAttribute(attrName)
         user[attrName] = (value ? value.getValues() : []).map {|v| v.to_s} # note getValues(), with an 's'
       end
@@ -307,7 +319,7 @@ module JSRemoteAuthenticationServiceSupport
             EXTERNAL_TIMEOUT / 1000,  # in seconds
             false,  # values as well as types
             searchFilter,
-            *ATTRS_REQUESTED
+            *@attrs_requested
           )
 
         if searchResults.getEntryCount() > 0
@@ -369,7 +381,7 @@ module JSRemoteAuthenticationServiceSupport
               EXTERNAL_TIMEOUT_SEARCH / 1000,  # in seconds
               false,  # values as well as types
               criteria,
-              *ATTRS_REQUESTED
+              *@attrs_requested
             )
           while true
             searchRequest.setControls(Java::ComUnboundidLdapSdkControls::SimplePagedResultsControl.new(LDAP_SEARCH_RESULT_PAGE_SIZE, resumeCookie))

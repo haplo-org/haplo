@@ -8,6 +8,9 @@
 KHOST_OPERATING_SYSTEM=Linux
 export KHOST_OPERATING_SYSTEM
 
+KINFORMATION_HOME=~/haplo-dev-support/information
+export KINFORMATION_HOME
+
 JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 JAVA_EXECUTABLE=$JAVA_HOME/bin/java
 export JAVA_EXECUTABLE

@@ -22,12 +22,21 @@ module JSStdWebPublisherSupport
 
   def self.generateObjectWidgetAttributes(object, optionsJSON, web_publisher)
     # Allow plugins to modify
+    unmodified_object = object
     call_hook(:hPreObjectDisplayPublisher) do |hooks|
       h = hooks.run(object)
       object = h.replacementObject if h.replacementObject != nil
     end
-    # Apply Restrictions
-    object = AuthContext.user.kobject_dup_restricted(object)
+    # Allow plugins to control display
+    hide_attributes = nil
+    call_hook(:hObjectRenderPublisher) do |hooks|
+      r = hooks.run(object)
+      hide_attributes = r.hideAttributes unless r.hideAttributes.empty?
+    end
+    # Apply Restrictions and hide additional attributes
+    restricted_attributes = AuthContext.user.kobject_restricted_attributes(unmodified_object)
+    restricted_attributes.hide_additional_attributes(hide_attributes) unless hide_attributes.nil?
+    object = object.dup_restricted(restricted_attributes)
 
     # Get permissions of current user, for manual permission checks
     permissions = AuthContext.user.permissions

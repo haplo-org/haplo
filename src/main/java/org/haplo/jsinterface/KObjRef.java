@@ -9,10 +9,13 @@ package org.haplo.jsinterface;
 import org.mozilla.javascript.*;
 
 import org.haplo.javascript.Runtime;
+import org.haplo.javascript.OAPIException;
+import org.haplo.javascript.JsConvert;
 import org.haplo.jsinterface.app.*;
 
 import java.util.regex.Pattern;
 import java.util.HashMap;
+import java.util.Date;
 
 // NOTE: Be careful about making KObjRef hold references to any other objects.
 // If it were to contain a reference to anything in a KObject, it will affect the weak refs used for caching objects.
@@ -85,6 +88,18 @@ public class KObjRef extends KScriptable {
 
     public Scriptable jsFunction_load() {
         return KObject.load(this);
+    }
+
+    public Scriptable jsFunction_loadVersion(int version) {
+        return KObject.loadVersion(this, version);
+    }
+
+    public Scriptable jsFunction_loadVersionAtTime(Object datetime) {
+        Date d = JsConvert.tryConvertJsDate(Runtime.getCurrentRuntime().convertIfJavaScriptLibraryDate(datetime));
+        if(d == null) {
+            throw new OAPIException("Must pass a Date to loadVersionAtTime()");
+        }
+        return KObject.loadVersionAtTime(this, d);
     }
 
     public void jsFunction_deleteObject() {

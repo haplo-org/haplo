@@ -156,8 +156,8 @@ public class KQueryClause extends KScriptable {
 
     public void jsFunction_dateRange(Object beginDate, Object endDate, int desc, boolean hasDesc, int qual, boolean hasQual) {
         this.clause.date_range(
-                rubyInterface.convertDate(JsConvert.tryConvertJsDate(beginDate)),
-                rubyInterface.convertDate(JsConvert.tryConvertJsDate(endDate)),
+                JsConvert.convertJavaDateToRuby(JsConvert.tryConvertJsDate(beginDate)),
+                JsConvert.convertJavaDateToRuby(JsConvert.tryConvertJsDate(endDate)),
                 hasDesc ? desc : null, hasQual ? qual : null
         );
     }
@@ -192,8 +192,6 @@ public class KQueryClause extends KScriptable {
     // --------------------------------------------------------------------------------------------------------------
     // Interface to Ruby functions
     public interface Ruby {
-        public Object convertDate(Object value);
-
         public AppQueryClause constructQuery();
 
         public AppQueryClause queryFromQueryString(String query);

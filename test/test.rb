@@ -80,12 +80,12 @@ TEST_DATABASE_INIT_PROCS = []
 
 unless KFRAMEWORK_LOADED_COMPONENTS.empty?
   # Load test initialisation for components
-  Dir.glob("components/{#{KFRAMEWORK_LOADED_COMPONENTS.join(',')}}/test/test.rb").sort.each do |component_test|
+  Dir.glob("components/*/{#{KFRAMEWORK_LOADED_COMPONENTS.join(',')}}/test/test.rb").sort.each do |component_test|
     require component_test
   end
   # Add component tests
-  TEST_PATHS << "components/{#{KFRAMEWORK_LOADED_COMPONENTS.join(',')}}/test/unit"
-  TEST_PATHS << "components/{#{KFRAMEWORK_LOADED_COMPONENTS.join(',')}}/test/integration"
+  TEST_PATHS << "components/*/{#{KFRAMEWORK_LOADED_COMPONENTS.join(',')}}/test/unit"
+  TEST_PATHS << "components/*/{#{KFRAMEWORK_LOADED_COMPONENTS.join(',')}}/test/integration"
 end
 
 # Start in-process operation runners for the tests

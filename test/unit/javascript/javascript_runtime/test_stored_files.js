@@ -27,7 +27,7 @@ TEST(function() {
     var createdAt = storedFile.createdAt;
     TEST.assert(createdAt instanceof Date);
     TEST.assert(createdAt.getUTCFullYear() === (new Date()).getUTCFullYear());  // make sure it's plausible
-    TEST.assert(_.isEqual({"numberOfPages":1,"thumbnail":{"width":49,"height":64,"mimeType":"image/png"}}, storedFile.properties));
+    TEST.assert(_.isEqual({"numberOfPages":1,"thumbnail":{"width":148,"height":192,"mimeType":"image/png"}}, storedFile.properties));
     TEST.assert(_.isEqual({}, storedFile.tags)); // tags empty
 
     // O.file() returns exactly the same stored file object
@@ -146,7 +146,7 @@ TEST(function() {
     // Properties
     var pdf3page = O.file(PDF_THREE_PAGE);
     TEST.assert(_.isEqual(
-        {"dimensions":{"width":594,"height":841,"units":"pt"},"numberOfPages":3,"thumbnail":{"width":45,"height":63,"mimeType":"image/png"}},
+        {"dimensions":{"width":594,"height":841,"units":"pt"},"numberOfPages":3,"thumbnail":{"width":135,"height":192,"mimeType":"image/png"}},
         pdf3page.properties));
 
     // Tags

@@ -403,6 +403,7 @@ type std:type:book:special
     title: Special Book
     search-name: special book
     parent-type std:type:book
+    create-show-subtype no
 __E
     SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new(parser)).apply.commit
     # And some tests in a .js file

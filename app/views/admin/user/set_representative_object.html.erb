@@ -9,7 +9,7 @@
 <% if @user.objref%>
   <p>The representative object is <% if @representative_object %><a href="<%= h(object_urlpath(@representative_object)) %>" target="_blank"><%= h(@representative_object.first_attr(KConstants::A_TITLE).to_s) %></a><% else %><%= @user.objref.to_presentation %><% end %>.</p>
 <% else %>
-  <p>This user does not currently have a representative object.</p>
+  <p>A representative object is not currently set.</p>
 <%end %>
 
 <form method="POST"><%= form_csrf_token %>

@@ -419,7 +419,8 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             showVersions: spec.history ? can(M, O.currentUser, spec, 'history') : true,
             showCurrent: canEdit,
             addComment: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'addComment'),
-            privateCommentsEnabled: !!spec.viewPrivateComments ? "1" : "0", // if someone can see private comments, others can leave private comments
+            privateCommentsEnabled: !!spec.viewPrivateComments, // if someone can see private comments, others can leave private comments
+            addPrivateCommentOnly: can(M, O.currentUser, spec, 'addPrivateCommentOnly'),
             privateCommentMessage: spec.privateCommentMessage || NAME("hres:document_store:private_comment_message", "This comment is private."),
             addPrivateCommentLabel: spec.addPrivateCommentLabel || NAME("hres:document_store:add_private_comment_label", "Private comment"),
             // TODO: review the inclusion of separate viewComments and viewCommentsOtherUsers. The below may need to be changed following this.
@@ -430,6 +431,11 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                 spec.name),
             url: spec.path+'/view/'+workUnit.id
         });
+        if(spec.enableSidebarPanel) {
+            var builder = O.ui.panel();
+            M.workflowServiceMaybe("std:document_store:sidebar_panel", builder);
+            E.appendSidebarHTML(builder.render());
+        }
         if(canEdit) {
             E.appendSidebarHTML(P.template("std:ui:panel").render({
                 elements: [{href:spec.path+'/form/'+workUnit.id, label:"Edit",

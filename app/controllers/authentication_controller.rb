@@ -121,9 +121,8 @@ class AuthenticationController < ApplicationController
       if @logged_in_user == nil
         # Make the login attempt
         @login_attempted = true
-        auth_info = Hash.new
         begin
-          @logged_in_user = User.login(params[:email], params[:password], request.remote_ip, auth_info)
+          @logged_in_user = User.login(params[:email], params[:password], request.remote_ip)
           unless @logged_in_user
             KNotificationCentre.notify(:authentication, :interactive_failure, {:email => params[:email].strip, :provider => 'localhost'})
           end
@@ -131,13 +130,6 @@ class AuthenticationController < ApplicationController
           # Nice message for throttled login attempts
           render :action => 'login_throttled'
           return
-        end
-
-        # Report errors with external authentication servers to the user
-        if auth_info[:plugin_did_authentication]
-          if auth_info[:plugin_auth_result] == :error
-            @auth_plugin_error = true
-          end
         end
       end
     end

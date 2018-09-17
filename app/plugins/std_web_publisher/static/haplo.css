@@ -7,7 +7,6 @@
 
 span.haplo-file-thumbnail-container {
     display: inline-block;
-    width: 76px;
     text-align: right;
 }
 
@@ -28,4 +27,14 @@ img.haplo-file-thumbnail {
     margin-top: 20px;
     padding-top: 20px;
     border-top: 2px solid #ddd;
+}
+
+/* ---------------------------------------------------------------------- */
+/* search */
+
+.haplo-results-paging-prev {
+    float: left;
+}
+.haplo-results-paging-next {
+    float: right;
 }

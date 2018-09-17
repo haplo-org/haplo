@@ -1,4 +1,8 @@
 pageTitle(dashboard._displayableTitle)
+if(spec.backLink) {
+  if(spec.backLinkText) { backLink(spec.backLink) { spec.backLinkText } }
+  else { backLink(spec.backLink) }
+}
 
 std:plugin:resources("dashboard.css")
 

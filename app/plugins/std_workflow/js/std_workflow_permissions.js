@@ -53,6 +53,13 @@ P.registerWorkflowFeature("std:integration:rules_for_permission_implementation",
 var checkPermissionsForObject = function(object, checkFunction) {
     var results = [];
     var objectRef = object.ref;
+    if(!objectRef) {
+        // If a new object is passed into this function, it won't have a ref.
+        // This will happen if this is used to implement labelling for objects, in which case
+        // it will be called to set labels on a object without a ref. However, when this happens
+        // there is nothing to do here as there are no work units yet, so just stop now.
+        return;
+    }
     _.each(workflowPermissionRules, function(rules, workUnitType) {
         var units = O.work.query(workUnitType).ref(objectRef).
             isEitherOpenOrClosed().

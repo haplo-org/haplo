@@ -37,6 +37,13 @@ module Application_RenderHelper
       return RENDER_OBJ_FOR_UNAUTHORISED_READ
     end
 
+    # Check with plugins about rendering
+    hide_attributes = nil
+    call_hook(:hObjectRender) do |hooks|
+      r = hooks.run(render_object)
+      hide_attributes = r.hideAttributes unless r.hideAttributes.empty?
+    end
+
     # Display a restricted copy of the rendered object:
     if @request_user.kind == User::KIND_SUPER_USER
       obj = render_object
@@ -46,6 +53,7 @@ module Application_RenderHelper
       restricted_attributes = @request_user.kobject_restricted_attributes(
         (render_options||{})[:unmodified_object] || render_object
       )
+      restricted_attributes.hide_additional_attributes(hide_attributes) unless hide_attributes.nil?
       obj = render_object.dup_restricted(restricted_attributes)
     end
 
@@ -372,7 +380,7 @@ module Application_RenderHelper
       thumb_info = stored_file.thumbnail
       if thumb_info != nil
         thumb_urlpath = thumb_info.urlpath || file_url_path(value, :thumbnail, file_url_options)
-        %Q!<img src="#{thumb_urlpath}" width="#{thumb_info.width}" height="#{thumb_info.height}" alt="">!
+        %Q!<img src="#{thumb_urlpath}" width="#{thumb_info.scaled_width}" height="#{thumb_info.scaled_height}" alt="">!
       else
         '<img src="/images/nothumbnail.gif" width="47" height="47" alt="Thumbnail not available">'
       end

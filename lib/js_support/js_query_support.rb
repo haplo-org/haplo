@@ -8,8 +8,6 @@
 # Provide utility functions to KQueryClause JavaScript objects
 
 module JSKQueryClauseSupport
-  java_import java.util.GregorianCalendar
-  java_import java.util.Calendar
 
   def self.constructQuery()
     KObjectStore.query_and
@@ -37,18 +35,6 @@ module JSKQueryClauseSupport
     raise JavaScriptAPIError, "Bad sort option for JSSupportRoot#executeQuery" if sort_symbol == nil
     query.execute(sparseResults ? :reference : :all, sort_symbol)
     # TODO: Checks on whether sparseResults is being used correctly by JavaScript code
-  end
-
-  def self.convertDate(value)
-    return nil if value == nil
-    if value.kind_of?(java.util.Date)
-      c = GregorianCalendar.new
-      c.setTime(value)
-      DateTime.civil(c.get(Calendar::YEAR), c.get(Calendar::MONTH) + 1, c.get(Calendar::DAY_OF_MONTH),
-          c.get(Calendar::HOUR_OF_DAY), c.get(Calendar::MINUTE), c.get(Calendar::SECOND))
-    else
-      nil
-    end
   end
 
 end

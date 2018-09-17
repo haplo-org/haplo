@@ -126,6 +126,7 @@ module KSchemaToJavaScript
       :childTypes => type_desc.children_types.map { |r| r.obj_id },
       :behaviours => type_desc.behaviours.map { |r| TYPE_BEHAVIOURS[r] } .compact,
       :annotations => type_desc.annotations,
+      :createShowType => type_desc.create_show_type,
       :elements => elements.sort(),
       :attributes => attrs
     }

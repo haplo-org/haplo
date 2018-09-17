@@ -223,7 +223,7 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     KApp.set_global(:javascript_config_data, '{"x":34,"p":"existing"}')
 
     KApp.set_global(:navigation, YAML::dump([
-        [64, 'plugin', 'test:nav:one'],
+        [64, 'plugin', 'test:nav:one-entry'],
         [128, 'plugin', 'test:nav:to-remove'],
         [4, 'obj', '8000', 'Hello there!']
       ]))
@@ -341,9 +341,8 @@ class SchemaRequirementsTest < Test::Unit::TestCase
         property: {"p":"xyz"}
 
       feature std:navigation
-        entry: plugin test:nav:one
-        entry bad-entry
-        entry: plugin test:nav:two
+        entry: plugin test:nav:one-entry
+        entry: plugin test:nav:two_entry
         REMOVE entry: plugin test:nav:to-remove
 
       email-template test:email-template:test
@@ -482,9 +481,9 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     assert_equal({"p"=>"existing","abc"=>{"def"=>23435},"y"=>"hello"}, JSON.parse(KApp.global(:javascript_config_data)))
     # Navigation feature
     assert_equal [
-        [64, 'plugin', 'test:nav:one'],
+        [64, 'plugin', 'test:nav:one-entry'],
         [4, 'obj', '8000', 'Hello there!'],
-        [4, 'plugin', 'test:nav:two']
+        [4, 'plugin', 'test:nav:two_entry']
       ], YAML::load(KApp.global(:navigation))
     # Email templates
     new_email_template = EmailTemplate.find(:first, :conditions => {:code => 'test:email-template:test'})
@@ -594,8 +593,12 @@ __E
       type std:type:person
           attribute test:attribute:used-on-type-but-not-defined
 
+      feature std:navigation
+          entry bad-entry
+
     __E
     expected_errors = [
+        "Bad navigation entry 'bad-entry'",
         "Unknown kind 'not-a-requirement-kind'",
         "Unknown requirement for feature unknown:feature",
         "object:sort-of-object must have a title",

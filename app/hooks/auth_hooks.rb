@@ -23,15 +23,6 @@ module KHooks
     h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of being shown the login page"
   end
 
-  # Authenticate a user, given the email address and password. Use to implement external password checking of
-  # internal accounts. Email address has whitespace stripped, but otherwise exactly as entered.
-  define_hook :hAuthenticateUser do |h|
-    h.private_hook
-    h.argument    :email,       String,   "Email address of user"
-    h.argument    :password,    String,   "Password as entered"
-    h.result      :authResult,  Symbol,   nil,  ":success, :failure, :error (for plugin auth) or nil (for fallback to internal auth)"
-  end
-
   define_hook :hOAuthSuccess do |h|
     h.private_hook
     h.argument    :verifiedUser,String,   "JSON encoded details of the user authenticated through JSON."

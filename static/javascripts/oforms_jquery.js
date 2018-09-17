@@ -94,6 +94,26 @@ var positionClone = function(element, reference, dx, dy, setWidth, setHeight) {
     $(element).css(css).show().offset(pos);
 };
 
+/////////////////////////////// ../common/text_count.js ///////////////////////////////
+
+var TEXT_COUNT_WORD_RE = /\S*\w\S*/g;
+
+var textCountWords = function(text) {
+    var t = (text || '');
+    TEXT_COUNT_WORD_RE.lastIndex = 0;
+    var count = 0;
+    while(TEXT_COUNT_WORD_RE.test(t)) {
+        count ++;
+    }
+    return count;
+};
+
+var textCountCharacters = function(text) {
+    // Normalise spaces in the string
+    var t = (text || '').replace(/\s+/g, ' ');
+    return t.length;
+};
+
 /////////////////////////////// guidance_note_impl.js ///////////////////////////////
 
 // TODO: Guidance notes workaround for IE6 lack of support for position:fixed?
@@ -781,6 +801,38 @@ oform.on({
         calendarPopup._blur();
     }
 }, '.oforms-date-input');
+
+/////////////////////////////// element_support/paragraph.js ///////////////////////////////
+
+var paragraphUpdateCount = function(textarea) {
+    var container = $(textarea).parents('.oforms-paragraph-with-count').first();
+    if(container.length) {
+        var countFn = (container[0].getAttribute('data-unit') === 'c') ? textCountCharacters : textCountWords;
+        var count = countFn(textarea.value);
+        $('.oforms-paragraph-counter span', container).text(""+count);
+    }
+};
+
+// --------------------------------------------------------------------------
+
+oform.on('keyup', '.oforms-paragraph-with-count textarea', function(event) {
+    var textarea = this;
+    window.setTimeout(function() { paragraphUpdateCount(textarea); }, 0);
+});
+
+var paragraphUpdateCountAll = function(updateIn) {
+    window.setTimeout(function() {
+        $('.oforms-paragraph-with-count textarea', updateIn).each(function() {
+            paragraphUpdateCount(this);
+        });
+    }, 0);
+};
+
+onCreateNewRepeatingSectionRow.push(function(newRow, rowsParent) {
+    paragraphUpdateCountAll(newRow);
+});
+
+paragraphUpdateCountAll(oform);
 
 /////////////////////////////// element_support/guidance_note_events.js ///////////////////////////////
 

@@ -82,7 +82,7 @@ class JavaScriptSyntaxTester
       # Any symlinks in the current directory will need a glob too
       j.concat(Dir.glob("#{dirname}/**/*.js").sort)
     end
-    j.delete_if { |f| f =~ /\A(test|tmp|vendor)\// || f =~ /\Acomponents\/[^\/]+\/test\// }
+    j.delete_if { |f| f =~ /\A(test|tmp|vendor)\// || f =~ /\Acomponents\/.+?\/test\// }
     j
   end
 

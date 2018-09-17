@@ -19,7 +19,13 @@ class JavaScriptPluginController < ApplicationController
   CONTENT_TYPES = Hash.new
   Ingredient::Rendering::RENDER_KIND_CONTENT_TYPES.each_key { |k| CONTENT_TYPES[k.to_s] = k}
 
-  ALLOWED_LAYOUTS = {"std:standard" => true, "std:wide" => true, "std:minimal" => true}
+  ALLOWED_LAYOUTS = {
+    "std:standard"  => true,
+    "std:wide"      => true,
+    "std:minimal"   => true,
+    "std:empty"     => true,  # surrounding divs
+    "std:clear"     => true   # just the client side resources and a <body>
+  }
 
   # -----------------------------------------------------------------------------------------------------------
 

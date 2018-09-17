@@ -80,8 +80,8 @@ KFRAMEWORK_LOADED_COMPONENTS = []
 PlatformComponentInfo = Struct.new(:path, :name, :display_name, :should_load)
 component_configuration =JSON.parse(KInstallProperties.get(:component_configuration, '{}'))
 load_all_components = (KFRAMEWORK_ENV != 'production') # 'testing' environments need everything loaded
-Dir.glob("#{KFRAMEWORK_ROOT}/components/*/component.json").sort.each do |component_json|
-  raise "Bad component filename" unless component_json =~ /\/components\/(.+?)\/component\.json\z/
+Dir.glob("#{KFRAMEWORK_ROOT}/components/*/*/component.json").sort.each do |component_json|
+  raise "Bad component filename" unless component_json =~ /\/components\/.+?\/(.+?)\/component\.json\z/
   cname = $1
   cjson = JSON.parse(File.read(component_json))
   raise "Bad component.json: #{component_json}" unless cname == cjson['componentName']

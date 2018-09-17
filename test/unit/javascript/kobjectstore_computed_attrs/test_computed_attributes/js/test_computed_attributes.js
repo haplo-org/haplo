@@ -6,5 +6,7 @@
 
 
 P.hook("hComputeAttributes", function(response, object) {
-    object.append("PING", 1000);
+    var count = object.first(1000);
+    object.remove(1000);
+    object.append(count+1, 1000);
 });

@@ -13,6 +13,7 @@ class JavaScriptPluginLoadingTest < IntegrationTest
   NEW_PLUGIN_SOURCE = "#{File.dirname(__FILE__)}/javascript/javascript_plugin_loading/new_3p_plugin"
   NEW_PLUGIN_DEST_DIR = "#{PLUGINS_LOCAL_DIRECTORY}/test"
   NEW_PLUGIN_DEST = "#{NEW_PLUGIN_DEST_DIR}/new_3p_plugin"
+  NEW_PLUGIN_DEST_APP_RESTRICTED = "#{NEW_PLUGIN_DEST_DIR}/new_3p_plugin_app_restricted"
 
   def test_plugin_setup_and_dirs
     # Make sure the test script has copied the test plugin to the directory
@@ -98,11 +99,41 @@ class JavaScriptPluginLoadingTest < IntegrationTest
       get '/do/new_thirdparty_plugin/test'
       assert_select '#z__ws_content p', 'New contents'
 
+      # ---------- PRIVATE VERSION OF DEPLOYED PLUGIN ----------
+
+      # Create a copy of the plugin which is restricted to this application
+      FileUtils.cp_r("#{NEW_PLUGIN_SOURCE}/.", NEW_PLUGIN_DEST_APP_RESTRICTED)
+      plugin_json = JSON.parse(File.read("#{NEW_PLUGIN_DEST_APP_RESTRICTED}/plugin.json"))
+      plugin_json['restrictToApplicationId'] = _TEST_APP_ID
+      File.open("#{NEW_PLUGIN_DEST_APP_RESTRICTED}/plugin.json","w") { |f| f.write JSON.generate(plugin_json) }
+      File.open("#{NEW_PLUGIN_DEST_APP_RESTRICTED}/template/test.html", "w") { |f| f.write("<p>New contents for app #{_TEST_APP_ID}</p>") }
+      File.open("#{NEW_PLUGIN_DEST_APP_RESTRICTED}/version", "w") { |f| f.write(KRandom.random_api_key) }
+
+      # Load it and check there are two plugins registered
+      do_plugin_reloading
+      assert_equal NEW_PLUGIN_DEST, KPlugin::PLUGINS['new_3p_plugin'].plugin_path
+      assert_equal NEW_PLUGIN_DEST_APP_RESTRICTED, KPlugin::PRIVATE_PLUGINS[_TEST_APP_ID]['new_3p_plugin'].plugin_path
+
+      # Application is now using the private plugin version
+      get '/do/new_thirdparty_plugin/test'
+      assert_select '#z__ws_content p', "New contents for app #{_TEST_APP_ID}"
+
+      # Modify template, but not version, check that cached template is still used
+      File.open("#{NEW_PLUGIN_DEST_APP_RESTRICTED}/template/test.html", "w") { |f| f.write("<p>New contents for app #{_TEST_APP_ID} (2)</p>") }
+      do_plugin_reloading
+      get '/do/new_thirdparty_plugin/test'
+      assert_select '#z__ws_content p', "New contents for app #{_TEST_APP_ID}"
+
+      # Update version in private version, check reloaded
+      File.open("#{NEW_PLUGIN_DEST_APP_RESTRICTED}/version", "w") { |f| f.write(KRandom.random_api_key) }
+      do_plugin_reloading
+      get '/do/new_thirdparty_plugin/test'
+      assert_select '#z__ws_content p', "New contents for app #{_TEST_APP_ID} (2)"
+
     ensure
       # Clean up after the test
-      if File.directory? NEW_PLUGIN_DEST
-        FileUtils.rm_r NEW_PLUGIN_DEST
-      end
+      FileUtils.rm_r NEW_PLUGIN_DEST if File.directory? NEW_PLUGIN_DEST
+      FileUtils.rm_r NEW_PLUGIN_DEST_APP_RESTRICTED if File.directory? NEW_PLUGIN_DEST_APP_RESTRICTED
       KPlugin.uninstall_plugin('thirdparty_plugin')
       KPlugin.uninstall_plugin('new_3p_plugin')
       db_reset_test_data

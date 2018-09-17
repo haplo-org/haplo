@@ -1,0 +1,10 @@
+<img
+  src=if(transformWidth) {
+      url("/download/" file.digest "/" file.fileSize "/w" transformWidth "/h" transformHeight "/" file.filename)
+    } else {
+      url("/download/" file.digest "/" file.fileSize "/" transform file.filename)
+    }
+  width=width
+  height=height
+  title=spec.title
+>

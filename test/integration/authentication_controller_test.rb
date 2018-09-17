@@ -812,8 +812,8 @@ class AuthenticationControllerTest < IntegrationTest
         User.invalidate_cached # changing types from group<->user needs special attention
         # Get account page to test to see whether it was allowed or not
         user_session.get "/do/account/info", nil, {:expected_response_codes => [200, 302]}
-        # Only these two have identity
-        if k == User::KIND_USER || k == User::KIND_SUPER_USER
+        # Only these three have identity
+        if k == User::KIND_USER || k == User::KIND_SUPER_USER || k == User::KIND_SERVICE_USER
           # Got the account page OK?
           user_session.assert_select 'h1', "first last#{_TEST_APP_ID}'s account information"
         else

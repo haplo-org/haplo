@@ -22,7 +22,6 @@ CREATE TABLE os_objects (
     sortas_title TEXT NOT NULL, -- first A_TITLE entry, default language, normalised to lowercase, no-accents
     object BYTEA NOT NULL       -- Object in Ruby serialised format
 );
--- PERM TODO: Benchmark GIN vs GiST indicies, and on GiST, gist__intbig_ops vs gist__intbig_ops
 CREATE INDEX idx_os_objects_labels ON os_objects using gin (labels gin__int_ops);
 CREATE INDEX idx_os_objects_sortas_title ON os_objects(sortas_title);
 CREATE INDEX idx_os_objects_creation ON os_objects(creation_time);
@@ -70,9 +69,7 @@ CREATE TABLE os_index_link (
 );
 CREATE INDEX os_index_link_idx ON os_index_link(id,attr_desc,qualifier);
 CREATE INDEX os_index_link_o_idx ON os_index_link(object_id);
-CREATE INDEX os_index_link_v_idx ON os_index_link using gist (value gist__int_ops);
---TODO: Can a GIN index be used for os_index_link -- problems with NULL values in queries, use application setup to check. Might be a problematic query anyway.
---CREATE INDEX os_index_link_v_idx ON os_index_link using gin (value);    -- GIN performs better than GiST on ints
+CREATE INDEX os_index_link_v_idx ON os_index_link using gin (value gin__int_ops);
 CREATE INDEX os_index_link_i_idx ON os_index_link(object_id,attr_desc,qualifier);
 
 CREATE TABLE os_index_identifier (

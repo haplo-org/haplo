@@ -11,16 +11,17 @@ class DisplayControllerTest < IntegrationTest
 
   # The display controller gets quite a bit of testing in other tests, being a central part of the platorm
 
-  def test_plugin_redirect_away_from_object
+  def test_plugin_redirect_away_and_display_control
     db_reset_test_data
     restore_store_snapshot("basic")
     begin
       raise "Failed to install plugin" unless KPlugin.install_plugin("display_controller_test/display_controller_test")
 
-      redirect_obj, no_redirect_obj = ["redirect", "no redirect"].map do |title|
+      redirect_obj, no_redirect_obj, hide_url = ["redirect", "no redirect", "hide url"].map do |title|
         obj = KObject.new
         obj.add_attr(O_TYPE_BOOK, A_TYPE)
         obj.add_attr(title, A_TITLE)
+        obj.add_attr(KIdentifierURL.new("https://haplo.org/test-page-for-object-display"), A_URL)
         KObjectStore.create(obj)
         obj
       end
@@ -30,9 +31,15 @@ class DisplayControllerTest < IntegrationTest
       get object_urlpath(no_redirect_obj)
       assert_select('h1', 'no rdr modified')
       assert(response.body =~ /alt title/)
+      assert(response.body =~ /haplo\.org\/test-page-for-object-display/)
 
       get_302 object_urlpath(redirect_obj)
       assert_redirected_to "/do/redirected-away"
+
+      get object_urlpath(hide_url)
+      assert_select('h1', 'hide url')
+      assert(response.body !~ /alt title/)
+      assert(response.body !~ /haplo\.org\/test-page-for-object-display/)
 
     ensure
       KPlugin.uninstall_plugin("display_controller_test/display_controller_test")
@@ -53,6 +60,11 @@ class DisplayControllerTest < IntegrationTest
         r.add_attr("no rdr modified", A_TITLE)
         r.add_attr("alt title", A_TITLE, Q_ALTERNATIVE)
         response.replacementObject = r
+      end
+    end
+    def hObjectRender(response, object)
+      if object.first_attr(A_TITLE).to_s == 'hide url'
+        response.hideAttributes << A_URL
       end
     end
   end

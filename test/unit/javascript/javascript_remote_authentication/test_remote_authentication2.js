@@ -90,5 +90,26 @@ TEST(function() {
         }
     }));
 
+    // Test LDAP authentication service with different requested attributes
+    O.remote.authentication.connect('test-ldap-reduced-attributes', makeTestCallback({
+        name: "test-ldap-reduced-attributes",
+        invalidCredentials: [],
+        validCredentials: {
+            username: 'testuser',
+            password: 'testpassword1111'
+        },
+        checkValid: function(authInfo) {
+            TEST.assert_equal("testuser", authInfo.user.uid);
+            TEST.assert_equal("Test User", authInfo.user.cn);
+        },
+        testSearching: function(service) {
+            var results = service.search('(objectClass=person)');
+            TEST.assert(_.isEqual([
+                {"uid":"testy", "cn":"Test Y", "notarealmultivalue":[], "distinguishedName":"uid=testy,ou=Department Y,dc=example,dc=com"},
+                {"uid":"testy2", "cn":"Test Y2", "notarealmultivalue":[], "distinguishedName":"uid=testy2,ou=Department Y,dc=example,dc=com"},
+                {"uid":"testuser", "cn":"Test User", "notarealmultivalue":[], "distinguishedName":"uid=testuser,ou=Department X,dc=example,dc=com"}
+            ], results));
+        }
+    }));
 });
 

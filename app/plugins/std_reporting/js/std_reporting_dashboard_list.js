@@ -49,6 +49,7 @@ DashboardList.prototype.removeColumnsBasedOnFact = function(fact) {
         this.$removeColumnsBasedOnFact = [];
     }
     this.$removeColumnsBasedOnFact.push(fact);
+    return this;
 };
 
 DashboardList.prototype.__defineGetter__("columnCount", function() {
@@ -771,30 +772,20 @@ var JsonColumn = makeColumnType({
             }
             var innerColspec = _.clone(colspec.column);
             innerColspec.fact = "_FAKEFACTVALUE";
-            var column = makeColumn(collection, innerColspec);
+            this.column = makeColumn(collection, innerColspec);
             // Values need converting
-            var valueConversion = function(v) { return (v === undefined) ? null : v; };
+            this.valueConversion = function(v) { return (v === undefined) ? null : v; };
             // Dates need special handling
             if(colspec.column.type.indexOf("date") !== -1) {
-                valueConversion = function(v) {
+                this.valueConversion = function(v) {
                     return v ? (new XDate(v, true)).toDate() : null;
                 };
-            } else if(column instanceof NumberColumn) {
+            } else if(this.column instanceof NumberColumn) {
                 // Paranoid about numbers
-                valueConversion = function(v) { return (typeof(v) !== "number") ? (v ? v*1 : null) : v; };
-            } else if(column instanceof RefColumn || column instanceof RefPersonNameColumn) {
-                valueConversion = function(v) { return v ? O.ref(v) : null; };
+                this.valueConversion = function(v) { return (typeof(v) !== "number") ? (v ? v*1 : null) : v; };
+            } else if(this.column instanceof RefColumn || this.column instanceof RefPersonNameColumn) {
+                this.valueConversion = function(v) { return v ? O.ref(v) : null; };
             }
-            // Delegate this object to the column
-            this.renderCell = function(row) {
-                var obj = row[this.fact];
-                return column.renderCell({_FAKEFACTVALUE:(obj ? valueConversion(obj[this.valueProperty]) : null)});
-            };
-            this.exportCell = function(row, xls) {
-                var obj = row[this.fact];
-                column.exportCell({_FAKEFACTVALUE:(obj ? valueConversion(obj[this.valueProperty]) : null)}, xls);
-            };
-            this.__defineGetter__("exportWidth", function() { return column.exportWidth; });
         }
     }
 });
@@ -805,8 +796,19 @@ JsonColumn.prototype.prepare = function(dashboard) {
     }
 };
 
+JsonColumn.prototype.renderCell = function(row) {
+    if(this.column) {
+        var obj = row[this.fact];
+        return this.column.renderCell({_FAKEFACTVALUE:(obj ? this.valueConversion(obj[this.valueProperty]) : null)});
+    }
+    return '<td>'+this.renderCellInner(row)+'</td>';
+};
+
 JsonColumn.prototype.renderCellInner = function(row) {
     var obj = row[this.fact];
+    if(this.column) {
+        return this.column.renderCellInner({_FAKEFACTVALUE:(obj ? this.valueConversion(obj[this.valueProperty]) : null)});
+    }
     if(obj === null) {
         return '';
     } else {
@@ -821,8 +823,16 @@ JsonColumn.prototype.renderCellInner = function(row) {
 
 JsonColumn.prototype.exportCell = function(row, xls) {
     var obj = row[this.fact];
-    xls.cell((obj === null) ? null : obj[this.valueProperty]);
+    if(this.column) {
+        this.column.exportCell({_FAKEFACTVALUE:(obj ? this.valueConversion(obj[this.valueProperty]) : null)}, xls);
+    } else {
+        xls.cell((obj === null) ? null : obj[this.valueProperty]);
+    }
 };
+
+JsonColumn.prototype.__defineGetter__("exportWidth", function() {
+    return this.column ? this.column.exportWidth : 1;
+});
 
 // --------------------------------------------------------------------------
 

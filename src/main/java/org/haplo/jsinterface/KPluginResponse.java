@@ -135,6 +135,12 @@ public class KPluginResponse extends KScriptable {
         return ((CharSequence)result).toString();
     }
 
+    static public Object constructJsRequestObject(String detailsJSON) throws Exception {
+        Runtime runtime = Runtime.getCurrentRuntime();
+        Object arg = runtime.makeJsonParser().parseValue(detailsJSON);
+        return runtime.createHostObject("$Exchange_Request", new Object[]{arg});
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     static public class Fields {
         private ArrayList<FieldDescription> fieldsBuild;

@@ -247,9 +247,6 @@ public class KWorkUnit extends KScriptable {
             userValue = KUser.jsStaticFunction_getUserById(((Number)userValue).intValue());
         }
         KUser user = (KUser)userValue;
-        if(user.jsGet_isGroup()) {
-            throw new OAPIException("isActionableBy must be passed a User, not a Group");
-        }
         return this.workUnit.can_be_actioned_by(user.toRubyObject());
     }
 

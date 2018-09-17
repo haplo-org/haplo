@@ -222,16 +222,17 @@ class Admin_UserController < ApplicationController
     @user = User.find(params[:id])
     try_to_load_representative_object()
 
-    # Offer an object by matching email address
-    q = KObjectStore.query_and.identifier(KIdentifierEmailAddress.new(@user.email), A_EMAIL_ADDRESS)
-    q.add_exclude_labels([KConstants::O_LABEL_STRUCTURE])
-    r = q.execute(:objref, :date)
-    if r.length > 0
-      @matching_object = r[0]
+    if @user.email
+      # Offer an object by matching email address
+      q = KObjectStore.query_and.identifier(KIdentifierEmailAddress.new(@user.email), A_EMAIL_ADDRESS)
+      q.add_exclude_labels([KConstants::O_LABEL_STRUCTURE])
+      r = q.execute(:objref, :date)
+      if r.length > 0
+        @matching_object = r[0]
+      end
+      # Only offer to create if schema has Person type and user can create them
+      @can_create_person = KObjectStore.schema.type_descriptor(O_TYPE_PERSON) && @request_user.policy.can_create_object_of_type?(O_TYPE_PERSON)
     end
-
-    # Only offer to create if schema has Person type and user can create them
-    @can_create_person = KObjectStore.schema.type_descriptor(O_TYPE_PERSON) && @request_user.policy.can_create_object_of_type?(O_TYPE_PERSON)
 
     if request.post?
       n = params[:objref]

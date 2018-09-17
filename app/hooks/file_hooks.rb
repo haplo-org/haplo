@@ -11,6 +11,9 @@ module KHooks
     h.argument    :file,        StoredFile, "The file being downloaded"
     h.argument    :transform,   String,     "A string specifying the requested transform, or the empty string if none requested."
     h.argument    :permittingRef, KObjRef,  "The ref of the object which contained a file identified and was readable by the user, permitting this download. May be null."
+    h.argument    :isThumbnail, "bool",     "true if the request is for a thumbnail image"
+    h.argument    :isWebPublisher,"bool",   "true if the request is file or thumbnail requested through a std_web_publisher publication"
+    h.argument    :request,     "JSRequest","Information about the HTTP request for the file"
     h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of downloading the file"
   end
 

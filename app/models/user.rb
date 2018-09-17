@@ -94,6 +94,10 @@ class User < ActiveRecord::Base
   KIND_USER_DELETED = 16
   KIND_GROUP_DISABLED = 17
 
+  # Service users a hard-coded set of policies, which just give them identity so that plugins using them
+  # for authentication with API keys don't need to have "allowAnonymousRequests":true in plugin.json.
+  SERVICE_USER_POLICY = KPolicyRegistry.to_bitmask(:not_anonymous)
+
   # Kind testing functions
   def is_group; self.kind == KIND_GROUP || self.kind == KIND_GROUP_DISABLED; end
   def is_active; self.kind <= KIND__MAX_ACTIVE; end
@@ -195,11 +199,11 @@ class User < ActiveRecord::Base
   #  USER LOG IN HANDLING
 
   # authenticate against database, with throttling wrapper
-  def self.login(email_raw, password, client_ip, authentication_info = {})
+  def self.login(email_raw, password, client_ip)
     user_record = nil
     KLoginAttemptThrottle.with_bad_login_throttling(client_ip) do |outcome|
       # Perform login check
-      user_record = login_without_throttle(email_raw, password, authentication_info)
+      user_record = login_without_throttle(email_raw, password)
       # Success? (for throttling)
       outcome.was_success = (user_record != nil)
     end
@@ -207,7 +211,7 @@ class User < ActiveRecord::Base
   end
 
   # authenticate against database or plugin (actual login check)
-  def self.login_without_throttle(email_raw, password, authentication_info = {})
+  def self.login_without_throttle(email_raw, password)
     # Tidy up the email address supplied
     email = email_raw.gsub(/\s+/,'')
 
@@ -217,20 +221,6 @@ class User < ActiveRecord::Base
     # Seeing as we've got the object and it'll be used quite a bit later, cache it
     KApp.cache(USER_CACHE).store(user_record)
 
-    # Use any password authentication plugin
-    plugin_auth_result = nil
-    call_hook(:hAuthenticateUser) do |hooks|
-      plugin_auth_result = hooks.run(email, password).authResult
-    end
-    if plugin_auth_result != nil
-      # Tell the caller about the authentication process
-      authentication_info[:plugin_did_authentication] = true
-      authentication_info[:plugin_auth_result] = plugin_auth_result
-      # Return record if authentication succeeded, otherwise nil to show it failed
-      return (plugin_auth_result == :success) ? user_record : nil
-    end
-
-    # Plugin authentication didn't happen, so use internal authentication
     password_ok = false
     begin
       password_ok = true if user_record.password_check(password)
@@ -510,7 +500,11 @@ class User < ActiveRecord::Base
           raise "Bad permissions returned from hUserLabelStatements" unless p.kind_of? KLabelStatements
           @permissions = p
         end
-        @policy_bitmask = self.user_groups.calculate_policy_bitmask()
+        if self.kind == User::KIND_SERVICE_USER
+          @policy_bitmask = SERVICE_USER_POLICY
+        else
+          @policy_bitmask = self.user_groups.calculate_policy_bitmask()
+        end
       end
     end
   end

@@ -295,14 +295,33 @@ class KObject
     !!@needs_to_compute_attrs
   end
 
+  def set_need_to_compute_attrs(need)
+    if need
+      @needs_to_compute_attrs = true
+    else
+      if @needs_to_compute_attrs # check required to avoid exception
+        self.__send__(:remove_instance_variable, :@needs_to_compute_attrs)
+      end
+    end
+    nil
+  end
+
   def compute_attrs_if_required!
     return unless @needs_to_compute_attrs
+    self.compute_attrs!
+  end
+
+  def compute_attrs!
     self.store._compute_attrs_for_object(self)
     # Unset flag by deleting it, so that it doesn't inflate the size of the serialised attributes
-    self.__send__(:remove_instance_variable, :@needs_to_compute_attrs)
+    if @needs_to_compute_attrs # check required to avoid exception
+      self.__send__(:remove_instance_variable, :@needs_to_compute_attrs)
+    end
+    nil
   end
 
   alias :jsComputeAttrsIfRequired :compute_attrs_if_required!
+  alias :jsComputeAttrs :compute_attrs!
 
   # Allows creation of special singleton objects
   def _freeze_without_computing_attrs!
@@ -354,6 +373,12 @@ class KObject
     end
     def can_modify_attribute?(desc)
       ! @read_only_attributes.include?(desc)
+    end
+
+    # The ability to add additional hidden attributes to a restriction is very convenient when rendering objects
+    def hide_additional_attributes(attrs)
+      @hidden_attributes = (@hidden_attributes + attrs).uniq.sort
+      nil
     end
   end
 

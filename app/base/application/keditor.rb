@@ -221,39 +221,33 @@ module KEditor
 
     schema = opts[:obj_schema] || obj.store.schema
 
-    read_only_attributes = (opts[:read_only_attributes] || [])
+    attr_inclusion = AttrInclusion.make(opts[:read_only_attributes], opts[:invert_read_only_attributes])
 
     # Transform object using aliases, ignoring non-editable fields
     # This also puts things in the right order according to the type description
     obj_values = KAttrAlias.attr_aliasing_transform(obj, schema) do |v,desc,q,is_alias|
-      if is_alias
-        td = schema.aliased_attribute_descriptor(desc)
-        next false if td && read_only_attributes.include?(td.alias_of)
-      end
-      !(read_only_attributes.include?(desc))
+      attr_inclusion.include_with_lookup?(schema, desc, is_alias)
     end
 
     # Write javascript for sending to the browser
     type_objref = obj.first_attr(A_TYPE) || O_TYPE_INTRANET_PAGE
-    attr_js = generate_attr_js(obj_values, type_objref, read_only_attributes)
+    attr_js = generate_attr_js(obj_values, type_objref, attr_inclusion)
     return [type_objref.to_presentation, attr_js]
   end
 
   # Write js for values for the collected attributes
   # (also used by search by fields)
-  def self.generate_attr_js(obj_values, obj_type = nil, read_only_attributes = nil)
+  def self.generate_attr_js(obj_values, obj_type = nil, attr_inclusion = nil)
     attrs = []
     schema = KObjectStore.schema
     plugin_types_used = []
+    attr_inclusion ||= AttrInclusion.make([],false)
 
     obj_values.each do |toa|
       descriptor = toa.descriptor
       values = toa.attributes
 
-      if read_only_attributes
-        next if descriptor.alias_of && read_only_attributes.include?(descriptor.alias_of)
-        next if read_only_attributes.include?(descriptor.desc)
-      end
+      next unless attr_inclusion.include_by_descriptor?(descriptor)
 
       if descriptor.data_type == T_TEXT_PLUGIN_DEFINED
         plugin_types_used << descriptor.data_type_options
@@ -309,6 +303,42 @@ module KEditor
     end
 
     attrs
+  end
+
+  class AttrInclusion
+    def self.make(read_only_attributes, invert)
+      (invert ? AttrInclusionInverted : self).new(read_only_attributes)
+    end
+
+    def initialize(read_only_attributes)
+      @read_only_attributes = read_only_attributes || []
+    end
+
+    def include_attr?(desc, alias_of)
+      if alias_of && @read_only_attributes.include?(alias_of)
+        return false
+      end
+      ! @read_only_attributes.include?(desc)
+    end
+
+    def include_by_descriptor?(descriptor)
+      include_attr?(descriptor.desc, descriptor.alias_of)
+    end
+
+    def include_with_lookup?(schema, desc, is_alias)
+      alias_of = nil
+      if is_alias
+        td = schema.aliased_attribute_descriptor(desc)
+        alias_of = td.alias_of if td
+      end
+      include_attr?(desc, alias_of)
+    end
+  end
+
+  class AttrInclusionInverted < AttrInclusion
+    def include_attr?(desc, alias_of)
+      ! super
+    end
   end
 
   # ------------------------------------------------------------------------------

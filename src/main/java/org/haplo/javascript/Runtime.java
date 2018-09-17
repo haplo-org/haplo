@@ -437,6 +437,7 @@ public class Runtime {
             defineSealedHostClass(scope, KBinaryData.class);
             defineSealedHostClass(scope, KBinaryDataInMemory.class, true /* map inheritance */);
             defineSealedHostClass(scope, KBinaryDataStaticFile.class, true /* map inheritance */);
+            defineSealedHostClass(scope, KBinaryDataTempFile.class, true /* map inheritance */);
             defineSealedHostClass(scope, KUploadedFile.class, true /* map inheritance */);
             defineSealedHostClass(scope, KStoredFile.class);
             defineSealedHostClass(scope, KJob.class);

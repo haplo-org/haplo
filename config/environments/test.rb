@@ -26,7 +26,7 @@ KMESSAGE_QUEUE_DIR = TEST_ENV_TEST_DATA+'/messages'
 KFILESTORE_PATH = TEST_ENV_TEST_DATA+'/files-test'
 
 # Generic 'run' directory
-KFRAMEWORK_RUN_DIR = TEST_ENV_TEST_DATA
+KFRAMEWORK_RUN_DIR = TEST_ENV_TEST_DATA+'/run'
 
 # Accounting preserved data file
 KACCOUNTING_PRESERVED_DATA = TEST_ENV_TEST_DATA+'/accounting-data.test'
@@ -40,18 +40,11 @@ KHQ_SSL_CERTS_DIR = "#{ENV['HOME']}/haplo-dev-support/certificates"
 # File of allowed SSL roots
 SSL_CERTIFICATE_AUTHORITY_ROOTS_FILE = 'config/cacert.pem'
 
-# override for a development zone
-ZONE_NAME = `/usr/bin/zonename`.strip
-DOM_NAME='local'
-if ZONE_NAME != 'global'
-  DOM_NAME = 'net.oneis.co.uk'
-end
-
 # Installation properties
 KInstallProperties.load_from("#{KFRAMEWORK_ROOT}/tmp/properties-test", {
   :register_mdns_hostnames => 'no',
-  :domainname => DOM_NAME,
-  :management_server_url => "https://#{ENV['KSERVER_HOSTNAME'].chomp}."+DOM_NAME,
+  :domainname => 'local',
+  :management_server_url => "https://#{ENV['KSERVER_HOSTNAME'].chomp}.local",
   :network_client_blacklist => '(?!((127\\..*)|(0:0:0:0:0:0:0:1))).*',
   :plugin_debugging_support => ENV['DISABLE_TEST_PLUGIN_DEBUGGING'] ? 'no' : 'yes'
 })

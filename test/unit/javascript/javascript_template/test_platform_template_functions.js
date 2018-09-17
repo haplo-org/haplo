@@ -83,16 +83,16 @@ TEST(function() {
     var file = O.file(PDF_DIGEST);
     template = new $HaploTemplate('<div> std:file(f) </div>');
     var fileRendered = template.render({f:file});
-    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></td><td class="z__file_display_name"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf">example_3page.pdf</a></td></tr></table></div>');
+    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="64" alt=""></a></div></td><td class="z__file_display_name"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf">example_3page.pdf</a></td></tr></table></div>');
     var fileIdentifier = file.identifier().mutableCopy();
     fileIdentifier.filename = 'TEST_modified_name.pdf'
     fileRendered = template.render({f:fileIdentifier});
-    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></td><td class="z__file_display_name"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf">TEST_modified_name.pdf</a></td></tr></table></div>');
+    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="64" alt=""></a></div></td><td class="z__file_display_name"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf">TEST_modified_name.pdf</a></td></tr></table></div>');
     template = new $HaploTemplate('<div> std:file:thumbnail(f) </div>');
     fileRendered = template.render({f:file});
-    TEST.assert_equal(fileRendered, '<div><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></div>');
+    TEST.assert_equal(fileRendered, '<div><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="64" alt=""></a></div></div>');
     fileRendered = template.render({f:fileIdentifier});
-    TEST.assert_equal(fileRendered, '<div><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></div>');
+    TEST.assert_equal(fileRendered, '<div><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="64" alt=""></a></div></div>');
     template = new $HaploTemplate('<div> std:file:link(f) </div>');
     fileRendered = template.render({f:file});
     TEST.assert_equal(fileRendered, '<div><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf">example_3page.pdf</a></div>');
@@ -100,13 +100,17 @@ TEST(function() {
     TEST.assert_equal(fileRendered, '<div><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf">TEST_modified_name.pdf</a></div>');
     template = new $HaploTemplate('<div> std:file:transform(f "w100/jpeg") </div>');
     fileRendered = template.render({f:file});
-    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/w100/jpeg/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></td><td class="z__file_display_name"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/w100/jpeg/example_3page.pdf">example_3page.pdf</a></td></tr></table></div>');
+    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/w100/jpeg/example_3page.pdf"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="64" alt=""></a></div></td><td class="z__file_display_name"><a href="/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/w100/jpeg/example_3page.pdf">example_3page.pdf</a></td></tr></table></div>');
     // With all the options...
     template = new $HaploTemplate('<div> std:file(f "asFullURL" "authenticationSignature" "forceDownload") </div>');
     fileRendered = template.render({f:file});
     TEST.assert(/www\d+\.example\.com/.test(fileRendered));  // asFullURL
-    TEST.assert(/\?s=[a-f0-9]+/.test(fileRendered));  // authenticationSignature
+    TEST.assert(/\?s=[a-f0-9]+"/.test(fileRendered));  // authenticationSignature
     TEST.assert(/attachment=1/.test(fileRendered));  // forceDownload
+    // With static signature
+    template = new $HaploTemplate('<div> std:file(f "authenticationSignatureValidForSeconds") </div>');
+    fileRendered = template.render({f:file});
+    TEST.assert(/\?s=[a-f0-9]+,\d+,\d+"/.test(fileRendered));  // authenticationSignature
     // Unknown options exception
     template = new $HaploTemplate('<div> std:file(f "asFullURL" "UNKNOWN" "forceDownload") </div>');
     TEST.assert_exceptions(function() {
@@ -125,16 +129,16 @@ TEST(function() {
     var file = O.file(PDF_DIGEST);
     template = new $HaploTemplate('<div> std:file:with-link-url(f "/test") </div>');
     var fileRendered = template.render({f:file});
-    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/test"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></td><td class="z__file_display_name"><a href="/test">example_3page.pdf</a></td></tr></table></div>');
+    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/test"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="64" alt=""></a></div></td><td class="z__file_display_name"><a href="/test">example_3page.pdf</a></td></tr></table></div>');
     var fileIdentifier = file.identifier().mutableCopy();
     fileIdentifier.filename = 'TEST_modified_name.pdf'
     fileRendered = template.render({f:fileIdentifier});
-    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/test"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></td><td class="z__file_display_name"><a href="/test">TEST_modified_name.pdf</a></td></tr></table></div>');
+    TEST.assert_equal(fileRendered, '<div><table class="z__file_display"><tr class="z__file_display_r1"><td class="z__file_display_icon"><div class="z__thumbnail"><a href="/test"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="64" alt=""></a></div></td><td class="z__file_display_name"><a href="/test">TEST_modified_name.pdf</a></td></tr></table></div>');
     template = new $HaploTemplate('<div> std:file:thumbnail:with-link-url(f "/test") </div>');
     fileRendered = template.render({f:file});
-    TEST.assert_equal(fileRendered, '<div><div class="z__thumbnail"><a href="/test"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></div>');
+    TEST.assert_equal(fileRendered, '<div><div class="z__thumbnail"><a href="/test"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="64" alt=""></a></div></div>');
     fileRendered = template.render({f:fileIdentifier});
-    TEST.assert_equal(fileRendered, '<div><div class="z__thumbnail"><a href="/test"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="63" alt=""></a></div></div>');
+    TEST.assert_equal(fileRendered, '<div><div class="z__thumbnail"><a href="/test"><img src="/_t/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457" width="45" height="64" alt=""></a></div></div>');
     // With valid options. "forceDownload" and "asFullURL" will be silently ignored
     template = new $HaploTemplate('<div> std:file:with-link-url(f "/test" "asFullURL" "authenticationSignature" "forceDownload") </div>');
     fileRendered = template.render({f:file});

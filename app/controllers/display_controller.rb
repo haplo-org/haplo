@@ -66,7 +66,11 @@ class DisplayController < ApplicationController
     @obj_display = @obj
     call_hook(:hPreObjectDisplay) do |hooks|
       h = hooks.run(@obj)
-      @obj_display = h.replacementObject if h.replacementObject != nil
+      if h.replacementObject != nil
+        @obj_display = h.replacementObject
+        # Compute attributes immediately, otherwise it would happen implicitly and not necessarily for all users
+        @obj_display.compute_attrs_if_required!
+      end
       # Plugins can redirect away from object display
       if h.redirectPath
         redirect_to h.redirectPath
@@ -254,7 +258,10 @@ class DisplayController < ApplicationController
       # Allow plugins to modify object
       call_hook(:hPreObjectDisplay) do |hooks|
         h = hooks.run(@obj)
-        @obj = h.replacementObject if h.replacementObject != nil
+        if h.replacementObject != nil
+          @obj = h.replacementObject
+          @obj.compute_attrs_if_required!
+        end
       end
     end
     @html = if @obj

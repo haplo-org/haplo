@@ -26,7 +26,7 @@ KMESSAGE_QUEUE_DIR = ENV_DATA_ROOT+'/messages'
 KFILESTORE_PATH = ENV_DATA_ROOT+'/files'
 
 # Generic 'run' directory
-KFRAMEWORK_RUN_DIR = DEV_ENV_TEST_DATA
+KFRAMEWORK_RUN_DIR = ENV_DATA_ROOT+'/run'
 
 # Accounting preserved data file
 KACCOUNTING_PRESERVED_DATA = ENV_DATA_ROOT+'/accounting-data.development'

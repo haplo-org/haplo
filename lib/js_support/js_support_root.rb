@@ -13,6 +13,7 @@ require 'js_support/javascript_api_version'
 require 'js_support/js_template'
 require 'js_support/js_ruby_templates'
 # Interfaces to Ruby code for JavaScript
+require 'js_support/js_convert_support'
 require 'js_support/js_objref_support'
 require 'js_support/js_datetime_support'
 require 'js_support/js_label_support'

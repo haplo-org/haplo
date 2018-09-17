@@ -106,8 +106,16 @@ public class JSFunctionThis extends ScriptableObject {
         HaploTemplateDeferredRender deferred =
             (HaploTemplateDeferredRender)org.mozilla.javascript.Context.getCurrentContext().
                 newObject(this.getParentScope(), "$HaploTemplateDeferredRender");
+        // Need to render this now, as context and binding will change later
+        StringBuilder blockBuilder = new StringBuilder();
+        final Context blockContext = this.binding.getContext();
+        this.binding.renderBlock(checkedBlockName, blockBuilder, this.binding.getView(), blockContext);
+        // Render function which just appends the pre-rendered HTML
         deferred.setDeferredRender((builder, context) -> {
-            this.binding.renderBlock(checkedBlockName, this.builder, this.binding.getView(), context);
+            if(context != blockContext) {
+                error("use of deferred render from template function deferredRenderBlock() in wrong context");
+            }
+            builder.append(blockBuilder);
         });
         return deferred;
     }

@@ -53,10 +53,7 @@ class Setup_NavigationController < ApplicationController
           # ignore
         end
       end
-      # Got anything?
-      unless nav_entries.empty?
-        KApp.set_global(:navigation, YAML::dump(nav_entries))
-      end
+      KApp.set_global(:navigation, YAML::dump(nav_entries))
       redirect_to '/do/setup/navigation/edit?saved=1'
     else
       @nav_entries = YAML::load(KApp.global(:navigation))

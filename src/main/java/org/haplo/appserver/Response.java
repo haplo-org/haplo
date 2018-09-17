@@ -181,10 +181,10 @@ public class Response {
             }
 
             InclusiveByteRange singleSatisfiableRange = (InclusiveByteRange)ranges.get(0);
-            long singleLength = singleSatisfiableRange.getSize(contentLength);
+            long singleLength = singleSatisfiableRange.getSize();
             this.writeRangeToOutputStream(out,
-                    singleSatisfiableRange.getFirst(contentLength),
-                    singleSatisfiableRange.getSize(contentLength));
+                    singleSatisfiableRange.getFirst(),
+                    singleSatisfiableRange.getSize());
             return;
         }
 

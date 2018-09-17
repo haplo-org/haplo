@@ -1,0 +1,12 @@
+{
+  "pluginName": "haplo_info_geoip",
+  "pluginAuthor": "Haplo Services",
+  "pluginVersion": 1,
+  "displayName": "IP Geographic Database",
+  "displayDescription": "Lookup of IP address to approximate geographic location. This product includes GeoLite2 data created by MaxMind, available from http://www.maxmind.com",
+  "apiVersion": 4,
+  "privilegesRequired": ["pHaploInfoGeoIpLookup"],
+  "load": [
+      "js/haplo_info_geoip.js"
+    ]
+}

@@ -41,8 +41,8 @@ var genericDiff = function(current, previous) {
     // Special case: current has zero entries
     // Either everything is new, or it's only text nodes.
     if(cn.length === 0) {
-        $(current).addClass('oforms-changes-add').
-            append($(previous).addClass('oforms-changes-remove'));
+        var cq = $(current).addClass('oforms-changes-add');
+        $(previous).addClass('oforms-changes-remove').insertAfter(cq);
         return;
     }
 

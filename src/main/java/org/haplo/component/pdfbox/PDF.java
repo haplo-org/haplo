@@ -16,6 +16,8 @@ import java.awt.image.*;
 
 import javax.imageio.ImageIO;
 
+import org.apache.pdfbox.rendering.PDFRenderer;
+import org.apache.pdfbox.rendering.ImageType;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.common.PDRectangle;
@@ -52,10 +54,10 @@ public class PDF {
 
             this.numberOfPages = this.pdf.getNumberOfPages();
 
-            PDPage page = (PDPage)this.pdf.getDocumentCatalog().getAllPages().get(0);
+            PDPage page = this.pdf.getPage(0);
 
             // Width and height
-            PDRectangle cropBox = page.findCropBox();
+            PDRectangle cropBox = page.getCropBox();
             width = (int)cropBox.getWidth();
             height = (int)cropBox.getHeight();
 
@@ -114,8 +116,8 @@ public class PDF {
     public void render(String outFilename, String outFormat, int page, int outWidth, int outHeight) throws IOException {
         BufferedImage img = null;
         try {
-            PDPage pdfPage = (PDPage)this.pdf.getDocumentCatalog().getAllPages().get(page - 1);
-            PDRectangle cropBox = pdfPage.findCropBox();
+            PDPage pdfPage = this.pdf.getPage(page - 1);
+            PDRectangle cropBox = pdfPage.getCropBox();
             int pageWidth = (int)cropBox.getWidth();
             int pageHeight = (int)cropBox.getHeight();
             if(pageHeight <= 0) { pageHeight = 1; }
@@ -125,9 +127,12 @@ public class PDF {
             if(resolution > 1000) { resolution = 1000; }
             if(outHeight < 100 || outWidth < 100) { resolution *= 2; }
 
-            img = pdfPage.convertToImage(
-                    outFormat.equals("png") ? BufferedImage.TYPE_INT_ARGB : BufferedImage.TYPE_INT_RGB,
-                    resolution
+            PDFRenderer pdfRenderer = new PDFRenderer(this.pdf);
+
+            img = pdfRenderer.renderImageWithDPI(
+                    page - 1,
+                    resolution,
+                    outFormat.equals("png") ? ImageType.ARGB : ImageType.RGB
                 );
         } catch(Exception e) {
             Logger.getLogger("org.haplo.app").error("Error rendering PDF: " + e.toString());

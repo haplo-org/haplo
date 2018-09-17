@@ -14,6 +14,7 @@ class JavascriptTemplateTest < Test::Unit::TestCase
     db_reset_test_data
     restore_store_snapshot("basic")
     pdf = StoredFile.from_upload(fixture_file_upload('files/example_3page.pdf', 'application/pdf'))
+    run_all_jobs({})
     obj = KObject.new()
     obj.add_attr(O_TYPE_BOOK, A_TYPE)
     obj.add_attr("Test book<", A_TITLE)

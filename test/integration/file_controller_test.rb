@@ -189,7 +189,7 @@ class FileControllerTest < IntegrationTest
 
       assert_login_as("user1@example.com", "password")
       pdf_file = StoredFile.from_upload(fixture_file_upload('files/example3.pdf', 'application/pdf'))
-      make_object_for_file pdf_file
+      pdf_obj = make_object_for_file pdf_file
       html_file = StoredFile.from_upload(fixture_file_upload('files/example7.html', 'text/html'))
       html_obj = make_object_for_file html_file
       run_all_jobs({})
@@ -207,6 +207,9 @@ class FileControllerTest < IntegrationTest
 
       get "/file/#{pdf_file.digest}/#{pdf_file.size}/example3.pdf"
       assert response.body =~ /\A%PDF/
+
+      get_302 "/_t/#{pdf_file.digest}/#{pdf_file.size}"
+      assert_redirected_to "/do/file-download-redirected-away/thumbnail?permittingRef=#{pdf_obj.objref.to_presentation}"
 
       get_302 "/file/#{html_file.digest}/#{html_file.size}/example7.html"
       assert_redirected_to "/do/file-download-redirected-away/?permittingRef=#{html_obj.objref.to_presentation}"

@@ -194,7 +194,7 @@ class KFramework
       KApp.in_application(exchange.application_id) do
         ms = Benchmark.ms do
           # Find the controller used to handle this request
-          path_elements, controller_factory, annotations = @namespace.resolve(exchange.request.path)
+          path_elements, controller_factory, annotations = @namespace.resolve(exchange.request.path, exchange.request.host)
           # If the URL didn't match anything, a nil controller would be returned. Let something else make this a 404.
           raise KFramework::RequestPathNotFound.new("Couldn't find a controller to handle this request.") if controller_factory == nil
           is_file_upload_instructions = ((exchange.annotations[:uploads] != nil) && (exchange.annotations[:uploads].getInstructionsRequired()))

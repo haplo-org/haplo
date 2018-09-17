@@ -667,7 +667,7 @@ P.callback("$update", function() {
             console.log("Reporting update terminated early, updates not cleared and will be rerun");
             return; // prevent clearing of update in table
         } else {
-            console.log("Updating, caught error: "+e.message);
+            console.log("Updating, caught error: "+e.message+", in: "+e.fileName+" at line: "+e.lineNumber);
             if(reportNextExceptionFromUpdates) {
                 O.reportHealthEvent("Exception in std_reporting collection update",
                     "Exception thrown when updating facts for an object. NOTE: Future exceptions in this runtime will not be reporting. Check server logs.\n\nException: "+e.message);

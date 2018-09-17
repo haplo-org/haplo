@@ -1,9 +1,37 @@
-if(query) {
-    <div class="haplo-results-count">
-        _resultsCount
-        switch(_resultsCount)
-              { " results found" }
-            1 { " result found" }
+if(_displayResults) {
+    <div class="haplo-results-info">
+      unless(spec.hideResultsCount) {
+        <div class="haplo-results-count">
+            _resultsCount
+            switch(_resultsCount)
+                  { " results found" }
+                1 { " result found" }
+        </div>
+      }
+      if(_page) {
+        <div class="haplo-result-sort">
+            "Sort by"
+            unless(spec.hideRelevanceSort) {
+              std:web-publisher:search:__sort__(. "relevance" "Relevance")
+            }
+            std:web-publisher:search:__sort__(. "date" "Date")
+            std:web-publisher:search:__sort__(. "title" "Title")
+        </div>
+      }
     </div>
     std:web-publisher:widget:query:list:search-result(_resultsRender)
+    ifAny(_prevPage _nextPage) {
+        <div class="haplo-results-paging">
+            if(_prevPage) {
+                <div class="haplo-results-paging-prev">
+                    <a href=url(? *_prevPage)> "&laquo;&nbsp; Previous" </a>
+                </div>
+            }
+            if(_nextPage) {
+                <div class="haplo-results-paging-next">
+                    <a href=url(? *_nextPage)> "Next &nbsp;&raquo;" </a>
+                </div>
+            }
+        </div>
+    }
 }

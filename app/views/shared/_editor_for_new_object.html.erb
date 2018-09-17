@@ -13,8 +13,14 @@
 
   # Use the KEditor class to build the javascript
   type = obj.first_attr(KConstants::A_TYPE)
+  read_only_values = nil
   if info.has_key?(:read_only_attributes)
     editor_options[:read_only_attributes] = (editor_options[:read_only_attributes]||[]) + info[:read_only_attributes]
+    # If the template specifies any read only attributes, the values in the template object need to round-trip
+    unused_type, read_only_values = KEditor.js_for_obj_attrs(obj, {
+      :read_only_attributes => info[:read_only_attributes],
+      :invert_read_only_attributes => true
+    })
   end
   editor_options.merge!(info[:editor_options] || {})
   editor_js_type, editor_js_attrs = KEditor.js_for_obj_attrs(obj, editor_options)
@@ -46,4 +52,4 @@
 
 </form>
 
-<div id="z__keditor_data" data-type="<%= editor_js_type %>" data-attr="<%= h(JSON.generate(editor_js_attrs)) %>" data-opts="<%= h(JSON.generate(client_side_options)) %>"></div>
+<div id="z__keditor_data" data-type="<%= editor_js_type %>" data-attr="<%= h(JSON.generate(editor_js_attrs)) %>" data-opts="<%= h(JSON.generate(client_side_options)) %>"<% if read_only_values %> data-read-only-values="<%= h(JSON.generate(read_only_values)) %>"<% end %>></div>

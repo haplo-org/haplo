@@ -321,10 +321,11 @@ module SchemaRequirements
   # ---------------------------------------------------------------------------------------------------------------
 
   class NavigationRule
+    NAVIGATION_RULE_VALUE_REGEXP = /\Aplugin\s+([a-zA-Z0-9:_-]+)\z/
     def apply(object, required_value, context)
       removes, applies = required_value.multi_value.map do |list|
         list.map do |v|
-          (v =~ /\Aplugin\s+([a-zA-Z0-9:-]+)\z/) ? $1 : nil
+          (v =~ NAVIGATION_RULE_VALUE_REGEXP) ? $1 : nil
         end .compact
       end
       changed = false
@@ -352,6 +353,21 @@ module SchemaRequirements
   FEATURE_NAVIGATION_RULES = {
     "entry"             => NavigationRule.new()
   }
+
+  class ApplyToFeatureNavigation < ApplyToRubyObject
+    def check(requirement, errors, context)
+      requirement.values.each do |key, required_value|
+        if key == 'entry'
+          removes, applies = required_value.multi_value
+          (removes + applies).each do |v|
+            unless v =~ NavigationRule::NAVIGATION_RULE_VALUE_REGEXP
+              errors.push "Bad navigation entry '#{v}'"
+            end
+          end
+        end
+      end
+    end
+  end
 
   class FeatureProxyNavigation
     def initialize
@@ -615,7 +631,7 @@ module SchemaRequirements
       when 'std:configuration-data'
         ApplyToRubyObject.new(code, FeatureProxyConfigData.new, FEATURE_CONFIG_DATA_RULES)
       when 'std:navigation'
-        ApplyToRubyObject.new(code, FeatureProxyNavigation.new, FEATURE_NAVIGATION_RULES)
+        ApplyToFeatureNavigation.new(code, FeatureProxyNavigation.new, FEATURE_NAVIGATION_RULES)
       else
         nil
       end

@@ -804,7 +804,7 @@ puts "Remove unnecessary files..."
 unnecessary_dirs.each do |dir|
   FileUtils.rm_r("#{export_dir}/#{dir}")
 end
-Dir.glob("#{export_dir}/components/*/src").each do |dir|
+Dir.glob("#{export_dir}/components/*/*/src").each do |dir|
   FileUtils.rm_r(dir)
 end
 

@@ -229,6 +229,8 @@ class StoredFile < ActiveRecord::Base
   #   File info and thumbnailing
   # ----------------------------------------------------------------------------------------------------------------
 
+  THUMBNAIL_MAX_SCALED_DIMENSION = 64.0
+
   # For compatibility with KFileIdentifier
   def presentation_filename
     self.upload_filename
@@ -240,9 +242,9 @@ class StoredFile < ActiveRecord::Base
     KFileTransform::Dimensions.new(self.dimensions_w, self.dimensions_h, units.to_sym)
   end
 
-  ThumbnailInfo = Struct.new(:width, :height, :urlpath)
-  THUMBNAIL_AUDIO = ThumbnailInfo.new(47, 47, '/images/preview_audio.gif').freeze
-  THUMBNAIL_VIDEO = ThumbnailInfo.new(47, 47, '/images/preview_video.gif').freeze
+  ThumbnailInfo = Struct.new(:width, :height, :urlpath, :scaled_width, :scaled_height)
+  THUMBNAIL_AUDIO = ThumbnailInfo.new(47, 47, '/images/preview_audio.gif', 47, 47).freeze
+  THUMBNAIL_VIDEO = ThumbnailInfo.new(47, 47, '/images/preview_video.gif', 47, 47).freeze
   def thumbnail
     format = self.thumbnail_format
     if format == nil
@@ -251,7 +253,16 @@ class StoredFile < ActiveRecord::Base
       return THUMBNAIL_VIDEO if mime_type =~ /\Avideo\//i
       return nil
     end
-    ThumbnailInfo.new(self.thumbnail_w, self.thumbnail_h)
+    # Thumbnails are rendered at higher resolution than they are displayed in the application,
+    # so generally need scaling down. This also makes them look nicer on HiDPI displays.
+    scaled_width = self.thumbnail_w.to_f
+    scaled_height = self.thumbnail_h.to_f
+    if scaled_width > THUMBNAIL_MAX_SCALED_DIMENSION || scaled_height > THUMBNAIL_MAX_SCALED_DIMENSION
+      factor = ((scaled_width > scaled_height) ? scaled_width : scaled_height).to_f / THUMBNAIL_MAX_SCALED_DIMENSION
+      scaled_width = (scaled_width / factor) + 0.2 # add a tiny bit more to push rounding errors to full pixel sizes
+      scaled_height = (scaled_height / factor) + 0.2
+    end
+    ThumbnailInfo.new(self.thumbnail_w, self.thumbnail_h, nil, scaled_width.to_i, scaled_height.to_i)
   end
 
   def thumbnail_mime_type

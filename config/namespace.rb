@@ -81,20 +81,26 @@ class ApplicationNamespace
       }],
     "file"           => [:controller, {:file_request => true}, FileController],
     "_t"             => [:controller, {:thumbnail_request => true}, FileController],
+    "download"       => [:controller, {:web_publisher_auth => true, :file_request => true}, FileController],
+    "thumbnail"      => [:controller, {:web_publisher_auth => true, :thumbnail_request => true}, FileController],
     "search"         => [:controller, {}, SearchController]
   }.freeze
 
   # Returns
   #   [rest of path as array, controller class, annotations]
-  # Controller may be nil
-  def resolve(path)
+  def resolve(path, host)
     # Split path into elements
     elements = path.split('/').select { |e| ! e.empty? }
     annotations = Hash.new
     controller = nil
     if elements.empty?
       annotations[:root_url] = true
-      controller = HomeController
+      # There might be a publication at the root of this hostname (which may not the main application hostname)
+      if WebPublisherController.hostname_has_publication_at_root?(host)
+        controller = WebPublisherController
+      else
+        controller = HomeController
+      end
     else
       # Use the map to find the URL
       search = MAIN_MAP

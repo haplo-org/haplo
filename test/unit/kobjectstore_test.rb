@@ -706,6 +706,11 @@ __E
     p_as_common = p.dup_restricted(KObject::RestrictedAttributes.new(p, [O_LABEL_COMMON.to_i]))
     p_as_confidential = p.dup_restricted(KObject::RestrictedAttributes.new(p, [O_LABEL_CONFIDENTIAL.to_i]))
 
+    # Can add additional hidden attributes (convenience method for displaying objects)
+    p_ra_none_with_additional = KObject::RestrictedAttributes.new(p, [])
+    p_ra_none_with_additional.hide_additional_attributes([A_URL])
+    assert_equal [A_TITLE, A_URL, A_TELEPHONE_NUMBER], p_ra_none_with_additional.hidden_attributes()
+
     # Check ability to read A_TELEPHONE_NUMBER from p, p_as_common, p_as_confidential
     assert_equal tn, p.first_attr(A_TELEPHONE_NUMBER)
     assert_equal tn, p_as_common.first_attr(A_TELEPHONE_NUMBER)
@@ -1238,6 +1243,32 @@ __E
         assert_equal obj.objref, objv.objref
       end
 
+      # Current version?
+      version_at_now = KObjectStore.read_version_at_time(obj.objref, DateTime.now)
+      assert_equal obj.objref, version_at_now.objref
+      assert_equal obj_version[obj_number], version_at_now.version
+      # No version a year ago
+      version_year_ago = KObjectStore.read_version_at_time(obj.objref, DateTime.now - 365)
+      assert_equal nil, version_year_ago
+      # Reading version at creation time works with small adjustments
+      [
+        [0,true,true],
+        [1,true],
+        [-1,true,true],
+        [3,true],   # because it's in the future
+        [-3,false,true]  # but not in the past
+      ].each do |adjustment, should_find, check_is_version_1|
+        version_at_creation = KObjectStore.read_version_at_time(obj.objref, (obj.obj_creation_time + adjustment).to_datetime)
+        if should_find
+          assert_equal obj.objref, version_at_creation.objref
+          if check_is_version_1
+            assert_equal 1, version_at_creation.version
+          end
+        else
+          assert_equal nil, version_at_creation
+        end
+      end
+
       # Update
       uid += 1
     end
@@ -1268,6 +1299,39 @@ __E
         KObjectStore.read_version(KObjRef.new(999999999), 1)
       end
     end
+  end
+
+  def test_object_history_read_at_time
+    restore_store_snapshot("min")
+
+    obj = KObject.new()
+    obj.add_attr(O_TYPE_BOOK, A_TYPE)
+    obj.add_attr("Read at time", A_TITLE)
+    KObjectStore.create(obj)
+
+    # Check non-datatime things can't be passed in
+    assert_raises(RuntimeError) { KObjectStore.read_version_at_time(obj.objref, "date") }
+    assert_raises(RuntimeError) { KObjectStore.read_version_at_time(obj.objref, nil) }
+    assert_raises(RuntimeError) { KObjectStore.read_version_at_time(obj.objref, 12445) }
+
+    # Make some versions
+    5.times do
+      obj = obj.dup
+      obj.add_attr("version", 3466)
+      KObjectStore.update(obj)
+    end
+    assert_equal 6, obj.version
+
+    # Hack the times in the database for testing, so it looks like an update every two days for the last 6 days
+    KApp.get_pg_database.perform "UPDATE os_objects_old SET updated_at=NOW() - (interval '1 day' * (6-version) * 2) WHERE id=#{obj.objref.to_i}"
+
+    # Read versions at the given time
+    1.upto(6) do |version|
+      old_obj = KObjectStore.read_version_at_time(obj.objref, DateTime.now - (((5-version)*2)+1))
+      assert_equal obj.objref, old_obj.objref
+      assert_equal version, old_obj.version
+    end
+    assert_equal nil, KObjectStore.read_version_at_time(obj.objref, DateTime.now - 16)
   end
 
   def test_schema

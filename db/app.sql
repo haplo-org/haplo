@@ -142,7 +142,6 @@ CREATE INDEX idx_audit_en_obj_id ON audit_entries(obj_id);
 CREATE INDEX idx_audit_en_user1 ON audit_entries(user_id);
 CREATE INDEX idx_audit_en_user2 ON audit_entries(auth_user_id);
 CREATE INDEX idx_audit_en_recent ON audit_entries(displayable,id); -- for recent listing
--- PERM TODO: Benchmark GIN vs GiST indicies, and on GiST, gist__intbig_ops vs gist__intbig_ops
 CREATE INDEX idx_audit_en_labels ON audit_entries using gin (labels gin__int_ops);
 
 

@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# Provide utility functions to KStoredFile JavaScript objects
+# Provide utility functions to KStoredFile & KBinaryDataTempFile JavaScript objects
 
 module JSFileSupport
   extend KFileUrls
@@ -82,8 +82,18 @@ module JSFileSupport
       path = fileIdentifierMakePathOrHTML(stored_file, options, false)
       options.transform = "thumbnail"
       thumbnail = fileIdentifierMakePathOrHTML(stored_file, options, true)
-      %Q!<div class="z__oforms_file"><a href="#{path}"><span class="z__oforms_file_thumbnail">#{thumbnail}</span><span class="z__oforms_file_filename">#{ERB::Util.h(stored_file.presentation_filename)}</span></a></div>!
-
+      preview_url = nil
+      rc = KFramework.request_context
+      if rc
+        preview_url = file_url_path(stored_file, :preview, :sign_with => rc.controller.session)
+      end
+p preview_url
+      html = %Q!<div class="z__oforms_file"><a href="#{path}"><span class="z__oforms_file_thumbnail">#{thumbnail}</span><span class="z__oforms_file_filename">#{ERB::Util.h(stored_file.presentation_filename)}</span></a>!
+      if preview_url
+        html << %Q!<a href="#{preview_url}" class="z__file_preview_link">Preview</a>!
+      end
+      html << '</div>'
+      html
     else
       raise JavaScriptAPIError, "Bad oForms where value for rendering"
     end
@@ -177,7 +187,7 @@ module JSFileSupport
         # Generate the tag
         thumbnail_url = thumb_info.urlpath || file_url_path(stored_file, :thumbnail, url_path_options)
         thumbnail_url = KApp.url_base() + thumbnail_url if options.asFullURL
-        %Q!<img src="#{thumbnail_url}" width="#{thumb_info.width}" height="#{thumb_info.height}" alt="">!
+        %Q!<img src="#{thumbnail_url}" width="#{thumb_info.scaled_width}" height="#{thumb_info.scaled_height}" alt="">!
       end
     end
     # Wrap it with the download link?
@@ -209,3 +219,21 @@ module JSFileSupport
 end
 
 Java::OrgHaploJsinterface::KStoredFile.setRubyInterface(JSFileSupport)
+
+
+# ===========================================================================
+
+module JSBinaryDataTempFileSupport
+
+  def self.fileHexDigest(pathname)
+    Digest::SHA256.file(pathname).hexdigest
+  end
+
+  def self.storedFileFrom(tempPathname, filename, mimeType)
+    StoredFile.move_file_into_store(tempPathname, filename, mimeType)
+  end
+
+end
+
+Java::OrgHaploJsinterface::KBinaryDataTempFile.setRubyInterface(JSBinaryDataTempFileSupport)
+

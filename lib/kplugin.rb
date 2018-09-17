@@ -469,6 +469,13 @@ class KPlugin
       PLUGINS.each { |name,plugin| yield plugin }
     end
   end
+  def self.each_registered_private_plugin
+    PLUGINS_LOCK.synchronize do
+      PRIVATE_PLUGINS.each do |application_id,plugins|
+        plugins.each { |name,plugin| yield application_id, plugin }
+      end
+    end
+  end
 
   # -----------------------------------------------------------------------------------------------------------------
 

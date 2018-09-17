@@ -52,6 +52,7 @@ $StoreQuery
 DBTime
 $DbObject
 $Exchange
+$Exchange_Request
 $Plugin
 oForms
 $LabelStatementsBuilder

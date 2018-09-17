@@ -319,6 +319,13 @@ TEST(function() {
     histobj.appendTitle("T1");
     histobj.save();
     TEST.assert_equal(1, histobj.version);
+
+    // Check loading at creation time, because this should always work (with single value)
+    var histobj_at_creation0 = histobj.ref.loadVersionAtTime(histobj.creationDate);
+    TEST.assert(histobj_at_creation0 != null);
+    TEST.assert_equal(1, histobj_at_creation0.version);
+
+    // Make history
     histobj.remove(ATTR.Title);
     histobj.appendTitle("T2");
     histobj.save();
@@ -335,6 +342,28 @@ TEST(function() {
     TEST.assert_equal("T1", history[0].firstTitle().toString());
     TEST.assert_equal(2, history[1].version);
     TEST.assert_equal("T2", history[1].firstTitle().toString());
+
+    // Test reading versions
+    var histobj_1 = histobj.ref.loadVersion(1);
+    TEST.assert(histobj.ref == histobj_1.ref);
+    TEST.assert_equal(1, histobj_1.version);
+    TEST.assert_equal("T1", histobj_1.title);
+    var histobj_2 = histobj.ref.loadVersion(2);
+    TEST.assert(histobj.ref == histobj_2.ref);
+    TEST.assert_equal(2, histobj_2.version);
+    TEST.assert_equal("T2", histobj_2.title);
+
+    var histobj_now = histobj.ref.loadVersionAtTime((new XDate()).addSeconds(1)); // need to add a second due to differences in time precision
+    // TODO: Does something need to be done about this date precision conflict between Java/Ruby/JRuby?
+    TEST.assert(histobj.ref == histobj_now.ref);
+    TEST.assert_equal(3, histobj_now.version);
+    TEST.assert_equal("T3", histobj_now.title);
+    var histobj_before = histobj.ref.loadVersionAtTime(new Date(2010,9,1));
+    TEST.assert_equal(null, histobj_before);
+    // Check loading at creation time, because this should always work (with history)
+    var histobj_at_creation = histobj.ref.loadVersionAtTime(histobj.creationDate);
+    TEST.assert(histobj_at_creation != null);
+    TEST.assert_equal(1, histobj_at_creation.version);
 
     // Preallocation of object refs
     TEST.assert_exceptions(function() { histobj.preallocateRef(); }, "Object already has a ref allocated.");

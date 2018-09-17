@@ -76,7 +76,7 @@ class Saml2ServiceProviderController
   # https://github.com/onelogin/java-saml/blob/master/samples/java-saml-tookit-jspsample/src/main/webapp/metadata.jsp
 
   def handle_metadata(sp_name, request, response)
-    settings = get_saml2_settings(sp_name)
+    settings, idp_url = get_saml2_settings(sp_name)
 
     return if respond_with_error_when_no_settings(settings, response)
 

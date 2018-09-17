@@ -40,6 +40,36 @@ class FileController < ApplicationController
 
   # -------------------------------------------------------------------------------------------------------------------
 
+  # std_web_publisher uses FileController to handle files, and those will most likely be on
+  # alternative hostnames. So in this case, don't redirect to primary hostname.
+  def should_redirect_to_primary_hostname?
+    !exchange.annotations[:web_publisher_auth]
+  end
+
+  # -------------------------------------------------------------------------------------------------------------------
+
+  def call_pre_file_download_hook(stored_file, transform)
+    call_hook(:hPreFileDownload) do |hooks|
+      request_info = 
+      h = hooks.run(
+          stored_file,
+          transform,
+          @permitting_object_ref,
+          !!exchange.annotations[:thumbnail_request],
+          !!exchange.annotations[:web_publisher_auth],
+          {method:"GET", path:exchange.request.path, extraPathElements:[]} # match constructor for JS $Exchange.$Request
+        )
+      # Plugins can redirect away from file download
+      if h.redirectPath
+        redirect_to h.redirectPath
+        return true
+      end
+    end
+    false
+  end
+
+  # -------------------------------------------------------------------------------------------------------------------
+
   _PoliciesRequired nil
   def handle_thumbnail
     request_path = exchange.annotations[:request_path]
@@ -48,8 +78,10 @@ class FileController < ApplicationController
       stored_file = StoredFile.find_by_digest_and_size(request_path[0], request_path[1])
       if stored_file && stored_file.thumbnail_format != nil
         # Security and client side caching
-        security_checks_for stored_file
+        return unless security_checks_for stored_file
         return if file_is_up_to_date_in_client_cache
+        # Let plugins know
+        return if call_pre_file_download_hook(stored_file, 'thumbnail')
         # Set validity time and ETag
         set_response_validity_time(345600)  # 4 days
         response.headers['Etag'] = "#{stored_file.digest}_thumbnail"
@@ -90,7 +122,7 @@ class FileController < ApplicationController
 
     stored_file = StoredFile.find_by_digest_and_size(stored_file_digest, stored_file_size)
 
-    security_checks_for stored_file
+    return unless security_checks_for stored_file
     return if file_is_up_to_date_in_client_cache
 
     # Check underlying file exists to prevent reportable exceptions when applications are copied without files
@@ -112,14 +144,7 @@ class FileController < ApplicationController
 
     as_attachment = true if params.has_key?(:attachment)
 
-    call_hook(:hPreFileDownload) do |hooks|
-      h = hooks.run(stored_file, filespec.join('/'), @permitting_object_ref)
-      # Plugins can redirect away from file download
-      if h.redirectPath
-        redirect_to h.redirectPath
-        return
-      end
-    end
+    return if call_pre_file_download_hook(stored_file, filespec.join('/'))
 
     # Audit the requested download
     KNotificationCentre.notify(:file_controller, :download, stored_file, filespec)
@@ -582,6 +607,8 @@ public
 private
   def security_checks_for(stored_file)
     permitted = false
+    # If this is one of the web publisher URLs, delegate permissions entirely to std_web_publisher plugin
+    return security_checks_for_with_web_publisher(stored_file) if exchange.annotations[:web_publisher_auth]
     # Some super-users can read any file
     unless permitted
       permitted = true if @request_user.policy.can_read_any_stored_file?
@@ -591,11 +618,13 @@ private
     unless permitted
       signature = params[:s]
       if signature
-        permitted = true if file_request_check_signature(signature, request.path, session)
-        @is_signed_file_url = true
-        # Permit the filename because it's been signed?
-        if @requested_filename
-          @verified_download_filename = @requested_filename
+        if file_request_check_signature(signature, request.path, session)
+          permitted = true
+          @is_signed_file_url = true # must only be set if signature is valid
+          # Permit the filename because it's been signed?
+          if @requested_filename
+            @verified_download_filename = @requested_filename
+          end
         end
       end
     end
@@ -608,6 +637,28 @@ private
     # Bail out if not permitted
     permission_denied unless permitted
     true
+  end
+
+  def security_checks_for_with_web_publisher(stored_file)
+    # Plugin must be installed
+    permission_denied if KPlugin.get("std_web_publisher").nil?
+    permitted = false
+    runtime = KJSPluginRuntime.current
+    runtime.using_runtime do
+      web_publisher = runtime.runtime.host.getWebPublisher()
+      permitted = web_publisher.callPublisher(
+          "$downloadFileChecksAndObserve",
+          exchange.request.host,
+          exchange.request.path,
+          Java::OrgHaploJsinterface::KStoredFile.fromAppStoredFile(stored_file),
+          !!(exchange.annotations[:thumbnail_request])
+        )
+    end
+    # Web publisher needs to return 404s where not permitted to avoid revealing information
+    unless permitted
+      render(:action => 'not_found', :status => 404)
+    end
+    permitted
   end
 
   def self.check_file_read_permitted_by_readable_objects(file_identifier, user, requested_filename)

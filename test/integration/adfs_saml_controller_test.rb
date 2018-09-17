@@ -61,12 +61,17 @@ eBl4A19/xqjLW/al9KOZpi/4PaoNwL1tscwwWuQ+zYBNQw==).freeze
 
   # -------------------------------------------------------------------------
 
-  def test_redirect_to_adfs
+  def test_metadata_and_redirect_to_adfs
 
     idp_url = "https://login.example.com/2424242-42aa-42aa-aa42-42aa42aaaa42/saml2"
     sp_name = "TEST_SERVICE_NAME"
 
     create_an_adfs_keychain_credential(sp_name, idp_url)
+
+    # Fetch the metadata and check it looks OK
+    get '/do/saml2-sp/'+sp_name+'/metadata'
+    assert response.body.starts_with?('<?xml version="1.0"?><md:EntityDescriptor')
+    assert response.body =~ /AssertionConsumerService/
 
     # Fetch the local login URL, expecting it to redirect to the IDP.
     get_302 '/do/saml2-sp/'+sp_name+'/login'

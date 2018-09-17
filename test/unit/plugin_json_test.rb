@@ -87,6 +87,10 @@ class PluginJsonTest < Test::Unit::TestCase
     d_fails(d.merge("usesDatabase" => true))
     d_fails(d.merge("usesDatabase" => false))
 
+    # can restrict to a single application
+    d_passes(d.merge("restrictToApplicationId" => 4292712))
+    d_fails(d.merge("restrictToApplicationId" => "4292712"))
+
     d_passes(d) # make sure that didn't break the base test
     assert d == d_orig
   end

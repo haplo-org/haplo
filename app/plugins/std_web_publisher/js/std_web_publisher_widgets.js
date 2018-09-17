@@ -73,17 +73,54 @@ ObjectWidget.prototype._setAttributeList = function(list, types) {
 
 // --------------------------------------------------------------------------
 
-P.WIDGETS.search = function(E) {
-    return new SearchWidget(E);
+const SEARCH_PAGE_SIZE = 20;
+
+P.WIDGETS.search = function(E, spec) {
+    return new SearchWidget(E, spec);
 };
 
-var SearchWidget = function(E) {
+var SearchWidget = function(E, spec) {
     this.E = E;
-    var q = E.request.parameters.q;
-    if(q && q.match(/\S/)) {
+    this.spec = spec || {};
+    var params = E.request.parameters;
+    var q = params.q;
+    if((!spec.formOnly && q && q.match(/\S/)) || spec.alwaysSearch) {
         this.query = q;
-        this._storeQuery = O.query(q);
-        this._results = this._storeQuery.sortByRelevance().execute();
+        this._storeQuery = q ? O.query(q) : O.query();
+        if(spec.modifyQuery) {
+            spec.modifyQuery(this._storeQuery);
+        }
+        this._sort = params.sort || (spec.hideRelevanceSort ? "date" : "relevance");
+        this._results = this._storeQuery.sortBy(this._sort).setSparseResults(true).execute();
+        this._pageSize = spec.pageSize || SEARCH_PAGE_SIZE;
+        this._start = 0;
+        this._end = (this._results.length > this._pageSize) ? this._pageSize : this._results.length;
+        if(params.page) {
+            this._pageNumber = parseInt(params.page, 10);
+            this._start = (this._pageNumber - 1) * this._pageSize;
+            this._end = this._start + this._pageSize;
+            if(this._end > this._results.length) { this._end = this._results.length; }
+        }
+        // Load page of objects in one go
+        this._results.ensureRangeLoaded(this._start, this._end);
+        // Store page of objects
+        this._page = [];
+        for(var i = this._start; i < this._end; ++i) {
+            this._page.push(this._results[i]);
+        }
+        // Make parameters for rendering links
+        this._params = {
+            q: this.query,
+            page: this._pageNumber || 1,
+            sort: this._sort
+        };
+        if(this._start !== 0) {
+            this._prevPage = _.extend({}, this._params, {page: this._params.page - 1});
+        }
+        if(this._end < this._results.length) {
+            this._nextPage = _.extend({}, this._params, {page: this._params.page + 1});
+        }
+        this._displayResults = true;
     }
 };
 
@@ -105,8 +142,16 @@ SearchWidget.prototype.__defineGetter__("_resultsCount", function() {
 });
 SearchWidget.prototype.__defineGetter__("_resultsRender", function() {
     return {
-        results: this._results
+        results: this._page
     };
+});
+P.globalTemplateFunction("std:web-publisher:search:__sort__", function(widget, by, label) {
+    var params = _.extend({}, widget._params, {sort:by});
+    this.render(P.template("widget/search/sort-option").deferredRender({
+        params: params,
+        label: label,
+        selected: widget._sort === by
+    }));
 });
 
 // --------------------------------------------------------------------------

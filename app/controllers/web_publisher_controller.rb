@@ -9,6 +9,19 @@ class WebPublisherController < ApplicationController
 
   KStoredFile = Java::OrgHaploJsinterface::KStoredFile
   KBinaryDataStaticFile = Java::OrgHaploJsinterface::KBinaryDataStaticFile
+  XmlDocument = Java::OrgHaploJsinterfaceXml::XmlDocument
+
+  def self.hostname_has_publication_at_root?(host)
+    r = false
+    unless KPlugin.get("std_web_publisher").nil?
+      runtime = KJSPluginRuntime.current
+      runtime.using_runtime do
+        web_publisher = runtime.runtime.host.getWebPublisher()
+        r = !!(web_publisher.callPublisher("$isPublicationOnRootForHostname", host))
+      end
+    end
+    r
+  end
 
   # Send requests to std_web_publisher plugin (if installed)
   # NOTE: CSRF protection is disabled for publisher
@@ -51,6 +64,11 @@ class WebPublisherController < ApplicationController
         :type => body.jsGet_mimeType(),
         :filename => body.jsGet_filename()
       })
+      return
+    elsif body.kind_of?(XmlDocument)
+      r = KFramework::JavaByteArrayResponse.new(body.toByteArray())
+      r.content_type = "application/xml"
+      exchange.response = r
       return
     end
 

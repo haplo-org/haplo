@@ -30,6 +30,7 @@ OTHER_XAPIAN_LIB_EXT=so
 
 CODE_DIR=`pwd`
 VENDOR_DIR=$DEV_SUPPORT_DIR/vendor
+INFORMATION_DIR=$DEV_SUPPORT_DIR/information
 
 # ----------------------------------------------------------------------------------
 
@@ -187,6 +188,25 @@ fi
 
 # ----------------------------------------------------------------------------------
 
+# https://dev.maxmind.com/geoip/geoip2/geolite2/
+
+MAXMIND_DB_VERSION=20180911
+MAXMIND_DB_DIGEST=b077bc6ebe3e30f293eb7a668928cabe9cab6550
+MAXMIND_DB_FILENAME=GeoLite2-Country_${MAXMIND_DB_VERSION}.tar.gz
+MAXMIND_DB_URL=http://geolite.maxmind.com/download/geoip/database/$MAXMIND_DB_FILENAME
+
+mkdir -p ${INFORMATION_DIR}/maxmind-geolite2
+if ! [ -f ${INFORMATION_DIR}/maxmind-geolite2/GeoLite2-Country.mmdb ]; then
+    echo "Fetching IP information database..."
+    get_file "MaxMind GeoLite2 DB" $MAXMIND_DB_URL ${INFORMATION_DIR}/${MAXMIND_DB_FILENAME} $MAXMIND_DB_DIGEST
+    cd $INFORMATION_DIR
+    tar xvzf $MAXMIND_DB_FILENAME
+    mv GeoLite2-Country_${MAXMIND_DB_VERSION}/* maxmind-geolite2/
+    cd $CODE_DIR
+fi
+
+# ----------------------------------------------------------------------------------
+
 XAPIAN_FILENAME=xapian-core-${XAPIAN_VERSION}.tar.gz
 get_file Xapian $XAPIAN_DOWNLOAD_URL $VENDOR_DIR/archive/$XAPIAN_FILENAME $XAPIAN_DIGEST
 
@@ -232,7 +252,7 @@ g++ framework/support/haplo.cpp -O2 -o framework/haplo
 
 echo "Compiling Java sources with maven..."
 mvn package
-cp target/haplo-3.20180514.1936.6e451cf36a.jar framework/haplo.jar
+cp target/haplo-3.20180917.0821.43f8f4a861.jar framework/haplo.jar
 
 mvn -Dmdep.outputFile=target/classpath.txt dependency:build-classpath
 

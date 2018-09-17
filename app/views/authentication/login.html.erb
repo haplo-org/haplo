@@ -6,7 +6,7 @@
 %>
 
 <% if @login_attempted %>
-  <p class="z__general_alert"><% if @auth_plugin_error %>An error occurred when checking your password with your authentication server. Please contact your administrator for help.<% else %>Incorrect login, please try again.<% end %></p>
+  <p class="z__general_alert">Incorrect login, please try again.</p>
 <% end %>
 
 <% if params.has_key?(:rdr) -%>

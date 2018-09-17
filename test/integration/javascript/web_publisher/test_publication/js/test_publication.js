@@ -7,6 +7,7 @@
 
 var Publication = P.webPublication.register(P.webPublication.DEFAULT).
     serviceUser("test:service-user:publisher").
+    setHomePageUrlPath("/test-publication").
     permitFileDownloadsForServiceUser();
 
 Publication.layout(function(E, context, blocks) {
@@ -53,9 +54,18 @@ Publication.respondToDirectoryAllowingPOST("/post-test-directory",
     }
 );
 
+Publication.respondToExactPath("/publication/xml",
+    function(E, context) {
+        var xml = O.xml.document();
+        xml.cursor().element("test");
+        E.response.body = xml;
+    }
+);
+
 // For testing robots.txt
 Publication.respondToDirectory("/testdir", function(E, context) {});
 Publication.respondWithObject("/testobject", [], function(E, context) {});
+Publication.addRobotsTxtDisallow("/test-disallow/1");
 
 // For testing downloads
 P.hook('hUserPermissionRules', function(response, user) {
@@ -63,3 +73,20 @@ P.hook('hUserPermissionRules', function(response, user) {
         response.rules.rule(T.Book, O.STATEMENT_ALLOW, O.PERM_READ);
     }
 });
+
+// --------------------------------------------------------------------------
+
+// Mini-publication at the root of the second hostname of the test app
+
+var RootPublication = P.webPublication.register('test'+O.application.id+'.host').
+    serviceUser("test:service-user:publisher").
+    setHomePageUrlPath("/");
+
+RootPublication.respondToExactPath("/",
+    function(E, context) {
+        E.response.body = 'ROOT PUBLICATION';
+        E.response.kind = 'text';
+    }
+);
+
+RootPublication.addRobotsTxtDisallow("/test-disallow/2");

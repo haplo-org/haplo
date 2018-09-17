@@ -29,6 +29,14 @@ TEST(function() {
                      rd = result.body.filename;
                  } else if(key === '$errorMessageWithoutIPs') {
                      rd = result.errorMessage.replace(/\[[0-9.]+\]/g,"[WHATEVER]");
+                 } else if(key === '$isSpilledFile') {
+                     rd = (result.body instanceof $BinaryDataTempFile);
+                 } else if(key === '$digest') {
+                     rd = result.body.digest;
+                 } else if(key === '$filename') {
+                     rd = result.body.filename;
+                 } else if(key.startsWith('$do')) {
+                     rd = true;
                  } else {
                      rd = result[key];
                  }
@@ -36,7 +44,7 @@ TEST(function() {
                      console.log("HTTP client result mismatch: response[" + key + "] = '" + rd + "', expected '" + data[key] + "'");
                      console.log(rd);
                      console.log(data[key]);
-                     FAILED = "Yes :-(";
+                     FAILED = "FAILED - check logs for test failure";
                      failures = failures + 1;
                  }
              }
@@ -44,6 +52,9 @@ TEST(function() {
                  for(key in result) {
                      console.log("HTTP result: response[" + key + "]", result[key] );
                  }
+             }
+             if(data.$doAddResponseToFileStore) {
+                 O.file(result.body);
              }
              REQUESTS_REPLIED++;
          }
@@ -134,28 +145,43 @@ TEST(function() {
     // Params - this test may be a bit fragile, as the order of the
     // body/query strings returned depends on how Java decides to iterate
     // through the contents of a Map, whic is undefined.
-    client = O.httpClient("http://" + hostname + "/dump").method("POST");
+    client = O.httpClient("http://" + hostname + "/dump?x=0").method("POST");
     client.queryParameter("a","1");
     client.queryParameter("a","2");
     client.queryParameter("a1","3");
     client.bodyParameter("b","4");
     client.bodyParameter("b","5");
-    client.bodyParameter("b1","6");
+    client.bodyParameter("b1=","?6");
     client.request(callback, {type: "SUCCEEDED",
                                        status: "200",
-                                       '$body': "POST BODY: 'b=5&b=4&b1=6' QUERY: 'a1=3&a=2&a=1'"});
+                                       "$isSpilledFile": false,
+                                       '$body': "POST BODY: 'b=5&b=4&b1%3D=%3F6' QUERY: 'x=0&a1=3&a=2&a=1'"});
     REQUESTS_TRIED++;
 
     client = O.httpClient("http://" + hostname + "/dump").method("GET");
     client.queryParameter("a","1");
     client.queryParameter("a","2");
     client.queryParameter("a1","3");
+    client.queryParameter("a-_.~4=","=&x~._-");   // check that argument URL encoding escapes, but doesn't "overescape"
     client.bodyParameter("b","4");
     client.bodyParameter("b","5");
     client.bodyParameter("b1","6");
     client.request(callback, {type: "SUCCEEDED",
                                        status: "200",
-                                       '$body': "GET BODY: 'b=5&b=4&b1=6' QUERY: 'a1=3&a=2&a=1'"});
+                                       '$body': "GET BODY: 'b=4&b=5&b1=6' QUERY: 'a1=3&a=2&a=1&a-_.~4%3D=%3D%26x~._-'"});
+    REQUESTS_TRIED++;
+
+    // null and undefined in parameters are treated as the empty string
+    client = O.httpClient("http://" + hostname + "/dump").method("GET");
+    client.queryParameter("qn",null);
+    client.queryParameter("qu",undefined);
+    client.queryParameter("qs","");
+    client.bodyParameter("bn",null);
+    client.bodyParameter("bu",undefined);
+    client.bodyParameter("bs","");
+    client.request(callback, {type: "SUCCEEDED",
+                                       status: "200",
+                                       '$body': "GET BODY: 'bs=&bu=&bn=' QUERY: 'qs=&qu=&qn='"});
     REQUESTS_TRIED++;
 
     // Raw body
@@ -178,6 +204,18 @@ TEST(function() {
     client.useCredentialsFromKeychain("test-basic-http-auth-bad");
     client.request(callback, {type: "FAIL",
                                        status: "401"});
+    REQUESTS_TRIED++;
+
+    // Large request which will spill to a file
+    client = O.httpClient("http://" + hostname + "/large");
+    client.request(callback, {type: "SUCCEEDED",
+                                       status: "200",
+                                       "$contentType": "text/plain",
+                                       "$isSpilledFile": true,
+                                       "$digest": 'd8b2af1c85cdb4588e978aed5875e12cbfd20f68009823cf914b40cf41d8e4ce',
+                                       "$filename": 'sixty-four-k.txt',
+                                       "$doAddResponseToFileStore": true,
+                                       "$body": "0123456789abcdef".repeat(4096)});
     REQUESTS_TRIED++;
 
 /*

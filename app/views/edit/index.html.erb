@@ -20,9 +20,17 @@
     <input type="submit" name="save" value="Preview" class="z__editor_buttons_preview"> <input type="submit" name="save" value="Save" class="z__editor_buttons_save">
   </div>
   <div class="z__editor_buttons_end"></div>
-<% [:new, :format, :parent, :pop].each do |k| -%>
-<% if params.has_key?(k) %><input type="hidden" name="<%= k %>" value="<%= h(params[k]) %>"><% end -%>
-<% end -%>
+<%
+  [:new, :parent, :pop].each do |k|
+    if params.has_key?(k)
+      %><input type="hidden" name="<%= k %>" value="<%= h(params[k]) %>"><%
+    end
+  end
+  success_redirect = params[:success_redirect] || params[:then] # nice alias for URLs
+  if success_redirect
+    %><input type="hidden" name="success_redirect" value="<%= h(success_redirect) %>"><%
+  end
+-%>
 
 </form>
 

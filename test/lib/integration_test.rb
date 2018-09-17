@@ -86,6 +86,9 @@ class IntegrationTest < Test::Unit::TestCase
         if comparison.has_key?(:count)
           assert_equal comparison[:count], n.length
         end
+        if comparison.has_key?(:present)
+          assert comparison[:present] ? (n.length > 0) : (n.length == 0)
+        end
         # Text of elements
         if comparison.has_key?(:text)
           # Must have something to test against!
@@ -260,10 +263,10 @@ class IntegrationTest < Test::Unit::TestCase
       unless c.empty?
         req['Cookie'] = %Q!$Version="1"; #{c.join('; ')}!
       end
+      # Host (set first so headers can override)
+      req['host'] = _testing_host
       # Headers
       opts.each { |k,v| req[k] = v if k.kind_of? String }
-      # Host
-      req['host'] = _testing_host
       # Return request
       req
     end

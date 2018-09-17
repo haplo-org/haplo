@@ -64,7 +64,7 @@ class KHTTPClientJob < KJob
   def callback()
     KJSPluginRuntime.current.using_runtime do
       body = nil
-      if @result.has_key?("body")
+      if @result.has_key?("body") || @result.has_key?("bodySpilledToFile")
         # Wrap body in a KBinaryData
         mimeType, mimeParams = headerParts(@result["header:content-type"])
         if mimeType
@@ -87,8 +87,13 @@ class KHTTPClientJob < KJob
         unless filename
           filename = "response.bin"
         end
-        body = Java::OrgHaploJavascript::Runtime.createHostObjectInCurrentRuntime("$BinaryDataInMemory", false, nil, nil, filename, mimeType)
-        body.setBinaryData(@result.delete("body"))
+        if @result.has_key?("bodySpilledToFile")
+          body = Java::OrgHaploJavascript::Runtime.createHostObjectInCurrentRuntime("$BinaryDataTempFile")
+          body.setTempFile(@body_spill_pathname, filename, mimeType)
+        else
+          body = Java::OrgHaploJavascript::Runtime.createHostObjectInCurrentRuntime("$BinaryDataInMemory", false, nil, nil, filename, mimeType)
+          body.setBinaryData(@result.delete("body"))
+        end
         @result["charset"] = charset
       end
 
@@ -119,24 +124,32 @@ class KHTTPClientJob < KJob
       @keychain_data["auth_password"] = credential.secret['Password']
     end
 
-    @result = Java::OrgHaploHttpclient::HTTPClient.attemptHTTP(
-      @request_settings,
-      @keychain_data,
-      KInstallProperties.get(:network_client_blacklist))
+    @body_spill_pathname = @temp_pathname_prefix = "#{FILE_UPLOADS_TEMPORARY_DIR}/tmp.httpclient.body.#{Thread.current.object_id}"
 
-    # Result map is set up in HTTPOperation.java
-    if @result["type"] == "TEMP_FAIL"
-      context.job_failed_and_retry(@result["errorMessage"], @request_settings["retryDelay"].to_i)
-    else
-      callback()
+    begin
+      @result = Java::OrgHaploHttpclient::HTTPClient.attemptHTTP(
+        @request_settings,
+        @keychain_data,
+        @body_spill_pathname,
+        KInstallProperties.get(:network_client_blacklist))
 
-      if @result["type"] == "SUCCEEDED"
-        # Nothing else to do
-      elsif @result["type"] == "FAIL"
-        context.job_failed(@result["errorMessage"])
+      # Result map is set up in HTTPOperation.java
+      if @result["type"] == "TEMP_FAIL"
+        context.job_failed_and_retry(@result["errorMessage"], @request_settings["retryDelay"].to_i)
       else
-        context.job_failed("Unknown job result #{@result["type"]}")
+        callback()
+
+        if @result["type"] == "SUCCEEDED"
+          # Nothing else to do
+        elsif @result["type"] == "FAIL"
+          context.job_failed(@result["errorMessage"])
+        else
+          context.job_failed("Unknown job result #{@result["type"]}")
+        end
       end
+    ensure
+      # Make sure spilled files are cleaned up if they aren't added to the store
+      File.unlink(@body_spill_pathname) if File.exist?(@body_spill_pathname)
     end
   end
 end

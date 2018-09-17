@@ -38,6 +38,8 @@
   end
 
   client_side_controller_js('show_user')
+
+  is_normal_user = (@is_user && @user.id != User::USER_ANONYMOUS)
 -%>
 
 <%= sys_mng_header %>
@@ -46,13 +48,23 @@
 
 <table class="z__mangement_kv_table">
   <tr><th>Name</th><td><%= h(@user.name) %></td></tr>
+
   <% if status_message_html %>
     <tr><th></th><td><%= status_message_html %></td></tr>
   <% end %>
-  <% if @is_user && @user.id != User::USER_ANONYMOUS %>
+
+  <% if is_normal_user %>
   <tr><th>Email address</th><td><%= h(@user.email) %></td></tr>
   <tr><th>User ID</th><td><%= @user.id %></td></tr>
   <tr><th>Token serial</th><td><% if @user.otp_identifier != nil %><%= h(@user.otp_identifier) %><% else %><i>no token</i><% end %></td></tr>
+  <% end %>
+
+  <% if @is_group || @is_service_user %>
+  <%= code_show_in_table(@user.code) %>
+  <tr><th>Notification email</th><td><%= h(@user.email) %></td></tr>
+  <tr><th><% if @is_group %>Group<% else %>Service user<% end %> ID</th><td><%= h(@user.id) %></td></tr>
+  <% end %>
+
   <tr><th>Represented by</th><td>
     <% if @user.objref %>
       <%= @user.objref.to_presentation %><% if @representative_object %> : <a href="<%= h(object_urlpath(@representative_object)) %>" target="_blank"><%= h(@representative_object.first_attr(KConstants::A_TITLE).to_s) %></a><% end %> &nbsp; <a href="/do/admin/user/set-representative-object/<%= @user.id %>">Change...</a>
@@ -60,6 +72,8 @@
       <i>no object</i> &nbsp; <a href="/do/admin/user/set-representative-object/<%= @user.id %>">Set...</a>
     <% end %>
   </td>
+
+  <% if is_normal_user %>
   <tr><th>Last authenticated</th><td>
     <% if @login_audit_entry %>
       <%= h(@login_audit_entry.created_at.strftime('%Y-%m-%d %H:%M')) %> GMT, from <%= h(@login_audit_entry.remote_addr) %>
@@ -68,11 +82,7 @@
     <% end %>
   </td>
   <% end %>
-  <% if @is_group || @is_service_user %>
-  <%= code_show_in_table(@user.code) %>
-  <tr><th>Notification email</th><td><%= h(@user.email) %></td></tr>
-  <tr><th><% if @is_group %>Group<% else %>Service user<% end %> ID</th><td><%= h(@user.id) %></td></tr>
-  <% end %>
+
   <%
     # Plugins can add arbitary information to the user page
     if plugin_user_info.kind_of?(Array) && !(plugin_user_info.empty?)

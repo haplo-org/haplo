@@ -5,6 +5,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
+
+// --------------------------------------------------------------------------
+// Rendering into the 'blocks' object passed into the layout
+
+P.globalTemplateFunction("std:web-publisher:block", function(name) {
+    var context = P.getRenderingContext();
+    if(name in context._blocks) {
+        // TODO: Maybe this should allow more than one render?
+        throw new Error("block "+name+" has already been rendered");
+    }
+    context._blocks[name] = this.deferredRenderBlock();
+});
+
+
 // --------------------------------------------------------------------------
 // Generic platform styling
 

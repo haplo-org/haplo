@@ -47,11 +47,27 @@ public class JsConvert {
     private static Class nativeDateClass;
 
 
+    public static Object convertJavaDateToRuby(Date dateObject) {
+        return rubyInterface.convertJavaDateToRuby(dateObject);
+    }
+
+
     public static Scriptable integerArrayToJs(Integer[] array) {
         Scriptable js = Runtime.getCurrentRuntime().createHostObject("Array", array.length);
         for(int i = 0; i < array.length; ++i) {
             js.put(i, js, array[i]);
         }
         return js;
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+    // Interface to Ruby functions
+    public interface Ruby {
+        public Object convertJavaDateToRuby(Object value);
+    }
+    private static Ruby rubyInterface;
+
+    public static void setRubyInterface(Ruby ri) {
+        rubyInterface = ri;
     }
 }

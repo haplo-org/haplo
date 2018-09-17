@@ -46,8 +46,10 @@ final public class Parser {
 
     protected NodeList parseList(int endOfListCharacter, String what) throws ParseException {
         int listStart = this.pos;
+        int lastNodeStart = this.pos;
         NodeList nodes = new NodeList();
         this.nesting.push(nodes);
+        int nestingSizeAtStart = this.nesting.size();
         boolean seenEndOfList = false;
         Node node;
         while((node = parseOneValue(endOfListCharacter)) != null) {
@@ -56,11 +58,14 @@ final public class Parser {
                 break;
             }
             nodes.add(node, this.context);
+            if(this.nesting.size() == nestingSizeAtStart) {
+                lastNodeStart = this.pos;
+            }
         }
         if((endOfListCharacter != -1) && !seenEndOfList) {
             error("Did not find end of "+what, listStart);
         }
-        popNestingAndCheckNodeWas(nodes, listStart);
+        popNestingAndCheckNodeWas(nodes, lastNodeStart);
         return nodes;
     }
 
@@ -582,7 +587,7 @@ final public class Parser {
 
     protected void popNestingAndCheckNodeWas(Node node, int errorPosition) throws ParseException {
         if(this.nesting.empty() || (this.nesting.pop() != node)) {
-            error("Improperly nested block, check tags are balanced", errorPosition);
+            errorWithoutAdjustingPosition("Improperly nested block, check tags are balanced", errorPosition);
         }
     }
 
@@ -598,6 +603,11 @@ final public class Parser {
             // errors at char 0 were actually at the end of the previous line
             --p;
         }
+        errorWithoutAdjustingPosition(error, p);
+    };
+
+    protected void errorWithoutAdjustingPosition(String error, int errorPosition) throws ParseException {
+        int p = errorPosition;
         int charPos = 0;
         for(; p >= 0; p--) {
             if(this.source.charAt(p) == '\n') {

@@ -37,6 +37,14 @@ class JavaScriptPluginTemplatesTest < IntegrationTest
     assert_select 'body.z__minimal_layout', :count => 1
     get '/do/plugin-templates/layout/n'
     assert_equal '<p>Text</p>', response.body
+    get '/do/plugin-templates/layout/c'
+    assert_select 'link', :present => true
+    assert_select 'script', :present => true  # has client side resources
+    assert_select '#z__ws_content', :count => 0
+    get '/do/plugin-templates/layout/e'
+    assert_select 'link', :present => true
+    assert_select 'script', :present => true  # has client side resources
+    assert_select '#z__ws_content p', 'Text' # and the main content block
 
     get '/do/plugin-templates/resources'
     assert_select '#resources-template', "Resources Template"

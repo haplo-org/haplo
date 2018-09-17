@@ -53,5 +53,9 @@ public interface AppObject {
 
     public boolean needs_to_compute_attrs();
 
+    public void set_need_to_compute_attrs(boolean need);
+
     public void jsComputeAttrsIfRequired();
+
+    public void jsComputeAttrs();
 }

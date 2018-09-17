@@ -238,15 +238,21 @@ class ApplicationController
     expected_hostname = KApp.global((KApp.use_ssl_for(url_type) || is_currently_ssl) ? :ssl_hostname : :url_hostname)
     # if SSL is used, stay there -- avoids circular redirects on common SSL policies with different hostnames
     if (! is_currently_ssl && KApp.use_ssl_for(url_type)) || (request.host.downcase != expected_hostname)
-      # Redirect to the right URL
-      redirect_to "#{KApp.url_base(url_type)}#{request.request_uri}"
-      return false
+      if should_redirect_to_primary_hostname?
+        # Redirect to the right URL
+        redirect_to "#{KApp.url_base(url_type)}#{request.request_uri}"
+        return false
+      end
     end
     # Set up important class variables which should always be created, to avoid messy repeated code
     init_standard_controller_class_variables()
     # Send pre-request handling notification
     KNotificationCentre.notify(:http_request, :start, request, @request_user, @current_api_key)
     # Allow the request to continue
+    true
+  end
+
+  def should_redirect_to_primary_hostname?
     true
   end
 

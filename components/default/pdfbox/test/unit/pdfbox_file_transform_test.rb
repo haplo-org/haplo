@@ -83,10 +83,10 @@ class ComponentPdfboxFileTransformTest < Test::Unit::TestCase
     run_all_jobs :expected_job_count => 1
     pdf_stored_file.reload
     assert pdf_stored_file.thumbnail_format == StoredFile::THUMBNAIL_FORMAT_PNG
-    assert pdf_stored_file.thumbnail_w <= 64
-    assert pdf_stored_file.thumbnail_w >= 2
-    assert pdf_stored_file.thumbnail_h <= 64
-    assert pdf_stored_file.thumbnail_h >= 2
+    assert pdf_stored_file.thumbnail_w <= 192
+    assert pdf_stored_file.thumbnail_w >= 4
+    assert pdf_stored_file.thumbnail_h <= 192
+    assert pdf_stored_file.thumbnail_h >= 4
     ratio = pdf_stored_file.thumbnail_h.to_f / pdf_stored_file.thumbnail_w.to_f
     assert ratio >= 1.29 && ratio <= 1.31   # allow for rounding, it's about 1.30ish
     assert pdf_stored_file.dimensions_units = :px

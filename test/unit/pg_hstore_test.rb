@@ -10,6 +10,8 @@ class PgHstoreTest < Test::Unit::TestCase
   def test_parsing_and_generation
     # Test hstore round trip
     [
+      [nil,                         {},                   ''],
+      ['',                          {},                   ''],
       ['"a"=>"b"',                  {"a"=>"b"}],
       ['"a" =>"b"',                 {"a"=>"b"},           '"a"=>"b"'],
       ['"a"=> "b"',                 {"a"=>"b"},           '"a"=>"b"'],

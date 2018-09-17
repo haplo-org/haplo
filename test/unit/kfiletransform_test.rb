@@ -210,8 +210,8 @@ class KFileTransformTest < Test::Unit::TestCase
     run_all_jobs :expected_job_count => 1
     png_stored_file.reload
     assert_equal StoredFile::THUMBNAIL_FORMAT_PNG, png_stored_file.thumbnail_format
-    assert_equal 32, png_stored_file.thumbnail_w
-    assert_equal 64, png_stored_file.thumbnail_h
+    assert_equal 96, png_stored_file.thumbnail_w
+    assert_equal 192, png_stored_file.thumbnail_h
     assert_equal 256, png_stored_file.dimensions_w
     assert_equal 512, png_stored_file.dimensions_h
     assert_equal 1, png_stored_file.dimensions_pages
@@ -221,9 +221,9 @@ class KFileTransformTest < Test::Unit::TestCase
     run_all_jobs :expected_job_count => 1
     doc_with_png_file.reload
     assert_equal StoredFile::THUMBNAIL_FORMAT_PNG, doc_with_png_file.thumbnail_format
-    assert_equal 'ok 45 64 png', tgfdo_get_dim_string(doc_with_png_file.disk_pathname_thumbnail)
-    assert_equal 45, doc_with_png_file.thumbnail_w
-    assert_equal 64, doc_with_png_file.thumbnail_h
+    assert_equal 'ok 135 192 png', tgfdo_get_dim_string(doc_with_png_file.disk_pathname_thumbnail)
+    assert_equal 135, doc_with_png_file.thumbnail_w
+    assert_equal 192, doc_with_png_file.thumbnail_h
     # Transform a file, check it's at least the right format and size
     transformed_filename2 = KFileTransform.transform(png_stored_file, 'image/gif', {:w => 99, :h => 12})
     assert_equal 'ok 99 12 gif', tgfdo_get_dim_string(transformed_filename2)

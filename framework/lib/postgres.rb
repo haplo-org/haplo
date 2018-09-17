@@ -152,6 +152,7 @@ module PgHstore
 
   def self.parse_hstore(string)
     result = Hash.new
+    return result if string.nil? || (string !~ /\S/)
     scanner = StringScanner.new(string)
     bad_format unless scanner.skip(INITIAL_QUOTE)
     key = nil

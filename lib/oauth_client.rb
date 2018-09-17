@@ -150,12 +150,14 @@ class OAuthClient
       http.ciphers = @config['ssl_ciphers']
     end
     http.use_ssl = true
+    http.ssl_version = :TLSv1_2 # force version
     http.verify_mode = OpenSSL::SSL::VERIFY_PEER
     http.ca_file = SSL_CERTIFICATE_AUTHORITY_ROOTS_FILE
     raise OAuthError.new('insecure_address') unless uri.kind_of? URI::HTTPS
     begin
       response = http.start{ |http| http.request(request) }
     rescue StandardError => e
+      KApp.logger.log_exception(e)
       raise OAuthError.new("connection_failed", { :url => url })
     end
 
@@ -183,6 +185,7 @@ class OAuthClient
           pem = Java::OrgBouncycastleUtilIoPem::PemReader.new(certificate_stream).readPemObject()
           public_key_cache[key] = certificate_factory.generateCertificate(input_stream.new(pem.getContent()))
         rescue Java::javaSecurityCert::CertificateException => e
+          KApp.logger.log_exception(e)
           raise OAuthError.new('bad_cert', { 'message' => e.to_s})
         end
       end
@@ -208,6 +211,7 @@ class OAuthClient
     begin
       header, claims = decoded[0..1].map { |x| JSON.parse(x) }
     rescue JSON::ParserError => e
+      KApp.logger.log_exception(e)
       raise OAuthError.new('invalid_response', {'payload' => payload})
     end
     providerKey = get_public_key(header['kid'])

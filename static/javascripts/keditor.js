@@ -2968,6 +2968,18 @@ KApp.j__onPageLoad(function() {
         a.p__allowSubmitCallback = _.bind(q__keditor.j__validateWithErrorUi, q__keditor);
         a.j__attach(q__keditor,'obj');
 
+        // Read only values need to be transformed client side, there isn't a format that neatly round-trips.
+        // This is a bit of a hack; the object editor rewrite should handle all these cases properly.
+        var readOnlyValues = editorData[0].getAttribute("data-read-only-values");
+        if(readOnlyValues) {
+            var keditorReadOnly = new KEditor($.parseJSON(readOnlyValues), {});
+            var readOnlyElement = $('<div style="display:none"/>');
+            $(document.body).append(readOnlyElement);
+            readOnlyElement.html(keditorReadOnly.j__generateHtml());
+            keditorReadOnly.j__attach();
+            a.j__attach(keditorReadOnly,'obj_read_only');
+        }
+
         // Labelling
         var labellingUi = $('#z__editor_labelling');
         if(labellingUi.length > 0) {

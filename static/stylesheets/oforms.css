@@ -138,6 +138,10 @@
     padding-left: 18px;
 }
 
+.oform .oforms-radio-vertical label.control-label {
+    padding-left: 0;
+}
+
 .oform .oforms-radio-vertical label input[type="radio"],
 .oform .oforms-radio-vertical label input[type="checkbox"] {
     float: left;
@@ -302,6 +306,24 @@
     display:none;
 }
 
+/* TEXTAREA WITH COUNT */
+
+.oforms-paragraph-with-count {
+    display: inline-block;
+}
+
+.oforms-paragraph-counter {
+    font-size: 0.8em;
+    text-align: right;
+    color: #666;
+}
+
+.oforms-paragraph-counter span {
+    display: inline-block;
+    text-align: left;
+    width: 3em; /* fix width so it doesn't move around as character counts change */
+}
+
 /* DATES */
 
 .oform span.oforms-date input { /* enough CSS specificity to select elements with a table */
@@ -319,6 +341,7 @@
     border: 2px solid #aaa;
     border-radius: 4px;
     box-shadow: -3px 3px 4px rgba(0,0,0,0.15);
+    z-index: 9000;
 }
 #oforms-calendar-popup:after, #oforms-calendar-popup:before {
     top: 100%;
@@ -408,11 +431,41 @@
 
 /* CHANGES */
 
-.oforms-changes-add {
-  background: #dfd !important;
-}
+.oforms-changes-add,
 .oforms-changes-remove {
-  background: #fdd !important;
+    position: relative;
+}
+.oforms-changes-add:not(:empty):before,
+.oforms-changes-remove:not(:empty):before {
+    position: absolute;
+    left: -24px;
+    top: 2px;
+    font-weight: bold;
+    font-size: 16px;
+    line-height: 16px;
+    display: block;
+    width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    text-align: center;
+}
+.oforms-changes-add:not(:empty) {
+    background: #dfd !important;
+    box-shadow: -4px 0 1px #dfd;
+}
+.oforms-changes-add:not(:empty):before {
+    content: "+";
+    color: #050;
+    background: #dfd;
+}
+.oforms-changes-remove:not(:empty) {
+    background: #fdd !important;
+    box-shadow: -4px 0 1px #fdd;
+}
+.oforms-changes-remove:not(:empty):before {
+    content: "\2212";
+    color: #500;
+    background: #fdd;
 }
 
 /* END-STANDARD */
@@ -524,9 +577,27 @@
     position: absolute;
     left: 84px;
 }
+.z__oforms_file .z__file_preview_link {
+    position: absolute;
+    left: 84px;
+    top: 22px;
+    font-size: 12px;
+    line-height: 16px;
+    color: #bbb;
+    padding: 2px 8px 2px 6px;
+    text-decoration: none;
+}
+.z__oforms_file .z__file_preview_link:hover {
+    color: #000;
+    background-color: #ddd;
+}
 
 /* apply application colour to guidance note view button */
 .oforms-inline-guidance-view {
+    background: COLOUR[mix(:highlight,65,#000,35)];
+}
+.oforms-inline-guidance-view:hover {
     background: COLOUR[:highlight];
+    text-decoration: none;
 }
 

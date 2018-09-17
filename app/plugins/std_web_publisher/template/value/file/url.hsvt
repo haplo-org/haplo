@@ -1,1 +1,8 @@
-url("https://" hostname "/download/" file.digest "/" file.fileSize "/" file.filename)
+url(
+  "https://"
+  hostname "/download/"
+  file.digest "/"
+  file.fileSize "/"
+  if(options.transform) { options.transform "/" }
+  file.filename
+)

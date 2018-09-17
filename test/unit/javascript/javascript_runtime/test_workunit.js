@@ -184,6 +184,7 @@ TEST(function() {
     TEST.assert_equal(0, O.work.query("x:y").ref(O.ref(70)).length);
 
     // Check test for argument to ref()
+    TEST.assert_exceptions(function() { O.work.query().ref(null); }, "null may not be passed to ref()");
     TEST.assert_exceptions(function() { O.work.query().ref(undefined); }, "Ref object expected as argument to ref()");
     TEST.assert_exceptions(function() { O.work.query().ref(1234); }, "Ref object expected as argument to ref()");
     TEST.assert_exceptions(function() { O.work.query().ref("1234"); }, "Ref object expected as argument to ref()");
@@ -219,7 +220,7 @@ TEST(function() {
     TEST.assert(unit1.isActionableBy(user2));
     TEST.assert(unit1.isActionableBy(USER2_ID));
     TEST.assert(unit1.isActionableBy(USER3_ID) == false);
-    TEST.assert_exceptions(function() { unit1.isActionableBy(GROUP1_ID); }, "isActionableBy must be passed a User, not a Group");
+    TEST.assert(unit1.isActionableBy(GROUP1_ID) == false);
 
     var groupUnit1 = O.work.create({
         workType: "test:pants",
@@ -231,6 +232,8 @@ TEST(function() {
     TEST.assert(groupUnit1.isActionableBy(user2));
     TEST.assert(groupUnit1.isActionableBy(USER1_ID) == false);
     TEST.assert(groupUnit1.isActionableBy(USER3_ID));
+    TEST.assert(groupUnit1.isActionableBy(GROUP2_ID));  // check group directly
+    TEST.assert(groupUnit1.isActionableBy(GROUP3_ID));  // check group directly
 
     var groupUnit2 = O.work.create({
         workType: "test:pants",
@@ -242,6 +245,10 @@ TEST(function() {
     TEST.assert(groupUnit2.isActionableBy(user2) == false);
     TEST.assert(groupUnit2.isActionableBy(USER1_ID) == false);
     TEST.assert(groupUnit2.isActionableBy(USER3_ID));
+    TEST.assert(groupUnit2.isActionableBy(GROUP2_ID) == false);  // check group directly
+    TEST.assert(groupUnit2.isActionableBy(GROUP3_ID));  // check group directly
+    TEST.assert(groupUnit2.isActionableBy(O.group(GROUP2_ID)) == false);  // check group directly, using group object
+    TEST.assert(groupUnit2.isActionableBy(O.group(GROUP3_ID)));
 
     // Check date conversions and nulls
     var datesUnit = O.work.create({

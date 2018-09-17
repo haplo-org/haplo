@@ -7,10 +7,15 @@
 
 var DEFAULT_THUMBNAIL_SIZE = 64;
 
+// Files download handlers are handled by the platform on /download and
+// /thumnail. The normal FileController handling calls into this plugin
+// to check permissions and send notifications.
+
 // --------------------------------------------------------------------------
 
 P.Publication.prototype.setFileThumbnailSize = function(size) {
     this._fileThumbnailSize = 1*size;
+    return this;
 };
 
 // Register a function which will be called with a File or FileIdentifier, and a result object.
@@ -61,11 +66,58 @@ P.Publication.prototype._checkFileDownloadPermitted = function(fileOrIdentifier)
     return (result.allow && !(result.deny)) ? result : null;
 };
 
-P.Publication.urlForFileDownload = function(fileOrIdentifier) {
+P.Publication.prototype.urlForFileDownload = function(fileOrIdentifier, options) {
     return P.template("value/file/url").render({
         hostname: this.urlHostname,
+        options: options,
         file: fileOrIdentifier
     });
+};
+
+// spec has optional properties maxWidth, maxHeight, title, hiDPI
+P.Publication.prototype.deferredRenderImageFileTag = function(fileOrIdentifier, spec) {
+    if(!spec) { spec = {}; }
+    var file = O.file(fileOrIdentifier);
+    if(!file.mimeType.startsWith("image/")) { return; }
+    var p = file.properties;
+    if(!(p && p.dimensions && p.dimensions.units === 'px')) { return; }    // platform couldn't interpret the image
+    var d = p.dimensions;
+    var view = {
+        spec: spec,
+        file: file
+    };
+    if("maxWidth" in spec || "maxHeight" in spec) {
+        // Height and width in tag is unscaled pixels
+        var tagScale = scaleForDimensions(d, spec, 1);
+        view.width = Math.round(d.width * tagScale);
+        view.height = Math.round(d.height * tagScale);
+        // But if the hiDPI option is set, the image must be (up to) 2x bigger for HiDPI screens
+        var imgScale = scaleForDimensions(d, spec, spec.hiDPI ? 2 : 1);
+        // Only bother transforming the image if it's worth doing so, when it's close to the target size
+        // there's little point in doing anything server side.
+        if(imgScale <= 0.97) {
+            view.transformWidth = Math.round(d.width * imgScale);
+            view.transformHeight = Math.round(d.height * imgScale);
+        }
+    } else {
+        view.width = d.width;
+        view.height = d.height;
+    }
+    return P.template("file/img").deferredRender(view);
+};
+
+var scaleForDimensions = function(d, spec, mul) {
+    var scale;
+    if(spec.maxWidth) {
+        var mw = spec.maxWidth * mul;
+        scale = (d.width <= mw) ? 1.0 : mw / d.width;
+    }
+    if(spec.maxHeight) {
+        var mh = spec.maxHeight * mul;
+        var s = (d.height <= mh) ? 1.0 : mh / d.height;
+        if(s < scale) { scale = s; }
+    }
+    return scale;
 };
 
 // --------------------------------------------------------------------------
@@ -84,64 +136,20 @@ resetPermittedDownloadCache();
 P.Publication.prototype._setupForFileDownloads = function() {
     this._fileThumbnailSize = DEFAULT_THUMBNAIL_SIZE;
     this._fileDownloadPermissionFunctions = [];
-    var publication = this;
-    this._paths.push({
-        path: "/download",
-        robotsTxtAllowPath: "/download/",
-        matches: function(t) { return t.startsWith("/download/"); },
-        fn: function(E) {
-            publication._handleFileDownload(E);
-        }
-    });
-    this._paths.push({
-        path: "/thumbnail", // not in robots.txt
-        matches: function(t) { return t.startsWith("/thumbnail/"); },
-        fn: function(E) {
-            publication._handleThumbnailRequest(E);
-        }
-    });
 };
 
-P.Publication.prototype._handleFileDownload = function(E) {
-    var pe = E.request.extraPathElements;
-    if(pe.length < 3) { return null; }
-    var digest = pe[0],
-        fileSize = parseInt(pe[1],10),
-        filename = pe[2],
-        file;
-    try {
-        file = O.file(digest, fileSize);
-    } catch(e) {
-        // Not in store
-        console.log("Error looking up file in store, probably incorrect file requested: ", E.request.path, e);
-        return;
-    }
-    if(!file) { return; }
-    var checkResult = this._checkFileDownloadPermitted(file);
-    if(checkResult) {
-        O.serviceMaybe("std:web-publisher:observe:file-download", this, E, checkResult);
-        E.response.setExpiry(86400); // 24 hours
-        E.response.body = file;
-    }
-    // NOTE: 404s are returns if file isn't permitted, to avoid revealing any info about files in the store
-};
-
-P.Publication.prototype._handleThumbnailRequest = function(E) {
-    var pe = E.request.extraPathElements;
-    if(pe.length < 2) { return null; }
-    var digest = pe[0],
-        fileSize = parseInt(pe[1],10),
-        file;
-    try { file = O.file(digest, fileSize); }
-    catch(e) { /* ignore */ }
-    if(!file) { return; }
-    if(this.isFileDownloadPermitted(file)) {
-        var thumbnail = file.thumbnailFile;
-        if(thumbnail) {
-            E.response.setExpiry(86400); // 24 hours
-            E.response.body = thumbnail;
+P.Publication.prototype._downloadFileChecksAndObserve = function(path, file, isThumbnail) {
+    var permittingResult = this._checkFileDownloadPermitted(file);
+    if(permittingResult) {
+        if(!isThumbnail) {
+            if(O.serviceImplemented("std:web-publisher:observe:file-download")) {
+                var request = new $Exchange.$Request({method:"GET", path:path, extraPathElements:[]});
+                O.service("std:web-publisher:observe:file-download", this, file, request, permittingResult.permittingRef);
+            }
         }
+        return true;
     }
+    return false;
 };
 
 // --------------------------------------------------------------------------
@@ -161,13 +169,9 @@ var makeThumbnailViewForFile = P.makeThumbnailViewForFile = function(publication
         w = h = desiredSize;    // unknown thumbnail image
     }
     // Calculate size of thumbnail
-    var heightBigger = h < w;
-    var adjustedDimension = heightBigger ? h : w;
-    var scalingDimension = heightBigger ? w : h;
-    if(scalingDimension === 0) { scalingDimension = 1; } // no divide by zero
-    adjustedDimension = desiredSize * (adjustedDimension / scalingDimension);
-    view.width =  Math.round(heightBigger ? desiredSize : adjustedDimension);
-    view.height = Math.round(heightBigger ? adjustedDimension : desiredSize);
+    var scale = desiredSize / ((w < h) ? h : w);
+    view.width =  Math.round(w * scale);
+    view.height = Math.round(h * scale);
     return view;
 };
 

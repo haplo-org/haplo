@@ -23,7 +23,7 @@ public class HaploTemplateDeferredRender extends ScriptableObject implements Def
         this.deferredRender = deferredRender;
     }
 
-    public String jsFunction_toString() throws RenderException {
+    private String _renderToString() throws RenderException {
         StringBuilder builder = new StringBuilder();
         if(this.deferredRender != null) {
             this.deferredRender.renderDeferred(builder, Context.TEXT);
@@ -31,9 +31,40 @@ public class HaploTemplateDeferredRender extends ScriptableObject implements Def
         return builder.toString();
     }
 
+    public String jsFunction_toString() throws RenderException {
+        return this._renderToString();
+    }
+
     public void renderDeferred(StringBuilder builder, Context context) throws RenderException {
         if(this.deferredRender != null) {
             this.deferredRender.renderDeferred(builder, context);
+        }
+    }
+
+    // ----------------------------------------------------------------------
+
+    // immediate() returns another 'deferred' render which has been pre-rendered
+    public HaploTemplateDeferredRender jsFunction_immediate() throws RenderException {
+        // Generate a new deferred containing the rendered text
+        Immediate immediate = new Immediate(this._renderToString());
+
+        HaploTemplateDeferredRender deferred =
+            (HaploTemplateDeferredRender)org.mozilla.javascript.Context.getCurrentContext().
+                newObject(this.getParentScope(), "$HaploTemplateDeferredRender");
+        deferred.setDeferredRender(immediate);
+        return deferred;
+    }
+
+    private static class Immediate implements DeferredRender {
+        private String rendered;
+        public Immediate(String rendered) {
+            this.rendered = rendered;
+        }
+        public void renderDeferred(StringBuilder builder, Context context) throws RenderException {
+            if(context != Context.TEXT) {
+                throw new RenderException(null, "Immediate deferred renders can only be rendered into text context");
+            }
+            builder.append(this.rendered);
         }
     }
 }

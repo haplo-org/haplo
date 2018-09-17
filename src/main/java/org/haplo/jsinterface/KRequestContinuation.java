@@ -120,6 +120,9 @@ public class KRequestContinuation extends KScriptable {
                         }
                     }
                 }
+            }
+            // Avoid a really unlikely race condition by retaking the lock to implement a memory barrier
+            synchronized(c) {
                 if(c.isSuspended()) {
                     c.resume();
                 }

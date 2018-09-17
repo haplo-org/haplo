@@ -16,6 +16,10 @@ P.getRenderingContext = function() { return renderingContext; };
 
 // --------------------------------------------------------------------------
 
+var MAX_SLUG_LENGTH = 200;
+
+// --------------------------------------------------------------------------
+
 // Platform support
 P.$webPublisherHandle = function(host, method, path) {
     var publication = publications[host.toLowerCase()] || publications[DEFAULT];
@@ -31,6 +35,12 @@ P.$webPublisherHandle = function(host, method, path) {
 P.$generateRobotsTxt = function(host) {
     var publication = publications[host.toLowerCase()] || publications[DEFAULT];
     return publication ? publication._generateRobotsTxt() : null;
+};
+
+P.$downloadFileChecksAndObserve = function(host, path, file, isThumbnail) {
+    var publication = publications[host.toLowerCase()] || publications[DEFAULT];
+    if(!publication) { return false; }
+    return publication._downloadFileChecksAndObserve(path, file, isThumbnail);
 };
 
 P.$renderObjectValue = function(object) {
@@ -50,6 +60,11 @@ P.$isRenderingForWebPublisher = function() {
 
 P.$renderFileIdentifierValue = function(fileIdentifier) {
     return renderingContext.publication._renderFileIdentifierValue(fileIdentifier);
+};
+
+P.$isPublicationOnRootForHostname = function(host) {
+    var publication = publications[host.toLowerCase()] || publications[DEFAULT];
+    return !!(publication && (publication._homePageUrlPath === '/'));
 };
 
 // --------------------------------------------------------------------------
@@ -97,6 +112,12 @@ P.provideFeature("std:web-publisher", function(plugin) {
     var consumerFeature = new ConsumerFeature(plugin);
     consumerFeature.widget = new Widgets(plugin);
     plugin.webPublication = consumerFeature;
+});
+P.implementService("std:web_publisher:get_publication", function(name) {
+    if(!(name in publications)) {
+        throw new Error("No publiation registered for "+name);
+    }
+    return publications[name];
 });
 
 // --------------------------------------------------------------------------
@@ -226,7 +247,15 @@ Publication.prototype.respondWithObject = function(path, types, handlerFunction)
             return handlerFunction(E, renderingContext, object);
         },
         urlForObject: function(object) {
-            return path+"/"+object.ref+"/"+object.title.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+            var slug = object.title.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+            if(slug.length > MAX_SLUG_LENGTH) {
+                // Trucate slug, making sure last 'word' is not truncated
+                slug = slug.substring(0,MAX_SLUG_LENGTH).replace(/-\w+?$/,'');
+            }
+            if(slug.endsWith('-')) {
+                slug = slug.replace(/-$/,''); // Don't end with a '-', as that's ugly when titles end with punctuation
+            }
+            return path+"/"+object.ref+"/"+slug;
         }
     };
     var objectTypeHandler = this._objectTypeHandler;
@@ -254,6 +283,7 @@ Publication.prototype.searchResultRendererForTypes = function(types, renderer) {
 var RenderingContext = function(publication) {
     this.publication = publication;
     this.hint = {};
+    this._blocks = {};
     this._pagePartOptions = {};
 };
 
@@ -307,15 +337,14 @@ Publication.prototype._handleRequest2 = function(method, path) {
     var E = new Exchange(this.implementingPlugin, handler.path, method, path, pathElements);
     renderingContext.$E = E;
     handler.fn(E, renderingContext);
-    if(!E.response.body) {
+    if(E.response.body === undefined) {
         return null;    // 404
     }
     if(this._layoutRenderer && E.response.kind === "html") {
         renderingContext.pageTitle = E.response.pageTitle;
         var fn = this._layoutRenderer;
-        var blocks = {
-            body: new GenericDeferredRender(function() { return E.response.body; })
-        };
+        var blocks = renderingContext._blocks;
+        blocks.body = new GenericDeferredRender(function() { return E.response.body; });
         var sidebarHTML = $host.getRightColumnHTML();
         if(sidebarHTML) { blocks.sidebar = new GenericDeferredRender(function() { return sidebarHTML; }); }
         var renderedWithLayout = fn(E, renderingContext, blocks);
@@ -347,14 +376,43 @@ Publication.prototype.urlForObject = function(object) {
     return 'https://'+this.urlHostname+path;
 };
 
+Publication.prototype.addRobotsTxtDisallow = function(path) {
+    var p = this._robotsTxtDisallowPaths;
+    if(!p) { p = this._robotsTxtDisallowPaths = []; }
+    p.push(path);
+    return this;
+};
+
 Publication.prototype._generateRobotsTxt = function() {
     var lines = ["User-agent: *"];
-    for(var l = 0; l < this._paths.length; ++l) {
-        var allow = this._paths[l].robotsTxtAllowPath;
-        if(allow) {
-            lines.push("Allow: "+allow);
+    var endLines = [];
+    if(this._homePageUrlPath === '/') {
+        // If home page of the publication is at the root, allow everything
+        lines.push("Allow: /");
+        endLines.push("Disallow: /do/");
+        endLines.push("Disallow: /api/");
+        if(this._fileDownloadPermissionFunctions) {
+            endLines.push("Disallow: /thumbnail/");
         }
+    } else {
+        if(this._fileDownloadPermissionFunctions) {
+            // Special case because file downloads don't use normal publisher handlers
+            lines.push("Allow: /download/");
+        }
+        for(var l = 0; l < this._paths.length; ++l) {
+            var allow = this._paths[l].robotsTxtAllowPath;
+            if(allow) {
+                lines.push("Allow: "+allow);
+            }
+        }
+        endLines.push("Disallow: /");
     }
-    lines.push("Disallow: /", "");  // must be last for maximum compatibility
-    return lines.join("\n");
+    // Disallows are after Allows for maximum compatibility
+    if(this._robotsTxtDisallowPaths) {
+        this._robotsTxtDisallowPaths.forEach(function(p) {
+            endLines.push("Disallow: "+p);
+        });
+    }
+    endLines.push("");
+    return lines.concat(endLines).join("\n");
 };

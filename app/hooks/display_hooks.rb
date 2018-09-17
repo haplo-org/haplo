@@ -27,6 +27,18 @@ module KHooks
     h.result      :backLinkText,String,   nil,  "Label for the 'back' button for this object. Always use a noun describing the item you're linking to."
   end
 
+  define_hook :hObjectRender do |h|
+    h.private_hook # TODO: Make hObjectRender a supported and documented hook
+    h.argument    :object,      KObject,        "The object being displayed"
+    h.result      :hideAttributes, Array, "[]", "An array containing a list of attributes which will be hidden"
+  end
+
+  define_hook :hObjectRenderPublisher do |h|
+    h.private_hook # TODO: Make hObjectRenderPublisher a supported and documented hook
+    h.argument    :object,      KObject,        "The object being displayed"
+    h.result      :hideAttributes, Array, "[]", "An array containing a list of attributes which will be hidden"
+  end
+
   define_hook :hTempObjectAutocompleteTitle do |h|
     h.private_hook
     h.argument    :object,      KObject,    "The object for inclusion in the auto-complete list"

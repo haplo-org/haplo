@@ -13,8 +13,9 @@ public class HTTPClient {
     // Interface from Ruby via KHTTPClientJob in httpclient.rb:
     public static Map attemptHTTP(Map<String,String> requestSettings,
                                   Map<String,String> keychainData,
+                                  String bodyPathname,
                                   String blacklist) throws Exception {
-        HTTPOperation op = new HTTPOperation(requestSettings, keychainData, blacklist);
+        HTTPOperation op = new HTTPOperation(requestSettings, keychainData, bodyPathname, blacklist);
         try {
             op.perform();
             return op.result;

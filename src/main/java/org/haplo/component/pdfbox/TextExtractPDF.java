@@ -13,7 +13,7 @@ import java.io.StringWriter;
 import org.apache.log4j.Logger;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.util.PDFTextStripper;
+import org.apache.pdfbox.text.PDFTextStripper;
 
 import org.haplo.text.TextExtractOp;
 

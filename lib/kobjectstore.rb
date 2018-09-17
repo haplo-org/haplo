@@ -282,6 +282,40 @@ class KObjectStore
     obj
   end
 
+  # Will return nil if object didn't exist at the given time
+  def read_version_at_time(objref, datetime)
+    raise "read_at_time requires a DateTime object" unless datetime.kind_of?(DateTime)
+    current_obj = self.read(objref) # for permissions check
+    if current_obj.obj_update_time.to_datetime <= datetime
+      # Then the current version is the one that the caller is interested in
+      return current_obj
+    end
+    data = KApp.get_pg_database.exec("SELECT id,object,labels FROM os_objects_old WHERE id=#{objref.obj_id} AND updated_at<='#{datetime.to_s}' ORDER BY updated_at DESC LIMIT 1")
+    if data.length == 0
+      # object did not exist at this time,
+      # but be tolerant of date precisions, see if version 1 existed around then
+      adjusted_datetime_l = datetime - Rational(2,86400) # add/subtract 2 seconds to datetime
+      adjusted_datetime_u = datetime + Rational(2,86400)
+      data = KApp.get_pg_database.exec("SELECT id,object,labels FROM os_objects_old WHERE id=#{objref.obj_id} AND updated_at>='#{adjusted_datetime_l.to_s}' AND updated_at<='#{adjusted_datetime_u.to_s}' AND version=1 LIMIT 1")
+    end
+    obj = nil
+    if data.length == 0
+      # Try adjusted datetime on current object (matching the db check on os_objects_old)
+      if current_obj.version == 1
+        update_time = current_obj.obj_update_time.to_datetime
+        if update_time >= adjusted_datetime_l && update_time <= adjusted_datetime_u
+          obj = current_obj
+        end
+      end
+    else
+      obj = KObjectStore._deserialize_object(data.first[1], data.first[2])
+    end
+    return nil if obj.nil?
+    data.clear
+    enforce_permissions(:read, obj) # check user can read old version
+    obj
+  end
+
   # A convenience method: Like read(), but returns nil if the read isn't permitted
   def read_if_permitted(objref)
     obj = nil

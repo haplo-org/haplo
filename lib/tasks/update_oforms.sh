@@ -72,7 +72,7 @@ css_update = <<__E
 /* END-STANDARD */
 __E
 css_update.strip!
-updated_css = initial.gsub(/\/\* BEGIN-STANDARD.+?END-STANDARD \*\//m, css_update)
+updated_css = initial.gsub(/\/\* BEGIN-STANDARD.+?END-STANDARD \*\//m) { css_update } # in block so \u isn't subsituted
 File.open(CSS_FILE, 'w') { |f| f.write updated_css }
 
 puts

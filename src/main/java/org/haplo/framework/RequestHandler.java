@@ -295,7 +295,7 @@ public class RequestHandler extends AbstractHandler {
                     responseCode = 206; // partial content
                     InclusiveByteRange singleSatisfiableRange = ranges.get(0);
                     servletResponse.setHeader("Content-Range", singleSatisfiableRange.toHeaderRangeString(responseContentLength));
-                    responseContentLength = singleSatisfiableRange.getSize(responseContentLength);
+                    responseContentLength = singleSatisfiableRange.getSize();
                 }
             }
 

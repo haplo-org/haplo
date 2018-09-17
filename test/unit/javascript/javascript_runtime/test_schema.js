@@ -103,6 +103,10 @@ TEST(function() {
     TEST.assert(TYPE["std:type:equipment"] == laptopInfo.rootType);
     TEST.assert_equal(0, laptopInfo.childTypes.length);
 
+    // createShowType
+    TEST.assert_equal(true, supplierInfo.createShowType);
+    TEST.assert_equal(false, SCHEMA.getTypeInfo(TYPE["std:type:book:special"]).createShowType);
+
     // Check schema again, to make sure asking for a type didn't corrupt anything
     // Belts and braces - check value and object equality
     TEST.assert(_.isEqual(titleInfo, SCHEMA.getAttributeInfo(ATTR["dc:attribute:title"])));
