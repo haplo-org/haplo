@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# (c) Haplo Services Ltd 2006 - 2018    http://www.haplo-services.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -18,8 +18,8 @@
 #
 # The following assumptions are made:
 #
-# that we're running Ubuntu 14.04LTS or later
-#   (14.04LTS, 15.10, 16.04 are the tested configurations)
+# that we're running Ubuntu 16.04LTS or later
+#   (16.04LTS is the only tested configuration at this time)
 # that the system architecture is 64-bit
 # that the system is dedicated to Haplo
 # that the current user can use sudo to manage the system
@@ -54,9 +54,10 @@ echo ""
 # Need to work out which version of postgres goes with which version of Ubuntu
 #
 echo " *** Haplo installing packages ***"
-PG_VERSION=9.3
-FIX_MAVEN=Y
+PG_VERSION=9.5
 XAPIAN_PKG=libxapian22v5
+XAPIAN_DEV_PKG=libxapian-dev
+OPENJDK_PKG=openjdk-8-jdk-headless
 if [ -f /etc/os-release ]; then
     LNAME=`grep '^NAME=' /etc/os-release | awk -F= '{print $2}' | sed 's:"::g'`
     if [ "X$LNAME" != "XUbuntu" ]; then
@@ -65,20 +66,16 @@ if [ -f /etc/os-release ]; then
     fi
     UVER=`grep '^VERSION_ID=' /etc/os-release | awk -F= '{print $2}' | sed 's:"::g'`
     case $UVER in
-	'14.04')
-	    PG_VERSION=9.3
-	    XAPIAN_PKG=libxapian22
-	    ;;
-	'15.04')
-	    PG_VERSION=9.4
-	    ;;
-	'15.10')
-	    PG_VERSION=9.4
-	    FIX_MAVEN=N
-	    ;;
 	'16.04')
 	    PG_VERSION=9.5
-	    FIX_MAVEN=N
+	    ;;
+	'18.04')
+	    PG_VERSION=10
+	    XAPIAN_PKG=libxapian30
+	    # headless jdk on bionic isn't
+	    OPENJDK_PKG=openjdk-8-jdk
+	    echo "WARN: Ubuntu $UVER is not yet fully supported."
+	    sleep 5
 	    ;;
 	'*')
 	    echo "Unsupported OS version $UVER"
@@ -102,11 +99,6 @@ fi
 #
 sudo apt-get -y install openssh-server
 sudo apt-get -y install software-properties-common
-#
-# we need java 8, curent versions have it but 14.04LTS needs the PPA
-# add it anyway as it's harmless on later versions
-#
-sudo add-apt-repository -y ppa:openjdk-r/ppa
 sudo apt-get update
 #
 # we need:
@@ -117,8 +109,9 @@ sudo apt-get update
 #  curl to download files
 #  patch to apply patches
 #  git to check out our source code
+#  zlib1g-dev for the libz.so compilation symlink
 #
-sudo apt-get -y install g++ make openjdk-8-jdk maven avahi-daemon uuid-dev curl patch git ${XAPIAN_PKG}
+sudo apt-get -y install g++ make ${OPENJDK_PKG} maven avahi-daemon uuid-dev curl patch git zlib1g-dev ${XAPIAN_PKG} ${XAPIAN_DEV_PKG}
 sudo apt-get -y install postgresql-${PG_VERSION} postgresql-server-dev-${PG_VERSION} postgresql-contrib-${PG_VERSION}
 #
 # supervisord is used by the application to control worker processes
@@ -131,7 +124,7 @@ fi
 echo " *** Haplo finished package installation ***"
 
 #
-# we use java 8, so force that to be the default if possible
+# we use java 8, so force that to be the default
 #
 echo " *** Haplo setting java 8 as default ***"
 if [ -x /usr/sbin/update-java-alternatives ]; then
@@ -151,49 +144,9 @@ sudo update-ca-certificates -f
 echo " *** Haplo system CA certificate store updated ***"
 
 #
-# now configure maven, if necessary
-# http://central.sonatype.org/pages/consumers.html#apache-maven
+# no longer need to configure maven
 #
 mkdir -p ${HOME}/.m2
-if [ ! -f ${HOME}/.m2/settings ]; then
-    if [ "X$FIX_MAVEN" = "XY" ]; then
-	echo " *** Haplo fixing maven settings ***"
-	cat > ${HOME}/.m2/settings <<EOF
-<settings>
-  <activeProfiles>
-    <!--make the profile active all the time -->
-    <activeProfile>securecentral</activeProfile>
-  </activeProfiles>
-  <profiles>
-    <profile>
-      <id>securecentral</id>
-      <!--Override the repository (and pluginRepository) "central" from the
-         Maven Super POM -->
-      <repositories>
-        <repository>
-          <id>central</id>
-          <url>https://repo1.maven.org/maven2</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-        </repository>
-      </repositories>
-      <pluginRepositories>
-        <pluginRepository>
-          <id>central</id>
-          <url>https://repo1.maven.org/maven2</url>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-        </pluginRepository>
-      </pluginRepositories>
-    </profile>
-  </profiles>
-</settings>
-EOF
-	echo " *** Haplo maven settings fixed***"
-    fi
-fi
 
 #
 # configure initial development postgres instance
@@ -382,6 +335,7 @@ case $# in
     if [ ! -f /haplo/sslcerts/server.crt ]; then
 	echo " *** Haplo creating server certificate ***"
 	./deploy/make_cert.sh $1 > /dev/null
+	chmod a+r /tmp/haplo-sslcerts/*
 	sudo su haplo -c 'cd /tmp/haplo-sslcerts ; cp server.crt  server.crt.csr  server.key /haplo/sslcerts'
 	rm -fr /tmp/haplo-sslcerts
 	echo " *** Haplo server certificate created and installed ***"

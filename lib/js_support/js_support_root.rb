@@ -334,10 +334,16 @@ class JSSupportRoot
 
   PLUGIN_REPORTED_HEALTH_EVENTS = KFramework::HealthEventReporter.new('PLUGIN_REPORT')
 
-  def reportHealthEvent(pluginEventTitle, pluginEventText)
+  def reportHealthEvent(pluginEventTitle, pluginEventText, exception, exceptionText)
     event_title = "Plugin reported health event: #{pluginEventTitle || '????'}"
     event_text = "#{pluginEventText}\n\n\n"
-    caller.each { |line| event_text << "  #{line}\n"}
+    if exceptionText && exceptionText != "null"
+      # JS side will generate text for exceptions
+      event_text << exceptionText
+    else
+      # Fall back to caller, which isn't amazingly useful, but better than nothing
+      caller.each { |line| event_text << "  #{line}\n"}
+    end
     PLUGIN_REPORTED_HEALTH_EVENTS.log_and_report_event(event_title, event_text)
   end
 

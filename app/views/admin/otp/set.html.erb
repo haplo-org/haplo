@@ -13,7 +13,7 @@
   &nbsp; &nbsp; <input id="identifier" name="identifier" size="20" type="text"<% unless @set_attempted %> class="z__focus_candidate"<% end %> value="<%= @identifier %>"></p>
 
   <p>2. Generate a code by pressing the button on the token, and enter it below.<br>
-  &nbsp; &nbsp; <input id="password" name="password" size="20" type="password"<% if @set_attempted %> class="z__focus_candidate"<% end %>></p>
+  &nbsp; &nbsp; <input id="password" name="password" autocomplete="one-time-code" size="20" type="password"<% if @set_attempted %> class="z__focus_candidate"<% end %>></p>
 
   <p><input type="submit" value="<% if @new_assignment %>Issue token to<% else %>Replace token for<% end %> <%= h(@user.name) %>"></p>
 

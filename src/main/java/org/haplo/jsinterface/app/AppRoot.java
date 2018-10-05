@@ -87,7 +87,7 @@ public interface AppRoot {
     public void writeLog(String level, String text);
 
     // Event reporting
-    public void reportHealthEvent(String eventTitle, String eventText);
+    public void reportHealthEvent(String eventTitle, String eventText, Object exception, String exceptionText);
 
     // Cache invalidation
     public void reloadUserPermissions();

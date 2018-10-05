@@ -119,8 +119,8 @@ public class StdWebPublisher extends ScriptableObject {
                 args
             );
         }
-        public String renderObjectValue(AppObject object) {
-            Object html = this.callPublisher("$renderObjectValue", KObject.fromAppObject(object, false));
+        public String renderObjectValue(AppObject object, Integer desc) {
+            Object html = this.callPublisher("$renderObjectValue", KObject.fromAppObject(object, false), desc);
             return (html instanceof CharSequence) ? html.toString() : "";
         }
         public String renderFileIdentifierValue(AppText fileIdentifier) {

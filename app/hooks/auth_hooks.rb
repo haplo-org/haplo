@@ -23,6 +23,11 @@ module KHooks
     h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of being shown the login page"
   end
 
+  define_hook :hLogoutUserInterface do |h|
+    h.private_hook
+    h.result      :redirectURL, String,   nil,  "If set, the user will be redirected to this URL instead of being shown the logout message page"
+  end
+
   define_hook :hOAuthSuccess do |h|
     h.private_hook
     h.argument    :verifiedUser,String,   "JSON encoded details of the user authenticated through JSON."

@@ -55,6 +55,7 @@ DocumentInstance.prototype.__defineGetter__("committedDocumentIsComplete", funct
         where("keyId","=",this.keyId).
         order("version", true).
         limit(1);
+    var key = this.key;
     if(committed.length > 0) {
         var record = committed[0];
         var document = JSON.parse(record.json);
@@ -62,6 +63,7 @@ DocumentInstance.prototype.__defineGetter__("committedDocumentIsComplete", funct
         var forms = this._editForms(document);
         _.each(forms, function(form) {
             var formInstance = form.instance(document);
+            formInstance.externalData({"std_document_store:key":key});
             if(!formInstance.documentWouldValidate()) {
                 isComplete = false;
             }
@@ -212,6 +214,7 @@ DocumentInstance.prototype._renderDocument = function(document, deferred, idPref
     idPrefix = idPrefix || '';
     _.each(forms, function(form) {
         var instance = form.instance(document);
+        instance.externalData({"std_document_store:key":key});
         if(requiresUNames) { instance.setIncludeUniqueElementNamesInHTML(true); }
         if(delegate.prepareFormInstance) {
             delegate.prepareFormInstance(key, form, instance, "document");
@@ -238,6 +241,7 @@ DocumentInstance.prototype._selectedFormInfo = function(document, selectedFormId
     }
     if(!form) { form = forms[0]; }
     var instance = form.instance(document);
+    instance.externalData({"std_document_store:key":key});
     if(delegate.prepareFormInstance) {
         delegate.prepareFormInstance(key, form, instance, "document");
     }
@@ -292,6 +296,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         for(var i = 0; i < forms.length; ++i) {
             var form = forms[i],
                 formInstance = form.instance(cdocument);
+            formInstance.externalData({"std_document_store:key":instance.key});
             if(requiresUNames) { formInstance.setIncludeUniqueElementNamesInHTML(true); }
             if(delegate.prepareFormInstance) {
                 delegate.prepareFormInstance(instance.key, form, formInstance, "form");

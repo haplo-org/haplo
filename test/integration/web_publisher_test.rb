@@ -116,6 +116,17 @@ class WebPublisherTest < IntegrationTest
     # Remove the restriction completely
     KObjectStore.erase(restriction1)
 
+    # Web crawlers do all sorts of things, especially when people put HTML files in the repository.
+    # Test some mangled pathnames give sensible errors.
+    get_404 "/download/#{stored_file.digest}/something.html" # web crawler follows ../something.html link
+    assert response.body =~ /The file requested is not available/
+    get_404 "/download/something.html" # web crawler follows ../../something.html link
+    assert response.body =~ /Bad file request/
+    get_404 "/thumbnail/#{stored_file.digest}/something.html" # unlikely, but...
+    assert response.body =~ /The file requested is not available/
+    get_404 "/thumbnail/something.html" # unlikely again
+    assert response.body =~ /The file requested is not available/
+
     # robots.txt generated automatically
     get_200 "/robots.txt"
     assert_equal <<__E, response.body

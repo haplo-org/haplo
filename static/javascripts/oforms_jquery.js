@@ -96,13 +96,11 @@ var positionClone = function(element, reference, dx, dy, setWidth, setHeight) {
 
 /////////////////////////////// ../common/text_count.js ///////////////////////////////
 
-var TEXT_COUNT_WORD_RE = /\S*\w\S*/g;
-
 var textCountWords = function(text) {
-    var t = (text || '');
-    TEXT_COUNT_WORD_RE.lastIndex = 0;
-    var count = 0;
-    while(TEXT_COUNT_WORD_RE.test(t)) {
+    var re = /\S*\w\S*/g,   // need a new regexp object each time for sealed environment
+        t = (text || ''),
+        count = 0;
+    while(re.test(t)) {
         count ++;
     }
     return count;

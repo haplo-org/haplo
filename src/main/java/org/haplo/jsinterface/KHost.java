@@ -600,9 +600,9 @@ public class KHost extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public void jsFunction_reportHealthEvent(String eventTitle, String eventText) {
+    public void jsFunction_reportHealthEvent(String eventTitle, String eventText, Object exception, String exceptionText) {
         Runtime.privilegeRequired("pReportHealthEvent", "report health events");
-        this.supportRoot.reportHealthEvent(eventTitle, eventText);
+        this.supportRoot.reportHealthEvent(eventTitle, eventText, exception, exceptionText);
     }
 
     // --------------------------------------------------------------------------------------------------------------

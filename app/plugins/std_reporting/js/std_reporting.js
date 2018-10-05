@@ -649,14 +649,17 @@ P.callback("$update", function() {
             updateForObject[row.collection].set(row.object, true);
         }
     });
+    var lastCollectionTried;
     try {
         // Do full updates
         _.each(fullRebuilds, function(changesExpected, collectionName) {
+            lastCollectionTried = collectionName;
             doFullRebuildOfCollection(collectionName, changesExpected);
         });
         // Do partial updates
         _.each(updateForObject, function(refs, collectionName) {
             if(!fullRebuilds[collectionName]) { // as it will have just be done
+                lastCollectionTried = collectionName;
                 var updates = [];
                 refs.each(function(ref,t) { updates.push(ref); });
                 doUpdateFactsForObjects(collectionName, updates);
@@ -670,7 +673,8 @@ P.callback("$update", function() {
             console.log("Updating, caught error: "+e.message+", in: "+e.fileName+" at line: "+e.lineNumber);
             if(reportNextExceptionFromUpdates) {
                 O.reportHealthEvent("Exception in std_reporting collection update",
-                    "Exception thrown when updating facts for an object. NOTE: Future exceptions in this runtime will not be reporting. Check server logs.\n\nException: "+e.message);
+                    "Exception thrown when updating facts for an object. NOTE: Future exceptions in this runtime will not be reporting. Check server logs.\n\nException: "+e.message+"\n\nLocation: "+e.fileName+" line "+e.lineNumber+"\n\nCollection: "+lastCollectionTried,
+                    e);
                 reportNextExceptionFromUpdates = false; // don't send too many, just one per runtime gives the right idea
             }
             // In the error state, fall through to clearing updates, so it's not retried

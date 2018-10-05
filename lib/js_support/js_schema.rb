@@ -141,7 +141,7 @@ module KSchemaToJavaScript
     info = {
       :name => attr_desc.printable_name.to_s,
       :shortName => attr_desc.short_name.to_s,
-      :typecode => attr_desc.data_type || T_TEXT,
+      :typecode => attr_desc.data_type || KConstants::T_TEXT,
       :types => attr_desc.control_by_types.map { |t| t.obj_id },
       :allowedQualifiers => attr_desc.allowed_qualifiers.sort
     }

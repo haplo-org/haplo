@@ -137,7 +137,9 @@ public class SSLCertificates {
     }
 
     public static ByteArrayInputStream readPEM(String filename) throws java.io.IOException {
-        return readPEM(new FileReader(filename), filename);
+        try(FileReader reader = new FileReader(filename)) {
+            return readPEM(reader, filename);
+        }
     }
 
     private static PrivateKey readPEMPrivateKey(String filename) throws java.io.IOException, java.security.GeneralSecurityException {

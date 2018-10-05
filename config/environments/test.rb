@@ -40,11 +40,14 @@ KHQ_SSL_CERTS_DIR = "#{ENV['HOME']}/haplo-dev-support/certificates"
 # File of allowed SSL roots
 SSL_CERTIFICATE_AUTHORITY_ROOTS_FILE = 'config/cacert.pem'
 
+# Pick up server domainname with default
+KFRAMEWORK_TEST_DOMAIN_NAME = ENV['KFRAMEWORK_TEST_DOMAIN_NAME'] || 'local'
+
 # Installation properties
 KInstallProperties.load_from("#{KFRAMEWORK_ROOT}/tmp/properties-test", {
   :register_mdns_hostnames => 'no',
-  :domainname => 'local',
-  :management_server_url => "https://#{ENV['KSERVER_HOSTNAME'].chomp}.local",
+  :domainname => KFRAMEWORK_TEST_DOMAIN_NAME,
+  :management_server_url => "https://#{ENV['KSERVER_HOSTNAME'].chomp}."+KFRAMEWORK_TEST_DOMAIN_NAME,
   :network_client_blacklist => '(?!((127\\..*)|(0:0:0:0:0:0:0:1))).*',
   :plugin_debugging_support => ENV['DISABLE_TEST_PLUGIN_DEBUGGING'] ? 'no' : 'yes'
 })

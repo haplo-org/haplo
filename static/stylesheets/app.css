@@ -657,6 +657,7 @@ span.z__button_link_disabled {
     font-size: 12px;
     position: relative;
     z-index: 100;
+    overflow-wrap: break-word;  word-wrap: break-word; /* prevent very long words overflowing into main body text */
 }
 
 .z__webfonts_enabled #z__navigation_container {

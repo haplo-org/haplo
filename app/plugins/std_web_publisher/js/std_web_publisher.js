@@ -43,10 +43,23 @@ P.$downloadFileChecksAndObserve = function(host, path, file, isThumbnail) {
     return publication._downloadFileChecksAndObserve(path, file, isThumbnail);
 };
 
-P.$renderObjectValue = function(object) {
+P.$renderObjectValue = function(object, desc) {
     var href;
     if(renderingContext) {
-        href = renderingContext.publication._urlPathForObject(object);
+        var publication = renderingContext.publication;
+        // Publication needs to determine URL
+        href = publication._urlPathForObject(object);
+        // Publication may want to render object values differently
+        var customRenderers = publication._objectValueRenderers;
+        if(customRenderers) {
+            var renderFn = customRenderers.get(object.firstType());
+            if(renderFn) {
+                var deferred = renderFn(object, href, desc, publication);
+                if(deferred) {
+                    return deferred.toString();
+                }
+            }
+        }
     }
     return P.template("object/link").render({
         href: href,
@@ -275,6 +288,18 @@ Publication.prototype.searchResultRendererForTypes = function(types, renderer) {
             renderers.set(type, renderer);
         });
     }
+};
+
+// Set custom rendering of objects when they're rendered as values by widgets
+// renderer called as renderer(object, href, desc, publication)
+// where href may be undefined if the object doesn't have a page in this publication.
+// desc may be an alias.
+Publication.prototype.objectValueRendererForTypes = function(types, renderer) {
+    var renderers = this._objectValueRenderers;
+    if(!renderers) { renderers = this._objectValueRenderers = O.refdictHierarchical(); }
+    _.each(types, function(type) {
+        renderers.set(type, renderer);
+    });
 };
 
 // --------------------------------------------------------------------------

@@ -130,7 +130,7 @@ module JSStdWebPublisherSupport
         referred_object = KObjectStore.read(value)
         if permissions.allow?(:read, referred_object.labels)
           # Ask std_web_publisher to render the HTML, so it can completely control how it's displayed
-          return web_publisher.renderObjectValue(referred_object)
+          return web_publisher.renderObjectValue(referred_object, desc)
         else
           # Otherwise fall back to simple text
           return ERB::Util.h(referred_object.first_attr(KConstants::A_TITLE).to_s)

@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# (c) Haplo Services Ltd 2006 - 2018    http://www.haplo-services.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -207,24 +207,30 @@ fi
 
 # ----------------------------------------------------------------------------------
 
-XAPIAN_FILENAME=xapian-core-${XAPIAN_VERSION}.tar.gz
-get_file Xapian $XAPIAN_DOWNLOAD_URL $VENDOR_DIR/archive/$XAPIAN_FILENAME $XAPIAN_DIGEST
+if [ -f /usr/bin/xapian-config ]; then
+    XAPIAN_INCLUDE=/usr/include/xapian
+    XAPIAN_LIB=-lxapian
+else
+    XAPIAN_FILENAME=xapian-core-${XAPIAN_VERSION}.tar.gz
+    get_file Xapian $XAPIAN_DOWNLOAD_URL $VENDOR_DIR/archive/$XAPIAN_FILENAME $XAPIAN_DIGEST
 
-if ! [ -d ${VENDOR_DIR}/xapian-core ]; then
-    echo "Unpacking Xapian..."
-    cd ${VENDOR_DIR}
-    gunzip -c archive/$XAPIAN_FILENAME | tar xf -
-    mv xapian-core-${XAPIAN_VERSION} xapian-core
-    cd $CODE_DIR
-fi
+    if ! [ -d ${VENDOR_DIR}/xapian-core ]; then
+	echo "Unpacking Xapian..."
+	cd ${VENDOR_DIR}
+	gunzip -c archive/$XAPIAN_FILENAME | tar xf -
+	mv xapian-core-${XAPIAN_VERSION} xapian-core
+	cd $CODE_DIR
+    fi
 
-XAPIAN_LIB=${VENDOR_DIR}/xapian-core/.libs/libxapian.$XAPIAN_LIB_EXT
-if ! [ -f $XAPIAN_LIB ]; then
-    echo "Compiling Xapian..."
-    cd ${VENDOR_DIR}/xapian-core
-    ./configure
-    make
-    cd $CODE_DIR
+    XAPIAN_INCLUDE=${VENDOR_DIR}/xapian-core/include
+    XAPIAN_LIB=${VENDOR_DIR}/xapian-core/.libs/libxapian.$XAPIAN_LIB_EXT
+    if ! [ -f $XAPIAN_LIB ]; then
+	echo "Compiling Xapian..."
+	cd ${VENDOR_DIR}/xapian-core
+	./configure
+	make
+	cd $CODE_DIR
+    fi
 fi
 
 # ----------------------------------------------------------------------------------
@@ -239,7 +245,7 @@ fi
 echo "Compiling PostgreSQL/Xapian extension..."
 OXP_DIR=lib/xapian_pg
 cat $OXP_DIR/OXPFunctions.cpp $OXP_DIR/OXPController.cpp $OXP_DIR/KXapianWriter.cpp > $OXP_DIR/_all.cpp
-g++ -Wall -Wno-format-security -Wno-tautological-compare -fPIC -O2 -I${VENDOR_DIR}/xapian-core/include -I$POSTGRESQL_INCLUDE -c $OXP_DIR/_all.cpp -o $OXP_DIR/_all.o
+g++ -Wall -Wno-format-security -Wno-tautological-compare -fPIC -O2 -I$XAPIAN_INCLUDE -I$POSTGRESQL_INCLUDE -c $OXP_DIR/_all.cpp -o $OXP_DIR/_all.o
 rm $OXP_DIR/_all.cpp
 g++ $OXP_LINK $OXP_DIR/_all.o $XAPIAN_LIB -lz -L$POSTGRESQL_LIB -o $OXP_DIR/oxp.so
 
@@ -252,7 +258,7 @@ g++ framework/support/haplo.cpp -O2 -o framework/haplo
 
 echo "Compiling Java sources with maven..."
 mvn package
-cp target/haplo-3.20180917.0821.43f8f4a861.jar framework/haplo.jar
+cp target/haplo-3.20181004.2013.a3eec4a676.jar framework/haplo.jar
 
 mvn -Dmdep.outputFile=target/classpath.txt dependency:build-classpath
 

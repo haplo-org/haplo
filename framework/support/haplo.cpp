@@ -8,10 +8,9 @@
 /*
     Starting utility for the java server, including daemonisation for SMF
 
-    framework/haplo <daemonise> <mode> <config file> <java_executable> [args ...]
+    framework/haplo <daemonise> <config file> <java_executable> [args ...]
 
     <daemonise> : daemon or utility
-    <mode> : 32 or 64
 
     args are any additional arguments to send to the java executable
 
@@ -66,10 +65,9 @@ int runner(int argc, char *const argv[]) {
 
     // Parse arguments
     std::string run_how(argv[1]);
-    std::string java_mode(argv[2]);
-    std::string config_file(argv[3]);
-    std::string java_executable(argv[4]);
-    int next_arg = 5;
+    std::string config_file(argv[2]);
+    std::string java_executable(argv[3]);
+    int next_arg = 4;
     bool do_daemonisation = false;
     if(run_how == "daemon") {
         do_daemonisation = true;
@@ -77,18 +75,10 @@ int runner(int argc, char *const argv[]) {
         fprintf(stderr, "Must specify daemon or utility as first arg\n");
         return 1;
     }
-    bool sixty_four_bits = false;
-    if(java_mode == "64") {
-        sixty_four_bits = true;
-    } else if(java_mode != "32") {
-        fprintf(stderr, "Must specify 32 or 64 as second arg\n");
-        return 1;
-    }
 
     // Basic arguments for executable
     std::vector<std::string> runargs;
     runargs.push_back(java_executable);
-    runargs.push_back(sixty_four_bits ? "-d64" : "-d32");
 
     // Parse the config file
     std::ifstream config(config_file.c_str());

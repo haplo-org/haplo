@@ -381,7 +381,31 @@ class AuthenticationControllerTest < IntegrationTest
       get_302 '/do/account/info'
       assert_redirected_to '/do/authentication/login?rdr=%2Fdo%2Faccount%2Finfo'
 
+      # Check with a plugin installed that changes the logout URL
+      begin
+        raise "Failed to install plugin" unless KPlugin.install_plugin("authentication_controller_test/logout_user_interface_hook_test")
+        assert_login_as(User.find(41), 'password')
+        get '/do/account/info'
+        assert_select '#z__aep_tools_tab a', "User 1"
+        post_302 '/do/authentication/logout'
+        assert_equal "https://example.org/path/to/alternative/ui?user=41", response['location']
+        # Test user is logged out, even with this adjustment to behaviour
+        get_302 '/do/account/info'
+        assert_redirected_to '/do/authentication/login?rdr=%2Fdo%2Faccount%2Finfo'
+      ensure
+        KPlugin.uninstall_plugin("authentication_controller_test/logout_user_interface_hook_test")
+      end
+
       without_application { teardown_in_app(_TEST_APP_ID) }
+    end
+  end
+
+  class LogoutUserInterfaceHookTestPlugin < KTrustedPlugin
+    _PluginName "Authentication logout UI Hook Test Plugin"
+    _PluginDescription "Test"
+    def hLogoutUserInterface(response)
+      # Add user ID to test this is called before actual logout
+      response.redirectURL = "https://example.org/path/to/alternative/ui?user=#{AuthContext.user.id}"
     end
   end
 

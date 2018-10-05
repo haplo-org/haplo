@@ -19,6 +19,7 @@ table.z__std_reporting_dashboard_table_no_wrapping {
 table.z__std_reporting_dashboard_table_no_wrapping tr td,
 table.z__std_reporting_dashboard_table_no_wrapping tr th {
     vertical-align:top;
+    overflow-wrap: break-word;  word-wrap: break-word;
 }
 
 table.z__std_reporting_dashboard_table_no_wrapping tr:not(:hover) td {

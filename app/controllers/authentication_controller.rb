@@ -243,6 +243,17 @@ class AuthenticationController < ApplicationController
     # and browsers won't cache it. (Safari has been spotted caching the result of the redirect.)
     return unless request.post?
 
+    # A redirect after logout is necessary so UI is displayed as a logged out user.
+    # Default redirect which may be altered by plugins.
+    rdr = '/do/authentication/logged-out'
+
+    # Plugins might want to alter the redirect to send to a different page or a different site entirely
+    # Called before actual logout, so the plugin has access to session and authenticated user.
+    call_hook(:hLogoutUserInterface) do |hooks|
+      plugin_rdr = hooks.run().redirectURL
+      rdr = plugin_rdr if plugin_rdr
+    end
+
     session[:uid] = nil
 
     # Reset the session to make sure
@@ -251,8 +262,7 @@ class AuthenticationController < ApplicationController
     # Finally once complete, make an audit entry
     KNotificationCentre.notify(:authentication, :logout, @request_user, {})
 
-    # Redirect so that the response is displayed without navigation etc
-    redirect_to '/do/authentication/logged-out'
+    redirect_to rdr
   end
 
   _GetAndPost

@@ -58,10 +58,5 @@ else
     psql khq_test < db/test_functions.sql >> log/db_init.log
 fi
 
-if [ X$KFRAMEWORK_BITS = X ]
-then
-    KFRAMEWORK_BITS=64
-fi
-
-framework/haplo utility $KFRAMEWORK_BITS config/java.config $JAVA_EXECUTABLE `pwd` test $@
+framework/haplo utility config/java.config $JAVA_EXECUTABLE `pwd` test $@
 

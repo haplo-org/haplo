@@ -122,6 +122,9 @@ class FileController < ApplicationController
 
     stored_file = StoredFile.find_by_digest_and_size(stored_file_digest, stored_file_size)
 
+    # Bad digest/filename?
+    return render(:action => 'not_found', :status => 404) if stored_file.nil?
+
     return unless security_checks_for stored_file
     return if file_is_up_to_date_in_client_cache
 

@@ -15,10 +15,6 @@ then
     KFRAMEWORK_ENV=development
     export KFRAMEWORK_ENV
 fi
-if [ X$KFRAMEWORK_BITS = X ]
-then
-    KFRAMEWORK_BITS=64
-fi
 
 # Make sure a plugin debugging choice is set -- allows it to be changed without accidently getting committed, and defaults to yes
 if [ X$KFRAMEWORK_ENV = Xdevelopment ]
@@ -30,5 +26,5 @@ then
 fi
 
 
-framework/haplo utility $KFRAMEWORK_BITS config/java.config $JAVA_EXECUTABLE `pwd` $KFRAMEWORK_ENV $@
+framework/haplo utility config/java.config $JAVA_EXECUTABLE `pwd` $KFRAMEWORK_ENV $@
 

@@ -13,12 +13,6 @@
 USES_JAVA_FONT_RENDERING=yes
 . config/paths-`uname`.sh
 
-# Default to 32 bits
-if [ X$KFRAMEWORK_BITS = X ]
-then
-    KFRAMEWORK_BITS=64
-fi
-
 WORKER_NUMBER=$1
 if [ X$WORKER_NUMBER = X ]
 then
@@ -29,4 +23,4 @@ fi
 KLOG4J_CONFIG=`pwd`/config/log4j/development-worker.properties
 export KLOG4J_CONFIG
 
-framework/haplo utility $KFRAMEWORK_BITS config/java-worker.config $JAVA_EXECUTABLE $WORKER_NUMBER
+framework/haplo utility config/java-worker.config $JAVA_EXECUTABLE $WORKER_NUMBER

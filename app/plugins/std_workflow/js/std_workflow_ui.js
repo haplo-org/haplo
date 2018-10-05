@@ -152,25 +152,30 @@ _.extend(P.WorkflowInstanceBase.prototype, {
         });
     },
 
+    timelineEntryDeferredRender: function(entry) {
+        var textSearch = [entry.action];
+        if(entry.previousState) { textSearch.push(entry.previousState); }
+        var special, text = this._getTextMaybe(['timeline-entry'], textSearch);
+        // If this can't be fulfilled by the text system, try the render handler instead
+        if(!text) {
+            special = this._call('$renderTimelineEntryDeferred', entry) ||
+                this._renderTimelineEntryDeferredBuiltIn(entry);
+        }
+        if(text || special) {
+            return P.template('timeline/entry-layout').deferredRender({
+                entry: entry,
+                text: text,
+                special: special
+            });
+        }
+    },
+
     _renderTimelineEntries: function(timeline) {
-        var layout = P.template('timeline/entry-layout');
         var entries = [];
         for(var i = 0; i < timeline.length; ++i) {
             var entry = timeline[i];
-            var textSearch = [entry.action];
-            if(entry.previousState) { textSearch.push(entry.previousState); }
-            var special, text = this._getTextMaybe(['timeline-entry'], textSearch);
-            // If this can't be fulfilled by the text system, try the render handler instead
-            if(!text) {
-                special = this._call('$renderTimelineEntryDeferred', entry) ||
-                    this._renderTimelineEntryDeferredBuiltIn(entry);
-            }
-            if(text || special) {
-                var deferred = layout.deferredRender({
-                    entry: entry,
-                    text: text,
-                    special: special
-                });
+            var deferred = this.timelineEntryDeferredRender(entry);
+            if(deferred) {
                 entries.push({
                     datetime: entry.datetime,
                     deferred: deferred
