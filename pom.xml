@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.haplo</groupId>
   <artifactId>haplo</artifactId>
-  <version>3.20181004.2013.a3eec4a676</version>
+  <version>3.20181021.1627.ae7780e94f</version>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -122,7 +122,7 @@
     <dependency>
       <groupId>org.apache.pdfbox</groupId>
       <artifactId>pdfbox</artifactId>
-      <version>2.0.11</version>
+      <version>2.0.12</version>
     </dependency>
     <dependency>
       <groupId>com.maxmind.geoip2</groupId>

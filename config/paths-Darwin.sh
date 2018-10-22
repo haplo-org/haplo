@@ -1,5 +1,5 @@
 # Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# (c) Haplo Services Ltd 2006 - 2018    http://www.haplo-services.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -8,7 +8,10 @@
 KHOST_OPERATING_SYSTEM=Darwin
 export KHOST_OPERATING_SYSTEM
 
-#JAVA_HOME=/opt/haplo/platform/java
+KINFORMATION_HOME=~/haplo-dev-support/information
+export KINFORMATION_HOME
+
+JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
 JAVA_EXECUTABLE=$JAVA_HOME/bin/java
 export JAVA_EXECUTABLE
 
