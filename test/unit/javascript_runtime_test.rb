@@ -431,6 +431,7 @@ __E
     KObjectStore.create(obj)
     user41 = User.find(41)
     user41.objref = obj.objref
+    user41.otp_identifier = '200012345678X'
     user41.save!
     run_outstanding_text_indexing
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_user.js', {

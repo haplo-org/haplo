@@ -12,6 +12,8 @@ import org.haplo.template.html.Escape;
 import org.haplo.template.html.DeferredRender;
 import org.haplo.template.html.Context;
 import org.haplo.template.html.RenderException;
+import org.haplo.template.html.Driver;
+import org.haplo.template.html.Template;
 
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
@@ -97,6 +99,18 @@ public class JSFunctionThis extends ScriptableObject {
         // rendered at the bound point in the template.
         this.binding.renderBlock(checkedBlockName(blockName), this.builder,
             this.binding.getView(), this.binding.getContext());
+        return this;
+    }
+
+    public JSFunctionThis jsFunction_renderIncludedTemplate(Object jsTemplate) throws RenderException {
+        if(!(jsTemplate instanceof HaploTemplate)) {
+            throw new RenderException(this.binding.getDriver(), "Argument to renderIncludedTemplate() must be a template object");
+        }
+        Template template = ((HaploTemplate)jsTemplate).getTemplate();
+        // Render template as an included template, using this function's binding
+        Driver nestedDriver = this.binding.getDriver().newNestedDriverWithView(this.binding.getView());
+        nestedDriver.setBindingForYield(this.binding);
+        template.renderAsIncludedTemplate(this.builder, nestedDriver, this.binding.getView(), this.binding.getContext());
         return this;
     }
 

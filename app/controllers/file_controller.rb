@@ -679,7 +679,7 @@ private
     permitting_object_ref = nil
     objects.each do |obj|
       # 1) Check basic read permission, because the permission-less search won't have checked this
-      if user.permissions.allow?(:read, obj.labels)
+      if user.policy.has_permission?(:read, obj) # policy.has_permission? will call per-object hooks
         obj = user.kobject_dup_restricted(obj)
         obj.each do |v,d,q|
           # 2) Check that the restricted version of the object still includes an identifier for this file

@@ -25,9 +25,17 @@ module JSTextSupport
   def self.convertToString(ktext, format)
     # File identifiers needs special treatment
     typecode = ktext.k_typecode
-    return ktext.presentation_filename if typecode == KConstants::T_IDENTIFIER_FILE && format == nil
-    # Quick case where there's no format
-    return ktext.to_s if format == nil
+    if format == nil
+      case typecode
+      when KConstants::T_IDENTIFIER_FILE
+        return ktext.presentation_filename
+      when KConstants::T_TEXT_FORMATTED_LINE
+        # TODO: Should T_TEXT_DOCUMENT return plain text by default too? Bit of a breaking change though.
+        return ktext.to_plain_text
+      else
+        return ktext.to_s
+      end
+    end
     # Otherwise formatting depends on the kind of text
     case typecode
     when KConstants::T_TEXT_DOCUMENT

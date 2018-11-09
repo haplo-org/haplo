@@ -1,5 +1,5 @@
 <%
-  @page_title = h(@obj_display.first_attr(KConstants::A_TITLE).to_s)
+  @page_title = string_or_ktext_to_html(@obj_display.first_attr(KConstants::A_TITLE))
 
   unless @obj_is_deleted
     # Tell the layout (navigation etc) what object this page represents

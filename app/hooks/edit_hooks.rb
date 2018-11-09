@@ -46,4 +46,9 @@ module KHooks
     h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of the built-in object deletion user interface"
   end
 
+  define_hook :hEditorSymbolKeyboard do |h|
+    h.private_hook
+    h.result      :keyboards,   String,   nil,  "If set, JSON encoded name->characters for keyboards"
+  end
+
 end

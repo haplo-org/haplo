@@ -135,6 +135,16 @@ class PermissionsTest < IntegrationTest
     joe.get_403 file_path(:o2)
     joe.get_403 thumbnail_path(:o2)
 
+    # Files download permissions respect hOperationAllowOnObject hook 
+    begin
+      KPlugin.install_plugin("permissions_test/allow_op_on_object2")
+      joe.get_200 obj_path(:o2)
+      joe.get_200 file_path(:o2)
+      joe.get_200 thumbnail_path(:o2)
+    ensure
+      KPlugin.uninstall_plugin("permissions_test/allow_op_on_object2")
+    end
+
     joan.get obj_path(:o2)
     joan.assert_select '#z__page_name h1', obj_title(:o2)
     assert ! joan.response.body.include?('/test1/') # check hiding of linked object
@@ -348,6 +358,16 @@ class PermissionsTest < IntegrationTest
   def check_file_download(test_session, name)
     file, filename = @files[name]
     assert_equal File.open("test/fixtures/files/#{filename}", "r:binary") { |f| f.read }, test_session.response.body
+  end
+
+  class AllowOpOnObject2Plugin < KTrustedPlugin
+    _PluginName "Allow operation on object 2 plugin"
+    _PluginDescription "Test"
+    def hOperationAllowOnObject(response, user, object, operation)
+      if object.first_attr(KConstants::A_TITLE).to_s == "pants-#{KApp.current_application}-x" # :o2
+        response.allow = true
+      end
+    end
   end
 
 end

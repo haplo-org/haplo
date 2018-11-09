@@ -5,3 +5,4 @@ var KUserHomeCountry=<%= @user_home_country.to_json %>;
 var KSubsets=<%= JSON.generate(@subsets) %>;
 var KTaxonomies=<%= JSON.generate(@taxonomies) %>;
 var KAttrObjChoices=<%= JSON.generate(@choices) %>;
+var KSymbolKeyboard=<%= @symbol_keyboards_json ? @symbol_keyboards_json : 'null' %>;

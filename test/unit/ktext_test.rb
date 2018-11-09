@@ -14,12 +14,14 @@ class KTextTest < Test::Unit::TestCase
     assert_equal "Text stuff", KText.new(" Text\n stuff \r").to_summary
     assert_equal "Hello there. Lots of stuff.", KTextParagraph.new("\r\nHello there.\r\n\r\nLots of stuff.\r\n").to_summary
     assert_equal "Text", KTextDocument.new(%Q!<doc><p>Text</p><widget type="X"><v name="y">value</v></widget></doc>!).to_summary
+    assert_equal "Text2", KTextFormattedLine.new('<fl>Text2</fl>').to_summary
 
     # Make sure HTML tags vanish
     [KText, KTextParagraph].each do |klass|
       assert_equal "Text stuff", klass.new(" <b>Text\n stuff</b> \r").to_summary
     end
     assert_equal "Text stuff", KTextDocument.new(%Q!<doc><p>Text\n stuff</p><widget type="X"><v name="y">value</v></widget></doc>!).to_summary
+    assert_equal "Text stuff2", KTextFormattedLine.new(%Q!<fl><sup>Text\n stuff2</sup></fl>!).to_summary
 
     # Check behaviour of file identifier to_summary implementation
     fileidentifier = KIdentifierFile.new(StoredFile.new(:digest => 'ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06', :size => 1, :upload_filename => 'x.pdf', :mime_type => 'application/pdf'))
@@ -29,6 +31,16 @@ class KTextTest < Test::Unit::TestCase
     assert_raise RuntimeError do
       fileidentifier.to_indexable
     end
+  end
+
+  # ------------------------------------------------------------------------------------
+  def test_to_plain_text
+    assert_equal " Text\n stuff", KText.new(" Text\n stuff").to_plain_text
+    assert_equal "\r\nHello there.\r\n\r\nLots of stuff.\r\n", KTextParagraph.new("\r\nHello there.\r\n\r\nLots of stuff.\r\n").to_plain_text
+    assert_equal "\r\nHello there.\r\n\r\nLots of stuff.\r\n", KTextMultiline.new("\r\nHello there.\r\n\r\nLots of stuff.\r\n").to_plain_text
+    assert_equal "Mr Joe Bloggs", KTextPersonName.new({:first => 'Joe', :last => 'Bloggs', :title => 'Mr'}).to_plain_text
+    assert_equal 'italic bold', KTextDocument.new('<doc><li><i>italic</i> <b>bold</b></li></doc>').to_plain_text
+    assert_equal "Text 3", KTextFormattedLine.new('<fl>Text<sup> 3</sup></fl>').to_plain_text
   end
 
   # ------------------------------------------------------------------------------------
@@ -99,6 +111,7 @@ __E
     assert_equal "Title paragraph. text. with lots of dots title 2 paragraph text again.",
       clean_text(doc.to_indexable)
     assert_equal "Title\n\nparagraph. text. with lots of dots\n\ntitle 2\n\nparagraph text again.\n\n", doc.to_plain_text
+    assert_equal 'italicbold', KTextDocument.new('<doc><li><i>italic</i><b>bold</b></li></doc>').to_plain_text
 
     assert_equal "title:titl paragraph:paragraph text:text with:with lots:lot of:of dots:dot title:titl 2:2 paragraph:paragraph text:text again:again ", doc.to_terms
 
@@ -126,10 +139,23 @@ __E
     assert_equal "<h1>Pants</h1><p>Text</p>", KTextDocument.new(%Q!<doc><h1>Pants</h1><widget type="W"><v name="attr">val</v></widget><p>Text</p></doc>!).to_html
     assert_equal %Q!<p>Text <a target="_blank" rel="noopener" href="http://www.example.com">link <b>bold</b> <i>italic</i></a></p>!,
       KTextDocument.new(%Q!<doc><p>Text <a href="http://www.example.com">link <b>bold</b> <i>italic</i></a></p></doc>!).to_html
-    assert_equal '<ul><li><b>bold</b></li></ul>', KTextDocument.new('<doc><li><b>bold</b></li></doc>').to_html
+    assert_equal '<ul><li><i>italic</i><b>bold</b></li></ul>', KTextDocument.new('<doc><li><i>italic</i><b>bold</b></li></doc>').to_html
+    assert_equal '<ul><li><i>italic<b>bold</b></i></li></ul>', KTextDocument.new('<doc><li><i>italic<b>bold</b></i></li></doc>').to_html
     # Auto-link URL in text elements, except if it's inside an <a> tag
     assert_equal '<ul><li><b>bold <a href="http://www.example.com">http://www.example.com</a></b></li></ul>', KTextDocument.new('<doc><li><b>bold http://www.example.com</b></li></doc>').to_html
     assert_equal '<ul><li><b>bold <a target="_blank" rel="noopener" href="http://www.example.com">http://www.example.com</a></b></li></ul>', KTextDocument.new('<doc><li><b>bold <a href="http://www.example.com">http://www.example.com</a></b></li></doc>').to_html
+  end
+
+  # ------------------------------------------------------------------------------------
+
+  def test_formatted_line
+    assert_equal "Text0", KTextFormattedLine.new('<fl>Text<sup>0</sup></fl>').to_s
+    assert_equal "Text 1", KTextFormattedLine.new('<fl>Text<sup>1</sup></fl>').to_summary
+    assert_equal "Text 2", KTextFormattedLine.new('<fl>Text<sup>2</sup></fl>').to_indexable
+    assert_equal "Text3", KTextFormattedLine.new('<fl>Text<sup>3</sup></fl>').to_plain_text
+
+    assert_equal "Text4 &lt;&gt;", KTextFormattedLine.new('<fl>Text4 &lt;></fl>').to_html # spurious '>' to test tolerant parser
+    assert_equal "Text<sup>2</sup>", KTextFormattedLine.new('<fl>Text<sup>2</sup></fl>').to_html
   end
 
   # ------------------------------------------------------------------------------------
@@ -143,6 +169,10 @@ __E
     t2 = KText.new_by_typecode_plain_text(T_TEXT_DOCUMENT, "abc\n\r\nping", nil) # nil instead of attr_descriptior
     assert_equal KTextDocument, t2.class
     assert_equal '<doc><p>abc</p><p>ping</p></doc>', t2.to_s
+
+    t3 = KText.new_by_typecode_plain_text(T_TEXT_FORMATTED_LINE, "abc\n\r\nping", nil) # nil instead of attr_descriptior
+    assert_equal KTextFormattedLine, t3.class
+    assert_equal '<fl>abc ping</fl>', t3.to_xml_source
   end
 
   # ------------------------------------------------------------------------------------

@@ -120,13 +120,15 @@ module JSKObjectSupport
   end
 
   def self.objectTitleAsString(object)
-    (object.first_attr(A_TITLE) || '').to_s
+    # Some text types need to be converted to plain text
+    title = object.first_attr(A_TITLE)
+    title.kind_of?(KText) ? title.to_plain_text : (title || '').to_s
   end
 
   def self.objectTitleAsStringShortest(object)
     title = nil
     object.each(A_TITLE) do |v,d,q|
-      t = v.to_s
+      t = v.kind_of?(KText) ? v.to_plain_text : (v || '').to_s
       title = t if title.nil? || (title.length > t.length)
     end
     title || ''

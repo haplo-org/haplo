@@ -154,6 +154,10 @@ class StringEncodingTest < Test::Unit::TestCase
         test_string = '<?xml version="1.0" encoding="UTF-8"?><doc>x</doc>'.force_encoding(Encoding::US_ASCII)
         test_binary = '<?xml version="1.0" encoding="UTF-8"?><doc>y</doc>'.force_encoding(Encoding::ASCII_8BIT)
 
+      when KConstants::T_TEXT_FORMATTED_LINE
+        test_string = '<?xml version="1.0" encoding="UTF-8"?><fl>x</fl>'.force_encoding(Encoding::US_ASCII)
+        test_binary = '<?xml version="1.0" encoding="UTF-8"?><fl>y</fl>'.force_encoding(Encoding::ASCII_8BIT)
+
       when KConstants::T_TEXT_PERSON_NAME
         fields = {:first => 'x', :middle => 'y', :last => 'z', :suffix => '1', :title => '2'} # UTF-8 encoded strings
         pn = KTextPersonName.new(fields)

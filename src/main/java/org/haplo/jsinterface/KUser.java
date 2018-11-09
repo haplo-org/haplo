@@ -131,6 +131,10 @@ public class KUser extends KScriptable {
         return this.user.code();
     }
 
+    public String jsGet_otpIdentifier() {
+        return this.user.otp_identifier();
+    }
+
     public Scriptable jsGet_groupIds() {
         return JsConvert.integerArrayToJs(rubyInterface.getGroupIds(this.user));
     }

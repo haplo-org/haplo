@@ -619,6 +619,10 @@ public class KHost extends KScriptable {
         this.supportRoot.reloadJavaScriptRuntimes();
     }
 
+    public void jsFunction_reloadUserSchema() {
+        this.supportRoot.reloadUserSchema();
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     // HTTP Client
     public void jsFunction_httpClientRequest(String callbackName,

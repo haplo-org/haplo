@@ -15,6 +15,7 @@ TEST(function() {
     TEST.assert_equal("User", u1.nameFirst);
     TEST.assert_equal("1", u1.nameLast);
     TEST.assert_equal("user1@example.com", u1.email);
+    TEST.assert_equal("200012345678X", u1.otpIdentifier);
     TEST.assert_equal(false, u1.isGroup);
     TEST.assert_equal(true, u1.isActive);
     TEST.assert_equal(false, u1.isSuperUser);
@@ -32,6 +33,7 @@ TEST(function() {
     TEST.assert_equal(43, u3.id);
     TEST.assert_equal("User 3", u3.name);
     TEST.assert_equal("user3@example.com", u3.email);
+    TEST.assert_equal(null, u3.otpIdentifier);
     TEST.assert_equal(false, u3.isGroup);
     TEST.assert_equal(true, u3.isActive);
     TEST.assert_equal(false, u3.isSuperUser);

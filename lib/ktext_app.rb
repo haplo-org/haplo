@@ -92,7 +92,7 @@ class KTextDocument < KText
     ok = false
     begin
       doc = REXML::Document.new(text)
-      ok = true if (doc.root.name == 'doc')
+      ok = true if (doc.root.name == self._expected_root_name)
     rescue
       # Ignore
     end
@@ -114,6 +114,10 @@ class KTextDocument < KText
     new(builder.target!, language)
   end
 
+  def to_xml_source
+    @text
+  end
+
   def to_indexable
     # Pull the text out of the XML
     listener = ToIndexableListener.new
@@ -127,7 +131,7 @@ class KTextDocument < KText
 
   def to_plain_text
     # Create a relatively neat plain text version from the XML, with double newlines at the end of every paragraph or heading
-    listener = ToPlainTextListener.new
+    listener = ToPlainTextListener.new(self._document_initial_tag_level)
     begin
       REXML::Document.parse_stream(@text, listener)
     rescue
@@ -167,6 +171,14 @@ class KTextDocument < KText
     to_plain_text
   end
 
+  def _expected_root_name
+    'doc'
+  end
+
+  def _document_initial_tag_level
+    0
+  end
+
   class ToIndexableListener
     include REXML::StreamListener
     attr_reader :output
@@ -190,18 +202,20 @@ class KTextDocument < KText
   class ToPlainTextListener
     include REXML::StreamListener
     attr_reader :output
-    def initialize
+    def initialize(initial_tag_level)
       @output = ''
-      @tag_level = 0
+      @tag_level = initial_tag_level
     end
     def tag_start(name, attrs)
+      if @tag_level == 1
+        @output << "\n\n" unless @output.empty? || @output =~ /\n\z/
+      end
       @tag_level += 1
       @in_widget = true if name == 'widget'
     end
     def tag_end(name)
       @tag_level -= 1
       @in_widget = nil if name == 'widget'
-      @output << "\n\n" unless @output =~ /\n\z/
     end
     def text(text)
       return if @in_widget || @tag_level <= 1  # Ignore values in widgets and plain text outside text tags
@@ -281,7 +295,7 @@ class KTextDocument < KText
 
     # Paragraph text with embedded character styles
     class TopLevelBlockElement < Block
-      OUTPUT_TAG_REGEX = /\A(a|b|i)\z/
+      OUTPUT_TAG_REGEX = /\A(a|b|i|sub|sup)\z/
       LIST_ITEM = 'li'
       ANCHOR_TAG = 'a'
       def initialize(name, chars_left)
@@ -361,6 +375,69 @@ class KTextDocument < KText
           ''
         end
       end
+    end
+  end
+
+end
+
+# ------------------------------------------------------------
+
+class KTextFormattedLine < KTextDocument
+  ktext_typecode KConstants::T_TEXT_FORMATTED_LINE, 'Formatted single line text'
+
+  # When initialising from plain text, turn it into an XML one-liner
+  def self.new_with_plain_text(text, attr_descriptor, language = nil)
+    text = KText.ensure_utf8(text)
+    builder = Builder::XmlMarkup.new
+    builder.fl text.gsub(/\s+/,' ')
+    new(builder.target!, language)
+  end
+
+  def _expected_root_name
+    'fl'
+  end
+
+  # Formatted lines should behave like plain text in all cases, except when HTML is explicitly requested
+  def to_s
+    to_plain_text
+  end
+
+  # Formatted line doesn't have block level elements in containing <fl>,
+  # and doesn't want any containing elements in the generated HTML (so if
+  # it's plain text, you just get escaped plain text out).
+  def _document_initial_tag_level
+    1
+  end
+
+  # Easier to have it's own implementation of to_html
+  def to_html
+    listener = ToHTMLListenerFormattedLine.new
+    begin
+      REXML::Document.parse_stream(@text, listener)
+    rescue
+      # Ignore errors
+    end
+    listener.output
+  end
+
+  class ToHTMLListenerFormattedLine
+    ALLOWED_TAG_REGEX = /\A(b|i|sub|sup)\z/ # no <a>
+    include REXML::StreamListener
+    attr_reader :output
+    def initialize()
+      @tag_level = 0
+      @output = ''
+    end
+    def tag_start(name, attrs)
+      @tag_level += 1
+      @output << "<#{name}>" if name =~ ALLOWED_TAG_REGEX
+    end
+    def tag_end(name)
+      @tag_level -= 1
+      @output << "</#{name}>" if name =~ ALLOWED_TAG_REGEX
+    end
+    def text(text)
+      @output << ERB::Util.h(text)
     end
   end
 

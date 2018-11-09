@@ -37,5 +37,17 @@ module Application_TextHelper
     end
   end
 
+  def string_or_ktext_to_html(text)
+    if text.kind_of?(KTextFormattedLine)
+      text.to_html
+    elsif text.kind_of?(KText)
+      ERB::Util.h(text.to_plain_text)
+    elsif text.nil?
+      '????'
+    else
+      ERB::Util.h(text.to_s)
+    end
+  end
+
 end
 

@@ -44,6 +44,32 @@
 .z__document_text_edit_buttons a.z__document_text_edit_buttons_divider_close + a.z__document_text_edit_buttons_divider_space {
     border-radius: 0 3px 3px 0;
 }
+.z__document_text_edit_buttons a.z__document_text_keyboard_button {
+    margin-right: 4px;
+}
+
+.z__document_text_edit_buttons_symbols_container {
+    margin-top: 4px;
+    border: 1px solid #eee;
+    border-radius: 2px;
+    padding: 4px;
+}
+
+.z__document_text_edit_buttons a.z__document_text_edit_buttons_char_style_button[data-cmd=subscript],
+.z__document_text_edit_buttons a.z__document_text_edit_buttons_char_style_button[data-cmd=superscript] {
+    width:14px
+}
+
+.z__document_text_edit_buttons_char_style_button[data-cmd=subscript] span,
+.z__document_text_edit_buttons_char_style_button[data-cmd=superscript] span {
+    position:relative;
+    font-size: 10px;
+    line-height: 10px;
+    top: 3px;
+}
+.z__document_text_edit_buttons_char_style_button[data-cmd=superscript] span { top: -3px }
+
+.z__document_text_edit_buttons a.z__document_text_edit_buttons_show_symbols { width:20px }
 
 /* add content controls */
 .z__document_text_edit_add_controls {
@@ -64,6 +90,17 @@
     padding: 10px 8px 16px 8px;
     min-height: 156px;
     background: #fff;
+}
+.z__document_text_edit_single_line .z__document_text_edit_document {
+    min-height: 20px;
+    padding: 4px 8px;
+    /* style single line like a textarea */
+    border-top: 1px #aaa solid;
+    border-left: 1px #bbb solid;
+    border-right: 1px #bbb solid;
+    border-bottom: 1px #ddd solid;
+    border-radius: 2px;
+    box-shadow: inset 1px 1px 1px rgba(0,0,0,0.08);
 }
 
 /* links should be underlined in document text */

@@ -21,7 +21,7 @@ TEST(function() {
     // Document text formatting
     var doc1 = O.text(O.T_TEXT_DOCUMENT, "<doc><h1>Title</h1><p>paragraph. text. with lots of dots</p><h2>title 2</h2><p>paragraph text again</p></doc>");
     TEST.assert_equal("<doc><h1>Title</h1><p>paragraph. text. with lots of dots</p><h2>title 2</h2><p>paragraph text again</p></doc>", doc1.toString());
-    TEST.assert_equal("Title\n\nparagraph. text. with lots of dots\n\ntitle 2\n\nparagraph text again\n\n", doc1.toString("plaintext"));
+    TEST.assert_equal("Title\n\nparagraph. text. with lots of dots\n\ntitle 2\n\nparagraph text again", doc1.toString("plaintext"));
     TEST.assert_equal("<h1>Title</h1><p>paragraph. text. with lots of dots</p><h2>title 2</h2><p>paragraph text again</p>", doc1.toHTML());
 
     // Telephone number formatting
@@ -72,6 +72,13 @@ TEST(function() {
             O.text(O.T_IDENTIFIER_CONFIGURATION_NAME, bad);
         }, "O.text(O.T_IDENTIFIER_CONFIGURATION_NAME,...) must be formed of a-zA-Z0-9_ and contain at least one : separator.");
     });
+
+    // Formatted single lines
+    var formattedLine = O.text(O.T_TEXT_FORMATTED_LINE, "<fl>Ping <b>Pong</b></fl>");
+    TEST.assert_equal('Ping Pong', formattedLine.toString());
+    TEST.assert_equal('Ping Pong', formattedLine.s());
+    TEST.assert_equal('Ping Pong', formattedLine.toString());
+    TEST.assert_equal('Ping <b>Pong</b>', formattedLine.toHTML());
 
     // Bad format
     TEST.assert_exceptions(function() { phone1.toString("random format"); });

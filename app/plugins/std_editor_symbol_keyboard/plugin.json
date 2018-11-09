@@ -1,0 +1,12 @@
+{
+  "pluginName": "std_editor_symbol_keyboard",
+  "pluginAuthor": "Haplo Services",
+  "pluginVersion": 1,
+  "displayName": "Editor Symbol Keyboard",
+  "displayDescription": "Adds a virtual keyboard for typing special symbols to rich text fields in the object editor.",
+  "apiVersion": 4,
+  "load": [
+      "js/std_editor_symbol_keyboard.js"
+    ],
+  "respond": ["/do/std-editor-symbol-keyboard"]
+}

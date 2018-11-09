@@ -81,6 +81,9 @@ class KText
   def to_s
     @text
   end
+  def to_plain_text
+    self.to_s
+  end
   def to_storage_text   # for sending to the javascript object editor, or exporting
     @text
   end

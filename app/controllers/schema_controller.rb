@@ -74,6 +74,11 @@ class SchemaController < ApplicationController
     end
   end
 
+  # Plugin invalidation of schema
+  KNotificationCentre.when(:javascript_plugin_reload_user_schema) do
+    KApp.set_global(:schema_user_version, Time.now.to_i)
+  end
+
   # --------------------------------------------------------------------------------------------------------------------
 
   # Output is the same for all users
@@ -183,6 +188,15 @@ class SchemaController < ApplicationController
     # --- LOCALISATION -----------------------------------------------------------
     @user_home_country = @request_user.get_user_data(UserData::NAME_HOME_COUNTRY) || KDisplayConfig::DEFAULT_HOME_COUNTRY
     @user_time_zone = @request_user.get_user_data(UserData::NAME_TIME_ZONE) || KDisplayConfig::DEFAULT_TIME_ZONE
+
+    # --- EDITOR SYMBOL KEYBOARDS ------------------------------------------------
+    call_hook(:hEditorSymbolKeyboard) do |hooks|
+      r = hooks.run()
+      unless r.keyboards.nil?
+        # Decode and encode JSON to make sure it's not dodgy
+        @symbol_keyboards_json = JSON.generate(JSON.parse(r.keyboards))
+      end
+    end
 
     # --- RENDER -------------------------------------------------------------
     set_response_validity_time(3600*12)  # Will never change without the version number in the URL changing

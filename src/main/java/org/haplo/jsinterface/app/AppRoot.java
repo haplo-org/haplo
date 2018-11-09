@@ -95,4 +95,6 @@ public interface AppRoot {
     public void reloadNavigation();
 
     public void reloadJavaScriptRuntimes();
+
+    public void reloadUserSchema();
 }

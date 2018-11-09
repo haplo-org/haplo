@@ -1,0 +1,8 @@
+pageTitle("Edit virtual keyboards")
+backLink("/do/std-editor-symbol-keyboard/keyboards") { "Cancel" }
+
+<form method="POST"> std:form:token()
+  std:form(form)
+  <p> <input type="submit" value="Update keyboards"> </p>
+</form>
+

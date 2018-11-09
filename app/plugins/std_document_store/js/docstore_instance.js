@@ -347,7 +347,9 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
             updatePages();
         }
         var firstIncompletePage = _.find(pages, function(p) { return !p.complete; });
-        this.setCurrentDocument(cdocument, !(firstIncompletePage) /* all complete? */);
+        if(this.currentDocumentIsEdited || !_.isEqual(cdocument, this.lastCommittedDocument)) {
+            this.setCurrentDocument(cdocument, !(firstIncompletePage) /* all complete? */);
+        }
         // Goto another form?
         var gotoPage = getGotoPage();
         if(gotoPage) {

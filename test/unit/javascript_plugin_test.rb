@@ -552,6 +552,7 @@ __E
     plugin_text = KTextPluginDefined.new({:type => "test:testtype", :value => JSON.dump({"text"=>"abc\ndef"})})
     assert_equal "abc\ndef", plugin_text.to_s
     assert_equal "abc\ndef", plugin_text.to_sortas_form
+    assert_equal "abc\ndef", plugin_text.to_plain_text
     assert_equal "XTEXTTYPEX abc\ndef", plugin_text.to_indexable
     assert_equal Encoding::UTF_8, plugin_text.to_indexable.encoding
     assert_equal "<div><p>TEST DATA TYPE</p><p>abc</p><p>def</p></div>", plugin_text.to_html

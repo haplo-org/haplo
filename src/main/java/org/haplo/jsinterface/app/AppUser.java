@@ -27,6 +27,8 @@ public interface AppUser {
 
     public String code();
 
+    public String otp_identifier();
+
     public AppObject kobject_dup_restricted(AppObject object);
 
     public AppObjectRestrictedAttributes kobject_restricted_attributes(AppObject object);

@@ -1,4 +1,4 @@
-/*global KApp,KSubsets,KControl,KCtrlDropdownMenu,KCtrlObjectInsertMenu,ActiveXObject,DOMParser */
+/*global KApp,KSubsets,KControl,KCtrlDropdownMenu,KCtrlObjectInsertMenu,KSymbolKeyboard,ActiveXObject,DOMParser */
 
 /* Haplo Platform                                     http://haplo.org
  * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
@@ -7,7 +7,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
-var KCtrlDocumentTextEdit;
+var KCtrlDocumentTextEdit, KCtrlDocumentTextEditSingleLine;
 
 (function($) {
 
@@ -50,7 +50,7 @@ var CONVERSION_TAGS_OUT = {
 };
 
 var CHARACTER_STYLE_ELEMENTS = {
-    b:1, i:1, a:1
+    b:1, i:1, a:1, sub:1, sup:1
 };
 
 // How empty paragraphs are created to make sure there's something to click.
@@ -376,7 +376,7 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
                 _.bind(this.j__insertFileSelection, this), 'Insert file');
         }
 
-        return '<div class="z__document_text_edit" id="'+i+'">' +
+        return '<div class="z__document_text_edit'+(this.q__isSingleLine?' z__document_text_edit_single_line':'')+'" id="'+i+'">' +
             this.j__generateHtmlInner(i) + '</div>';
     },
     j__attach2: function(i) {
@@ -435,6 +435,24 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
                 if(href) { this.href = autoCorrectLink(href) || this.href; }
             }
         });
+        // Symbol keyboard
+        $('#'+i).on('click', '.z__document_text_edit_buttons_symbol_category_menu button', function(evt) {
+            evt.preventDefault();
+            var index = this.getAttribute('data-index');
+            $('#'+i+' .z__document_text_edit_buttons_symbol_category').hide();
+            $('#'+i+' .z__document_text_edit_buttons_symbol_category[data-index='+index+']').show();
+        });
+        $('#'+i).on('click', '.z__document_text_keyboard_button', function(evt) {
+            evt.preventDefault();
+            var symbol = this.getAttribute('data-symbol');
+            if(symbol) {
+                document.execCommand('insertText', false, symbol);
+            }
+        });
+        $('#'+i+' .z__document_text_edit_buttons_show_symbols').on('click', function(evt) {
+            evt.preventDefault();
+            $('#'+i+' .z__document_text_edit_buttons_symbols_container').toggle();
+        });
 
         // Attach other handlers
         var e = $('#'+i+'_e');
@@ -444,6 +462,11 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
             click(updateHandler).
             keyup(_.bind(this.j__handleKeyup, this)).
             bind('paste', _.bind(this.j__handlePaste, this));
+
+        // Single line disables newlines in UI
+        if(this.q__isSingleLine) {
+            $('#'+i+'_e').on('keypress', function(e) { return e.which !== 13; });
+        }
 
         // Attach widgets
         var w = this.q__initialWidgets;
@@ -474,32 +497,61 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
         this.q__initialWidgets = [];
 
         var html = '<div id="'+i+'_b" class="z__document_text_edit_buttons"><span class="z__document_text_edit_paragraph_styles">';
-        var modifier = this.q__shortcutModifier; // because of scoping in iterator
-        _.each(this.q__PARAGRAPH_STYLES, function(style) {
-            html += '<a href="#" data-style="'+style[0]+'" title="'+style[1];
-            if(style[2]) { html += ' (' + modifier + '-' + style[2] + ')'; }
-            html += '" class="z__document_text_edit_buttons_para_style_button ';
-            html += style[3] ? 'z__document_text_edit_buttons_divider_close' : 'z__document_text_edit_buttons_divider_space';
-            html += '">'+(style[4] || style[0])+'</a>';
-        });
+        if(!this.q__isSingleLine) {
+            var modifier = this.q__shortcutModifier; // because of scoping in iterator
+            _.each(this.q__PARAGRAPH_STYLES, function(style) {
+                html += '<a href="#" data-style="'+style[0]+'" title="'+style[1];
+                if(style[2]) { html += ' (' + modifier + '-' + style[2] + ')'; }
+                html += '" class="z__document_text_edit_buttons_para_style_button ';
+                html += style[3] ? 'z__document_text_edit_buttons_divider_close' : 'z__document_text_edit_buttons_divider_space';
+                html += '">'+(style[4] || style[0])+'</a>';
+            });
+        }
         html += '<a href="#" class="z__document_text_edit_buttons_char_style_button z__document_text_edit_buttons_divider_close" data-cmd="bold"><b>B</b></a>'+
             '<a href="#" class="z__document_text_edit_buttons_char_style_button z__document_text_edit_buttons_divider_close" data-cmd="italic"><i>I</i></a>'+
-            '<a href="#" class="z__document_text_edit_buttons_char_style_button z__document_text_edit_buttons_divider_space" data-cmd="createlink" style="width:20px">link</a>';
+            '<a href="#" class="z__document_text_edit_buttons_char_style_button z__document_text_edit_buttons_divider_close" data-cmd="subscript">x<span>2</span></a>'+
+            '<a href="#" class="z__document_text_edit_buttons_char_style_button '+(this.q__isSingleLine?' z__document_text_edit_buttons_divider_space':' z__document_text_edit_buttons_divider_close')+'" data-cmd="superscript">x<span>2</span></a>';
+        if(!this.q__isSingleLine) {
+            html += '<a href="#" class="z__document_text_edit_buttons_char_style_button z__document_text_edit_buttons_divider_space" data-cmd="createlink" style="width:20px">link</a>';
+        }
         if(this.q__allowWidgets) {
             html += '<a href="#" id="'+i+'_p">+</a>';
         }
-        return html + '</div>' +
+        // keyboard
+        if(window.KSymbolKeyboard) {
+            html += '<a href="#" class="z__document_text_edit_buttons_show_symbols">Ω...</a><div class="z__document_text_edit_buttons_symbols_container" style="display:none"><div class="z__document_text_edit_buttons_symbol_category_menu">';
+            var keyboardIndex = 0;
+            var keyboards = [];
+            _.each(KSymbolKeyboard, function(characters, name) {
+                // buttons to select category
+                html += '<button href="#" data-index="'+keyboardIndex+'">'+_.escape(name)+'</button> ';
+                // symbols for the keyboard
+                keyboards.push(
+                    '<div class="z__document_text_edit_buttons_symbol_category" data-index="', keyboardIndex, '"',
+                    keyboardIndex === 0 ? '' : ' style="display:none"',
+                '>');
+                _.each(characters.split(''), function(c) {
+                    var cs = _.escape(c);
+                    keyboards.push('<a href="#" class="z__document_text_keyboard_button" data-symbol="', cs, '">', cs, '</a>');
+                });
+                keyboards.push('</div>');
+                keyboardIndex++;
+            });
+            html += '</div>' + keyboards.join('') + '</div>';
+        }
+        html += '</div>' +
             '<div class="z__document_text_edit_add_controls" style="display:none" id="'+i+'_a">' +
             this.q__insertButton.j__generateHtml(i+'_i') +
             this.q__widgetsButton.j__generateHtml(i+'_w') +
             ((this.q__fileButton)?(this.q__fileButton.j__generateHtml(i+'_l')):'') +
             '</div><div id="'+i+'_e" tabindex="1" class="z__document_text_edit_document" contentEditable="true">' +
-            this.j__docTextToHtml(this.q__initialDoc,this.q__initialWidgets) +
-            EMPTY_PARAGRAPH_FOR_EDIT+'</div>';
+            this.j__docTextToHtml(this.q__initialDoc,this.q__initialWidgets);
+        if(!this.q__isSingleLine || !this.q__initialDoc) {
+            html += EMPTY_PARAGRAPH_FOR_EDIT;
+        }
+        html += '</div>';
 
-        // The paragraph with an img at the end of the document text editor stops Mozilla from using lots of <br>s and
-        // getting the formatting all wrong, and IE from giving an error message on page open when there's
-        // an empty document. And all of them need something to get the formatting right.
+        return html;
     },
 
     // ---------------------------
@@ -875,7 +927,7 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
 
     j__cleanUpDom: function() {
         // Function to detect nodes with element children, ie not normal text nodes
-        var WELCOME_ELEMENT_NODE_TYPES = ['a', 'b', 'i'];
+        var WELCOME_ELEMENT_NODE_TYPES = ['a', 'b', 'i', 'sub', 'sup'];
         var nodeHasUnwelcomeElementChildren = function(node, safety) {
             if(safety < 0) { return false; }    // stack depth too deep for comfort
             var scan = node.firstChild;
@@ -1023,7 +1075,7 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
         }
 
         // Setup for conversion
-        var htmlComponents = [];
+        var htmlComponents = this.q__isSingleLine ? ['<p>'] : []; // single line needs an enclosing <p>
         var text_before = false;    // whether there's text preceeding the current line -- widgets need space before and after
 
         // Scan to produce output
@@ -1108,10 +1160,11 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
             }
         }
 
+        if(this.q__isSingleLine) { htmlComponents.push('</p>'); }
         return htmlComponents.join('');
     },
     j__domObjsToDoc: function(r) {
-        var documentComponents = ['<doc>'];
+        var documentComponents = [this.q__isSingleLine ? '<fl>' : '<doc>'];
         var appendTextToDocument = function(text) {
             if(text && text.length > 0) {
                 // XML spec says valid chars are:
@@ -1125,18 +1178,22 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
         var s = r.firstChild;
         while(s) {
             if(s.nodeType == NODE__ELEMENT_NODE) {
+                var doctag, doctagElement;
                 var n = s.nodeName.toLowerCase();
                 if(n == 'div' && s.className == 'z__widget_container') {
                     documentComponents.push(this.j__widgetContainerToDoc(s));
                 } else {
-                    // Try and capture the text inside the tag - being very careful to avoid IE problem
-                    var doctag = 'p';
-                    if((n === 'p') && (s.className.substr(0,2) === 'p_')) {
-                        var t = s.className.substr(2);
-                        if(t === 'i') { doctag = 'li'; } else if(t !== 'p') { doctag = 'h'+t; }
+                    // Single line editing ignores paragraphs
+                    if(!this.q__isSingleLine) {
+                        // Try and capture the text inside the tag - being very careful to avoid IE problem
+                        doctag = 'p';
+                        if((n === 'p') && (s.className.substr(0,2) === 'p_')) {
+                            var t = s.className.substr(2);
+                            if(t === 'i') { doctag = 'li'; } else if(t !== 'p') { doctag = 'h'+t; }
+                        }
+                        doctagElement = '<'+doctag+'>';
+                        documentComponents.push(doctagElement);
                     }
-                    var doctagElement = '<'+doctag+'>';
-                    documentComponents.push(doctagElement);
 
                     var limit = 256;    // a safety limit for IE's circular post-pasting DOMs
                     var capture = function(node) {
@@ -1166,18 +1223,20 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
                         }
                     };
                     capture(s);
-                    if(documentComponents[documentComponents.length-1] === doctagElement) {
-                        // Nothing was output, remove the last element
-                        documentComponents.pop();
-                    } else {
-                        // End element
-                        documentComponents.push('</',doctag,'>');
+                    if(!this.q__isSingleLine) {
+                        if(documentComponents[documentComponents.length-1] === doctagElement) {
+                            // Nothing was output, remove the last element
+                            documentComponents.pop();
+                        } else {
+                            // End element
+                            documentComponents.push('</',doctag,'>');
+                        }
                     }
                 }
             }
             s = s.nextSibling;
         }
-        documentComponents.push('</doc>');
+        documentComponents.push(this.q__isSingleLine ? '</fl>' : '</doc>');
         return documentComponents.join('');
     }
 });
@@ -1185,6 +1244,15 @@ _.extend(KCtrlDocumentTextEdit.prototype, {
 // For reporting bugs to the user
 KCtrlDocumentTextEdit.iePasteBugFound = false;
 KCtrlDocumentTextEdit.iePasteBugReported = false;
+
+// --------------------------------------------------------------------------------------
+
+/* global */ KCtrlDocumentTextEditSingleLine = function(initial_doc) {
+    KCtrlDocumentTextEdit.call(this, initial_doc);
+    this.q__allowWidgets = false;
+};
+_.extend(KCtrlDocumentTextEditSingleLine.prototype, KCtrlDocumentTextEdit.prototype);
+KCtrlDocumentTextEditSingleLine.prototype.q__isSingleLine = true;
 
 // --------------------------------------------------------------------------------------
 // oForms integration

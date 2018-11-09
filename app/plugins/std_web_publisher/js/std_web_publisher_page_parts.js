@@ -50,6 +50,10 @@ P.Publication.prototype.pagePartAddToCategory = function(add) {
     if(!this._pageParts) { this._pageParts = new PageParts(globalPageParts); }
     this._pageParts.addToCategory(add);
 };
+P.Publication.prototype.pagePartRemoveFromCategory = function(remove) {
+    if(!this._pageParts) { this._pageParts = new PageParts(globalPageParts); }
+    this._pageParts.removeFromCategory(remove);
+};
 
 // --------------------------------------------------------------------------
 
@@ -105,6 +109,12 @@ PageParts.prototype.addToCategory = function(add) {
     this.add(p);
 };
 
+// Remove has keys name & category
+PageParts.prototype.removeFromCategory = function(remove) {
+    if(!this.$removeFromCategory) { this.$removeFromCategory = []; }
+    this.$removeFromCategory.push(remove);
+};
+
 PageParts.prototype._setup = function() {
     var pp = this;
     // Merge in parts and categories from parent
@@ -113,6 +123,15 @@ PageParts.prototype._setup = function() {
         var tc = pp.categories;
         _.each(this.parent.categories, function(a, k) {
             tc[k] = (tc[k]||[]).concat(a);
+        });
+    }
+    // Remove from categories
+    if(this.$removeFromCategory) {
+        _.each(this.$removeFromCategory, function(remove) {
+            var l = pp.categories[remove.category];
+            if(l) {
+                pp.categories[remove.category] = _.filter(l, function(p) { return p.name !== remove.name; });
+            }
         });
     }
     // Sort each category ready for rendering

@@ -13,7 +13,7 @@ module KObjectUtils
   # Otherwise use kind == :simple
   def self.title_of_object(obj, kind)
     value = (obj == nil) ? nil : obj.first_attr(A_TITLE)
-    title = (value == nil || value.k_typecode < T_TEXT__MIN) ? '????' : value.to_s
+    title = (value == nil || value.k_typecode < T_TEXT__MIN) ? '????' : value.to_plain_text
 
     if kind == :full
       # Look up the object in the schema to see if any descriptive attributes need adding

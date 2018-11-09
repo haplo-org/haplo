@@ -71,6 +71,7 @@ module SchemaRequirements
     "text" => T_TEXT,
     "text-paragraph" => T_TEXT_PARAGRAPH,
     "text-document" => T_TEXT_DOCUMENT,
+    "text-formatted-line" => T_TEXT_FORMATTED_LINE,
     "text-multiline" => T_TEXT_MULTILINE,
     "file" => T_IDENTIFIER_FILE,
     "idsn" => T_IDENTIFIER_ISBN,

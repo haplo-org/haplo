@@ -15,7 +15,7 @@ module KObjectURLs
     if max_slug_length > 0 # could be disabled by administrator
       title = o.first_attr(KConstants::A_TITLE)
       if title != nil
-        slug = title.to_s.downcase.gsub(/[^0-9a-z]+/,'-')
+        slug = (title.kind_of?(KText) ? title.to_plain_text : title.to_s).downcase.gsub(/[^0-9a-z]+/,'-')
         slug = slug[0,max_slug_length] if slug.length > max_slug_length
       end
     end

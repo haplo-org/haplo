@@ -362,6 +362,10 @@ class JSSupportRoot
     KJSPluginRuntime.invalidate_all_runtimes
   end
 
+  def reloadUserSchema
+    KNotificationCentre.notify(:javascript_plugin_reload_user_schema)
+  end
+
   # -------------------------------------------------------------------------------------------------------
 
 private

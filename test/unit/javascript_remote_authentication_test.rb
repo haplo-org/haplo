@@ -8,6 +8,8 @@
 class JavascriptRemoteAuthenticationTest < Test::Unit::TestCase
   include JavaScriptTestHelper
 
+  HAVE_OTP_IMPLEMENTATION = KFRAMEWORK_LOADED_COMPONENTS.include?('management')
+
   def test_remote_authentication_api
     db_reset_test_data
     install_grant_privileges_plugin_with_privileges('pRemoteAuthenticationService')
@@ -48,6 +50,24 @@ class JavascriptRemoteAuthenticationTest < Test::Unit::TestCase
       KeychainCredential.delete_all
       uninstall_grant_privileges_plugin
     end
+  end
+
+  # ---------------------------------------------------------------------------------------------------
+
+  def test_local_otp_provider
+    install_grant_privileges_plugin_with_privileges('pRemoteAuthenticationService')
+    return unless HAVE_OTP_IMPLEMENTATION
+    IntegrationTest::AUTHENTICATION_LOGIN_TEST_FAILURE_LOCK.synchronize do
+      time1_token = HardwareOtpToken.find_by_identifier('test-1-time')
+      time1_token.counter = 12345
+      time1_token.save! # reset counter
+      data = {
+        "NEXT_OTP" => TestHardwareOTP.next_otp_for("test-1-time")
+      }
+      run_javascript_test(:file, 'unit/javascript/javascript_remote_authentication/test_local_otp_provider.js', data, "grant_privileges_plugin")
+    end
+  ensure
+    uninstall_grant_privileges_plugin
   end
 
   # ---------------------------------------------------------------------------------------------------

@@ -180,8 +180,8 @@ class KQuery
 
       # Add the gathered terms into one query (:and containers only)
       unless gathered_terms.empty?
-        qtext = gathered_terms.map { |t| t.last } .flatten.join(' ')
-        subquery.free_text(qtext)
+        qterms = gathered_terms.map { |t| t.last } .flatten
+        subquery.free_text([:terms, qterms])
       end
 
     else

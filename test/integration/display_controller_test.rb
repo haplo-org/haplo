@@ -1,3 +1,5 @@
+# coding: utf-8
+
 # Haplo Platform                                     http://haplo.org
 # (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
 # This Source Code Form is subject to the terms of the Mozilla Public
@@ -8,6 +10,8 @@
 class DisplayControllerTest < IntegrationTest
   include KConstants
   include KObjectURLs
+  include Application_TextHelper
+  include Application_RenderHelper
 
   # The display controller gets quite a bit of testing in other tests, being a central part of the platorm
 
@@ -67,6 +71,43 @@ class DisplayControllerTest < IntegrationTest
         response.hideAttributes << A_URL
       end
     end
+  end
+
+  # -------------------------------------------------------------------------
+
+  def test_formatted_titles
+    assert_login_as('user1@example.com', 'password')
+
+    # Formatted titles get rendered safely
+    obj = KObject.new
+    obj.add_attr(O_TYPE_BOOK, A_TYPE)
+    obj.add_attr(KTextFormattedLine.new('<fl>ABC <b>Bold</b><sup>2</sup> ☃ &lt;&amp;</fl>'), A_TITLE)
+    KObjectStore.create(obj)
+
+    get object_urlpath(obj)
+    assert response.body.force_encoding('utf-8').include?('<h1>ABC <b>Bold</b><sup>2</sup> ☃ &lt;&amp;</h1>')
+
+    # Titles and links will be generated correctly
+    assert_equal 'ABC Bold2 ☃ <&', KObjectUtils.title_of_object(obj, :full)
+    assert_equal 'ABC Bold2 ☃ <&', KObjectUtils.title_of_object(obj, :simple)
+    assert_equal "<a href=\"/#{obj.objref.to_presentation}/abc-bold2-\">ABC <b>Bold</b><sup>2</sup> ☃ &lt;&amp;</a>", link_to_object_with_title(obj) # with escaping
+
+    # And unformatted titles are HTML escaped
+    obj2 = KObject.new
+    obj2.add_attr(O_TYPE_BOOK, A_TYPE)
+    obj2.add_attr("<div>ABC &</div>", A_TITLE)
+    KObjectStore.create(obj2)
+    get object_urlpath(obj2)
+    assert response.body.include?('<h1>&lt;div&gt;ABC &amp;&lt;/div&gt;</h1>')
+
+    assert_equal '<div>ABC &</div>', KObjectUtils.title_of_object(obj2, :full) # not HTML, the exact string from the title
+    assert_equal '<div>ABC &</div>', KObjectUtils.title_of_object(obj2, :simple)
+
+    # Check rendering in searches too, as the objects have been created
+    run_outstanding_text_indexing()
+    get '/search?q=abc'
+    assert response.body.force_encoding('utf-8').include?('">ABC <b>Bold</b><sup>2</sup> ☃ &lt;&amp;</a>')
+    assert response.body.include?('">&lt;div&gt;ABC &amp;&lt;/div&gt;</a>')
   end
 
   # -------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-/*global confirm,KApp,KSchema,KAttrObjChoices,KUserHomeCountry,KTaxonomies,KControl,KFileUpload,KTree,KTreeSource,KCtrlText,KCtrlTextarea,KCtrlDocumentTextEdit,KCtrlDropdownMenu,KCtrlTextWithInnerLabel,KCtrlDateTimeEditor,KFocusProxy,KCtrlFormAttacher,escapeHTML,Ks:true */
+/*global confirm,KApp,KSchema,KAttrObjChoices,KUserHomeCountry,KTaxonomies,KControl,KFileUpload,KTree,KTreeSource,KCtrlText,KCtrlTextarea,KCtrlDocumentTextEdit,KCtrlDocumentTextEditSingleLine,KCtrlDropdownMenu,KCtrlTextWithInnerLabel,KCtrlDateTimeEditor,KFocusProxy,KCtrlFormAttacher,escapeHTML,Ks:true */
 
 /* Haplo Platform                                     http://haplo.org
  * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
@@ -64,7 +64,7 @@ var stripString = function(string) {
 
 var j__focusOnFirstInputBelow = function(i) {
     if(typeof i === 'string') { i = $('#'+i)[0]; }
-    $('input[type="text"]:not(.z__no_default_focus)', i).first().each(function() { KApp.j__focusNicely(this); });
+    $('input[type="text"]:not(.z__no_default_focus),[contenteditable=true]', i).first().each(function() { KApp.j__focusNicely(this); });
 };
 
 // ----------------------------------------------------------------------------------------------------
@@ -540,8 +540,8 @@ function j__makeKeditorValueClass(data_type,ctrl_class,ctrl_data,extend) {
 j__makeKeditorValueClass(T_TEXT,KCtrlText);
 j__makeKeditorValueClass(T_TEXT_PARAGRAPH,KCtrlTextarea);
 
-// Document editor value class
-j__makeKeditorValueClass(T_TEXT_DOCUMENT,KCtrlDocumentTextEdit,null,{
+// Document editor value classes (full document and single line text)
+var documentEditorValueFunctions = {
     j__showAsUndoableDeleted: function() {
         this.q__control.j__setEditable(false,'z__strike');
     },
@@ -552,9 +552,11 @@ j__makeKeditorValueClass(T_TEXT_DOCUMENT,KCtrlDocumentTextEdit,null,{
         // Override this funciton so empty documents are not treated as having values
         // Not necessarily the most efficient implementation, but good enough.
         var v = this.q__control.j__value();
-        return v && v != '<doc></doc>' && !(this.q__deleted);
+        return v && v != '<doc></doc>' && v != '<fl></fl>' && !(this.q__deleted);
     }
-});
+};
+j__makeKeditorValueClass(T_TEXT_DOCUMENT,       KCtrlDocumentTextEdit,           null, documentEditorValueFunctions);
+j__makeKeditorValueClass(T_TEXT_FORMATTED_LINE, KCtrlDocumentTextEditSingleLine, null, documentEditorValueFunctions);
 
 
 // ----------------------------------------------------------------------------------------------------

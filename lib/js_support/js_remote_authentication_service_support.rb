@@ -60,9 +60,10 @@ module JSRemoteAuthenticationServiceSupport
   # -----------------------------------------------------------------------------------------------------------
 
   def self.createServiceObject(searchByName, serviceName)
-    # Special case the LOCAL service
-    if searchByName && serviceName == 'LOCAL'
-      return LocalAuthenticationService.new
+    # Special case services for built-in authentication systems
+    if searchByName
+      return LocalAuthenticationService.new if serviceName == 'LOCAL'
+      return OtpAuthenticationService.new   if serviceName == 'ONE-TIME-PASSWORD'
     end
 
     # Attempt to find credentials for this service
@@ -130,6 +131,18 @@ module JSRemoteAuthenticationServiceSupport
       user ?
         {"result" => "success", "user" => {"id" => user.id, "email" => user.email, "name" => user.name } } :
         {"result" => "failure"}
+    end
+  end
+
+  class OtpAuthenticationService < ConnectionlessService
+    def getName; "ONE-TIME-PASSWORD"; end
+    def do_authenticate(username, password)
+      result = KHardwareOTP.check_otp2(username, password, AuthContext.user.id)
+      if result.ok
+        {"result" => "success", "user" => {"identifier" => username} }
+      else
+        {"result" => "failure", "reason" => result.reason, "message" => result.message}
+      end
     end
   end
 

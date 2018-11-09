@@ -156,6 +156,7 @@ var Publication = P.Publication = function(name, plugin) {
     this._paths = [];
     this._objectTypeHandler = O.refdictHierarchical();
     this._searchResultsRenderers = O.refdictHierarchical(); // also this._defaultSearchResultRenderer
+    this._replacedTemplates = {};
     this._setupForFileDownloads();
 };
 

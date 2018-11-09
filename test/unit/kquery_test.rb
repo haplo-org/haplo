@@ -404,6 +404,12 @@ class KQueryTest < Test::Unit::TestCase
     assert_equal [], tbq_search('date:2009-01-02T12.21 .. 2009-01-02T12.29')
     assert_equal [], tbq_search('date:2009-01-02T12.21 .. 2009-01-02T12.30') # minute at end of range is not extended
     assert_equal [14], tbq_search('date:2009-01-02T12.21 .. 2009-01-02T12.31')
+
+    # Regression test using some keywords which change after repeated stemming, causing objects to fail to match.
+    tbq_make_obj(99, 'Neoliberalism, labour and power democracy', 'pxp');
+    run_outstanding_text_indexing
+    assert_equal [99], tbq_search("neoliberalism labour power democracy")
+    assert_equal [99], tbq_search("Neoliberalism, labour and power democracy")
   end
   def tbq_make_obj(n, title, author, type = O_TYPE_BOOK, date = nil)
     o = KObject.new()

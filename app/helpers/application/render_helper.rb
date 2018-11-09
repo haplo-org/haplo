@@ -436,14 +436,14 @@ module Application_RenderHelper
       return LINK_HTML_FOR_UNAUTHORISED_READ
     end
     if object.labels.include?(O_LABEL_DELETED)
-      %!<a class="z__link_to_deleted_object" href="#{object_urlpath(object)}">#{h(text)}</a>!
+      %!<a class="z__link_to_deleted_object" href="#{object_urlpath(object)}">#{string_or_ktext_to_html(text)}</a>!
     else
-      %!<a href="#{object_urlpath(object)}">#{h(text)}</a>!
+      %!<a href="#{object_urlpath(object)}">#{string_or_ktext_to_html(text)}</a>!
     end
   end
 
   def link_to_object_with_title(object)
-    link_to_object(object.first_attr(KConstants::A_TITLE) || '????', object)
+    link_to_object(object.first_attr(KConstants::A_TITLE), object)
   end
 
   # ========================================================================================================

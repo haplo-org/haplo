@@ -85,3 +85,32 @@ P.globalTemplateFunction("std:web-publisher:utils:title:name", function(object) 
         return title.toString();
     }
 });
+
+// --------------------------------------------------------------------------
+// Replaceable templates
+
+var replaceableTemplates = {};
+
+P.FEATURE.registerReplaceableTemplate = function(code, templateName) {
+    if(code in replaceableTemplates) {
+        throw new Error("Replaceable template already registered: "+code);
+    }
+    replaceableTemplates[code] = [templateName, this.$plugin];
+};
+
+P.Publication.prototype.replaceTemplate = function(code, templateName) {
+    if(!(code in replaceableTemplates)) {
+        throw new Error("Attempt to replace a replaceable template which has not been registered: "+code);
+    }
+    this._replacedTemplates[code] = [templateName, this.implementingPlugin];
+};
+
+P.globalTemplateFunction("std:web-publisher:template", function(code) {
+    var publication = P.getRenderingContext().publication;
+    var [templateName, plugin] = publication._replacedTemplates[code] || replaceableTemplates[code] || [];
+    if(!templateName) {
+        throw new Error("Replaceable template not found: "+code);
+    }
+    var template = plugin.template(templateName);
+    this.renderIncludedTemplate(template);
+});

@@ -1,0 +1,27 @@
+{
+    "specificationVersion": 0,
+    "formId": "keyboards",
+    "formTitle": "Keyboards",
+    "elements": [
+        {
+            "type": "repeating-section",
+            "path": "keyboards",
+            "allowAdd": true,
+            "allowDelete": true,
+            "elements": [
+                {
+                    "type": "text",
+                    "path": "name",
+                    "required": true,
+                    "label": "Category name"
+                },
+                {
+                    "type": "text",
+                    "path": "characters",
+                    "required": true,
+                    "label": "Characters"
+                }
+            ]
+        }
+    ]
+}

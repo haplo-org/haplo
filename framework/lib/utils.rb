@@ -55,8 +55,17 @@ class KFramework
 
     def parse_nested_query(qs, d = '&;')
       params = {}
-      URI.decode_www_form((qs || ''), Encoding::UTF_8).each do |k,v|
-        normalize_params(params, k, v)
+      decoded = nil
+      begin
+        decoded = URI.decode_www_form((qs || ''), Encoding::UTF_8)
+      rescue ArgumentError => e
+        # Ignore incorrectly formatted application/x-www-form-urlencoded data, but log error for troubleshooting
+        KApp.logger.info("Ignored incorrectly formatted query string: #{qs}")
+      end
+      unless decoded.nil?
+        decoded.each do |k,v|
+          normalize_params(params, k, v)
+        end
       end
       return params
     end

@@ -396,6 +396,14 @@ TEST(function() {
     titles.appendTitle("PQW 2");
     TEST.assert_equal('PQW', titles.shortestTitle);
 
+    // Formatted titles
+    var titles2 = O.object();
+    TEST.assert_equal('', titles2.title);
+    titles2.appendTitle(O.text(O.T_TEXT_FORMATTED_LINE, "<fl>Hello <b>World</b></fl>"));
+    TEST.assert_equal('Hello World', titles2.title);
+    titles2.appendTitle(O.text(O.T_TEXT_FORMATTED_LINE, "<fl>(<sup>World</sup>)</fl>"));
+    TEST.assert_equal('(World)', titles2.shortestTitle);
+
     // FINALLY request a text reindex
     O.ref(OBJ_TO_REINDEX).load().reindexText();
 });

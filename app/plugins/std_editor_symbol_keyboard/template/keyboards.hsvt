@@ -1,0 +1,5 @@
+pageTitle("Symbol virtual keyboards")
+
+<p> std:ui:button-link("/do/std-editor-symbol-keyboard/edit") { "Edit keyboards" } </p>
+
+std:document(keyboards)

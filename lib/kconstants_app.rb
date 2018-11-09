@@ -12,7 +12,7 @@ module KConstants
   # String/Identifier typecodes
   T_TEXT_PARAGRAPH              = T_TEXT__APP_MIN + 0
   T_TEXT_DOCUMENT               = T_TEXT__APP_MIN + 1
-  # T_TEXT__APP_MIN + 2 was T_TEXT_MARC21
+  T_TEXT_FORMATTED_LINE         = T_TEXT__APP_MIN + 2
   T_IDENTIFIER_FILE             = T_TEXT__APP_MIN + 3
   T_IDENTIFIER_ISBN             = T_TEXT__APP_MIN + 4
   T_IDENTIFIER_EMAIL_ADDRESS    = T_TEXT__APP_MIN + 5

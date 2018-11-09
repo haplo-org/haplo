@@ -47,7 +47,8 @@ var DocumentViewer = P.DocumentViewer = function(instance, E, options) {
                 v.where("version","<",this.version);
                 if(v.length) { this.showChangesFrom = v[0].version; }
             } else {
-                if(v.length > 1) { this.showChangesFrom = v[1].version; }
+                if(instance.currentDocumentIsEdited && v.length) { this.showChangesFrom = v[0].version; }
+                else if(v.length > 1) { this.showChangesFrom = v[1].version; }
             }
         } else {
             this.showChangesFrom = parseInt(E.request.parameters.from, 10);

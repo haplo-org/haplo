@@ -384,7 +384,7 @@ var refPersonNameColumnFieldsFn = function(r) {
         fields.url = object.url();
         return fields;
     } else {
-        return {url:object.url(), last:title.toString()};
+        return {url:object.url(), last:title ? title.toString() : "????"};
     }
 };
 
