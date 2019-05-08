@@ -1,8 +1,0 @@
-#!/bin/sh
-set -e
-
-# Setup paths for next steps
-. config/paths-`uname`.sh
-
-# Make the test certificates
-$JRUBY_HOME/bin/jruby deploy/developer_vm/make_test_certs.rb
