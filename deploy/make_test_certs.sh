@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Haplo Platform                                     http://haplo.org
 # (c) Haplo Services Ltd 2006 - 2019    http://www.haplo-services.com
