@@ -14,9 +14,9 @@ JRUBY_VERSION=1.7.20
 JRUBY_DIGEST=3c11f01d38b9297cef2c281342f8bb799772e481
 JRUBY_DOWNLOAD_URL=https://s3.amazonaws.com/jruby.org/downloads/${JRUBY_VERSION}/jruby-bin-${JRUBY_VERSION}.tar.gz
 
-XAPIAN_VERSION=1.2.15
-XAPIAN_DIGEST=3d2ea66e9930451dcac4b96f321284f3dee98d51
-XAPIAN_DOWNLOAD_URL=http://oligarchy.co.uk/xapian/1.2.15/xapian-core-${XAPIAN_VERSION}.tar.gz
+XAPIAN_VERSION=1.2.25
+XAPIAN_DIGEST=4c305585c3f1d9f595eec875549406b4650fd29d
+XAPIAN_DOWNLOAD_URL=http://oligarchy.co.uk/xapian/${XAPIAN_VERSION}/xapian-core-${XAPIAN_VERSION}.tar.xz
 
 # NOTE: Gem names and digests below
 
@@ -218,7 +218,8 @@ else
     if ! [ -d ${VENDOR_DIR}/xapian-core ]; then
 	echo "Unpacking Xapian..."
 	cd ${VENDOR_DIR}
-	gunzip -c archive/$XAPIAN_FILENAME | tar xf -
+	# not everything has the xz utils, but tar usually handles it direct
+        tar xf archive/$XAPIAN_FILENAME
 	mv xapian-core-${XAPIAN_VERSION} xapian-core
 	cd $CODE_DIR
     fi
