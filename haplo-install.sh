@@ -77,6 +77,14 @@ if [ -f /etc/os-release ]; then
 	    echo "WARN: Ubuntu $UVER is not yet fully supported."
 	    sleep 5
 	    ;;
+	'19.04')
+	    PG_VERSION=11
+	    XAPIAN_PKG=libxapian30
+	    # headless jdk on bionic isn't
+	    OPENJDK_PKG=openjdk-8-jdk
+	    echo "WARN: Ubuntu $UVER is not yet fully supported."
+	    sleep 5
+	    ;;
 	'*')
 	    echo "Unsupported OS version $UVER"
 	    exit 1
