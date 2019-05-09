@@ -228,7 +228,7 @@ if [ ! -d /haplo ]; then
     sudo mkdir /haplo
     sudo chown haplo:haplo /haplo
 fi
-for subdir in log tmp generated-downloads files textweighting plugins messages messages/app_create messages/app_modify messages/spool sslcerts
+for subdir in log tmp run generated-downloads files textweighting plugins messages messages/app_create messages/app_modify messages/spool sslcerts
 do
     if [ ! -d /haplo/$subdir ]; then
 	sudo mkdir /haplo/$subdir
