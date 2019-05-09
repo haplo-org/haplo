@@ -399,10 +399,31 @@ case $# in
 	while [ -z "$APPUNAME" ]
 	do
 	    read -p "Enter the name of the first user: " APPUNAME
+	    #
+	    # lib/kappinit.rb expects exactly a first name and a last name
+	    #
+	    if [[ $APPUNAME = *" "*" "* ]]; then
+		    echo "Name must be of the form 'Firstname Lastname'"
+		    APPUNAME=""
+	    elif [[ $APPUNAME != *" "* ]]; then
+		    echo "Name must be of the form 'Firstname Lastname'"
+		    APPUNAME=""
+	    fi
 	done
 	while [ -z "$APPUMAIL" ]
 	do
 	    read -p "Enter the email of the first user: " APPUMAIL
+	    #
+	    # validate email address like K_EMAIL_VALIDATION_REGEX in
+	    # lib/common/kextend_rails_and_ruby.rb
+	    #
+	    if [[ ! $APPUMAIL =~ ^[a-zA-Z0-9!#$/?\|\^{}%+=_.-]+@[a-zA-Z0-9.-]+\.[a-zA-Z0-9.-]+ ]]; then
+		    echo "Email must be of the form 'user@domain.name'"
+		    APPUMAIL=""
+	    elif [[ $APPUMAIL = *" "* ]]; then
+		    echo "Email must not contain spaces"
+		    APPUMAIL=""
+	    fi
 	done
 	while [ -z "$APPUPASS" ]
 	do
