@@ -71,6 +71,7 @@ var buildPanel = function(panelName, display) {
     });
     // Ask other plugins to add the entries to the action panel, passing the context in which the panel is being displayed
     var serviceNames = [
+        "std:action_panel:*",
         "std:action_panel:"+panelName
     ];
     // Extra service if the panel has a category

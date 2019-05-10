@@ -10,9 +10,8 @@ class KMapProvider
   Provider = Struct.new(:key, :name, :url_base)
 
   PROVIDERS = {
-    'maps.google.co.uk' => Provider.new('maps.google.co.uk', 'Google Maps (UK)', 'http://maps.google.co.uk/maps?q='),
-    'maps.google.com' => Provider.new('maps.google.com', 'Google Maps (Global)', 'http://maps.google.com/maps?q='),
-    'multimap.com' => Provider.new('multimap.com', 'Multimap', 'http://www.multimap.com/maps/?qs='),
+    'maps.google.co.uk' => Provider.new('maps.google.co.uk', 'Google Maps (UK)', 'https://maps.google.co.uk/maps?q='),
+    'maps.google.com' => Provider.new('maps.google.com', 'Google Maps (Global)', 'https://maps.google.com/maps?q=')
   }
   PROVIDERS_BY_NAME = PROVIDERS.values.sort { |a,b| a.name <=> b.name }
 

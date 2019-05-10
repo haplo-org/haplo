@@ -64,6 +64,7 @@ KPolicyRegistry = KPermissionRegistryImpl.new([
   KPermissionEntry.new(9, :control_trust, 'Control trust'),
   KPermissionEntry.new(10, :require_token, 'Require token to log in'),
   KPermissionEntry.new(11, :impersonate_user, 'Impersonate other user'),
-  KPermissionEntry.new(12, :view_audit, 'View audit trail')
+  KPermissionEntry.new(12, :view_audit, 'View audit trail'),
+  KPermissionEntry.new(13, :use_testing_tools, 'Use testing tools')
 ])
 

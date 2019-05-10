@@ -400,6 +400,10 @@ var escapeHTML;
             if(s.length != expectedLen || s[expectedLen - 1] === '') {
                 return;
             }
+            // Allow years to be entered as two digits and do the expected thing
+            if(s[yearLoc] && (s[yearLoc].length === 2)) {
+                s[yearLoc] = '20'+s[yearLoc];
+            }
             var i;
             var p = [];
             // YEAR

@@ -75,10 +75,27 @@ class WebPublisherTest < IntegrationTest
     post "/post-test-directory/y"
     assert_equal "test directory POST", response.body
 
-    # XML documents can be returned as responses
-    get "/publication/xml"
+    # Various kinds of things can be returned as responses
+    get "/publication/response-kinds/xml"
     assert_equal "application/xml", response.header["Content-Type"]
     assert_equal '<?xml version="1.0" encoding="UTF-8" standalone="no"?><test/>', response.body
+
+    get "/publication/response-kinds/binary-data-in-memory"
+    assert_equal "text/csv", response.header["Content-Type"]
+    assert_equal 'ABC,DEF', response.body
+    assert_equal 'attachment; filename="hello.csv"', response['content-disposition']
+
+    get "/publication/response-kinds/binary-data-on-disk"
+    assert_equal "text/plain; charset=utf-8", response.header["Content-Type"]
+    assert_equal 'On disk', response.body
+
+    get "/publication/response-kinds/zip"
+    assert_equal "application/zip", response.header["Content-Type"]
+    assert_equal 'attachment; filename="pub.zip"', response['content-disposition']
+
+    get "/publication/response-kinds/json"
+    assert_equal "application/json; charset=utf-8", response.header["Content-Type"]
+    assert_equal '{"a":42}', response.body
 
     # File download & thumbnails
     assert WebPublisherTestPlugin::CALLS[_TEST_APP_ID].empty?
@@ -136,7 +153,7 @@ Allow: /test-publication
 Allow: /test-publication/all-exchange
 Allow: /post-test-exact
 Allow: /post-test-directory/
-Allow: /publication/xml
+Allow: /publication/response-kinds/
 Allow: /testdir/
 Allow: /testobject/
 Disallow: /

@@ -14,7 +14,7 @@
  *
  * ********************************************* */
 
-/*! oForms | (c) Haplo Services Ltd 2012 - 2018 | MPLv2 License */
+/*! oForms | (c) Haplo Services Ltd 2012 - 2019 | MPLv2 License */
 
 /////////////////////////////// jquery_preamble.js ///////////////////////////////
 
@@ -626,8 +626,10 @@ var MONTH_NAMES_ABBR = ['ja','f','mar','ap','may','jun','jul','au','s','o','n','
 var forgivingDateParse = function(str, asComponentArray) {
     var elements = trimWhitespace(str).split(/\W+/);
     if(elements.length != 3) {return;}
+    var yearStr = elements[2];
+    if(yearStr.length === 2) { yearStr = '20'+yearStr; }
     var day = parseInt(elements[0], 10);
-    var year = parseInt(elements[2], 10);
+    var year = parseInt(yearStr, 10);
     if(!day || !year) {return;}
     var month = parseInt(elements[1], 10);
     if(month === 0 || isNaN(month)) {

@@ -76,7 +76,8 @@ TEST(function() {
         small: { type:"smallint", indexed:true },
         medium: { type:"int" },
         big: { type:"bigint", nullable:true },
-        floaty: { type:"float", nullable:true }
+        floaty: { type:"float", nullable:true },
+        file: { type:"file", nullable:true }
     });
 
     db.table("times", {
@@ -581,8 +582,19 @@ TEST(function() {
 
     // Try an aggregate grouped by another column
     TEST.assert(_.isEqual(
-        [{"value":32,"group":false},{"value":71,"group":true},{"value":135,"group":null}],
+        [{"value":32,"group":false, "groups":{"bools":false}},{"value":71,"group":true, "groups":{"bools":true}},{"value":135,"group":null, "groups":{"bools":null}}],
         selectForAggregate.aggregate("SUM","small","bools")
+    ));
+
+    TEST.assert(_.isEqual(
+        [
+            {"value":32, "groups":{"bools":false, "big": null}},
+            {"value":71, "groups":{"bools":true, "big":null}},
+            {"value":23, "groups":{"bools":null, "big":3498}},
+            {"value":100, "groups":{"bools":null, "big":239349}},
+            {"value":12, "groups":{"bools":null, "big":null}},
+        ],
+        selectForAggregate.aggregate("SUM","small",["bools", "big"])
     ));
 
     TEST.assert_exceptions(function() {
@@ -596,7 +608,34 @@ TEST(function() {
     }, "Unknown aggregate function '1; DELETE FROM users; --' passed to aggregate(). Function names are all caps.");
     TEST.assert_exceptions(function() {
         selectForAggregate.aggregate("SUM","small",42);
-    }, "Group by field name must be a String");
+    }, "Group by field name must be a String or an Array of Strings");
+    TEST.assert_exceptions(function() {
+        selectForAggregate.aggregate("SUM","small",[42]);
+    }, "Group by field name must be a String or an Array of Strings");
+    TEST.assert_exceptions(function() {
+        selectForAggregate.aggregate("SUM","small",{"a":"bools"});
+    }, "Group by field name must be a String or an Array of Strings");
+    TEST.assert_exceptions(function() {
+        selectForAggregate.aggregate("SUM","small",{1:"bools"});
+    }, "Group by field name must be a String or an Array of Strings");
+    TEST.assert_exceptions(function() {
+        selectForAggregate.aggregate("SUM","small",["notAField"]);
+    }, "Unknown group by field notAField passed to aggregate()");
+    TEST.assert_exceptions(function() {
+        selectForAggregate.aggregate("SUM","small","notAField");
+    }, "Unknown group by field notAField passed to aggregate()");
+    TEST.assert_exceptions(function() {
+        selectForAggregate.aggregate("SUM","small",["bools","notAField"]);
+    }, "Unknown group by field notAField passed to aggregate()");
+    TEST.assert_exceptions(function() {
+        selectForAggregate.aggregate("SUM","small",["file"]);
+    }, "Group by field must not be a column of type File");
+    TEST.assert_exceptions(function() {
+        selectForAggregate.aggregate("SUM","small","file");
+    }, "Group by field must not be a column of type File");
+    TEST.assert_exceptions(function() {
+        selectForAggregate.aggregate("SUM","small",['bools',"file"]);
+    }, "Group by field must not be a column of type File");
 })();
 
     // Delete rows

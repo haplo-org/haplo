@@ -14,8 +14,16 @@ class ApiKey < ActiveRecord::Base
   PART_A_LENGTH = 16
   PART_B_BCRYPT_ROUNDS = 5 # because the secret is good, and checking is performance sensitive (especially for plugin tool)
 
-  def valid_for_request?(request, params)
-    request.request_uri.start_with?(self.path)
+  STRICT_EQUALITY_PATH = /\A\=(\/.+?)\z/
+
+  def valid_for_request_path?(request_uri)
+    if request_uri.start_with?(self.path)
+      true
+    elsif self.path =~ STRICT_EQUALITY_PATH
+      request_uri == $1
+    else
+      false
+    end
   end
 
   def set_random_api_key

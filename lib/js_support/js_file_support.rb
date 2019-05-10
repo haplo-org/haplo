@@ -87,7 +87,6 @@ module JSFileSupport
       if rc
         preview_url = file_url_path(stored_file, :preview, :sign_with => rc.controller.session)
       end
-p preview_url
       html = %Q!<div class="z__oforms_file"><a href="#{path}"><span class="z__oforms_file_thumbnail">#{thumbnail}</span><span class="z__oforms_file_filename">#{ERB::Util.h(stored_file.presentation_filename)}</span></a>!
       if preview_url
         html << %Q!<a href="#{preview_url}" class="z__file_preview_link">Preview</a>!
@@ -105,7 +104,7 @@ p preview_url
     raise JavaScriptAPIError, "Not a file" unless stored_file.kind_of? StoredFile
     # Need a controller?
     controller = nil
-    if options.asFullURL || options.authenticationSignature
+    if options.authenticationSignature
       rc = KFramework.request_context
       controller = rc.controller if rc != nil
       raise JavaScriptAPIError, "Not in request context for generating file identifier path or HTML" unless controller != nil
@@ -214,6 +213,64 @@ p preview_url
     pipeline = KJSFileTransformPipeline.new(json)
     pipeline.prepare
     pipeline.submit
+  end
+
+  # ------------------------------------------------------------------------------------------------------------
+
+  # SECURITY: This regexp validates the digest, which is used to generate a filename.
+  SIGNED_FILE_URL_REGEXP = /\Ahttps\:\/\/(.+?)(:\d+)?(\/file\/([a-z0-9]+)\/(\d+)\/.+?)\?s\=(.+)\z/
+
+  # This API allows a file to be copied efficiently between applications on the same cluster
+  def self.getFileBySignedURL(url)
+    raise JavaScriptAPIError, "Not a signed File URL" unless url =~ SIGNED_FILE_URL_REGEXP
+    hostname = $1
+    path = $3
+    digest = $4
+    size = $5.to_i
+    signature = $6
+    begin
+      other_app_id = KApp.hostname_to_app_id(hostname)
+    rescue
+      raise JavaScriptAPIError, "O.file() cannot copy files from this URL, as the hostname is not co-located in this cluster"
+    end
+    if other_app_id == KApp.current_application
+      # This app can have it's own files
+      file = StoredFile.from_digest_and_size(digest, size)
+      raise JavaScriptAPIError, "File does not exist (searching in current application)" unless file
+      return file
+    end
+    # It's in another application on this server, check in another thread because checking
+    # signature and getting file needs to happen in the context of the other application.
+    signature_ok = false
+    disk_pathname = nil
+    upload_filename = nil
+    mime_type = nil
+    thread = Thread.new do
+      KApp.in_application(other_app_id) do
+        signature_ok = file_request_check_signature(signature, path, nil)
+        if signature_ok
+          file_in_other_app = StoredFile.from_digest_and_size(digest, size)
+          if file_in_other_app && File.exist?(file_in_other_app.disk_pathname)
+            disk_pathname = file_in_other_app.disk_pathname
+            upload_filename = file_in_other_app.upload_filename
+            mime_type = file_in_other_app.mime_type
+          end
+        end
+      end
+    end
+    thread.join
+    raise JavaScriptAPIError, "File signature was invalid" unless signature_ok
+    raise JavaScriptAPIError, "File could not be found in other application" unless disk_pathname
+    # Create a hardlinked copy of the file, so it can be moved into the store without
+    # duplicating the actual file on disk.
+    hard_link_pathname = "#{FILE_UPLOADS_TEMPORARY_DIR}/getfilebysignedurl.#{Thread.current.object_id}.#{digest}.#{size}"
+    FileUtils.ln(disk_pathname, hard_link_pathname)
+    begin
+      StoredFile.move_file_into_store(hard_link_pathname, upload_filename, mime_type, digest)
+    ensure
+      # Make sure the temporary hard link it's cleaned up, in case the file was already in the store
+      File.unlink(hard_link_pathname) if File.exist?(hard_link_pathname)
+    end
   end
 
 end

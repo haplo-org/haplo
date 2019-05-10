@@ -11,6 +11,10 @@ import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.io.IOException;
 
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
+import com.sun.management.UnixOperatingSystemMXBean;
+
 import org.apache.log4j.Logger;
 
 import org.haplo.utils.ProcessStartupFlag;
@@ -101,6 +105,7 @@ public class OpWorkerProcess extends Thread {
         int initialMemoryUsage = approxMemoryUsagePercent();
         int restartWhenMemoryUsageOver = initialMemoryUsage + RESTART_IF_MEMORY_USAGE_INCREASES_BY;
         this.logger.info("Approx initial memory usage: " + initialMemoryUsage + "%, will restart when memory usage over " + restartWhenMemoryUsageOver + "%");
+        logNumberOfOpenFiles();
 
         while(true) {
             OpServerMessage.DoOperation doOperation = (OpServerMessage.DoOperation)pipe.receiveObject(1000 * 60 * 5);
@@ -122,6 +127,8 @@ public class OpWorkerProcess extends Thread {
                     this.logger.error("Exception performing operation: " + doOperation.operation, e);
                     doneOperation.resultException = e;
                 }
+
+                logNumberOfOpenFiles();
 
                 // Check memory usage
                 int memoryPercent = approxMemoryUsagePercent();
@@ -149,5 +156,13 @@ public class OpWorkerProcess extends Thread {
     protected int approxMemoryUsagePercent() {
         Runtime runtime = Runtime.getRuntime();
         return (int)((runtime.totalMemory() * 100) / runtime.maxMemory());
+    }
+
+    protected void logNumberOfOpenFiles() {
+        OperatingSystemMXBean bean = ManagementFactory.getOperatingSystemMXBean();
+        if(bean instanceof UnixOperatingSystemMXBean) {
+            UnixOperatingSystemMXBean unix = (UnixOperatingSystemMXBean)bean;
+            this.logger.info("Open files: "+unix.getOpenFileDescriptorCount()+" of "+unix.getMaxFileDescriptorCount());
+        }
     }
 }

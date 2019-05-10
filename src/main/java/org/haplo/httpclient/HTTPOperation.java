@@ -14,12 +14,16 @@ import java.net.UnknownHostException;
 import java.net.URISyntaxException;
 import java.net.URI;
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.channels.FileChannel;
 import java.nio.file.FileSystems;
 import java.nio.file.StandardOpenOption;
 import java.security.KeyStore;
+import java.security.PrivateKey;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeoutException;
@@ -55,11 +59,17 @@ import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.util.SocketAddressResolver;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 
+import org.apache.log4j.Logger;
+
 import org.haplo.template.html.Escape;
 import org.haplo.template.html.Context;
+import org.haplo.common.utils.SSLCertificates;
+import org.haplo.javascript.OAPIException;
 
 
 public class HTTPOperation extends Operation {
+
+    protected static final String LOGGER_NAME = "org.haplo.httpclient.op";
 
     protected static final int MAX_IN_MEMORY_RESPONSE_SIZE = (32*1024); // relatively small
     protected static final int MAX_ON_DISK_RESPONSE_SIZE = 2147483647; // 2GB should be enough
@@ -87,6 +97,9 @@ public class HTTPOperation extends Operation {
     private String httpAuthType;
     private String httpAuthUsername;
     private String httpAuthPassword;
+
+    private Certificate tlsClientCertificate;
+    private PrivateKey tlsClientCertificatePrivateKey;
 
     // Outputs
     // Result map is processed in httpclient.rb
@@ -151,7 +164,7 @@ public class HTTPOperation extends Operation {
 
         // TODO: Request body: literal string in request, or file upload.
         // TODO: Cookies, in the same format as cookies returned in responses use.
-        // TODO: SSL client/server certs, server SSL requirements
+        // TODO: SSL server certs, server SSL requirements
 
         // Load keychain data
         if(keychain.containsKey("auth_type")) {
@@ -161,6 +174,16 @@ public class HTTPOperation extends Operation {
             httpAuthPassword = keychain.get("auth_password");
         } else {
             httpAuthEnabled = false;
+        }
+
+        if(keychain.containsKey("tls_client_certificate")) {
+            try {
+                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                tlsClientCertificate = cf.generateCertificate(SSLCertificates.readPEM(new StringReader(keychain.get("tls_client_certificate")), "config"));
+                tlsClientCertificatePrivateKey = SSLCertificates.readPEMPrivateKey(new StringReader(keychain.get("tls_client_certificate_key")));
+            } catch(Exception e) {
+                throw new OAPIException("HTTP client failed to load X.509 client certificate and key: "+e.getMessage());
+            }
         }
 
         // Parse blacklist
@@ -212,6 +235,7 @@ public class HTTPOperation extends Operation {
     }
 
     protected void markRequestAsPermanentlyFailed(Throwable reason) {
+        Logger.getLogger(LOGGER_NAME).error("Permanent request fail", reason);
         StringBuffer sb = new StringBuffer();
         while(reason != null) {
            sb.append(reason.getMessage());
@@ -223,6 +247,7 @@ public class HTTPOperation extends Operation {
     }
 
     protected void markRequestAsTemporarilyFailed(Throwable reason) {
+        Logger.getLogger(LOGGER_NAME).error("Temporary request fail", reason);
         StringBuffer sb = new StringBuffer();
         while(reason != null) {
            sb.append(reason.getMessage());
@@ -281,6 +306,15 @@ public class HTTPOperation extends Operation {
 
         // Enable checking of the server's certificate
         sslContextFactory.setEndpointIdentificationAlgorithm("HTTPS");
+
+        // Client certificate?
+        if(tlsClientCertificate != null) {
+            KeyStore ks = KeyStore.getInstance("JKS", "SUN");
+            ks.load(null, new char[] {});
+            ks.setKeyEntry("CLIENT", tlsClientCertificatePrivateKey, new char[] {}, new Certificate[] {tlsClientCertificate});
+            sslContextFactory.setKeyStorePassword("");
+            sslContextFactory.setKeyStore(ks);
+        }
 
         // Set up the transport
         HttpClient httpClient = new HttpClient(sslContextFactory);
@@ -358,6 +392,8 @@ public class HTTPOperation extends Operation {
     }
 
     protected void processResult(ResponseListener responseListener) {
+        Logger logger = Logger.getLogger(LOGGER_NAME);
+        logger.info("Processing result from "+url);
         ContentResponse response = responseListener.response;
         // TODO: If the request specifies caching, cache the result, storing
         // validity data.
@@ -390,6 +426,7 @@ public class HTTPOperation extends Operation {
         } else {
             putResult("type", "SUCCEEDED");
         }
+        logger.info("Result was "+result.get("type")+", error "+result.get("errorMessage"));
     }
 
     protected void performOperation() throws Exception {
@@ -399,6 +436,8 @@ public class HTTPOperation extends Operation {
         // thread until the HTTP request is done anyway.
         HttpClient httpClient = null;
         try {
+            Logger logger = Logger.getLogger(LOGGER_NAME);
+
             start();
 
             // TODO: Check if the response is marked as cacheable, and a cached copy
@@ -422,6 +461,8 @@ public class HTTPOperation extends Operation {
 
                 ResponseListener responseListener = new ResponseListener(request, this.bodyPathname);
 
+                logger.info("About to request "+url);
+
                 try {
                     //response = request.send();
                     request.send(responseListener);
@@ -438,6 +479,7 @@ public class HTTPOperation extends Operation {
                 if(isRedirect(status)) {
                 // Redirection
                     String location = responseListener.response.getHeaders().get("Location");
+                    logger.info("Redirect from remote server to "+location);
                     if(location != null && redirectsLeft > 0) {
                         redirectsLeft--;
                         redirected = true;

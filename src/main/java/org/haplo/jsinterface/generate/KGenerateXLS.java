@@ -48,8 +48,8 @@ public class KGenerateXLS extends KGenerateTable {
     }
 
     public void jsConstructor(String filename, boolean xlsx) {
-        setFilename(filename);
         this.workbook = xlsx ? (new XSSFWorkbook()) : (new HSSFWorkbook());
+        setFilename(filename);  // must be set after this.workbook is created
     }
 
     public String getClassName() {

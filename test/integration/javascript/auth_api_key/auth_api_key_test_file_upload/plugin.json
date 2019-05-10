@@ -1,0 +1,10 @@
+{
+  "pluginName": "auth_api_key_test_file_upload",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test File Upload For Auth API Key Test",
+  "displayDescription": "For testing",
+  "apiVersion": 4,
+  "load": ["js/auth_api_key_test_file_upload.js"],
+  "respond": ["/do/auth-api-key-test-file-upload"]
+}

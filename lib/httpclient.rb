@@ -11,6 +11,16 @@ KNotificationCentre.when(:server, :starting) do
     :account => {"Username" => ""},
     :secret => {"Password" => ""}
   })
+  KeychainCredential::MODELS.push({
+    :kind => 'X.509',
+    :instance_kind => "Certificate and Key",
+    :account => {"Certificate" => "\n"},
+    :secret => {"Key" => ""}
+  })
+  KeychainCredential::USER_INTERFACE[['X.509','Certificate and Key']] = {
+    :secrets_use_textareas => true,
+    :notes_edit => "The certificate and keys should be PEM encoded. These will appear as base64 data and typically begin '-----BEGIN CERTIFICATE-----' and '-----BEGIN RSA PRIVATE KEY-----'.\nThe certificate and key are stored separately. Copy and paste the two PEM encoded files into the Certificate and Key fields below.\nThe Key is stored as a password field and cannot be viewed."
+  }
 end
 
 class KHTTPClientJob < KJob
@@ -109,19 +119,31 @@ class KHTTPClientJob < KJob
   end
 
   def run(context)
+    # Authentication
     if @request_settings.has_key?("auth")
       name = @request_settings["auth"]
       credential = KeychainCredential.find(:first, :conditions => {:kind => 'HTTP', :name => name}, :order => :id)
       if credential
         if credential.instance_kind != "Basic"
-          raise JavascriptAPIError, "Can't attempt HTTP authentication with a login of kind '#{credential.instance_kind}'"
+          raise JavaScriptAPIError, "Can't attempt HTTP authentication with a login of kind '#{credential.instance_kind}'"
         end
       else
-        raise JavascriptAPIError, "Can't find an HTTP keychain entry called '#{name}'"
+        raise JavaScriptAPIError, "Can't find an HTTP keychain entry called '#{name}'"
       end
       @keychain_data["auth_type"] = "Basic"
       @keychain_data["auth_username"] = credential.account['Username']
       @keychain_data["auth_password"] = credential.secret['Password']
+    end
+
+    # Client certificate
+    if @request_settings.has_key?("clientCertificate")
+      name = @request_settings["clientCertificate"]
+      credential = KeychainCredential.find(:first, :conditions => {:kind => 'X.509', :instance_kind => 'Certificate and Key', :name => name}, :order => :id)
+      unless credential
+        raise JavaScriptAPIError, "Can't find an X.509 Certificate and Key called '#{name}'"
+      end
+      @keychain_data["tls_client_certificate"] = credential.account['Certificate']
+      @keychain_data["tls_client_certificate_key"] = credential.secret['Key']
     end
 
     @body_spill_pathname = @temp_pathname_prefix = "#{FILE_UPLOADS_TEMPORARY_DIR}/tmp.httpclient.body.#{Thread.current.object_id}"

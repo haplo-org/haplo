@@ -185,7 +185,7 @@ P.registerWorkflowFeature("std:entities:roles", function(workflow) {
     workflow.getActionableBy(function(M, actionableBy) {
         if(!(actionableBy in workflow.$entitiesBase.$entityDefinitions)) { return; }
         var user, ref = M.entities[actionableBy+'_refMaybe'];
-        if(ref && (user = O.user(ref))) {
+        if(ref && (user = O.securityPrincipal(ref))) {
             return user;
         }
     });

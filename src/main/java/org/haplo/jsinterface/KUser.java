@@ -265,10 +265,18 @@ public class KUser extends KScriptable {
     }
 
     public Scriptable jsFunction_loadAllMembers() {
+        return loadAllMembersImpl(true);
+    }
+
+    public Scriptable jsFunction_loadAllBlockedMembers() {
+        return loadAllMembersImpl(false);
+    }
+
+    private Scriptable loadAllMembersImpl(boolean active) {
         if(this.user.kind() != KIND_GROUP) {
-            throw new OAPIException("Can only call loadAllMembers() on active groups.");
+            throw new OAPIException("Can only load members of active groups.");
         }
-        AppUser users[] = rubyInterface.loadAllMembers(this.user);
+        AppUser users[] = rubyInterface.loadAllMembers(this.user, active);
         Scriptable array = Runtime.createHostObjectInCurrentRuntime("Array", users.length);
         for(int i = 0; i < users.length; i++) {
             array.put(i, array, KUser.fromAppUser(users[i]));
@@ -336,6 +344,11 @@ public class KUser extends KScriptable {
         return rubyInterface.generatePasswordRecoveryURL(this.user, true /* welcome URL */);
     }
 
+    public String jsFunction_createAPIKey(String name, String pathPrefix) {
+        Runtime.privilegeRequired("pUserCreateAPIKey", "call createAPIKey()");
+        return rubyInterface.createAPIKey(this.user, name, pathPrefix);
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     public static String makeWhereClauseForIsMemberOf(String fieldName, int groupId) {
         return rubyInterface.makeWhereClauseForIsMemberOf(fieldName, groupId);
@@ -382,7 +395,7 @@ public class KUser extends KScriptable {
 
         public String makeWhereClauseForPermitRead(AppUser user, String fieldName);
 
-        public AppUser[] loadAllMembers(AppUser group);
+        public AppUser[] loadAllMembers(AppUser group, boolean active);
 
         public boolean operationPermittedGivenLabelList(AppUser user, String operation, AppLabelList labelList);
         public boolean operationPermittedOnObject(AppUser user, String operation, AppObject object);
@@ -405,6 +418,8 @@ public class KUser extends KScriptable {
         public AppUser setIsActive(AppUser user, boolean active);
 
         public String generatePasswordRecoveryURL(AppUser user, boolean welcomeURL);
+
+        public String createAPIKey(AppUser user, String name, String pathPrefix);
 
         public void setUserRef(AppUser user, AppObjRef ref);
     }

@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
-// checkPermissions called with key & action, where action is 'addComment', 'viewComments' or 'viewCommentsOtherUsers'
+// checkPermissions called with key & action, where action is 'addComment', 'viewComments', 'viewCommentsOtherUsers' or 'editComments'
 P.implementService("std:document_store:comments:respond", function(E, docstore, key, checkPermissions) {
     E.response.kind = 'json';
 
@@ -16,6 +16,11 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
         return;
     }
 
+    var lastTransitionTime = key.timelineSelect().
+        where('previousState', '<>', null).
+        order('datetime', true).
+        limit(1)[0].datetime;
+
     var instance = docstore.instance(key);
     var response = {result:"success"};
 
@@ -24,8 +29,21 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
         var version = parseInt(E.request.parameters.version,10),
             formId = E.request.parameters.form,
             elementUName = E.request.parameters.uname,
-            comment = E.request.parameters.comment;
-        if(!(version && formId && elementUName && comment && (formId.length < 200) && (elementUName.length < 200) && (comment.length < 131072))) {
+            comment = E.request.parameters.comment,
+            supersedesId = E.request.parameters.supersedesid;
+
+        var oldCommentRow, userCanEditComment;
+        if(supersedesId) {
+            var oldCommentQ = docstore.commentsTable.select().where("id", "=", parseInt(supersedesId, 10));
+            if(oldCommentQ.length) {
+                oldCommentRow = oldCommentQ[0];
+                userCanEditComment = currentUserCanEditComment(oldCommentRow, key, checkPermissions, lastTransitionTime);
+            }
+        }
+        if(supersedesId && !userCanEditComment) {
+            response.result = "error";
+            response.method = "Not permitted";
+        } else if(!(version && formId && elementUName && (formId.length < 200) && (elementUName.length < 200) && (comment.length < 131072))) {
             response.result = "error";
             response.method = "Bad parameters";
         } else {
@@ -36,12 +54,18 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
                 datetime: new Date(),
                 formId: formId,
                 elementUName: elementUName,
-                comment: comment,
+                comment: comment || "",
                 isPrivate: isPrivate(E.request.parameters)
             });
             row.save();
-            response.comment = rowForClient(row);
+            response.comment = rowForClient(row, key, checkPermissions, lastTransitionTime);
             response.commentUserName = O.currentUser.name;
+            if(supersedesId) {
+                if(userCanEditComment) {
+                    oldCommentRow.supersededBy = row.id;
+                    oldCommentRow.save();
+                }
+            }
         }
 
     } else {
@@ -59,12 +83,16 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
         }
         var onlyCommentsForForm = E.request.parameters.onlyform;
         if(onlyCommentsForForm) { allComments.where("formId","=",onlyCommentsForForm); }
+
         _.each(allComments, function(row) {
             var form = forms[row.formId];
             if(!form) { form = forms[row.formId] = {}; }
             var comments = form[row.elementUName];
             if(!comments) { comments = form[row.elementUName] = []; }
-            comments.push(rowForClient(row));
+            var commentRow = rowForClient(row, key, checkPermissions, lastTransitionTime);
+            if(commentRow) {
+                comments.push(commentRow);
+            }
             var uid = row.userId;
             if(!users[uid]) {
                 users[uid] = O.user(uid).name;
@@ -79,15 +107,19 @@ P.implementService("std:document_store:comments:respond", function(E, docstore, 
 
 // --------------------------------------------------------------------------
 
-var rowForClient = function(row) {
-    return {
-        id: row.id,
-        uid: row.userId,
-        version: row.version,
-        datetime: P.template("comment_date").render({commentDate: new Date(row.datetime)}),
-        comment: row.comment,
-        isPrivate: row.isPrivate
-    };
+var rowForClient = function(row, key, checkPermissions, lastTransitionTime) {
+    // return info if the comment is not superseded by another comment
+    if(!row.supersededBy) {
+        return {
+            id: row.id,
+            uid: row.userId,
+            version: row.version,
+            datetime: P.template("comment_date").render({commentDate: new Date(row.datetime)}),
+            comment: row.comment,
+            isPrivate: row.isPrivate,
+            currentUserCanEdit: currentUserCanEditComment(row, key, checkPermissions, lastTransitionTime)
+        };
+    }
 };
 
 var isPrivate = function(parameters) {
@@ -95,5 +127,12 @@ var isPrivate = function(parameters) {
         case "true": return true;
         case "false": return false;
         default: return null; // may be null if private comments aren't enabled
+    }
+};
+var currentUserCanEditComment = function(commentRow, M, checkPermissions, lastTransitionTime) {
+    if(checkPermissions(M, 'editComments') && O.currentUser.id === commentRow.userId) {
+        if(lastTransitionTime < commentRow.datetime) {
+            return true;
+        }
     }
 };

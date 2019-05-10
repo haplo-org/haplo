@@ -140,7 +140,7 @@ class JavaScriptControllerTest < IntegrationTest
     # Test invalid response
     get '/do/plugin_test/invalid_response', nil, {:expected_response_codes => [500]}
     if should_test_plugin_debugging_features?
-      assert_select('h2', "The response body (usually E.response.body) is not valid, must be a String, StoredFile, XML document, or a generator (O.generate) object. JSON responses should be encoded using JSON.stringify by the request handler.")
+      assert_select('h2', "The response body (usually E.response.body) is not valid, must be a String, StoredFile, XML document, ZipFile, or a generator (O.generate) object. JSON responses should be encoded using JSON.stringify by the request handler.")
     end
     # ... but make sure it's happy with nothing being returned.
     get '/do/plugin_test/no_response_at_all_was_called'
@@ -548,6 +548,26 @@ __E
     assert_equal "Hello ☃", response.body.force_encoding(Encoding::UTF_8)
     assert_equal "text/plain", response['content-type']
     assert_equal 'attachment; filename="testbin.txt"', response['content-disposition']
+
+    # Zip file
+    get '/do/plugin_test/zip_file_response'
+    assert_equal "application/zip", response['content-type']
+    assert_equal 'attachment; filename="test-1234.zip"', response['content-disposition']
+    zip_file = Tempfile.new('zip_file_response')
+    begin
+      zip_file.write response.body
+      zip_file.flush
+      zip_contents = read_zip_file(zip_file.path)
+      assert_equal({
+        "test.txt" => "DATA",
+        "x.json" => %Q!{\n    "hello": "world"\n}!,
+        "dir/something.pages" => File.open("test/fixtures/files/example.pages", "rb") { |f| f.read }
+      }, zip_contents)
+      assert_equal ["dir/something.pages", "test.txt", "x.json"], zip_contents.keys.sort
+    ensure
+      zip_file.close
+      zip_file.unlink
+    end
 
     # HTML & paths for the file
     run_all_jobs({}) # make sure thumbnailing is done

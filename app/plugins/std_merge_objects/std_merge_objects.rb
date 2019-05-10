@@ -16,7 +16,7 @@ class StdMergeObjectsPlugin < KTrustedPlugin
   _PluginDescription "Editor tool for merging objects."
 
   def hTrayPage(response)
-    if AuthContext.user.policy.can_setup_system?
+    if StdMergeObjectsPlugin.is_authorised?(AuthContext.user)
       controller = KFramework.request_context.controller
       if controller.tray_contents.length >= 2
         response.buttons["*STD-MERGE-OBJECTS"] = [['/do/editor-merge-objects/merge-tray', "Merge items"]]
@@ -28,12 +28,19 @@ class StdMergeObjectsPlugin < KTrustedPlugin
     path_element_name == 'editor-merge-objects' ? Controller : nil
   end
 
+  def self.is_authorised?(user)
+    merge_group = User.cache.group_code_to_id_lookup["std:group:merge-objects"].to_i
+    user.member_of?(merge_group) || user.policy.can_setup_system?
+  end
+
   class Controller < PluginController
-    policies_required :setup_system
+    policies_required :not_anonymous
 
     _GetAndPost
     def handle_merge_tray
+      return redirect_to "/" unless StdMergeObjectsPlugin.is_authorised?(@request_user)
       @objects = tray_contents.map { |r| KObjectStore.read(KObjRef.from_presentation(r)) }
+      @users = Hash.new { |h,k| h[k] = User.find_by_objref(k) }
       if @objects.length < 2
         redirect_to "/do/tray"
         return
@@ -43,30 +50,42 @@ class StdMergeObjectsPlugin < KTrustedPlugin
         keep_ref = KObjRef.from_presentation(params[:keep])
         if keep_ref && (kept_object = @objects.find { |o| o.objref == keep_ref })
 
-          # Merge objects in store
-          q = KObjectStore.query_or
-          change = []
-          @objects.each do |object|
-            if object.objref != keep_ref
-              q.link(object.objref)
-              change << object.objref
-            end
-          end
-
-          q.execute(:all, :any).each do |linked_object|
-            m = linked_object.dup
-            m.replace_values! do |v,d,q|
-              if v.kind_of?(KObjRef) && change.include?(v)
-                keep_ref
-              else
-                v
+          old_state = AuthContext.set_enforce_permissions(false)
+          begin
+            # Merge objects in store
+            q = KObjectStore.query_or
+            change = []
+            @objects.each do |object|
+              if object.objref != keep_ref
+                q.link(object.objref)
+                change << object.objref
               end
             end
-            KObjectStore.update(m)
-          end
 
-          @objects.each do |object|
-            KObjectStore.delete(object) unless object.objref == keep_ref
+            q.execute(:all, :any).each do |linked_object|
+              m = linked_object.dup
+              m.replace_values! do |v,d,q|
+                if v.kind_of?(KObjRef) && change.include?(v)
+                  keep_ref
+                elsif v.kind_of?(KTextPluginDefined)
+                  new_text_v = nil
+                  change.each do |c|
+                    new_text_v = v.replace_matching_ref(c, keep_ref)
+                    break if new_text_v
+                  end
+                  new_text_v || v 
+                else
+                  v
+                end
+              end
+              KObjectStore.update(m)
+            end
+
+            @objects.each do |object|
+              KObjectStore.delete(object) unless object.objref == keep_ref
+            end
+          ensure
+            AuthContext.restore_state old_state
           end
 
           # Redirect back to a tray containing just the kept object

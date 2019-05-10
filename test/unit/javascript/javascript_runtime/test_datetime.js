@@ -73,4 +73,7 @@ TEST(function() {
 
     // Test moment.js parsing and formatting (library requires modification for sealed environment)
     TEST.assert_equal('April 5th 2011', moment("20110405","YYYYMMDD").format('MMMM Do YYYY'));
+    TEST.assert_equal("Mon Feb 05 2018 00:00:00 GMT-0000 (UTC)", moment("2018 05.Feb", "YYYY DD.MMM").toDate().toString());
+    TEST.assert_equal("Mon Feb 02 2015 00:00:00 GMT-0000 (UTC)", moment("02 February 2015", "DD MMMM YYYY").toDate().toString());
+    TEST.assert_equal("2013!04!05", moment("20130405","YYYYMMDD").strftime("%Y!%m!%d"));
 });

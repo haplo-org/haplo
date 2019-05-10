@@ -62,7 +62,7 @@
 .z__docstore_comment_enter_ui,
 .z__docstore_comment_container {
     position: relative;
-    z-index: 8990; /* TODO: fix this hack properly (this obsurces 'delete' in repeating sections, as otherwise they'd overlap) */
+    z-index: 8990; /* TODO: fix this hack properly (this obscures 'delete' in repeating sections, as otherwise they'd overlap) */
     border: 1px solid #ddd;
     box-shadow: -1px 0 #ddd; /* this is to keep the thin darker border after border-left is applied */
     border-left: 4px solid #ececec;
@@ -81,6 +81,20 @@
     padding: 0px 4px;
     font-size: 10px;
     border-bottom: 1px solid #ccc;
+}
+
+.z__docstore_comment_footer {
+    padding: 0px 4px;
+}
+
+.z__docstore_edit_comment_link {
+    text-align: right;
+    padding-top: 4px;
+    line-height: 14px;
+}
+
+.z__docstore_edit_comment_link a {
+    color: #888;
 }
 
 .z__docstore_comment_username {

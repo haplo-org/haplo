@@ -17,6 +17,7 @@ import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 
 import java.sql.Connection;
@@ -488,15 +489,19 @@ public class JdTable extends KScriptable {
     }
 
     // Execute a query which returns a single value from a *trusted* SQL expression
-    public Object executeSingleValueExpressionUsingTrustedSQL(JdSelect query, String sqlExpression, SingleValueKind kind, int expectedJdbcType, Field groupByField) throws java.sql.SQLException {
+    public Object executeSingleValueExpressionUsingTrustedSQL(JdSelect query, String sqlExpression, SingleValueKind kind, int expectedJdbcType, Field[] groupByFields) throws java.sql.SQLException {
         // WARNING: sqlExpression is added into the SQL statement directly
+
+        String groupByExpression = groupByFields != null ?
+                    String.join(",", Arrays.asList(groupByFields).stream().map(Field::getDbName).toArray(String[]::new)) :
+                    null;
+
         return buildAndExecuteQuery(query, new QueryExecution() {
             public int appendOutputExpressions(StringBuilder select, ParameterIndicies indicies) {
                 select.append(sqlExpression);
-                if(groupByField != null) {
-                    // TODO: Support group by fields with more than component column
+                if(groupByFields != null) {
                     select.append(',');
-                    select.append(groupByField.getDbName());
+                    select.append(groupByExpression);
                 }
                 select.append(' ');
                 return 0;
@@ -505,20 +510,23 @@ public class JdTable extends KScriptable {
                 return parameterIndexStart;
             };
             public void appendGroupAndOrder(StringBuilder select) {
-                if(groupByField != null) {
+                if(groupByFields != null) {
                     select.append(" GROUP BY ");
-                    select.append(groupByField.getDbName());
+                    select.append(groupByExpression);
                     select.append(" ORDER BY ");
-                    select.append(groupByField.getDbName());
+                    select.append(groupByExpression);
                 }
             }
             public Object createResultObject(ResultSet results, ParameterIndicies indicies, IncludedTable[] includes) throws java.sql.SQLException {
-                if(groupByField != null) {
+                if(groupByFields != null) {
                     // Build a JS Array of {value:sqlExpressionValue, group:groupValue}
                     Runtime runtime = Runtime.getCurrentRuntime();
                     ArrayList<Scriptable> groups = new ArrayList<Scriptable>();
-                    ParameterIndicies readGroupValueIndicies = new ParameterIndicies(1);
-                    readGroupValueIndicies.set(2); // Value picked up by Field is second
+                    ParameterIndicies readGroupValueIndicies = new ParameterIndicies(groupByFields.length);
+                    int groupByFieldIndex = 2; // Value picked up by Field is second
+                    for(Field groupByField : groupByFields) {
+                        readGroupValueIndicies.set(groupByFieldIndex++);
+                    }
                     while(results.next()) {
                         Scriptable entry = runtime.createHostObject("Object");
                         groups.add(entry);
@@ -526,12 +534,17 @@ public class JdTable extends KScriptable {
                         entry.put("value", entry, kind.get(results, expectedJdbcType));
                         // Group value
                         readGroupValueIndicies.nextRow();
-                        Object groupValue = groupByField.getValueFromResultSet(results, readGroupValueIndicies);
-                        if(groupValue == null || results.wasNull()) {
-                            entry.put("group", entry, null);
-                        } else {
-                            entry.put("group", entry, groupValue);
+                        Scriptable groupsEntry = runtime.createHostObject("Object");
+                        for(Field groupByField : groupByFields) {
+                            Object groupValue = groupByField.getValueFromResultSet(results, readGroupValueIndicies);
+                            if(results.wasNull()) { groupValue = null; }
+                            groupsEntry.put(groupByField.getDbName(), groupsEntry, groupValue);
+                            if(groupByFields.length == 1) {
+                                //Group property is set for backwards compatibility
+                                entry.put("group", entry, groupValue);
+                            }
                         }
+                        entry.put("groups", entry, groupsEntry);
                     }
                     return runtime.getContext().newArray(runtime.getJavaScriptScope(), groups.toArray(new Object[groups.size()]));
                 } else {
@@ -814,6 +827,10 @@ public class JdTable extends KScriptable {
 
         public boolean isNullable() {
             return nullable;
+        }
+
+        public boolean isSingleColumn() {
+            return true;
         }
 
         public abstract boolean jsNonNullObjectIsCompatible(Object object, ValueTransformer valueTransformer);
@@ -1649,6 +1666,11 @@ public class JdTable extends KScriptable {
         @Override
         public String getDbNameForExistenceTest() {
             return this.getDbName()+"_d";   // just check the digest column exists
+        }
+
+        @Override
+        public boolean isSingleColumn() {
+            return false;
         }
 
         @Override

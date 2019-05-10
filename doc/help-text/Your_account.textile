@@ -19,5 +19,3 @@ Your account page lists different options specific to you.
 * Change password: click here to change your password.
 
 * Logout: click here to finish using PRODUCT_NAME, and ensure that anyone else using this computer cannot access your information.
-
-* Devices: Manage computers, laptops and phones activated with your account.

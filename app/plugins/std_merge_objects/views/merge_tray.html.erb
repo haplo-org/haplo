@@ -12,6 +12,7 @@
   <%
     @objects.each do |object|
       %>
+        <% if @users[object.objref] %> <div class="z__general_alert">This object has an associated user account. Do not delete. For assistance contact your system administrator.</div> <% end %>
         <p><label><input type="radio" name="keep" value="<%= object.objref.to_presentation %>">Keep this item:</p>
         <%= render_obj(object, :linkedheading) %>
         <hr>

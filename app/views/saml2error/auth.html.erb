@@ -1,0 +1,15 @@
+<%
+    @page_title = "Authentication error"
+%>
+
+<div class="z__general_alert">A problem was encountered while authenticating you.</div>
+
+<p>Please try again in a few minutes.</p>
+
+<%
+  if @message && @message =~ /\S/
+    %><%= text_simple_format(@message) %><%
+  end
+%>
+
+<p><a class="z__button_link" href="/">Try again</a></p>

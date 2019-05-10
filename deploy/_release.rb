@@ -554,8 +554,8 @@ begin
   puts " (in = #{in_size}, out = #{out_size} (#{(out_size * 100) / in_size}%))"
 end
 
-# CSS files in components get minimal processing for IDs
-Dir.glob("#{export_dir}/components/**/*.css").sort.each do |filename|
+# CSS/JS files in components get minimal processing for IDs
+Dir.glob("#{export_dir}/components/**/*.{css,js}").sort.each do |filename|
   rewrite_file(filename) do |contents|
     change_css_ids_and_classes(contents, filename)
   end

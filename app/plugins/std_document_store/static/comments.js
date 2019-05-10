@@ -30,7 +30,7 @@
 
         var displayComment = function(formId, uname, comment, insertAtTop) {
             var element = $('#'+formId+' div[data-uname="'+uname+'"]');
-            var div = $('<div class="z__docstore_comment_container"></div>');
+            var div = $('<div class="z__docstore_comment_container" data-commentid="'+comment.id+'"></div>');
             var header = $('<div class="z__docstore_comment_header"></div>');
             div.append(header);
             header.append($('<div></div>', {
@@ -41,7 +41,13 @@
                 "class": "z__docstore_comment_username",
                 text: (userNameLookup[comment.uid]||'')
             }));
-            _.each(comment.comment.split(/[\r\n]+/), function(p) {
+            var canEdit = comment.currentUserCanEdit;
+            var text = comment.comment;
+            if(text === "") {
+                text = "(this comment has been deleted)";
+                canEdit = false;
+            }
+            _.each(text.split(/[\r\n]+/), function(p) {
                 p = $.trim(p);
                 if(p) { div.append($("<p></p>", {text:p})); }
             });
@@ -62,6 +68,11 @@
                 var messageDiv = '<div class="z__docstore_comment_different_version_msg">';
                 messageDiv += _.map(_.compact([privateMsg, versionMsg]), _.escape).join('<br>');
                 header.append(messageDiv);
+            }
+            if(canEdit) {
+                var footer = $('<div class="z__docstore_comment_footer"></div>');
+                footer.append('<div class="z__docstore_edit_comment_link"><a href="#"><i>Edit comment...</i></a></div>');
+                div.append(footer);
             }
             if(insertAtTop) {
                 var existingComments = $('.z__docstore_comment_container', element);
@@ -141,38 +152,80 @@
                 if(!/\S/.test(this.innerText||'')) { return; }  // no text/labels to comment on
                 $(this).prepend('<div class="z__docstore_add_comment"><a class="z__docstore_add_comment_button" href="#" title="Add comment">Add comment<span></span></a></div>');
             });
-            $('#z__docstore_body').on('click', '.z__docstore_add_comment_button', function(evt) {
-                evt.preventDefault();
 
+            var showAddComment = function(that, commentId, text, isPrivate) {
                 var commentBoxHtml = '<div class="z__docstore_comment_enter_ui';
-                commentBoxHtml += privateCommentsEnabled ? ' z__docstore_private_comment"' : '"'; // private by default if enabled
-                commentBoxHtml += '><span><textarea rows="4"></textarea></span>';
+                if(privateCommentsEnabled && (isPrivate !== false)) {
+                    // if isPrivate is true or undefined, so that we get private comments by default, set private class
+                    commentBoxHtml += ' z__docstore_private_comment"';
+                } else {
+                    commentBoxHtml += '"';
+                }
+                if(commentId) { commentBoxHtml += 'data-commentid="'+commentId+'"'; }
+                commentBoxHtml += '><span><textarea rows="4">'+(text ? _.escape(text) : '')+'</textarea></span>';
                 if(privateCommentsEnabled) {
                     commentBoxHtml += '<label>';
-                    commentBoxHtml += addPrivateCommentOnly ? '' : '<input type="checkbox" id="commment_is_private" name="private" value="yes" checked="checked">';
+                    if(!addPrivateCommentOnly) {
+                        commentBoxHtml += '<input type="checkbox" id="commment_is_private" name="private" value="yes"';
+                        commentBoxHtml += (isPrivate !== false) ? 'checked="checked">' : '>';
+                    }
                     commentBoxHtml += _.escape(addPrivateCommentLabel);
                     commentBoxHtml += '</label>';
                 }
-                commentBoxHtml += '<div><a href="#" class="z__docstore_comment_enter_cancel">cancel</a> <input type="submit" value="Add comment"></div></div>';
+                commentBoxHtml += '<div><a href="#" class="z__docstore_comment_enter_cancel">cancel</a> <input type="submit" value="Save comment"></div></div>';
                 var commentBox = $(commentBoxHtml);
 
-                var element = $(this).parents('[data-uname]').first();
+                var element = $(that).parents('[data-uname]').first();
                 var existingComments = $('.z__docstore_comment_container', element);
                 if(existingComments.length) {
                     existingComments.first().before(commentBox);
                 } else {
                     element.append(commentBox);
                 }
+                return commentBox;
+            };
+
+            $('#z__docstore_body').on('click', '.z__docstore_add_comment_button', function(evt) {
+                evt.preventDefault();
+                var commentBox = showAddComment(this);
                 $(this).hide(); // hide button to avoid
+                var element = $(this).parents('[data-uname]').first();
+                $(element).find(".z__docstore_comment_footer").hide();
                 window.setTimeout(function() { $('textarea',commentBox).focus(); }, 1);
             });
+
+            $('#z__docstore_body').on('click', '.z__docstore_edit_comment_link', function(evt) {
+                evt.preventDefault();
+                var commentContainer = $($(this).parents('.z__docstore_comment_container').first());
+                var text = _.map(commentContainer.children('p'), function(p) {
+                    return $(p).text();
+                }).join("\n");
+                var isPrivate = commentContainer.hasClass('z__docstore_private_comment');
+                var commentToSupersede = commentContainer[0].getAttribute('data-commentid');
+                var commentBox = showAddComment(this, commentToSupersede, text, isPrivate);
+                commentContainer.hide(); // hide comment
+                var element = $(this).parents('[data-uname]').first();
+                $(element).find(".z__docstore_add_comment_button").hide();
+                $(element).find(".z__docstore_comment_footer").hide();
+                window.setTimeout(function() { $('textarea',commentBox).focus(); }, 1);
+            });
+
+            var restoreCommentControls = function(that, toSupersede) {
+                var element = $(that).parents('[data-uname]').first();
+                $('.z__docstore_comment_enter_ui', element).remove();
+                $('.z__docstore_add_comment_button', element).show();
+                if(toSupersede) {
+                    $('.z__docstore_comment_container:hidden', element).remove();
+                } else {
+                    $('.z__docstore_comment_container:hidden', element).show();
+                }
+                $(element).find(".z__docstore_comment_footer").show();
+            };
 
             // Cancel making comment
             $('#z__docstore_body').on('click', 'a.z__docstore_comment_enter_cancel', function(evt) {
                 evt.preventDefault();
-                var element = $(this).parents('[data-uname]').first();
-                $('.z__docstore_comment_enter_ui', element).remove();
-                $('.z__docstore_add_comment_button', element).show();
+                restoreCommentControls(this);
             });
 
             // Submit a comment
@@ -182,10 +235,10 @@
                 var comment = $.trim($('textarea', element).val());
                 var isPrivate = addPrivateCommentOnly ||
                     (privateCommentsEnabled && element.find("#commment_is_private").first().is(":checked"));
-                $('.z__docstore_comment_enter_ui', element).remove();
-                $('.z__docstore_add_comment_button', element).show();
+                var commentToSupersede = $(this).parents('.z__docstore_comment_enter_ui').first()[0].getAttribute('data-commentid');
+                restoreCommentControls(this, commentToSupersede);
 
-                if(comment) {
+                if(comment || commentToSupersede) {
                     var formId = element.parents('.z__docstore_form_display').first()[0].id,
                         uname = element[0].getAttribute('data-uname');
                     $.ajax(commentServerUrl, {
@@ -196,7 +249,8 @@
                             form: formId,
                             uname: uname,
                             comment: comment,
-                            private: isPrivate
+                            private: isPrivate,
+                            supersedesid: commentToSupersede
                         },
                         dataType: "json",
                         success: function(data) {

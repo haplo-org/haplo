@@ -64,6 +64,13 @@ TEST(function() {
     TEST.assert_equal("std:qualifier:mobile", mobileInfo.code);
     TEST.assert_equal("mobile", mobileInfo.shortName);
 
+    // Check aliased attribute queries
+    var yearInfo = SCHEMA.getAliasedAttributeInfo(ALIASED_ATTR["std:aliased-attribute:year"]);
+    TEST.assert_equal("Year", yearInfo.name)
+    TEST.assert_equal("year", yearInfo.shortName)
+    TEST.assert_equal("std:aliased-attribute:year", yearInfo.code)
+    TEST.assert_equal(ATTR["dc:attribute:date"], yearInfo.aliasOf)
+
     // Check type queries
     var fileInfo = SCHEMA.getTypeInfo(TYPE["std:type:file"]);
     TEST.assert_equal("File", fileInfo.name);
@@ -88,6 +95,10 @@ TEST(function() {
         ATTR["std:attribute:address"], ATTR["dc:attribute:subject"], ATTR["std:attribute:notes"], ATTR["std:attribute:url"],
         ATTR["std:attribute:relationship-manager"]],
         orgInfo.attributes));
+    TEST.assert(_.isEqual(
+        [ALIASED_ATTR["std:aliased-attribute:organisation-name"],
+        ALIASED_ATTR["std:aliased-attribute:contact-category"]],
+        orgInfo.aliasedAttributes));
 
     // Check root/parent/child types
     var supplierInfo = SCHEMA.getTypeInfo(TYPE["std:type:organisation:supplier"]);

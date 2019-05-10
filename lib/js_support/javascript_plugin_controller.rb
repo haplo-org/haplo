@@ -14,6 +14,7 @@ class JavaScriptPluginController < ApplicationController
 
   KBinaryData = Java::OrgHaploJsinterface::KBinaryData
   KStoredFile = Java::OrgHaploJsinterface::KStoredFile
+  KZipFile    = Java::OrgHaploJsinterface::KZipFile
   XmlDocument = Java::OrgHaploJsinterfaceXml::XmlDocument
 
   CONTENT_TYPES = Hash.new
@@ -35,14 +36,21 @@ class JavaScriptPluginController < ApplicationController
   end
 
   def perform_handle(exchange, path_elements, requested_method)
+    uploads = exchange.annotations[:uploads]
     # Unless anonymous requests are allowed, check the user is not anonymous or a service user
     unless @factory.allow_anonymous
       unless (@request_user.policy.is_not_anonymous?) || (@request_user.kind == User::KIND_SERVICE_USER)
-        permission_denied
+        # Unauthorised requests for file upload instructions need a different response
+        if uploads && uploads.getInstructionsRequired()
+          response.headers['X-Haplo-Reportable-Error'] = 'yes'
+          render :text => "Unauthorised", :status => 403
+          return
+        else
+          permission_denied
+        end
       end
     end
     # Handle any request by the framework for file upload instructions
-    uploads = exchange.annotations[:uploads]
     if nil != uploads && uploads.getInstructionsRequired()
       # Request for file upload instructions
       inst = KJSPluginRuntime.current.get_file_upload_instructions(@factory.plugin_name, exchange.request.path)
@@ -80,6 +88,7 @@ class JavaScriptPluginController < ApplicationController
     # If E.response.body was set to a stored or generated file, respond without any further response processing.
     return respond_with_binary_data(body) if body.kind_of?(KBinaryData)
     return respond_with_stored_file(body) if body.kind_of?(KStoredFile)
+    return respond_with_zip_file(body) if body.kind_of?(KZipFile)
     return respond_with_xml(body) if body.kind_of?(XmlDocument)
     # Handle response
     render_opts = Hash.new
@@ -133,6 +142,16 @@ class JavaScriptPluginController < ApplicationController
     end
   end
 
+  class ZipFileResponse < KFramework::Response
+    def initialize(zip_file)
+      super()
+      @zip_file = zip_file
+    end
+    def make_java_object
+      @zip_file.makeResponse()
+    end
+  end
+
   def respond_with_binary_data(binary_data)
     # TODO: Implement a mechanism to allow attachment disposition to be turned off
     if binary_data.isAvailableInMemoryForResponse()
@@ -161,6 +180,14 @@ class JavaScriptPluginController < ApplicationController
     render_send_file stored_file.disk_pathname, :type => stored_file.mime_type,
       :filename => stored_file.upload_filename,
       :disposition => 'attachment'
+  end
+
+  def respond_with_zip_file(zip_file)
+    r = ZipFileResponse.new(zip_file)
+    r.content_type = "application/zip"
+    filename = zip_file.jsGet_filename().gsub(/[^a-zA-Z0-9\._-]/,'_')
+    r.headers[KFramework::Headers::CONTENT_DISPOSITION] = %Q!attachment; filename="#{filename}"!
+    exchange.response = r
   end
 
   def respond_with_xml(xml)

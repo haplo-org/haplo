@@ -286,6 +286,11 @@ body#z__management_layout .z__management_page {
 .z__mangement_kv_table th, .z__mangement_kv_table td {
     vertical-align: top;
 }
+.z__mangement_kv_table td {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    word-break: break-all;
+}
 .z__mangement_kv_table th {
     text-align: right;
     color: #666;

@@ -38,6 +38,16 @@ class AuthenticationControllerTest < IntegrationTest
 
   # ===================================================================================================================
 
+  def test_safe_redirect_url_path_regexp
+    assert "/do/something" =~ AuthenticationController::SAFE_REDIRECT_URL_PATH
+    assert "do/something" !~ AuthenticationController::SAFE_REDIRECT_URL_PATH
+    assert "/do/something?a=b&c=e" =~ AuthenticationController::SAFE_REDIRECT_URL_PATH
+    # Allowing paths starting with // would allow the login to be used as an open redirect
+    assert "//example.org/hello" !~ AuthenticationController::SAFE_REDIRECT_URL_PATH
+  end
+
+  # ===================================================================================================================
+
   def test_login_failure_throttle
     AUTHENTICATION_LOGIN_TEST_FAILURE_LOCK.synchronize { do_test_login_failure_throttle }
   end
@@ -671,6 +681,14 @@ class AuthenticationControllerTest < IntegrationTest
       assert_redirected_to "/"
       # Security check - make sure rdr's which could go elsewhere are ignored
       get_302 "/do/authentication/login?rdr=does_not%2Fstart%2Fwith%2Fslash"
+      assert_redirected_to "/" # rdr ignored
+      get_302 "/do/authentication/login?rdr=https://example.org"
+      assert_redirected_to "/" # rdr ignored
+      get_302 "/do/authentication/login?rdr=//example.org"
+      assert_redirected_to "/" # rdr ignored
+      get_302 "/do/authentication/login?rdr=/%2Fexample.org"
+      assert_redirected_to "/" # rdr ignored
+      get_302 "/do/authentication/login?rdr=%2F%2Fexample.org"
       assert_redirected_to "/" # rdr ignored
 
       # Log out

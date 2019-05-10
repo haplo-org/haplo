@@ -90,7 +90,7 @@ __E
       raise "Bad application ID" unless application_id > 0
       raise "Can't use portal to log into current application" if application_id == KApp.current_application
 
-      hostname = KApp.get_pg_database.exec("SELECT hostname FROM applications WHERE application_id=#{application_id.to_i}").first.first
+      hostname = KApp.get_pg_database.exec("SELECT value_string FROM a#{application_id.to_i}.app_globals WHERE key='ssl_hostname'").first.first
       raise "Unknown application" unless hostname
 
       secret2 = KRandom.random_api_key(76)

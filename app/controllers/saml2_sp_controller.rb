@@ -16,11 +16,16 @@ class Saml2ServiceProviderController
 
   ADFS_KEYCHAIN_CRED_IDP_SSO_SERVICE_URL = "IdP SSO Service URL".freeze
   ADFS_KEYCHAIN_CRED_IDP_ENTITYID = "IdP Entity ID".freeze
+  ADFS_KEYCHAIN_CRED_IDP_METADATA_URL = "IdP Metadata URL".freeze
   ADFS_KEYCHAIN_CRED_IDP_LOGOUT_SERVICE_URL = "IdP Sign-Out URL".freeze
+  ADFS_KEYCHAIN_CRED_OPTIONS = "Options".freeze
   ADFS_KEYCHAIN_CRED_IDP_X509CERT = "IdP x509 Certificate".freeze
 
   ADFS_KEYCHAIN_CRED_SP_X509CERT = "SP x509 Certificate".freeze
   ADFS_KEYCHAIN_CRED_SP_PRIVATEKEY = "SP Private Key".freeze
+
+  ADFS_KEYCHAIN_CRED_ERROR_MESSAGE = "Error Help Message".freeze
+  ADFS_KEYCHAIN_CRED_ERROR_MESSAGE__DEFAULT_TEXT = "If this problem persists, please contact your system administrator.".freeze
 
   ADFS_KEYCHAIN_VALID_NAME_REGEXP = /\A[a-zA-Z0-9\.-]+\z/
   
@@ -32,23 +37,31 @@ class Saml2ServiceProviderController
     :account => {
       ADFS_KEYCHAIN_CRED_IDP_SSO_SERVICE_URL => "https://login.example.com/2424242-42aa-42aa-aa42-42aa42aaaa42/saml2",
       ADFS_KEYCHAIN_CRED_IDP_ENTITYID => "https://identity-provider.example.com/424242-42aa-42aa-aa42-42aa42aaaa42/",
+      ADFS_KEYCHAIN_CRED_IDP_METADATA_URL => "https://identity-provider.example.com/424242-42aa-42aa-aa42-42aa42aaaa42/federationmetadata/2007-06/federationmetadata.xml?appid=c0c9b282-5da6-4d57-8402-5d569a87d4f6",
       ADFS_KEYCHAIN_CRED_IDP_LOGOUT_SERVICE_URL => "https://login.example.com/common/wsfederation?wa=wsignout1.0",
+      ADFS_KEYCHAIN_CRED_OPTIONS => "",
       # x509 encoded certificate for validating the Identity Provider.
       ADFS_KEYCHAIN_CRED_IDP_X509CERT => "Certificate created by your AD FS server.\nObtain from IdP and paste it in here.",
       # x509 encoded certificate for validating the Service Provider.
       ADFS_KEYCHAIN_CRED_SP_X509CERT => "Generate a unique certificate and key for this SP.\nPaste certificate here, private key below.",
+      ADFS_KEYCHAIN_CRED_ERROR_MESSAGE => ADFS_KEYCHAIN_CRED_ERROR_MESSAGE__DEFAULT_TEXT
     },
     :secret => {
       ADFS_KEYCHAIN_CRED_SP_PRIVATEKEY => ""
     }
   })
   KeychainCredential::USER_INTERFACE[[ADFS_KEYCHAIN_CRED_KIND,ADFS_KEYCHAIN_CRED_INSTANCE_KIND]] = {
-    :notes_edit => "#{ADFS_KEYCHAIN_CRED_IDP_SSO_SERVICE_URL} is the Single Sign-On Service URL, #{ADFS_KEYCHAIN_CRED_IDP_ENTITYID} is the Entity ID of the identity provider,  #{ADFS_KEYCHAIN_CRED_IDP_LOGOUT_SERVICE_URL} is the Sign-Out URL and #{ADFS_KEYCHAIN_CRED_IDP_X509CERT} is that provider's certificate. These will all be given to you when the IdP is configured.\nYou should generate a self-signed SSL certificate for this Service Provider (SP), and place the certificate in #{ADFS_KEYCHAIN_CRED_SP_X509CERT} and the key in #{ADFS_KEYCHAIN_CRED_SP_PRIVATEKEY}.\nThe name of this credential must be formed of a-z, A-Z, 0-9, . and - characters only.",
+    :secrets_use_textareas => true,
+    :notes_edit => "#{ADFS_KEYCHAIN_CRED_IDP_SSO_SERVICE_URL} is the Single Sign-On Service URL, #{ADFS_KEYCHAIN_CRED_IDP_ENTITYID} is the Entity ID of the identity provider,  #{ADFS_KEYCHAIN_CRED_IDP_LOGOUT_SERVICE_URL} is the Sign-Out URL and #{ADFS_KEYCHAIN_CRED_IDP_X509CERT} is that provider's certificate (multiple certificates can be specified by separating by a comma surrounded by whitespace). These will all be given to you when the IdP is configured.\nYou should generate a self-signed SSL certificate for this Service Provider (SP), and place the certificate in #{ADFS_KEYCHAIN_CRED_SP_X509CERT} and the key in #{ADFS_KEYCHAIN_CRED_SP_PRIVATEKEY}.\nOptions should generally be left blank, but supported options are ForceAuthn and IsPassive.\nThe name of this credential must be formed of a-z, A-Z, 0-9, . and - characters only.",
     :information => Proc.new do |credential|
       information = []
       unless credential.name =~ ADFS_KEYCHAIN_VALID_NAME_REGEXP
         information.push([:warning, "The name of this credential is not valid. It must be formed of a-z, A-Z, 0-9, . and - characters only."])
       end
+      information.push([:template, "saml2_sp/saml2_keychain_credential_info", {
+        :hostname => KApp.global(:ssl_hostname),
+        :credential => credential
+      }])
       information
     end
   }
@@ -98,7 +111,7 @@ class Saml2ServiceProviderController
     # Follow the AD FS convention of passing the RelayState around as an HTTP parameter.
     return_url = get_relay_state(request)
 
-    settings, idp_url = get_saml2_settings(sp_name)
+    settings, idp_url, options = get_saml2_settings(sp_name)
 
     return if respond_with_error_when_no_settings(settings, response)
 
@@ -113,8 +126,13 @@ class Saml2ServiceProviderController
     # Create a com.onelogin.saml2.Auth object ...
     auth = Java::ComOneloginSaml2::Auth.new(settings, request, response)
 
+    # Options
+    force_authn = options.include?('ForceAuthn')
+    is_passive = options.include?('IsPassive')
+    set_nameid_policy = false
+
     # ... and initiate a login request.
-    auth.login(return_url)
+    auth.login(return_url, force_authn, is_passive, set_nameid_policy)
   end
 
   # Handle the acs response from the AD FS server. Based on:
@@ -194,9 +212,11 @@ class Saml2ServiceProviderController
       end
 
     else
-      SAML2_PROTOCOL_HEALTH_EVENTS.log_and_report_event("Error while handling SAML ACS for "+sp_name, errors.to_a.inspect)
-      response.setStatus(500)
+      error_details = [errors.to_a, auth.getLastErrorReason()]
+      SAML2_PROTOCOL_HEALTH_EVENTS.log_and_report_event("Error while handling SAML ACS for "+sp_name, error_details.to_a.inspect)
+      response.setStatus(302)
       response.addHeader("Cache-Control", "private, no-cache")
+      response.addHeader("Location", "/do/saml2-error/auth/"+sp_name)
       response.getWriter().print("Error while handling SAML ACS for "+sp_name+".\n"+errors.to_a.inspect)
     end
   end
@@ -295,15 +315,27 @@ class Saml2ServiceProviderController
     # HTTP-Redirect binding only
     properties.setProperty(s::IDP_SINGLE_LOGOUT_SERVICE_BINDING_PROPERTY_KEY, 'urn:oasis:names:tc:SAML:2.0:bindings:HTTP-Redirect')
 
-    # Public x509 certificate of the IdP
-    properties.setProperty(s::IDP_X509CERT_PROPERTY_KEY, credential.account[ADFS_KEYCHAIN_CRED_IDP_X509CERT])
+    # Public x509 certificates of the IdP
+    idp_certs = (credential.account[ADFS_KEYCHAIN_CRED_IDP_X509CERT] || '').split(/\s+,\s+/)
+    properties.setProperty(s::IDP_X509CERT_PROPERTY_KEY, idp_certs.shift)
+    idp_certs.each_with_index do |cert, index|
+      properties.setProperty("#{s::IDP_X509CERTMULTI_PROPERTY_KEY}.#{index}", cert)
+    end
+
+    # Signing
+    properties.setProperty(s::SECURITY_WANT_ASSERTIONS_SIGNED, 'true')
+    properties.setProperty(s::SECURITY_AUTHREQUEST_SIGNED, 'true')
+    properties.setProperty(s::SECURITY_SIGNATURE_ALGORITHM, 'http://www.w3.org/2001/04/xmldsig-more#rsa-sha256')
 
     # Create settings, check strict mode is set
     settings = Java::ComOneloginSaml2Settings::SettingsBuilder.new.fromProperties(properties).build()
     throw "SAML2 is not set to strict mode" unless settings.isStrict()
 
+    # Options
+    options = (credential.account[ADFS_KEYCHAIN_CRED_OPTIONS] || '').split(/\s+/)
+
     # OneLogin settings, and the URL of the identity provider.
-    [settings, credential.account[ADFS_KEYCHAIN_CRED_IDP_ENTITYID]]
+    [settings, credential.account[ADFS_KEYCHAIN_CRED_IDP_ENTITYID], options]
   end
 
   def respond_with_error_when_no_settings(settings, response)

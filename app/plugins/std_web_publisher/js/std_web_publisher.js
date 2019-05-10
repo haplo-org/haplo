@@ -252,8 +252,8 @@ Publication.prototype.respondWithObject = function(path, types, handlerFunction)
                 return null;    // 404 if user can't read object
             }
             var object = ref.load();
-            // Check object is correct type, and 404 if not
-            if(!allowedTypes.get(object.firstType())) {
+            // Check object has any correct type, and 404 if not
+            if(!_.any(object.everyType(), function(type) { return allowedTypes.get(type); })) {
                 console.log("Web publisher: object has wrong type for this path", object);
                 return null;
             }
@@ -384,9 +384,12 @@ Publication.prototype._handleRequest2 = function(method, path) {
 };
 
 Publication.prototype._urlPathForObject = function(object) {
-    var handler = this._objectTypeHandler.get(object.firstType());
-    if(handler) {
-        return handler.urlForObject(object);
+    var types = object.everyType();
+    for(var i = 0; i < types.length; ++i) {
+        var handler = this._objectTypeHandler.get(types[i]);
+        if(handler) {
+            return handler.urlForObject(object);
+        }
     }
 };
 

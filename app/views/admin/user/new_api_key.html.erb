@@ -14,7 +14,8 @@
 
 <% f = form_for(@data, :key) %><form method="POST"><%= form_csrf_token %>
   <p>API Key name<br><%= f.text_field(:name) %></p>
-  <p>Request path prefix<br><%= f.text_field(:path) %> (must start with / to match)</p>
+  <p>Request path<br><%= f.text_field(:path) %><br>
+  Request paths must start with /, and will match all requests starting with this path. In most cases, it should end with / to avoid unexpected matches. To set an exact path match, prefix with =</p>
   <input type="submit" value="Create new API key">
 </form>
 <p class="z__management_notice">

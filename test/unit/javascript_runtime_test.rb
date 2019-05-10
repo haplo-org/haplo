@@ -417,6 +417,7 @@ __E
     user44 = User.find(44)
     user44.kind = User::KIND_USER_BLOCKED
     user44.save!
+    user44.set_groups_from_ids([22])
     disabled_group = User.new(:name => 'Test disabled group')
     disabled_group.kind = User::KIND_GROUP_DISABLED
     disabled_group.save!
@@ -529,6 +530,63 @@ __E
     assert_equal "TRACKING_FROM_JS", js_identifier.tracking_id
     assert_equal "JS log message", js_identifier.log_message
     assert_equal "2.6", js_identifier.version_string
+  end
+
+  def test_stored_file_copy_between_applications
+    FileCacheEntry.destroy_all
+    StoredFile.destroy_all
+    restore_store_snapshot("basic")
+    # Options for generating URLs
+    url_options = Java::OrgHaploJsinterface::KStoredFile::FileRenderOptions.new
+    url_options.asFullURL = true;
+    url_options.authenticationSignatureValidForSeconds = 30;
+    # A file in this application
+    file_in_this_application = StoredFile.from_upload(fixture_file_upload('files/example4.gif', 'image/gif'))
+    signed_url_this_application = JSFileSupport.fileIdentifierMakePathOrHTML(file_in_this_application, url_options, false)
+    signed_url_this_application.gsub!(/\Ahttp:/, 'https:')
+    # Ensure a file exists in the bonus test application, and get a signed URL
+    signed_url = nil
+    other_app_disk_pathname = nil
+    signed_url_for_file_which_doesnt_exist = nil
+    thread = Thread.new do
+      KApp.in_application(LAST_TEST_APP_ID + 1) do
+        file = StoredFile.from_upload(fixture_file_upload('files/example_3page.pdf', 'application/pdf'))
+        other_app_disk_pathname = file.disk_pathname
+        signed_url = JSFileSupport.fileIdentifierMakePathOrHTML(file, url_options, false)
+        # Make a URL of a file which doesn't exist in the store
+        file.digest = 'aa7ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdff'
+        signed_url_for_file_which_doesnt_exist = JSFileSupport.fileIdentifierMakePathOrHTML(file, url_options, false)
+        # Ensure signed_url is the https version, because test environment is different
+        signed_url.gsub!(/\Ahttp:/, 'https:')
+        signed_url_for_file_which_doesnt_exist.gsub!(/\Ahttp:/, 'https:')
+      end
+    end
+    thread.join
+    constants_for_test = {
+      "SIGNED_URL" => signed_url,
+      "SIGNED_URL_NOT_EXIST" => signed_url_for_file_which_doesnt_exist,
+      "SIGNED_URL_THIS_APPLICATION" => signed_url_this_application
+    }
+    # Check the URL looks OK
+    assert signed_url.include?('/file/977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac/8457/example_3page.pdf?s=')
+    # Check the file doesn't exist in this application
+    assert_equal nil, StoredFile.from_digest('977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac')
+    # Needs privilege for this API to be usable
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_stored_file_copy_between_applications_nopriv.js', constants_for_test)
+    # Try the actual API
+    install_grant_privileges_plugin_with_privileges('pCopyFilesBetweenApplications')
+    begin
+      run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_stored_file_copy_between_applications.js', constants_for_test, "grant_privileges_plugin")
+    ensure
+      uninstall_grant_privileges_plugin
+    end
+    # Check it arrived in this application
+    copied_file = StoredFile.from_digest('977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac')
+    assert copied_file != nil
+    # Check it hasn't messed up either application
+    assert other_app_disk_pathname != copied_file.disk_pathname
+    assert File.exist?(other_app_disk_pathname)
+    assert File.exist?(file_in_this_application.disk_pathname)
   end
 
   disable_test_unless_file_conversion_supported :test_stored_files, "application/pdf", "image/png"
@@ -699,6 +757,14 @@ __E
 
   # ===============================================================================================
 
+  def test_base64
+    StoredFile.from_upload(fixture_file_upload('files/example3.pdf', 'application/pdf'))
+    run_all_jobs({})
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_base64.js')
+  end
+
+  # ===============================================================================================
+
   def test_services
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_services.js')
   end
@@ -739,6 +805,18 @@ __E
 
   def test_bigdecimal
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_bigdecimal.js')
+  end
+
+  # ===============================================================================================
+
+  def test_dateparser
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_dateparser.js')
+  end
+
+  # ===============================================================================================
+
+  def test_checked_safe_redirect_url_path
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_checked_safe_redirect_url_path.js')
   end
 
   # ===============================================================================================
@@ -862,6 +940,23 @@ __E
 
   # ===============================================================================================
 
+  def test_create_user_api_key
+    db_reset_test_data
+    install_grant_privileges_plugin_with_privileges('pUserCreateAPIKey')
+    begin
+      run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_create_user_api_key_no_priv.js')
+      run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_create_user_api_key.js', nil, "grant_privileges_plugin")
+      api_keys = ApiKey.find(:all, :conditions => {:user_id => 41})
+      assert_equal 1, api_keys.length
+      assert_equal "Test Key", api_keys[0].name
+      assert_equal "/api/path/2", api_keys[0].path
+    ensure
+      uninstall_grant_privileges_plugin
+    end
+  end
+
+  # ===============================================================================================
+
   def test_email_template
     install_grant_privileges_plugin_with_privileges('pSendEmail')
     begin
@@ -970,9 +1065,9 @@ __E
       ], column_defns
     # Check definitions for the dynamic table
     index_defns = KApp.get_pg_database.exec("SELECT indexdef FROM pg_catalog.pg_indexes WHERE schemaname='a#{KApp.current_application}' AND tablename='j_dbtest_dyn1'").to_a.map { |row| row.first } .sort
-    assert_equal ["CREATE INDEX j_dbtest_dyn1_i0 ON j_dbtest_dyn1 USING btree (_name)",
-                  "CREATE INDEX j_dbtest_dyn1_i1 ON j_dbtest_dyn1 USING btree (add1)",
-                  "CREATE UNIQUE INDEX j_dbtest_dyn1_pkey ON j_dbtest_dyn1 USING btree (id)"], index_defns
+    assert_equal ["CREATE INDEX j_dbtest_dyn1_i0 ON a#{_TEST_APP_ID}.j_dbtest_dyn1 USING btree (_name)",
+                  "CREATE INDEX j_dbtest_dyn1_i1 ON a#{_TEST_APP_ID}.j_dbtest_dyn1 USING btree (add1)",
+                  "CREATE UNIQUE INDEX j_dbtest_dyn1_pkey ON a#{_TEST_APP_ID}.j_dbtest_dyn1 USING btree (id)"], index_defns
   ensure
     StoredFile.destroy_all
     uninstall_grant_privileges_plugin
@@ -1058,6 +1153,12 @@ __E
     assert_equal true, xlsx.haveData()
     xlsx_data = String.from_java_bytes(xlsx.getDataAsBytes())
     # File.open("test.xlsx", "w:BINARY") { |f| f.write xlsx_data }
+  end
+
+  # ===============================================================================================
+
+  def test_zip_interface
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_zip_interface.js')
   end
 
   # ===============================================================================================

@@ -24,7 +24,6 @@ import java.util.Date;
 // While this should be an abstract class, Rhino mapping requires that it can be instantiated to map class to prototype inheritance.
 // If not, the derived classes have to implement the js*() functions.
 public class KGenerateTable extends KBinaryData {
-    private String filename;
     private boolean firstRowIsHeader;
     private int rowNumber;
     private ArrayList<Object> row;
@@ -68,7 +67,7 @@ public class KGenerateTable extends KBinaryData {
     }
 
     protected void setFilename(String filename) {
-        this.filename = filename;
+        this.filename = filename + '.' + this.getFileExtension();
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -276,10 +275,6 @@ public class KGenerateTable extends KBinaryData {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public String jsGet_filename() {
-        return this.filename + '.' + this.getFileExtension();
-    }
-
     public String jsGet_mimeType() {
         return this.fileMimeType();
     }

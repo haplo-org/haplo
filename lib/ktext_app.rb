@@ -728,6 +728,22 @@ class KTextPluginDefined < KText
     @text
   end
 
+  # Equality needs to be checked after parsing the JSON encoded data, so the properties in the JSON file can be in any order
+  # This means that plugins don't have to be very careful about how they build their data structures.
+  def ==(other)
+    other != nil && other.class == self.class && JSON.parse(@text) == JSON.parse(other.__text) && @language == other.language
+  end
+
+  def replace_matching_ref(ref, replacement_ref)
+    call_hook(:hObjectTextValueReplaceMatchingRef) do |hooks|
+      output = hooks.run(@type, @text, ref, replacement_ref).output
+      if output != nil
+        return KTextPluginDefined.new({:type => @type, :value => output}, @language)
+      end
+    end
+    nil
+  end
+
   def transform(*transforms)
     transforms.each do |transform|
       call_hook(:hObjectTextValueTransform) do |hooks|

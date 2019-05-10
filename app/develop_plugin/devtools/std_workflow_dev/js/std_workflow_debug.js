@@ -85,7 +85,12 @@ if(O.PLUGIN_DEBUGGING_ENABLED) {
                         });
                         _.each(entities.$entityDefinitions, function(v,name) {
                             var first = entities[name+'_refMaybe'];
-                            var user = first ? O.user(first) : undefined;
+                            var securityPrincipal = first ? O.securityPrincipal(first) : undefined;
+                            var user = securityPrincipal;
+                            if(securityPrincipal && securityPrincipal.isGroup) {
+                                var entityMembers = securityPrincipal.loadAllMembers();
+                                if(entityMembers.length) { user = entityMembers[0]; }
+                            }
                             var i = {
                                 entity: name,
                                 uid: user ? user.id : undefined,

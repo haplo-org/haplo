@@ -54,13 +54,25 @@ Publication.respondToDirectoryAllowingPOST("/post-test-directory",
     }
 );
 
-Publication.respondToExactPath("/publication/xml",
-    function(E, context) {
+Publication.respondToDirectory("/publication/response-kinds", function(E, context) {
+    var kind = E.request.extraPathElements[0];
+    if(kind === "xml") {
         var xml = O.xml.document();
         xml.cursor().element("test");
         E.response.body = xml;
+    } else if(kind === "binary-data-in-memory") {
+        E.response.body = O.binaryData("ABC,DEF", {mimeType:"text/csv", filename:"hello.csv"})
+    } else if(kind === "binary-data-on-disk") {
+        E.response.body = P.loadFile("bin.txt");
+    } else if(kind === "zip") {
+        var zip = O.zip.create("pub");
+        zip.add(O.binaryData("DATA", {mimeType:"text/plain", filename:"test1.txt"}));
+        E.response.body = zip;
+    } else if(kind === "json") {
+        E.response.kind = "json";
+        E.response.body = JSON.stringify({"a":42});
     }
-);
+});
 
 // For testing robots.txt
 Publication.respondToDirectory("/testdir", function(E, context) {});

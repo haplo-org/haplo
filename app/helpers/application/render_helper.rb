@@ -38,10 +38,15 @@ module Application_RenderHelper
     end
 
     # Check with plugins about rendering
-    hide_attributes = nil
+    hide_attributes = []
     call_hook(:hObjectRender) do |hooks|
       r = hooks.run(render_object)
-      hide_attributes = r.hideAttributes unless r.hideAttributes.empty?
+      hide_attributes.concat(r.hideAttributes) unless r.hideAttributes.nil?
+    end
+
+    # Only Administrators can see configured behaviour attributes
+    unless @request_user.policy.can_setup_system?
+      hide_attributes << A_CONFIGURED_BEHAVIOUR
     end
 
     # Display a restricted copy of the rendered object:
@@ -53,7 +58,7 @@ module Application_RenderHelper
       restricted_attributes = @request_user.kobject_restricted_attributes(
         (render_options||{})[:unmodified_object] || render_object
       )
-      restricted_attributes.hide_additional_attributes(hide_attributes) unless hide_attributes.nil?
+      restricted_attributes.hide_additional_attributes(hide_attributes)
       obj = render_object.dup_restricted(restricted_attributes)
     end
 
@@ -410,7 +415,7 @@ module Application_RenderHelper
   def render_value_identifier_postal_address(value, obj, render_options, attr_desc)
     map_link = KMapProvider.url_for_postcode(value.postcode)
     if map_link != nil
-      map_link = %Q!<div class="z__map_link"><a href="#{map_link}" target="_new">Map</a></div>!
+      map_link = %Q!<div class="z__map_link"><a href="#{map_link}" target="_blank" rel="noopener">Map</a></div>!
     end
     %Q!<div class="z__value_postal_address">#{map_link}#{value.to_html(render_options[:home_country])}</div>!
   end

@@ -74,7 +74,8 @@ module SchemaRequirements
     "text-formatted-line" => T_TEXT_FORMATTED_LINE,
     "text-multiline" => T_TEXT_MULTILINE,
     "file" => T_IDENTIFIER_FILE,
-    "idsn" => T_IDENTIFIER_ISBN,
+    "isbn" => T_IDENTIFIER_ISBN,  # must be before typoed 'idsn', so takes precidence in generating requirements
+    "idsn" => T_IDENTIFIER_ISBN,  # backwards compatible with previous typo
     "email-address" => T_IDENTIFIER_EMAIL_ADDRESS,
     "url" => T_IDENTIFIER_URL,
     "uuid" => T_IDENTIFIER_UUID,

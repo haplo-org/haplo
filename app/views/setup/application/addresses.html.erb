@@ -5,7 +5,7 @@
 <form method="post"><%= form_csrf_token %>
   
   <p>Application hostname (clear)<br>
-  http://<select name="url_hostname">
+  https://<select name="url_hostname">
     <% @hostnames.each do |h| -%>
       <option value="<%= h %>"<% if @url_hostname == h %> selected<% end %>><%= h %></option>
     <% end -%>

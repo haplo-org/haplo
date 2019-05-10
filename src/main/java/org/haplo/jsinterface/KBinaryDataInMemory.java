@@ -16,8 +16,6 @@ import java.nio.charset.Charset;
 
 public class KBinaryDataInMemory extends KBinaryData {
     private byte[] data;
-    private String filename;
-    private String mimeType;
 
     public KBinaryDataInMemory() {
     }
@@ -47,14 +45,6 @@ public class KBinaryDataInMemory extends KBinaryData {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public String jsGet_filename() {
-        return this.filename;
-    }
-
-    public String jsGet_mimeType() {
-        return this.mimeType;
-    }
-
     @Override
     public boolean isAvailableInMemoryForResponse() {
         return true;

@@ -75,13 +75,27 @@ ObjectWidget.prototype._setAttributeList = function(list, types) {
 
 const SEARCH_PAGE_SIZE = 20;
 
+P.publisherReplaceableTemplate("std:web-publisher:widget:search:form",      "widget/search/form");
+P.publisherReplaceableTemplate("std:web-publisher:widget:search:results",   "widget/search/results");
+
 P.WIDGETS.search = function(E, spec) {
     return new SearchWidget(E, spec);
+};
+
+// There are two levels of protection against SQL injection below this, but the error when
+// someone tries an 'interesting' sort order raises a health event, which is annoying.
+const ALLOWED_SEARCH_ORDERS = {
+    date:       "date",
+    date_asc:   "date_asc",
+    relevance:  "relevance",
+    title:      "title",
+    title_desc: "title_desc"
 };
 
 var SearchWidget = function(E, spec) {
     this.E = E;
     this.spec = spec || {};
+    this.renderingContext = P.getRenderingContext();
     var params = E.request.parameters;
     var q = params.q;
     if((!spec.formOnly && q && q.match(/\S/)) || spec.alwaysSearch) {
@@ -90,7 +104,7 @@ var SearchWidget = function(E, spec) {
         if(spec.modifyQuery) {
             spec.modifyQuery(this._storeQuery);
         }
-        this._sort = params.sort || (spec.hideRelevanceSort ? "date" : "relevance");
+        this._sort = ALLOWED_SEARCH_ORDERS[params.sort] || (spec.hideRelevanceSort ? "date" : "relevance");
         this._results = this._storeQuery.sortBy(this._sort).setSparseResults(true).execute();
         this._pageSize = spec.pageSize || SEARCH_PAGE_SIZE;
         this._start = 0;
@@ -129,10 +143,10 @@ SearchWidget.prototype.__defineGetter__("ui", function() {
     return P.template("widget/search/ui").deferredRender(this);
 });
 SearchWidget.prototype.__defineGetter__("form", function() {
-    return P.template("widget/search/form").deferredRender(this);
+    return this.renderingContext.publication.getReplaceableTemplate("std:web-publisher:widget:search:form").deferredRender(this);
 });
 SearchWidget.prototype.__defineGetter__("results", function() {
-    return P.template("widget/search/results").deferredRender(this);
+    return this.renderingContext.publication.getReplaceableTemplate("std:web-publisher:widget:search:results").deferredRender(this);
 });
 
 // Implementation

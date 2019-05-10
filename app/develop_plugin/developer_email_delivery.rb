@@ -47,8 +47,10 @@ class DeveloperEmailDelivery
   end
 
   # Add the email client to the tools menu
-  KNotificationCentre.when(:developer_support, :tools_menu) do |name, operation, section|
-    section.push(['/do/development-email-client', 'Test email viewer'])
+  KNotificationCentre.when(:developer_support, :tools_menu) do |name, operation, section, request_user|
+    if request_user.policy.can_use_testing_tools?
+      section.push(['/do/development-email-client', 'Test email viewer'])
+    end
   end
 
   # ------------------------------------------------------------------------------------------------------------------------
@@ -117,13 +119,13 @@ class DeveloperEmailDelivery
 
     # Impersonation would be very inconvenient if it interrupted the email delivery. But also, you can't have
     # development systems giving away info to just anyone.
-    # So, to start the client, you need to have :setup_system. This gives you a token, which can be used to
+    # So, to start the client, you need to have :use_testing_tools. This gives you a token, which can be used to
     # fetch email in the future, whatever happens.
-    _PoliciesRequired :not_anonymous, :setup_system
+    _PoliciesRequired :not_anonymous, :use_testing_tools
     def handle_index; render(:text => File.open("#{File.dirname(__FILE__)}/static/developer_email_client.html").read, :kind => :html); end
-    _PoliciesRequired :not_anonymous, :setup_system
+    _PoliciesRequired :not_anonymous, :use_testing_tools
     def handle_js; render(:text => File.open("#{File.dirname(__FILE__)}/static/developer_email_client.js").read, :kind => :javascript); end
-    _PoliciesRequired :not_anonymous, :setup_system
+    _PoliciesRequired :not_anonymous, :use_testing_tools
     def handle_start_api
       token = KRandom.random_api_key
       LOCK.synchronize do

@@ -249,6 +249,11 @@ module KEditor
 
       next unless attr_inclusion.include_by_descriptor?(descriptor)
 
+      # Only Administrators can edit configured behaviour attributes
+      if descriptor.desc == A_CONFIGURED_BEHAVIOUR
+        next unless AuthContext.user.policy.can_setup_system?
+      end
+
       if descriptor.data_type == T_TEXT_PLUGIN_DEFINED
         plugin_types_used << descriptor.data_type_options
       end

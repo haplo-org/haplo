@@ -14,20 +14,4 @@ class AccountController < ApplicationController
     @admins = User.find(User::GROUP_ADMINISTRATORS).members
   end
 
-  # ----------------------------------------------------------------------------------------------------------------------------------
-  #  Devices for this/other account
-
-  def handle_devices
-    @devices = []
-  end
-
-  _PostOnly
-  def handle_delete_device
-    device = ApiKey.find(params[:id])
-    dev_uid = device.user_id
-    permission_denied unless @request_user.policy.can_manage_users? || (dev_uid == @request_user.id)
-    device.destroy
-    redirect_to params.has_key?(:admin) ? "/do/account/devices/#{dev_uid}" : '/do/account/devices'
-  end
-
 end

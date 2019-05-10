@@ -145,19 +145,21 @@ TEST(function() {
     TEST.assert_exceptions(function() { O.user(41).loadAllMembers(); });
 
     // Check members of a group
-    var checkMembers = function(expectedIds, group) {
-        var memberIds = _.map(group.loadAllMembers(), function(user) {
+    var checkMembers = function(expectedIds, members) {
+        var memberIds = _.map(members, function(user) {
             TEST.assert(user instanceof $User);
             TEST.assert(! user.isGroup);
             return user.id;
         });
         TEST.assert(_.isEqual(expectedIds, memberIds));
     };
-    checkMembers([41,43], group21);
-    checkMembers([42,43], O.group(22));
-    checkMembers([43], O.group(23));
+    checkMembers([41,43], group21.loadAllMembers());
+    checkMembers([42,43], O.group(22).loadAllMembers());
+    checkMembers([44], O.group(22).loadAllBlockedMembers());
+    checkMembers([43], O.group(23).loadAllMembers());
     TEST.assert_equal(4, GROUP["std:group:everyone"]); // make sure it is the special group
-    checkMembers([41,42,43], O.group(GROUP["std:group:everyone"])); // this is special cased
+    checkMembers([41,42,43], O.group(GROUP["std:group:everyone"]).loadAllMembers()); // this is special cased
+    checkMembers([44], O.group(GROUP["std:group:everyone"]).loadAllBlockedMembers()); // this is special cased
 
     // Access to API codes
     TEST.assert_equal("std:group:everyone", O.group(GROUP["std:group:everyone"]).code);

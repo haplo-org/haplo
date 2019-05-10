@@ -155,6 +155,12 @@ public class KStoredFile extends KScriptable {
         return (file != null) ? KStoredFile.fromAppStoredFile(file) : null;
     }
 
+    public static Scriptable jsStaticFunction__getFileBySignedURL(String url) {
+        Runtime.privilegeRequired("pCopyFilesBetweenApplications", "call O.file() with a signed URL");
+        AppStoredFile file = rubyInterface.getFileBySignedURL(url);
+        return KStoredFile.fromAppStoredFile(file);
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     public static class FileRenderOptions {
         public String transform;
@@ -260,6 +266,8 @@ public class KStoredFile extends KScriptable {
         public AppStoredFile tryLoadFile(AppText fileIdentifier);
 
         public AppStoredFile tryFindFile(String digest, Number fileSizeMaybe);
+
+        public AppStoredFile getFileBySignedURL(String url);
 
         public AppStoredFile newStoredFileFromData(byte[] data, String filename, String mimeType);
 

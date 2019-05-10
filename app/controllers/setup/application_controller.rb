@@ -49,7 +49,6 @@ class Setup_ApplicationController < ApplicationController
 
   def handle_identity
     @system_name = KApp.global(:system_name)
-    @admin_email_address = KApp.global(:admin_email_address)
     @url_hostname = KApp.global(:url_hostname)
     @ssl_hostname = KApp.global(:ssl_hostname)
     @ssl_policy = KApp.global(:ssl_policy).split(//)
@@ -64,20 +63,6 @@ class Setup_ApplicationController < ApplicationController
     if request.post?
       update_appglobal_strings(:system_name)
       redirect_to '/do/setup/application/identity'
-    end
-  end
-
-  _GetAndPost
-  def handle_edit_adminemail
-    @admin_email_address = KApp.global(:admin_email_address)
-    if request.post?
-      if params[:admin_email_address] =~ /\A.+\@.+\..+/
-        update_appglobal_strings(:admin_email_address)
-        redirect_to '/do/setup/application/identity'
-      else
-        @admin_email_address = params[:admin_email_address]
-        @bad_address = true
-      end
     end
   end
 

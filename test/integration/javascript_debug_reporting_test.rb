@@ -112,7 +112,7 @@ class JavaScriptDebugReportingTest < IntegrationTest
   # URL, Error, Location, Install syntax error plugin
   TEST_CALLS = [
     [
-      '/do/tools/reports',  # org.mozilla.javascript.EcmaError (reporting via hook)
+      '/do/tools',  # org.mozilla.javascript.EcmaError (reporting via hook)
       'TypeError: Cannot find function ping in object [object Object].',
       'badly_coded_plugin/js/badly_coded_plugin.js (line 4)'
     ],[

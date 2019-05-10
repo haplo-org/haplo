@@ -538,6 +538,16 @@ type std:type:book as Book
 __E
     assert_equal "attribute std:attribute:telephone as TelephoneNumber\n", context.generate_requirements_definition(KObjectStore.read(KObjRef.new(A_TELEPHONE_NUMBER)), true)
 
+    # Check ISBN data type typo is fixed
+    assert_equal <<__E, context.generate_requirements_definition(KObjectStore.read(KObjRef.from_desc(A_ISBN)))
+attribute std:attribute:isbn as ISBN
+    title: ISBN
+    search-name: isbn
+    qualifier std:qualifier:null
+    data-type isbn
+
+__E
+
     # Check that the attribute search for unknown attributes doesn't break anything
     aliased_attr_search_parser = parser_for <<-__E
     type test:type:operation as Operation

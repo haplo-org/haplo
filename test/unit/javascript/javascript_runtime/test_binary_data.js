@@ -44,4 +44,15 @@ TEST(function() {
         data5.readAsJSON();
     }, "Couldn't JSON decode BinaryData invalid.json");
 
+    // Can change filename and mime type
+    var changing = O.binaryData("RENAMED binary data", {mimeType:"application/octet-stream", filename:"x.bin"});
+    changing.filename = "abc.txt";
+    changing.mimeType = "text/plain";
+    TEST.assert_equal("abc.txt", changing.filename);
+    TEST.assert_equal("text/plain", changing.mimeType);
+    var changedFile = O.file(changing);
+    TEST.assert_equal("abc.txt", changedFile.filename);
+    TEST.assert_equal("text/plain", changedFile.mimeType);
+    TEST.assert_equal("RENAMED binary data", changedFile.readAsString("UTF-8"));
+
 });

@@ -454,6 +454,7 @@ public class Runtime {
             defineSealedHostClass(scope, KSecurityBCrypt.class);
             defineSealedHostClass(scope, KSecurityDigest.class);
             defineSealedHostClass(scope, KSecurityHMAC.class);
+            defineSealedHostClass(scope, KBase64.class);
 
             defineSealedHostClass(scope, JdNamespace.class);
             defineSealedHostClass(scope, JdTable.class);
@@ -474,9 +475,12 @@ public class Runtime {
             defineSealedHostClass(scope, KRequestContinuation.class);
             defineSealedHostClass(scope, JsBigDecimal.class);
             defineSealedHostClass(scope, JsDecimalFormat.class);
+            defineSealedHostClass(scope, JsDateParser.class);
 
             defineSealedHostClass(scope, XmlDocument.class);
             defineSealedHostClass(scope, XmlCursor.class);
+
+            defineSealedHostClass(scope, KZipFile.class);
 
             defineSealedHostClass(scope, KCollaborationService.class);
             defineSealedHostClass(scope, KCollaborationFolder.class);

@@ -42,7 +42,7 @@ class KAppImporter
     app_id = new_application_id || source_app_id
 
     # Check the SQL file has the right app_id in it
-    sql_check_length = 512 # assume statements within this number of bytes of file start
+    sql_check_length = 1024 # assume statements within this number of bytes of file start
     sql_start = if have_compressed_sql
       gstream = java.util.zip.GZIPInputStream.new(java.io.FileInputStream.new("#{filename_base}.sql.gz"))
       bytes = Java::byte[sql_check_length].new
@@ -53,7 +53,6 @@ class KAppImporter
       File.read("#{filename_base}.sql", sql_check_length)
     end
     raise "Bad schema create in SQL file" unless sql_start =~ /CREATE SCHEMA a#{source_app_id};/
-    raise "Bad schema set in SQL file" unless sql_start =~ /SET search_path = a#{source_app_id}, pg_catalog;/
 
     hostnames = data["hostnames"]
     hostnames = [new_hostname] unless new_hostname.nil?

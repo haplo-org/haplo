@@ -91,6 +91,10 @@ P.globalTemplateFunction("std:web-publisher:utils:title:name", function(object) 
 
 var replaceableTemplates = {};
 
+P.publisherReplaceableTemplate = function(code, templateName) {
+    replaceableTemplates[code] = [templateName, P];
+};
+
 P.FEATURE.registerReplaceableTemplate = function(code, templateName) {
     if(code in replaceableTemplates) {
         throw new Error("Replaceable template already registered: "+code);
@@ -105,12 +109,20 @@ P.Publication.prototype.replaceTemplate = function(code, templateName) {
     this._replacedTemplates[code] = [templateName, this.implementingPlugin];
 };
 
-P.globalTemplateFunction("std:web-publisher:template", function(code) {
-    var publication = P.getRenderingContext().publication;
-    var [templateName, plugin] = publication._replacedTemplates[code] || replaceableTemplates[code] || [];
+P.Publication.prototype.getReplaceableTemplate = function(code) {
+    var cached = this._cachedReplaceableTemplates;
+    if(!cached) { cached = this._cachedReplaceableTemplates = {}; }
+    if(code in cached) { return cached[code]; }
+    var [templateName, plugin] = this._replacedTemplates[code] || replaceableTemplates[code] || [];
     if(!templateName) {
         throw new Error("Replaceable template not found: "+code);
     }
     var template = plugin.template(templateName);
-    this.renderIncludedTemplate(template);
+    cached[code] = template;
+    return template;
+};
+
+P.globalTemplateFunction("std:web-publisher:template", function(code) {
+    var publication = P.getRenderingContext().publication;
+    this.renderIncludedTemplate(publication.getReplaceableTemplate(code));
 });

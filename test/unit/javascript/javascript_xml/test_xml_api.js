@@ -214,7 +214,7 @@ TEST(function() {
         "  <el index=\"1\">Hello</el>\n"+
         "  <x>X</x>\n"+
         "  <el index=\"2\">World!</el>\n"+
-        "  <el index=\"3\">Hello <d>Ping</d></el>\n"+
+        "  <el index=\"3\" abc=\"def\">Hello <d>Ping</d></el>\n"+
         "</root>"
     );
     var cursor = whitespacedDocument.cursor().firstChild().firstChild(); // #document <root> (firstChild)
@@ -236,6 +236,9 @@ TEST(function() {
     TEST.assert_equal(true, cursor.nextSiblingElementMaybe());  // move
     TEST.assert_equal("el", cursor.getLocalName());
     TEST.assert_equal("3", cursor.getAttribute("index"));
+    var attrs = [];
+    cursor.forEachAttribute(function(name, value) { attrs.push({name:name,value:value}); });
+    TEST.assert(_.isEqual([{name:"abc",value:"def"},{name:"index",value:"3"}], _.sortBy(attrs,'name')));
     TEST.assert_equal(false, cursor.nextSiblingElementMaybe());  // move
 
     cursor = whitespacedDocument.cursor().firstChild(); // #document <root>

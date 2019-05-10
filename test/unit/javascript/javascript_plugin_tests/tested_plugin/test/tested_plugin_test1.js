@@ -8,46 +8,52 @@
 t.test(function() {
 
     // Check that the locals are defined when the tests run
-    t.assert(Special === 444);
+    t.assertEqual(Special, 444);
+
+    // Test exception thrown as expected
+    t.assertThrows(P.willThrowException);
+    t.assertThrows(P.willThrowException, "Error message");
+    t.assertThrows(function() { P.willThrowException("New message"); }, "New message");
+
 
     // Check the schema is available
     t.assert(T.TestingPerson == O.ref('20x0'));
-    t.assert(Group.GroupOne === 21);
+    t.assertEqual(Group.GroupOne, 21);
 
     t.assert(!O.isHandlingRequest);
 
     t.login("ANONYMOUS");
-    t.assert(O.currentUser.id === 2);
+    t.assertEqual(O.currentUser.id, 2);
     O.session["tested_plugin:ping"] = 3;
     t.assert(O.isHandlingRequest);
-    t.assert(O.session["tested_plugin:ping"] === 3);
+    t.assertEqual(O.session["tested_plugin:ping"], 3);
 
     t.login("user1@example.com");
-    t.assert(O.currentUser.id === O.user("user1@example.com").id);
-    t.assert(O.session["tested_plugin:ping"] === undefined);
+    t.assertEqual(O.currentUser.id, O.user("user1@example.com").id);
+    t.assertEqual(O.session["tested_plugin:ping"], undefined);
     t.assert(O.isHandlingRequest);
-    t.assert(O.tray.length === 0);
+    t.assertEqual(O.tray.length, 0);
 
     // Check that logged in user is restored after changes in AuthContext
     O.impersonating(O.SYSTEM, function() {
-        t.assert(O.currentUser.id === 0);
+        t.assertEqual(O.currentUser.id, 0);
     });
-    t.assert(O.currentUser.id === 41);
+    t.assertEqual(O.currentUser.id, 41);
     O.impersonating(O.user(42), function() {
-        t.assert(O.currentUser.id === 42);
+        t.assertEqual(O.currentUser.id, 42);
     });
-    t.assert(O.currentUser.id === 41);
+    t.assertEqual(O.currentUser.id, 41);
     O.withoutPermissionEnforcement(function() {
-        t.assert(O.currentUser.id === 41);  // user doesn't change
+        t.assertEqual(O.currentUser.id, 41);  // user doesn't change
     });
-    t.assert(O.currentUser.id === 41);
+    t.assertEqual(O.currentUser.id, 41);
 
     // Test login works with user object
     t.login(O.user(43));
-    t.assert(O.currentUser.id === 43);
+    t.assertEqual(O.currentUser.id, 43);
 
     t.loginAnonymous();
-    t.assert(O.currentUser.id === 2);
+    t.assertEqual(O.currentUser.id, 2);
 
     t.logout();
     t.assert(!O.isHandlingRequest);

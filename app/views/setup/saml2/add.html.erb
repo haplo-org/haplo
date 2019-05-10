@@ -1,0 +1,14 @@
+<%
+  @page_title = 'Add SAML2 Service Provider'
+-%>
+<%= sys_mng_header %>
+
+<p>&nbsp;</p>
+
+<p>Setting up a new SAML2 provider is a two step process. First, create a basic SAML2 Service Provider, and send the SP's URLs to the administrator of the Identity Provider. When that's set up, the remote IdP will provide a metadata URL, which is used to update the keychain credential.</p>
+
+<form method="POST"><%= form_csrf_token %>
+<p>Service Provider name<br><input type="text" name="name" value="<%= h(@name) %>"> (usually <tt>login</tt>)</p>
+<p>Set a short identifier for this service provider using the characters <tt>a-z0-9.-</tt> only. For the primary service provider used for authenticating users, use the name <tt>login</tt>.</p>
+<p><input type="submit" value="Create new SAML2 SP"></p>
+</form>

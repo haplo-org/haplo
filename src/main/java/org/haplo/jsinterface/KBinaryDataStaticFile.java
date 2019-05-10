@@ -15,8 +15,6 @@ import java.io.IOException;
 
 public class KBinaryDataStaticFile extends KBinaryData {
     private String diskPathname;
-    private String filename;
-    private String mimeType;
 
     public KBinaryDataStaticFile() {
     }
@@ -32,14 +30,6 @@ public class KBinaryDataStaticFile extends KBinaryData {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public String jsGet_filename() {
-        return this.filename;
-    }
-
-    public String jsGet_mimeType() {
-        return this.mimeType;
-    }
-
     @Override
     public boolean isAvailableInMemoryForResponse() {
         return false;

@@ -173,6 +173,30 @@ class Test::Unit::TestCase
     end
   end
 
+  def read_zip_file(pathname)
+    contents = {}
+    java_zip_file = Java::JavaUtilZip::ZipFile.new(pathname)
+    begin
+      filenames_seen = []
+      java_zip_file.entries.each do |entry|
+        filenames_seen << entry.getName()
+        data = Java::byte[entry.getSize()].new
+        to_read = entry.getSize()
+        offset = 0
+        entry_stream = java_zip_file.getInputStream(entry)
+        while(to_read > 0)
+          bytes_read = entry_stream.read(data, offset, to_read)
+          to_read -= bytes_read
+          offset += bytes_read
+        end
+        contents[entry.getName()] = String.from_java_bytes(data)
+      end
+    ensure
+      java_zip_file.finalize()
+    end
+    contents
+  end
+
   class ObjectStorePermissionsTestUser
     def initialize(user_id, permissions)
       @id = user_id

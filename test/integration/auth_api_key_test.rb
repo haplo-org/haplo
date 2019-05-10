@@ -7,6 +7,8 @@
 
 class AuthApiKeyTest < IntegrationTest
 
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/auth_api_key/auth_api_key_test_file_upload")
+
   def setup
     db_reset_test_data
     u1 = User.find_by_email('user1@example.com')
@@ -47,7 +49,6 @@ class AuthApiKeyTest < IntegrationTest
     user_session.get '/do/authentication/logout'
     user_session.post_302 '/do/authentication/logout'
     assert_session_user(user_session, User::USER_ANONYMOUS)
-
   end
 
   # -------------------------------------------------------------------------------------
@@ -104,12 +105,74 @@ class AuthApiKeyTest < IntegrationTest
     check_api_key(KEY2, nil, 'Bad API Key')
     check_api_key(KRandom.random_api_key, nil, 'Bad API Key')
 
+    # Check API keys and multipart file uploads
+    begin
+      assert KPlugin.install_plugin('auth_api_key_test_file_upload')
+
+      upload_key = ApiKey.new
+      upload_key.user_id = 42
+      upload_key.path = '/do/auth-api-key-test-file-upload/'
+      upload_key.name = 'fileupload'
+      upload_key_secret = upload_key.set_random_api_key
+      upload_key.save
+
+      multipart_post '/do/auth-api-key-test-file-upload/test',
+          {:file => fixture_file_upload('files/example.xml','text/xml')},
+          {:expected_response_codes => [403]}
+      assert_equal "403", response.code
+      assert_equal "Unauthorised", response.body
+
+      multipart_post '/do/auth-api-key-test-file-upload/test',
+          {:file => fixture_file_upload('files/example.xml','text/xml')},
+          {'Authorization' => "Basic #{["haplo:"+upload_key_secret].pack('m').gsub("\n",'')}"}
+      assert_equal "200", response.code
+      assert_equal "42 161", response.body  # uid & file size
+
+      # Not valid for this path
+      multipart_post '/do/auth-api-key-test-file-upload/test',
+          {:file => fixture_file_upload('files/example.xml','text/xml')},
+          {
+            'Authorization' => "Basic #{["haplo:"+KEY1].pack('m').gsub("\n",'')}",
+            :expected_response_codes => [403]
+          }
+      assert_equal "403", response.code
+
+      # Complete invalid
+      multipart_post '/do/auth-api-key-test-file-upload/test',
+          {:file => fixture_file_upload('files/example.xml','text/xml')},
+          {
+            'Authorization' => "Basic #{["haplo:"+KRandom.random_api_key].pack('m').gsub("\n",'')}",
+            :expected_response_codes => [403]
+          }
+      assert_equal "403", response.code
+
+    ensure
+      KPlugin.uninstall_plugin('auth_api_key_test_file_upload')
+    end
+
     # Disable the user and make sure that it fails cleanly
     check_api_key(KEY1, 42)
     u42 = User.find(42)
     u42.kind = User::KIND_USER_BLOCKED
     u42.save!
     check_api_key(KEY1, nil, 'Not authorised')
+
+    # Check API key's path validity method
+    assert_equal false, key1.valid_for_request_path?('/api/object/batch')
+    assert_equal false, key1.valid_for_request_path?('/api/test') # no final /
+    assert_equal true,  key1.valid_for_request_path?('/api/test/something')
+    # Check strict equality path validity
+    key_strict = ApiKey.new
+    key_strict.user_id = 42
+    key_strict.path = "=/api/test2"
+    key_strict.name = "Strict path test"
+    key_strict.set_random_api_key
+    key_strict.save
+    assert_equal false, key_strict.valid_for_request_path?('/api/object/batch')
+    assert_equal false, key_strict.valid_for_request_path?('/api/test/something')
+    assert_equal false, key_strict.valid_for_request_path?('/api/test2/something')
+    assert_equal false, key_strict.valid_for_request_path?('/api/test2/')
+    assert_equal true,  key_strict.valid_for_request_path?('/api/test2')
   end
 
   # -------------------------------------------------------------------------------------

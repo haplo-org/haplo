@@ -27,4 +27,6 @@ P.respond("POST", "/do/tested_plugin/posting", [
     E.render({pageTitle: "Post"}, "posting_template");
 });
 
-
+P.willThrowException = function(msg) {
+    throw new Error(msg || "Error message");
+};

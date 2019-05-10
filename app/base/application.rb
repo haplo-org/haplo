@@ -231,7 +231,14 @@ class ApplicationController
       return false # Don't continue
     end
     # Check authorisation
-    return false unless check_authorisation
+    unless check_authorisation
+      # If the framework is requesting instructions for a file upload, set a special header so the response is returned now
+      uploads = exchange.annotations[:uploads]
+      if uploads && uploads.getInstructionsRequired()
+        response.headers['X-Haplo-Reportable-Error'] = 'yes'
+      end
+      return false
+    end
     # Enforce SSL policy and desired hostnames
     url_type = (@request_user.policy.is_anonymous? ? :anonymous : :logged_in)
     is_currently_ssl = request.ssl? ? true : false

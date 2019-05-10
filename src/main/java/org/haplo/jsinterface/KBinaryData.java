@@ -35,6 +35,8 @@ import java.security.MessageDigest;
 
 public class KBinaryData extends KScriptable {
     private String digest;
+    protected String filename;
+    protected String mimeType;
 
     public KBinaryData() {
     }
@@ -62,11 +64,23 @@ public class KBinaryData extends KScriptable {
 
     // --------------------------------------------------------------------------------------------------------------
     public String jsGet_filename() {
-        throw new OAPIException("Attempt to use base class");
+        checkAvailable();
+        return this.filename;
+    }
+
+    public void jsSet_filename(String filename) {
+        checkAvailable();
+        this.filename = filename;
     }
 
     public String jsGet_mimeType() {
-        throw new OAPIException("Attempt to use base class");
+        checkAvailable();
+        return this.mimeType;
+    }
+
+    public void jsSet_mimeType(String mimeType) {
+        checkAvailable();
+        this.mimeType = mimeType;
     }
 
     public String jsGet_digest() {
@@ -115,6 +129,9 @@ public class KBinaryData extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+    protected void checkAvailable() {
+    }
+
     public boolean isAvailableInMemoryForResponse() {
         throw new OAPIException("Attempt to use base class");
     }

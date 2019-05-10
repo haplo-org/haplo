@@ -26,16 +26,19 @@ class DisplayControllerTest < IntegrationTest
         obj.add_attr(O_TYPE_BOOK, A_TYPE)
         obj.add_attr(title, A_TITLE)
         obj.add_attr(KIdentifierURL.new("https://haplo.org/test-page-for-object-display"), A_URL)
+        obj.add_attr(KIdentifierConfigurationName.new("test:behaviour:code:"+title), A_CONFIGURED_BEHAVIOUR)
         KObjectStore.create(obj)
         obj
       end
 
-      assert_login_as('user1@example.com', 'password')
+      assert_login_as('user2@example.com', 'password') # not an adminstrator
+      assert ! current_user.policy.can_setup_system?
 
       get object_urlpath(no_redirect_obj)
       assert_select('h1', 'no rdr modified')
       assert(response.body =~ /alt title/)
       assert(response.body =~ /haplo\.org\/test-page-for-object-display/)
+      assert(response.body !~ /test:behaviour:code/)  # configured behaviour not shown
 
       get_302 object_urlpath(redirect_obj)
       assert_redirected_to "/do/redirected-away"
@@ -44,6 +47,16 @@ class DisplayControllerTest < IntegrationTest
       assert_select('h1', 'hide url')
       assert(response.body !~ /alt title/)
       assert(response.body !~ /haplo\.org\/test-page-for-object-display/)
+      assert(response.body !~ /test:behaviour:code/)  # configured behaviour not shown
+
+      # Check configured behaviours shown to admin users
+      post_302 "/do/authentication/logout"
+      assert_login_as('user1@example.com', 'password') # adminstrator user
+      assert current_user.policy.can_setup_system?
+      get object_urlpath(no_redirect_obj)
+      assert(response.body =~ /test:behaviour:code/)
+      get object_urlpath(hide_url)
+      assert(response.body =~ /test:behaviour:code/)
 
     ensure
       KPlugin.uninstall_plugin("display_controller_test/display_controller_test")

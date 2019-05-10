@@ -3,9 +3,11 @@
 
 <%
   if @ui[:information]
-    @ui[:information].call(@credential).each do |kind,text|
+    @ui[:information].call(@credential).each do |kind,text,data|
       if kind == :warning
         %><p class="z__management_notice"><%= h(text) %></p><%
+      elsif kind == :template
+        %><%= render :partial => text, :data_for_template => data %><%
       else
         %><p><b><%= h(text) %></b></p><%
       end

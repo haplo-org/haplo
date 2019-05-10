@@ -45,6 +45,15 @@ module KHooks
     h.result      :output,      String,   nil,  "Output of transform"
   end
 
+  define_hook :hObjectTextValueReplaceMatchingRef do |h|
+    h.private_hook
+    h.argument    :type,        String,   "Type of value"
+    h.argument    :value,       String,   "Value encoded as a string"
+    h.argument    :ref,         KObjRef,  "Ref to be replaced in text value fields"
+    h.argument    :replacement, KObjRef,  "Ref value to add as replacement"
+    h.result      :output,      String,    nil,  "Replacement text value specification object, as JSON string"
+  end
+
   define_hook :hOperationAllowOnObject do |h|
     h.private_hook
     h.argument    :user,        User,     "SecurityPrincipal attempting to perform the operation"

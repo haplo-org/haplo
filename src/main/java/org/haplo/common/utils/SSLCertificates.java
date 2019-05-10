@@ -16,12 +16,20 @@ import java.security.*;
 import java.security.cert.*;
 import java.security.spec.RSAPrivateCrtKeySpec;
 
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.util.encoders.Base64;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.openssl.PEMParser;
+import org.bouncycastle.openssl.PEMKeyPair;
+import org.bouncycastle.util.io.pem.PemReader;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemGenerationException;
+import org.bouncycastle.openssl.jcajce.JcaPEMKeyConverter;
+
 
 public class SSLCertificates {
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
+
     public static SSLContext load(String keysDirectory, String certsName, String clientCAName) throws Exception {
         return load(keysDirectory, certsName, clientCAName, false);
     }
@@ -114,26 +122,10 @@ public class SSLCertificates {
         return sslContext;
     }
 
-    private static byte[] readPEMBytes(Reader inputReader, String source) throws java.io.IOException {
-        BufferedReader reader = new BufferedReader(inputReader);
-        String line = reader.readLine();
-        if(line == null && !line.startsWith("-----BEGIN ")) {
-            throw new RuntimeException("Doesn't look like a PEM file: " + source);
-        }
-        StringBuffer buffer = new StringBuffer();
-        while((line = reader.readLine()) != null && !line.startsWith("-----END ")) {
-            buffer.append(line.trim());
-        }
-        if(line == null) {
-            throw new RuntimeException("End marker not found in PEM file: " + source);
-        }
-        reader.close();
-        inputReader.close();
-        return Base64.decode(buffer.toString());
-    }
-
     public static ByteArrayInputStream readPEM(Reader reader, String source) throws java.io.IOException {
-        return new ByteArrayInputStream(readPEMBytes(reader, source));
+        PemReader pemReader = new PemReader(reader);
+        PemObject object = pemReader.readPemObject();
+        return new ByteArrayInputStream(object.getContent());
     }
 
     public static ByteArrayInputStream readPEM(String filename) throws java.io.IOException {
@@ -142,27 +134,17 @@ public class SSLCertificates {
         }
     }
 
-    private static PrivateKey readPEMPrivateKey(String filename) throws java.io.IOException, java.security.GeneralSecurityException {
-        ByteArrayInputStream bIn = readPEM(filename);
-        ASN1InputStream aIn = new ASN1InputStream(bIn);
-        ASN1Sequence seq = (ASN1Sequence)aIn.readObject();
-        if(!(seq.getObjectAt(1) instanceof DERInteger)) {
-            throw new RuntimeException("Can't read RSA private key from " + filename + " - if file starts '-----BEGIN PRIVATE KEY-----' then it needs converting to RSA format with 'openssl rsa -in server-in.key -out server.key'.");
+    public static PrivateKey readPEMPrivateKey(Reader reader) throws java.io.IOException, PemGenerationException {
+        PEMParser parser = new PEMParser(reader);
+        Object object = parser.readObject();
+        JcaPEMKeyConverter converter = new JcaPEMKeyConverter().setProvider("BC");
+        KeyPair kp = converter.getKeyPair((PEMKeyPair)object);
+        return kp.getPrivate();
+    }
+
+    public static PrivateKey readPEMPrivateKey(String filename) throws java.io.IOException, PemGenerationException {
+        try(FileReader reader = new FileReader(filename)) {
+            return readPEMPrivateKey(reader);
         }
-        DERInteger mod = (DERInteger)seq.getObjectAt(1);
-        DERInteger pubExp = (DERInteger)seq.getObjectAt(2);
-        DERInteger privExp = (DERInteger)seq.getObjectAt(3);
-        DERInteger p1 = (DERInteger)seq.getObjectAt(4);
-        DERInteger p2 = (DERInteger)seq.getObjectAt(5);
-        DERInteger exp1 = (DERInteger)seq.getObjectAt(6);
-        DERInteger exp2 = (DERInteger)seq.getObjectAt(7);
-        DERInteger crtCoef = (DERInteger)seq.getObjectAt(8);
-
-        RSAPrivateCrtKeySpec privSpec = new RSAPrivateCrtKeySpec(mod.getValue(),
-                pubExp.getValue(), privExp.getValue(), p1.getValue(), p2.getValue(),
-                exp1.getValue(), exp2.getValue(), crtCoef.getValue());
-
-        KeyFactory factory = KeyFactory.getInstance("RSA");
-        return factory.generatePrivate(privSpec);
     }
 }

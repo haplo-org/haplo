@@ -250,10 +250,16 @@ P.implementTextType("test_plugin:testtype2", "Test type Two", {
         }
     },
     string: function(value) {
-        return 'X'+value.v;
+        return 'X'+value.v+(value.ref || "");
     },
     identifier: function(value) {
         return 'ID-'+value.v;
+    },
+    replaceMatchingRef: function(value, ref, replacementRef) {
+        if(value.ref === ref.toString()) {
+            value.ref = replacementRef.toString();
+            return value;
+        }
     }
 });
 

@@ -9,7 +9,12 @@ class WebPublisherController < ApplicationController
 
   KStoredFile = Java::OrgHaploJsinterface::KStoredFile
   KBinaryDataStaticFile = Java::OrgHaploJsinterface::KBinaryDataStaticFile
+  KBinaryData = Java::OrgHaploJsinterface::KBinaryData
+  KZipFile    = Java::OrgHaploJsinterface::KZipFile
   XmlDocument = Java::OrgHaploJsinterfaceXml::XmlDocument
+
+  CONTENT_TYPES = Hash.new
+  Ingredient::Rendering::RENDER_KIND_CONTENT_TYPES.each { |k,v| CONTENT_TYPES[k.to_s] = v}
 
   def self.hostname_has_publication_at_root?(host)
     r = false
@@ -49,6 +54,7 @@ class WebPublisherController < ApplicationController
     raise KFramework::RequestPathNotFound.new("Web publisher didn't render a body") if body.nil?
 
     # Support a limited set of binary data types as body
+    # TODO: Refactor this to use the implemetation in JavascriptPluginController
     if body.kind_of?(KStoredFile)
       # Stored file - probably from built-in /download handler
       stored_file = body.toRubyObject()
@@ -70,16 +76,37 @@ class WebPublisherController < ApplicationController
       r.content_type = "application/xml"
       exchange.response = r
       return
-    end
-
-    # Otherwise only support Text and HTML responses
-    unless (kind == 'html' || kind == 'text') && body.kind_of?(String)
-      raise JavaScriptAPIError, "Web publisher response wasn't HTML or text"
+    elsif body.kind_of?(KBinaryData)
+      if body.isAvailableInMemoryForResponse()
+        r = JavaScriptPluginController::BinaryDataResponse.new(body)
+        r.content_type = body.jsGet_mimeType()
+        filename = body.jsGet_filename()
+        unless filename == nil or filename == ""
+          filename = filename.gsub(/[^a-zA-Z0-9\._-]/,'_')
+          r.headers[KFramework::Headers::CONTENT_DISPOSITION] = %Q!attachment; filename="#{filename}"!
+        end
+        exchange.response = r
+      else
+        disk_pathname = body.getDiskPathnameForResponse()
+        raise JavaScriptAPIError, "File not available" unless disk_pathname && File.exist?(disk_pathname)
+        render_send_file disk_pathname,
+          :type => body.jsGet_mimeType() || 'application/octet-stream',
+          :filename => body.jsGet_filename() || 'data.bin',
+          :disposition => 'attachment'
+      end
+      return
+    elsif body.kind_of?(KZipFile)
+      r = JavaScriptPluginController::ZipFileResponse.new(body)
+      r.content_type = "application/zip"
+      filename = body.jsGet_filename().gsub(/[^a-zA-Z0-9\._-]/,'_')
+      r.headers[KFramework::Headers::CONTENT_DISPOSITION] = %Q!attachment; filename="#{filename}"!
+      exchange.response = r
+      return
     end
 
     # Build & return response
     response = KFramework::DataResponse.new(body,
-      (kind == 'text') ? 'text/plain; charset=utf-8' : 'text/html; charset=utf-8',
+      CONTENT_TYPES[kind] || 'text/plain; charset=utf-8',
       (status_code || 200).to_i)
     if headersJSON != nil
       headers = JSON.parse(headersJSON)

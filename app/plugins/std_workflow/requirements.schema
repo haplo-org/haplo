@@ -20,7 +20,8 @@ group std:group:workflow-fallback as WorkflowFallback
 # A group intended for use as actionableBy when a workflow is 'paused'
 # There should not be anyone in this group.
 group std:group:workflow-on-hold as WorkflowOnHold
-	title: Workflow on hold
+    REMOVE title: Workflow on hold
+    title: On hold
 
 # -------- Email templates -------------------------
 

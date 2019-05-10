@@ -29,6 +29,7 @@ module KAttrAlias
     type_objref = obj.first_attr(A_TYPE)
     return [] if type_objref == nil
     type_descriptor = schema.type_descriptor(type_objref)
+    type_descriptor = schema.type_descriptor(type_descriptor.root_type) if type_descriptor
     attributes = type_descriptor ? type_descriptor.attributes : []
 
     # Build an initial list of all the attributes, with a lookup

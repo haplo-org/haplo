@@ -63,7 +63,6 @@ module KAppInit
         db.update("INSERT INTO app_globals(key,value_int,value_string) VALUES('system_name',NULL,$1)", app_title)
         db.update("INSERT INTO app_globals(key,value_int,value_string) VALUES('url_hostname',NULL,$1)", hostnames.first)
         db.update("INSERT INTO app_globals(key,value_int,value_string) VALUES('ssl_hostname',NULL,$1)", hostnames.first)
-        db.update("INSERT INTO app_globals(key,value_int,value_string) VALUES('admin_email_address',NULL,$1)", email_from_address)
         db.update("INSERT INTO app_globals(key,value_int,value_string) VALUES('appearance_colours',NULL,$1)", KApplicationColours::DEFAULT_CUSTOM_COLOURS)
         db.update("INSERT INTO app_globals(key,value_int,value_string) VALUES('appearance_header',NULL,$1)", app_title)
         # ----------------------------------
@@ -100,14 +99,16 @@ module KAppInit
 
       # Set some sensible policies for the default groups
       all_policies = KPolicyRegistry.entries.map { |p| p.symbol }
-      all_policies.delete(:control_trust) # Don't enable this, as it should be enabled specifically when you start to use tokens
-      all_policies.delete(:require_token) # This would stop people logging in without tokens defined, so remove this one
-      all_policies.delete(:impersonate_user) # Don't allow this by default
+      all_policies_admin = all_policies.dup
+      all_policies_admin.delete(:control_trust) # Don't enable this, as it should be enabled specifically when you start to use tokens
+      all_policies_admin.delete(:require_token) # This would stop people logging in without tokens defined, so remove this one
+      all_policies_admin.delete(:impersonate_user) # Don't allow this by default
+      all_policies_admin.delete(:use_testing_tools) # Not relevant for production applications
       Policy.transaction do
         [
           [User::USER_ANONYMOUS,        0,      KPolicyRegistry.to_bitmask(all_policies)], # DENY all policies to the anonymous user
           [User::GROUP_EVERYONE,        KPolicyRegistry.to_bitmask(:not_anonymous, :use_latest), 0],
-          [User::GROUP_ADMINISTRATORS,  KPolicyRegistry.to_bitmask(all_policies), 0] # ALLOW administrators to do anything
+          [User::GROUP_ADMINISTRATORS,  KPolicyRegistry.to_bitmask(all_policies_admin), 0] # ALLOW administrators to have most policies
         ].each do |uid, allow, deny|
           Policy.new(:user_id => uid, :perms_allow => allow, :perms_deny => deny).save!
         end
@@ -139,7 +140,7 @@ module KAppInit
       end
 
       # Make the default templates, changing their IDs to those specified in the constants in the model class
-      footer_html = '<div class="footer"><p class="link0"><a href="http://%%DEFAULT_HOSTNAME%%/">Sent from Haplo</a></p></div>'
+      footer_html = '<div class="footer"><p class="link0"><a href="https://%%DEFAULT_HOSTNAME%%/">Sent from Haplo</a></p></div>'
       default_email_template = EmailTemplate.new(
         :name => 'Generic', :description => 'Generic template for sending emails when no other template is specified.',
         :code => 'std:email-template:generic',
@@ -169,7 +170,7 @@ module KAppInit
         :from_name => 'Haplo',
         :from_email_address => email_from_address,
         :header => '<h1>%%FEATURE_NAME%% for %%RECIPIENT_NAME%%</h1>',
-        :footer => '<hr><p class="link0"><a href="http://%%DEFAULT_HOSTNAME%%/do/latest">Change your preferences</a></p><p class="link0"><a href="%%UNSUBSCRIBE_URL%%">Click here to unsubscribe from these updates</a></p>'+footer_html)
+        :footer => '<hr><p class="link0"><a href="https://%%DEFAULT_HOSTNAME%%/do/latest">Change your preferences</a></p><p class="link0"><a href="%%UNSUBSCRIBE_URL%%">Click here to unsubscribe from these updates</a></p>'+footer_html)
       latest_updates_template.save!
       db.perform("UPDATE email_templates SET id=#{EmailTemplate::ID_LATEST_UPDATES} WHERE id=#{latest_updates_template.id}")
       # --

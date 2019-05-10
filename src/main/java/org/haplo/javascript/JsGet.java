@@ -22,6 +22,14 @@ public class JsGet {
         return null;
     }
 
+    public static String stringMaybeWithDefault(String name, Object object, String defaultValue) {
+        if(!(object instanceof Scriptable)) {
+            return defaultValue;
+        }
+        String value = string(name, (Scriptable)object);
+        return (value == null) ? defaultValue : value;
+    }
+
     public static Date date(String name, Scriptable object) {
         Object value = object.get(name, object); // ConsString is checked
         if(value == null) {

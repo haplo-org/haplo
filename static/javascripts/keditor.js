@@ -108,6 +108,12 @@ var KEditorSchemaTypeSpecifics = {}; // needs to be a dictionary, not an array, 
             for(l = 0; l < KEditorSchemaDCols.length; l++) {
                 defn[KEditorSchemaDCols[l]] = a[x][l];
             }
+            // Only administrators can edit configured behaviours
+            if(defn.p__desc === A_CONFIGURED_BEHAVIOUR) {
+                if(!KSchema.p__userCanEditConfigurableBehaviours) {
+                    continue;
+                }
+            }
             // Make sure aliased value is null if not set
             if(!defn.p__aliasOf) {defn.p__aliasOf = null;}
             // Qualifiers?
@@ -2078,8 +2084,8 @@ j__makeValidatedKctrltext(T_IDENTIFIER_EMAIL_ADDRESS, {
 j__makeValidatedKctrltext(T_IDENTIFIER_URL,{
     j__processValue: function(value) {
         var v = stripString(value);
-        // Add http: if the address contains a word characeter and doesn't begin with a URL scheme
-        return (!(v.match(/\w/)) || v.match(/^\w+:/)) ? v : 'http://'+v;
+        // Add https: if the address contains a word characeter and doesn't begin with a URL scheme
+        return (!(v.match(/\w/)) || v.match(/^\w+:/)) ? v : 'https://'+v;
     }
 });
 

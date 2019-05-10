@@ -29,6 +29,8 @@ public class KUploadedFile extends KBinaryData {
 
     void setUpload(FileUploads.Upload file) {
         this.file = file;
+        this.filename = file.getFilename();
+        this.mimeType = file.getMIMEType();
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -40,17 +42,6 @@ public class KUploadedFile extends KBinaryData {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    @Override
-    public String jsGet_filename() {
-        checkAvailable();
-        return this.file.getFilename();
-    }
-
-    @Override
-    public String jsGet_mimeType() {
-        checkAvailable();
-        return this.file.getMIMEType();
-    }
 
     @Override
     public String jsGet_digest() {
@@ -85,7 +76,9 @@ public class KUploadedFile extends KBinaryData {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    private void checkAvailable() {
+
+    @Override
+    protected void checkAvailable() {
         if(this.file == null || !this.file.wasUploaded()) {
             throw new OAPIException("File not available");
         }

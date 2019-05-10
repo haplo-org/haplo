@@ -5,19 +5,13 @@
   section_names = {
     :today => 'Today',
     :account => 'Account',
-    :user_setup => 'Devices &amp; Computers',
     :content => 'Content',
-    :reports => 'Reports',
+    :reports => 'Utilities',
     :system => 'System',
     :developer => 'Development Support',
   }
   sections = {}
   section_names.each { |n,d| sections[n] = [] }
-
-  # ----------------------------------------------------------------------------------
-
-  user_setup_section = sections[:user_setup]
-  user_setup_section.push(['/do/account/devices', 'Devices'])
 
   # ----------------------------------------------------------------------------------
 
@@ -33,9 +27,7 @@
   # ----------------------------------------------------------------------------------
 
   section = sections[:today]
-  if @request_user.permissions.something_allowed?(:update)
-    section.push(['/do/tasks', 'Tasks'])
-  end
+  section.push(['/do/tasks', 'Tasks'])
   if @request_user.policy.can_use_latest?
     section.push(['/do/latest', 'View '+h(KApp.global(:name_latest))])
   end
@@ -61,9 +53,7 @@
   # ----------------------------------------------------------------------------------
 
   if PLUGIN_DEBUGGING_SUPPORT_LOADED
-    if @request_user.policy.can_setup_system?
-      KNotificationCentre.notify(:developer_support, :tools_menu, sections[:developer])
-    end
+    KNotificationCentre.notify(:developer_support, :tools_menu, sections[:developer], @request_user)
   end
 
   # ----------------------------------------------------------------------------------

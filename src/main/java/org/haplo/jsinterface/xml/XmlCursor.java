@@ -13,6 +13,7 @@ import org.haplo.javascript.OAPIException;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.Callable;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -170,6 +171,26 @@ public class XmlCursor extends KScriptable {
         Element element = checkedElement();
         Attr attr = element.getAttributeNodeNS(namespaceURI, attributeName);
         return (attr == null) ? null : attr.getValue();
+    }
+
+    public Scriptable jsFunction_forEachAttribute(Object iterator) {
+        if(!(iterator instanceof Callable)) {
+            throw new OAPIException("forEachAttribute() must be passed an iterator function");
+        }
+        if(this.node.getNodeType() == Node.ELEMENT_NODE) {
+            Callable i = (Callable)iterator;
+            NamedNodeMap attrs = this.node.getAttributes();
+            if(attrs != null) {
+                int length = attrs.getLength();
+                for(int x = 0; x < length; ++x) {
+                    Attr a = (Attr)attrs.item(x);
+                    Runtime runtime = Runtime.getCurrentRuntime();
+                    Scriptable rootScope = runtime.getJavaScriptScope();
+                    i.call(runtime.getContext(), rootScope, rootScope, new Object[]{a.getName(), a.getValue()}); // ConsString is checked
+                }
+            }
+        }
+        return this;
     }
 
     public String jsFunction_getText() {

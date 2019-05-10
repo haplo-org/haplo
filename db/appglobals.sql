@@ -49,10 +49,6 @@ INSERT INTO app_globals(key,value_int,value_string) VALUES('audit_file_downloads
 -- INSERT INTO app_globals(key,value_int,value_string) VALUES('file_secret_key',NULL,?);
 -- (set by lib/kappinit.rb)
 
--- The contact email of an administrator, for use when sending emails
--- INSERT INTO app_globals(key,value_int,value_string) VALUES('admin_email_address',NULL,'contact@example.com');
--- (set by lib/kappinit.rb)
-
 -- HTML inserted into the page header, or bare text for automatic inclusion in a div
 -- INSERT INTO app_globals(key,value_int,value_string) VALUES('appearance_header',NULL,'Combined Information System');
 -- (set by lib/kappinit.rb)

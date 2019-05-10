@@ -120,15 +120,16 @@ module JSUserSupport
     user.permissions._sql_condition(:read, fieldName)
   end
 
-  def self.loadAllMembers(group)
+  def self.loadAllMembers(group, active)
+    user_kind = active ? User::KIND_USER : User::KIND_USER_BLOCKED
     conditions = if group.id == User::GROUP_EVERYONE
       # Special case for Everyone, as the memberships don't actually exist in the user_memberships table
-      "kind = #{User::KIND_USER} AND id <> #{User::USER_ANONYMOUS}"
+      "kind = #{user_kind} AND id <> #{User::USER_ANONYMOUS}"
     else
       # Normal groups use the UIDs
       uids = group.member_group_ids.dup
       uids << group.id
-      "kind = #{User::KIND_USER} AND id IN (SELECT user_id FROM user_memberships WHERE member_of IN (#{uids.join(',')}) AND is_active)"
+      "kind = #{user_kind} AND id IN (SELECT user_id FROM user_memberships WHERE member_of IN (#{uids.join(',')}) AND is_active)"
     end
     User.find(:all, :conditions => conditions, :order => 'lower(name)')
   end
@@ -260,6 +261,17 @@ module JSUserSupport
 
   def self.generatePasswordRecoveryURL(user, welcomeURL)
     "#{KApp.url_base(:logged_in)}#{user.generate_recovery_urlpath(welcomeURL ? :welcome : :r)}"
+  end
+
+  def self.createAPIKey(user, name, pathPrefix)
+    raise JavaScriptAPIError, "Cannot create API keys for groups" if user.is_group
+    api_key = ApiKey.new
+    api_key.user = user
+    api_key.name = name
+    api_key.path = pathPrefix
+    secret = api_key.set_random_api_key
+    api_key.save
+    secret
   end
 
   def self.createGroup(groupName)

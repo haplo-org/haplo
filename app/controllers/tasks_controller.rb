@@ -42,6 +42,9 @@ class TasksController < ApplicationController
         end
       end 
     end
+    # Only sort near and passed tasks, as other tasks may not have a deadline
+    @workunits_deadline_near.sort! { |a,b| (a.deadline || a.opened_at ) <=> (b.deadline || b.opened_at) }
+    @workunits_deadline_passed.sort! { |a,b| (a.deadline || a.opened_at ) <=> (b.deadline || b.opened_at) }
   end
 end
 

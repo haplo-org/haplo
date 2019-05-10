@@ -7,6 +7,7 @@
 // Automatically generated file, do not edit.
 // Regenerate with 'script/runner lib/tasks/update_javascript_constants.rb'
 
+/*CONST*/ A_CONFIGURED_BEHAVIOUR = 2555;
 /*CONST*/ A_PARENT = 201;
 /*CONST*/ A_TAXONOMY_RELATED_TERM = 2160;
 /*CONST*/ A_TITLE = 211;

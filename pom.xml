@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.haplo</groupId>
   <artifactId>haplo</artifactId>
-  <version>3.20181109.1241.c361da2067</version>
+  <version>3.20190510.1227.99223d625f</version>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -57,17 +57,17 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.4.12.v20180830</version>
+      <version>9.4.18.v20190429</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-continuation</artifactId>
-      <version>9.4.12.v20180830</version>
+      <version>9.4.18.v20190429</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-client</artifactId>
-      <version>9.4.12.v20180830</version>
+      <version>9.4.18.v20190429</version>
     </dependency>
     <dependency>
       <groupId>net.java.dev.jna</groupId>
@@ -77,6 +77,16 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
+      <version>1.48</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcmail-jdk15on</artifactId>
+      <version>1.48</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk15on</artifactId>
       <version>1.48</version>
     </dependency>
     <dependency>
@@ -117,7 +127,7 @@
     <dependency>
       <groupId>com.onelogin</groupId>
       <artifactId>java-saml</artifactId>
-      <version>2.2.0</version>
+      <version>2.4.0</version>
     </dependency>
     <dependency>
       <groupId>org.apache.pdfbox</groupId>

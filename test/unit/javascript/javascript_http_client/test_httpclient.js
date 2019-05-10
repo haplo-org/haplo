@@ -219,25 +219,42 @@ TEST(function() {
     REQUESTS_TRIED++;
 
 /*
-    These tests are disabled, as we don't have an SSL site available
-    on localhost yet. Ideally, we'll access it as localhost (matching the cert)
-    and as 127.0.0.1 (not matching the cert) to see success/failure cases.
-
-    We can't use these tests as-is, because they use external IPs,
-    which we can't easily poke holes in the environments/test.rb blacklist for,
-    as we'd have to hardcode the IPs.
+    // SSL TESTS
+    // Commented out by default because they rely on external sites.
+    // To use them:
+    //   Comment out all tests above except for the final "large request" test
+    //   Edit config/environments/test.rb and set network_client_blacklist to X
+    //   Uncomment out the SSL tests
 
     // An SSL site
-    client = O.httpClient("https://www.google.com/");
+    client = O.httpClient("https://badssl.com/");
     client.retryDelay(1);
-    client.request(callback, {type: "SUCCEEDED",
-                                       status: "200"});
+    client.request(callback, {type:"SUCCEEDED", status:"200"});
     REQUESTS_TRIED++;
 
-    // An invalid cert, it's www.kitten-technologies.co.uk
-    client = O.httpClient("https://www.snell-pym.org.uk/");
+    // An invalid cert (wrong name)
+    client = O.httpClient("https://wrong.host.badssl.com/");
     client.retryDelay(1);
-    client.request(callback, {type: "TEMP_FAIL"});
+    client.request(callback, {type:"TEMP_FAIL"});
+    REQUESTS_TRIED++;
+
+    // An invalid cert (self-signed)
+    client = O.httpClient("https://self-signed.badssl.com/");
+    client.retryDelay(1);
+    client.request(callback, {type:"TEMP_FAIL"});
+    REQUESTS_TRIED++;
+
+    // Requires a client certificate, but none provided
+    client = O.httpClient("https://client.badssl.com/");
+    client.retryDelay(1);
+    client.request(callback, {type:"FAIL", status:"400",});
+    REQUESTS_TRIED++;
+
+    // Requires a client certificate, and provide one
+    client = O.httpClient("https://client.badssl.com");
+    client.retryDelay(1);
+    client.useClientCertificateFromKeychain("BadSSL client");
+    client.request(callback, {type:"SUCCEEDED", status:"200",});
     REQUESTS_TRIED++;
 */
 });

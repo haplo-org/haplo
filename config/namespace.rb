@@ -16,6 +16,7 @@ class ApplicationNamespace
     "robots.txt"     => [:controller, {}, RobotsTxtController],
     "do" => [:sub, {:do_url => true}, {
         "authentication" => [:controller, {}, AuthenticationController],
+        "saml2-error"    => [:controller, {}, Saml2ErrorController],
         "session"        => [:controller, {}, SessionController],
         "account"        => [:controller, {}, AccountController],
         "tasks"          => [:controller, {}, TasksController],
@@ -50,6 +51,7 @@ class ApplicationNamespace
           "navigation"     => [:controller, {}, Setup_NavigationController],
           "subset"         => [:controller, {}, Setup_SubsetController],
           "keychain"       => [:controller, {}, Setup_KeychainController],
+          "saml2"          => [:controller, {}, Setup_SAML2Controller],
           "web-publication" =>[:controller, {}, Setup_WebPublicationController],
           "plugins"        => [:controller, {}, Setup_PluginsController],
           "schema-requirements" =>

@@ -558,10 +558,19 @@ __E
     assert_equal "<div><p>TEST DATA TYPE</p><p>abc</p><p>def</p></div>", plugin_text.to_html
     assert_equal nil, plugin_text.to_identifier_index_str
 
-    plugin_text2 = KTextPluginDefined.new({:type => "test_plugin:testtype2", :value => '{"v":"Y123<p>456"}'})
-    assert_equal 'XY123<p>456', plugin_text2.to_s
-    assert_equal 'XY123&lt;p&gt;456', plugin_text2.to_html # checks HTML escaping for default text rendering
+    plugin_text2 = KTextPluginDefined.new({:type => "test_plugin:testtype2", :value => '{"v":"Y123<p>456","ref":"80000"}'})
+    assert_equal 'XY123<p>45680000', plugin_text2.to_s
+    assert_equal 'XY123&lt;p&gt;45680000', plugin_text2.to_html # checks HTML escaping for default text rendering
     assert_equal "test_plugin:testtype2~ID-Y123<p>456", plugin_text2.to_identifier_index_str
+
+    plugin_text3 = plugin_text2.replace_matching_ref(KObjRef.from_presentation('80000'), KObjRef.from_presentation('80001'))
+    assert_equal 'XY123<p>45680001', plugin_text3.to_s
+    plugin_text4 = plugin_text2.replace_matching_ref(KObjRef.from_presentation('8000x'), KObjRef.from_presentation('80001'))
+    assert_nil plugin_text4
+
+    plugin_text4 = KTextPluginDefined.new({:type => "test:testtype", :value => JSON.dump({"a"=>"b","c"=>"d"})})
+    plugin_text5 = KTextPluginDefined.new({:type => "test:testtype", :value => JSON.dump({"c"=>"d","a"=>"b"})})
+    assert plugin_text4 == plugin_text5
 
     # Test validation failure
     assert_raise Java::OrgMozillaJavascript::JavaScriptException do

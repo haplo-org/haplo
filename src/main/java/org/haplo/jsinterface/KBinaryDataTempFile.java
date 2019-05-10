@@ -24,8 +24,6 @@ import java.nio.charset.Charset;
 public class KBinaryDataTempFile extends KBinaryData {
 
     private String tempPathname;
-    private String filename;
-    private String mimeType;
     private String digest;
     private Scriptable storedFile;
 
@@ -47,17 +45,6 @@ public class KBinaryDataTempFile extends KBinaryData {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    @Override
-    public String jsGet_filename() {
-        checkAvailable();
-        return this.filename;
-    }
-
-    @Override
-    public String jsGet_mimeType() {
-        checkAvailable();
-        return this.mimeType;
-    }
 
     @Override
     public String jsGet_digest() {
@@ -92,7 +79,9 @@ public class KBinaryDataTempFile extends KBinaryData {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    private void checkAvailable() {
+
+    @Override
+    protected void checkAvailable() {
         if(this.tempPathname == null) {
             throw new OAPIException("File not available");
         }

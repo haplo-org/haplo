@@ -22,7 +22,16 @@
     %>
     <%
       @credential.secret.each do |key,value|
-        %><tr><td><%= h(key) %></td><td><input type="password" autocomplete="off" name="password[<%= h(key) %>]" value="<%= value.to_s.length == 0 ? '' : Setup_KeychainController::NOT_CHANGED %>" size="60"></td></tr><%
+        %><tr><td><%= h(key) %></td><td><%
+          secret_display = value.to_s.length == 0 ? '' : Setup_KeychainController::NOT_CHANGED
+          if @ui[:secrets_use_textareas]
+            # Multi-line secrets need to use a textarea to avoid line endings being stripped by browsers
+            %><textarea cols="60" name="password[<%= h(key) %>]"><%= secret_display %></textarea><%
+          else
+            # Normal password field
+            %><input type="password" autocomplete="off" name="password[<%= h(key) %>]" value="<%= secret_display %>" size="60"><%
+          end
+        %></td></tr><%
       end
     %>
     <tr><td></td><td><input type="submit" value="Save"></td></tr>

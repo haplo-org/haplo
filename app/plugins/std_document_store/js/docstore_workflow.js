@@ -463,6 +463,8 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                 } else {
                     return false;
                 }
+            } else if(action === "editComments") {
+                return !!spec.enableCommentEditing;
             }
             return can(M, O.currentUser, spec, action);
         };

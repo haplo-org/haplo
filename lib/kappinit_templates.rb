@@ -152,10 +152,10 @@ module KAppInit
 
         # Create some quick links, first, so they're near the bottom of the RECENT tab
         [
-          ['BBC News', 'http://news.bbc.co.uk'],
-          ['BBC Weather', 'http://www.bbc.co.uk/weather/'],
-          ['Google Maps', 'http://maps.google.co.uk'],
-          ['TFL Journey Planner', 'http://journeyplanner.tfl.gov.uk']
+          ['BBC News', 'https://www.bbc.co.uk/news'],
+          ['BBC Weather', 'https://www.bbc.co.uk/weather'],
+          ['Google Maps', 'https://maps.google.co.uk'],
+          ['TFL Journey Planner', 'https://tfl.gov.uk/plan-a-journey/']
         ].each do |name,url|
           o = KObject.new([O_LABEL_COMMON])
           o.add_attr(O_TYPE_QUICK_LINK, A_TYPE)
@@ -190,7 +190,7 @@ module KAppInit
         haplo_org = KObject.new([O_LABEL_COMMON])
         haplo_org.add_attr(O_TYPE_SUPPLIER, A_TYPE)
         haplo_org.add_attr('Haplo Services', A_TITLE)
-        haplo_org.add_attr(KIdentifierURL.new('http://www.haplo-services.com'), A_URL)
+        haplo_org.add_attr(KIdentifierURL.new('https://www.haplo.com'), A_URL)
         KObjectStore.create(haplo_org)
 
         # Create a welcome news item -- LAST so it appears at the top of the RECENT listing

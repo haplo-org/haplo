@@ -1,0 +1,17 @@
+<%
+  @page_title = 'Update '+h(@credential.name)+' from IdP metadata URL'
+-%>
+<%= sys_mng_header %>
+
+<p>Enter the IdP's metadata URL to update the <b><%= h(@credential.name) %></b> service provider with the IdP's identity and certificate.</p>
+
+<form method="POST"><%= form_csrf_token %>
+  <% if @url %>
+    <p><b>Bad URL or error fetching and parsing metadata.</b></p>
+  <% end %>
+  <p><input type="text" name="url" size="80" value="<%= h(@url) %>"></p>
+  <p><input type="submit" value="Update from URL"></p>
+</form>
+
+<p>&nbsp;</p>
+<p><a href="/do/setup/keychain/info/<%= @credential.id %>">Cancel</a></p>

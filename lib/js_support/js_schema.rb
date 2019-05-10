@@ -113,8 +113,10 @@ module KSchemaToJavaScript
     type_desc = schema.type_descriptor(KObjRef.new(obj_id))
     return nil if type_desc.nil?
     attrs = []
+    aliased_attrs = []
     type_desc.attributes.each do |desc|
       aliased = schema.aliased_attribute_descriptor(desc)
+      aliased_attrs << aliased.desc unless aliased == nil
       attrs << ((aliased == nil) ? desc : aliased.alias_of)
     end
     elements = []
@@ -128,7 +130,8 @@ module KSchemaToJavaScript
       :annotations => type_desc.annotations,
       :createShowType => type_desc.create_show_type,
       :elements => elements.sort(),
-      :attributes => attrs
+      :attributes => attrs,
+      :aliasedAttributes => aliased_attrs
     }
     info[:parentType] = type_desc.parent_type.obj_id if type_desc.parent_type
     info[:code] = type_desc.code if type_desc.code
@@ -146,6 +149,18 @@ module KSchemaToJavaScript
       :allowedQualifiers => attr_desc.allowed_qualifiers.sort
     }
     info[:code] = attr_desc.code if attr_desc.code
+    info.to_json
+  end
+
+  def self.get_schema_aliased_attribute_info(schema, obj_id)
+    aliased_desc = schema.aliased_attribute_descriptor(obj_id)
+    return nil if aliased_desc.nil?
+    info = {
+      :name => aliased_desc.printable_name.to_s,
+      :shortName => aliased_desc.short_name.to_s,
+      :aliasOf => aliased_desc.alias_of
+    }
+    info[:code] = aliased_desc.code if aliased_desc.code
     info.to_json
   end
 

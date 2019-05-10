@@ -406,7 +406,8 @@ var factValueComparisonFunctions = {
     "json": function(a,b) { return _.isEqual(a,b); }, // deep comparison of nested JS objects
     "datetime": function(a,b) { return a.getTime() === b.getTime(); },   // compare ms from epoch
     "date": function(a,b) { return dateToDayPart(a).getTime() === dateToDayPart(b).getTime(); }, // compare adjusted dates
-    "time": function(a,b) { return a.getTime() === b.getTime(); }   // compare ms from epoch
+    "time": function(a,b) { return a.getTime() === b.getTime(); },   // compare ms from epoch
+    "numeric": function(a,b) { return a.equals(b); }
 };
 
 var FactUpdater = function(collection) {
@@ -506,7 +507,7 @@ FactUpdater.prototype._updateFactsWithAdditionalKeys = function(object) {
         if(updater._conditionalUpdateOfRow(row, existingRow)) {
             changes = true;
         }
-        currentRowIds.push(existingRow ? existingRow.id : row.id);
+        currentRowIds.push((existingRow && !changes) ? existingRow.id : row.id);
     });
 
     // Invalidate any rows that weren't updated or created.

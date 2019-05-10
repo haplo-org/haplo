@@ -100,7 +100,7 @@ class ApplicationController
         end
       end
       # bad API keys stop all processing -- the key must exist, no auto-anonymous access with APIs
-      if device == nil || !(device.valid_for_request?(request, params))
+      if device == nil || !(device.valid_for_request_path?(request.request_uri))
         render :text => 'Bad API Key', :status => 403
         return false
       end

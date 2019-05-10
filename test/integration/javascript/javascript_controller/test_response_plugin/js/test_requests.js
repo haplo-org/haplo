@@ -475,6 +475,15 @@
         E.response.body = O.binaryData("Hello ☃", {filename:"testbin.txt", mimeType:"text/plain"})
     });
 
+    P.respond("GET", "/do/plugin_test/zip_file_response", [
+    ], function(E) {
+        var zip = O.zip.create("test-1234.zip");
+        zip.add(O.binaryData("DATA", {filename:"test.txt", mimeType:"text/plain"}));
+        zip.add(P.loadFile("subdir/res.json"), "x.json");
+        zip.add(O.file("2d7e68dc7ace5b2085e765a1e53d9438828767c19479b4458fbb81bd5ce1e1eb"), "dir/something.pages");
+        E.response.body = zip;
+    });
+
     P.respond("GET", "/do/plugin_test/layouts", [
         {parameter:"layout", as:"string"},
         {parameter:"value", as:"string"}

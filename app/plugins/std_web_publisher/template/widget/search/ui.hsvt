@@ -1,8 +1,8 @@
 
 <div>
-    template:widget:search:form()
+    render(form)
 </div>
 
 <div>
-    template:widget:search:results()
+    render(results)
 </div>

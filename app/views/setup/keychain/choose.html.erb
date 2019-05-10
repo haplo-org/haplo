@@ -9,3 +9,10 @@
 <% sorted_models.each do |model| %>
   <p><a href="?kind=<%= ERB::Util.url_encode(model[:kind]) %>&instance_kind=<%= ERB::Util.url_encode(model[:instance_kind]) %>"><%= h(model[:kind]) %> / <%= h(model[:instance_kind]) %></a></p>
 <% end %>
+
+<p>&nbsp</p>
+<h2>Quick setup</h2>
+
+<p>
+  <a href="/do/setup/saml2/add">Add SAML2 Service Provider...</a>
+</p>

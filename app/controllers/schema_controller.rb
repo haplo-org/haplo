@@ -146,10 +146,12 @@ class SchemaController < ApplicationController
     raise "No timestamp" unless params.has_key?(:id)
 
     schema = KObjectStore.schema
+    user_policy = @request_user.policy
+
+    # --- USER PROPERTIES ------------------------------------------------------
+    @user_can_edit_configurable_behaviours = user_policy.can_setup_system?
 
     # --- ATTRS WHERE USER CAN CREATE NEW --------------------------------------
-
-    user_policy = @request_user.policy
     @user_attr_create_new_allowed = []
     detect_attributes_with_createable_linked_types = Proc.new do |attr_desc|
       if attr_desc.data_type == T_OBJREF

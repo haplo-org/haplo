@@ -26,6 +26,8 @@ public class JdSelect extends JdSelectClause {
 
     private static final String GENERIC_SQL_ERROR = "Couldn't execute SQL (does the underlying database table need migrating?) - ";
 
+    private static final String GROUP_BY_FIELD_WRONG_TYPE_MSG = "Group by field name must be a String or an Array of Strings";
+
     public JdSelect() {
         this.stableOrder = false;
         this.limit = NO_LIMIT;
@@ -153,15 +155,12 @@ public class JdSelect extends JdSelectClause {
     }
 
     // Calculates an aggregate function
-    public Object jsFunction_aggregate(String functionName, String fieldName, Object groupByFieldName) {
+    public Object jsFunction_aggregate(String functionName, String fieldName, Object groupByFieldNames) {
         if(functionName == null || fieldName == null) {
             throw new OAPIException("Must pass function and field names to aggregate()");
         }
-        if(groupByFieldName instanceof Undefined) {
-            groupByFieldName = null;
-        }
-        if(groupByFieldName != null && !(groupByFieldName instanceof CharSequence)) {
-            throw new OAPIException("Group by field name must be a String");
+        if(groupByFieldNames instanceof Undefined) {
+            groupByFieldNames = null;
         }
         // Security: Validate field and function names
         JdTable.Field field = this.table.getFieldOrGenericIdField(fieldName);
@@ -175,13 +174,46 @@ public class JdSelect extends JdSelectClause {
         // Now safe to generate SQL expression
         String sqlExpression = functionName+"("+field.getDbName()+")";
         // Group by?
-        JdTable.Field groupByField = null;
-        if(groupByFieldName != null) {
-            groupByField = this.table.getField(((CharSequence)groupByFieldName).toString());
+        Object[] fieldNameElements = null;
+
+        if(groupByFieldNames instanceof CharSequence) {
+            fieldNameElements = new Object[] { groupByFieldNames };
+        } else if(groupByFieldNames instanceof Scriptable) {
+            Scriptable groupsAsScriptable = (Scriptable)groupByFieldNames;
+            fieldNameElements = Runtime.getCurrentRuntime().getContext().getElements(groupsAsScriptable);
+            if(fieldNameElements.length == 0) {
+                throw new OAPIException(GROUP_BY_FIELD_WRONG_TYPE_MSG);
+            }
+        } else if(groupByFieldNames != null) {
+            throw new OAPIException(GROUP_BY_FIELD_WRONG_TYPE_MSG);
+        }
+
+        JdTable.Field groupByFields[] = null;
+
+        if(fieldNameElements != null) {
+            groupByFields = new JdTable.Field[fieldNameElements.length];
+            int elementIndex = 0;
+            for(Object element : fieldNameElements) {
+                if(element instanceof CharSequence) {
+                    String groupFieldName = element.toString();
+                    JdTable.Field groupByField = this.table.getField(groupFieldName);
+                    if(groupByField != null) {
+                        if(groupByField.isSingleColumn()) {
+                            groupByFields[elementIndex++] = groupByField;
+                        } else {
+                            throw new OAPIException("Group by field must not be a column of type File");
+                        }
+                    } else {
+                        throw new OAPIException("Unknown group by field "+groupFieldName+" passed to aggregate()");
+                    }
+                } else {
+                    throw new OAPIException(GROUP_BY_FIELD_WRONG_TYPE_MSG);
+                }
+            }
         }
         // Execute query
         try {
-            return this.table.executeSingleValueExpressionUsingTrustedSQL(this, sqlExpression, valueKind, field.jdbcDataType(), groupByField);
+            return this.table.executeSingleValueExpressionUsingTrustedSQL(this, sqlExpression, valueKind, field.jdbcDataType(), groupByFields);
         } catch(java.sql.SQLException e) {
             throw new OAPIException(GENERIC_SQL_ERROR + e.getMessage(), e);
         }

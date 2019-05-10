@@ -14,6 +14,8 @@ class AuthenticationController < ApplicationController
 
   CSRF_NOT_REQUIRED_FOR_URLS = ['/do/authentication/support_login']
 
+  SAFE_REDIRECT_URL_PATH = /\A\/[^\/]\S*\z/ # match regexp in framework.js
+
   # Don't do CSRF checks for some special URLs.
   def csrf_check(exchange)
     if CSRF_NOT_REQUIRED_FOR_URLS.include?(exchange.request.path)
@@ -47,7 +49,7 @@ class AuthenticationController < ApplicationController
     # a little confusing for the user).
     if @request_user.policy.is_not_anonymous? && !(request.post?)
       rdr = params[:rdr]
-      redirect_to((rdr != nil && rdr =~ /\A\//) ? rdr : '/')
+      redirect_to((rdr != nil && rdr =~ SAFE_REDIRECT_URL_PATH) ? rdr : '/')
       return
     end
 
@@ -56,7 +58,7 @@ class AuthenticationController < ApplicationController
       redirect_path = nil
       call_hook(:hLoginUserInterface) do |hooks|
         rdr = params[:rdr]
-        redirect_path = hooks.run((rdr != nil && rdr =~ /\A\//) ? rdr : nil, params[:auth]).redirectPath
+        redirect_path = hooks.run((rdr != nil && rdr =~ SAFE_REDIRECT_URL_PATH) ? rdr : nil, params[:auth]).redirectPath
       end
       if redirect_path
         redirect_to redirect_path
@@ -84,7 +86,7 @@ class AuthenticationController < ApplicationController
         # Redirect to request an OTP, storing the ID of the user for the pending login
         session[:pending_uid] = @logged_in_user.id
         session[:pending_was_autologin] = @was_autologin
-        redirect_to(if params[:rdr] != nil && params[:rdr] =~ /\A\//
+        redirect_to(if params[:rdr] != nil && params[:rdr] =~ SAFE_REDIRECT_URL_PATH
           "/do/authentication/otp?rdr=#{ERB::Util.url_encode(params[:rdr])}"
         else
           '/do/authentication/otp'
@@ -251,7 +253,7 @@ class AuthenticationController < ApplicationController
     # Called before actual logout, so the plugin has access to session and authenticated user.
     call_hook(:hLogoutUserInterface) do |hooks|
       plugin_rdr = hooks.run().redirectURL
-      rdr = plugin_rdr if plugin_rdr
+      rdr = plugin_rdr if plugin_rdr && (plugin_rdr =~ SAFE_REDIRECT_URL_PATH || plugin_rdr.start_with?('https://'))
     end
 
     session[:uid] = nil
@@ -286,7 +288,7 @@ class AuthenticationController < ApplicationController
         history = (session[:impersonate_history] ||= [])
         history.push(impersonate_uid) unless history.include?(impersonate_uid)
         rdr = params[:rdr]
-        redirect_to((rdr != nil && rdr =~ /\A\//) ? rdr : '/')
+        redirect_to((rdr != nil && rdr =~ SAFE_REDIRECT_URL_PATH) ? rdr : '/')
       end
     else
       @users = User.find_all_by_kind(User::KIND_USER)
@@ -445,7 +447,7 @@ class AuthenticationController < ApplicationController
 private
   def do_redirect_to_destination
     rdr = params[:rdr]
-    destination_url = if rdr != nil && rdr =~ /\A\//   # must begin with a / to avoid being able to trick people
+    destination_url = if rdr != nil && rdr =~ SAFE_REDIRECT_URL_PATH   # must begin with a / to avoid being able to trick people
       rdr
     else
       # Redirect to the home page by default
