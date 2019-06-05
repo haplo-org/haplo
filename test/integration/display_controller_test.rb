@@ -186,7 +186,7 @@ class DisplayControllerTest < IntegrationTest
       r.add_attr("Replaced title", A_TITLE)
       response.replacementObject = r
     end
-    def hObjectAttributeRestrictionLabelsForUser(response, user, object)
+    def hObjectAttributeRestrictionLabelsForUser(response, user, object, container)
       if object.first_attr(A_TITLE).to_s == "Object for restrictions"
         response.userLabelsForObject.add(KObjRef.new(100))
       end

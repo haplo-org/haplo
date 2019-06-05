@@ -114,6 +114,7 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     todel2 = KObject.new()
     todel2.add_attr("to del2", A_TITLE)
     reindexobj = KObject.new()
+    reindexobj.add_attr(O_TYPE_BOOK, A_TYPE)
     reindexobj.add_attr("text reindex", A_TITLE)
 
     KObjectStore.with_superuser_permissions do
@@ -185,6 +186,15 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     v = findtv.first.first_attr(998)
     assert v.kind_of?(KIdentifierTelephoneNumber)
     assert_equal "(United Kingdom) +44 7047 1111", v.to_s
+
+    # Check a full reindex, using the link table to detect it did something
+    assert_equal 0, KApp.get_pg_database.exec("SELECT * FROM os_dirty_text WHERE app_id=#{_TEST_APP_ID} AND osobj_id=#{reindexobj.objref.obj_id}").result.length
+    KApp.get_pg_database.exec("DELETE FROM os_index_link WHERE id=#{reindexobj.objref.obj_id}")
+    # call reindex()
+    run_javascript_test(:inline, "TEST(function() { O.ref(OBJ_TO_REINDEX).load().reindex(); });", jsdefines);
+    assert_equal 1, KApp.get_pg_database.exec("SELECT * FROM os_dirty_text WHERE app_id=#{_TEST_APP_ID} AND osobj_id=#{reindexobj.objref.obj_id}").result.length
+    run_outstanding_text_indexing
+    assert 0 < KApp.get_pg_database.exec("SELECT COUNT(*) FROM os_index_link WHERE id=#{reindexobj.objref.obj_id}").result.first.first.to_i
   end
 
   # ===============================================================================================

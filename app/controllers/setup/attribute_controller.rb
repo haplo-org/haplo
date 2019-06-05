@@ -61,7 +61,7 @@ class Setup_AttributeController < ApplicationController
         case desc
         when A_TITLE, A_ATTR_SHORT_NAME, A_ATTR_QUALIFIER,
               A_ATTR_DATA_TYPE, A_ATTR_UI_OPTIONS, A_ATTR_DATA_TYPE_OPTIONS, A_ATTR_CONTROL_BY_TYPE,
-              A_ATTR_CONTROL_RELAXED, A_RELEVANCY_WEIGHT
+              A_ATTR_CONTROL_RELAXED, A_RELEVANCY_WEIGHT, A_ATTR_GROUP_TYPE
           true
         else false
         end
@@ -103,6 +103,12 @@ class Setup_AttributeController < ApplicationController
       # Person name?
       if dt == T_TEXT_PERSON_NAME
         @obj.add_attr(read_person_name_type_options(), A_ATTR_UI_OPTIONS)
+      end
+      # Attribute group
+      if dt == T_ATTRIBUTE_GROUP
+        if params[:attr_group_type]
+          @obj.add_attr(KObjRef.from_presentation(params[:attr_group_type]), A_ATTR_GROUP_TYPE)
+        end
       end
       # Plugin defined?
       if dt == T_TEXT_PLUGIN_DEFINED && dt_plugin_type
@@ -159,6 +165,7 @@ class Setup_AttributeController < ApplicationController
     @data_type_ui_options = @data_type_ui_options.to_s if @data_type_ui_options != nil
     @data_type_options = @obj.first_attr(A_ATTR_DATA_TYPE_OPTIONS)
     @data_type_options = @data_type_options.to_s if @data_type_options != nil
+    @data_type_attribute_group_type = @obj.first_attr(A_ATTR_GROUP_TYPE)
     # Call all UI option setup functions to ensure defaults are always available for when user
     # chooses a new data type.
     setup_datetime_type_options()

@@ -1,31 +1,51 @@
 <table class="table haplo-object">
     each(attributes) {
-        if(first) {
-            if(qualifierName) {
-                <tr> <th class="haplo-attribute"> attributeName </th> </tr>
-                <tr>
-                    <th class="haplo-qualifier">
-                         <i> qualifierName </i>
-                    </th>
-                    <td> render(value) </td>
-                </tr>
+
+        // Table row
+        do() {
+            if(first) {
+                if(qualifierName) {
+                    <tr> <th class="haplo-attribute"> attributeName </th> </tr>
+                    <tr>
+                        <th class="haplo-qualifier">
+                             <i> qualifierName </i>
+                        </th>
+                        <td> yield:value() </td>
+                    </tr>
+                } else {
+                    <tr>
+                        <th class="haplo-attribute"> attributeName </th>
+                        <td> yield:value() </td>
+                    </tr>
+                }
             } else {
                 <tr>
-                    <th class="haplo-attribute"> attributeName </th>
-                    <td> render(value) </td>
+                    if(qualifierName) {
+                        <th class="haplo-qualifier">
+                             <i> qualifierName </i>
+                        </th>
+                    } else {
+                        <th> </th>
+                    }
+                    <td> yield:value() </td>
                 </tr>
             }
-        } else {
-            <tr>
-                if(qualifierName) {
-                    <th class="haplo-qualifier">
-                         <i> qualifierName </i>
-                    </th>
-                } else {
-                    <th> </th>
-                }
-                <td> render(value) </td>
-            </tr>
         }
+
+        // Rendering of values within the table
+        value {
+            unless(hasNestedValues) {
+                render(value)
+            } else {
+                // Nested values from attribute groups
+                each(nestedValues) {
+                    if(nestedValuesDisplayAttributeName) {
+                        <div class="haplo-object-nested-attribute-name"> attributeName </div>
+                    }
+                    <div> render(value) </div>
+                }
+            }
+        }
+
     }
 </table>

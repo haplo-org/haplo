@@ -26,6 +26,7 @@ module KConstants
   T_BOOLEAN                 = 5
   T_BLOB                    = 6
   # 7 was T_FOREIGN_DATA
+  T_ATTRIBUTE_GROUP         = 8 # attribute groups are different: are stored as v,d,q triples with the defined attribute's desc in x of v,d,q,x
   # Gap for future non-string types
   T_TEXT__MIN               = 16                # All types 16 or above are string types
   T_TEXT                    = T_TEXT__MIN + 0
@@ -38,7 +39,8 @@ module KConstants
       T_NUMBER => 'Number',
       T_DATETIME => 'Date and time',
       T_BOOLEAN => 'Boolean',
-      T_BLOB => 'BLOB'
+      T_BLOB => 'BLOB',
+      T_ATTRIBUTE_GROUP => 'Attribute group'
     }
 
   # Special labels used by core object store code

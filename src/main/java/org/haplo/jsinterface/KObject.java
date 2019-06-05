@@ -152,7 +152,8 @@ public class KObject extends KScriptable {
         if (kuser.jsGet_isSuperUser()) {
             return true;
         } else {
-            AppObjectRestrictedAttributes ra = (kuser.toRubyObject().kobject_restricted_attributes(this.appObject));
+            AppObjectRestrictedAttributesFactory raFactory = kuser.toRubyObject().kobject_restricted_attributes_factory();
+            AppObjectRestrictedAttributes ra = raFactory.restricted_attributes_for(this.appObject);
             Object result = this.withCheckedArgs("canReadAttribute()", desc, true, null, null, false,
                                                  (d,q,i) ->
                                                  ra.can_read_attribute(d));
@@ -165,7 +166,8 @@ public class KObject extends KScriptable {
         if (kuser.jsGet_isSuperUser()) {
             return true;
         } else {
-            AppObjectRestrictedAttributes ra = (kuser.toRubyObject().kobject_restricted_attributes(this.appObject));
+            AppObjectRestrictedAttributesFactory raFactory = kuser.toRubyObject().kobject_restricted_attributes_factory();
+            AppObjectRestrictedAttributes ra = raFactory.restricted_attributes_for(this.appObject);
             Object result = this.withCheckedArgs("canModifyAttribute()", desc, true, null, null, false,
                                                  (d,q,i) ->
                                                  ra.can_modify_attribute(d));
@@ -350,6 +352,20 @@ public class KObject extends KScriptable {
             (Boolean)this.appObject.has_attr(jsValue, d, q));
     }
 
+    public Object jsFunction_attributeGroupHas(int groupDesc, Object value, Object desc, Object qual) {
+        Object jsValue = jsToAttr(value);
+        if(jsValue == null) { return false; }
+        return withCheckedArgs("attributeGroupHas()", desc, false, qual, null, false, (d,q,i) ->
+            null != this.appObject.group_id_of_group_with_attr(groupDesc, jsValue, d, q));
+    }
+
+    public Object jsFunction_attributeGroupIdForValue(int groupDesc, Object value, Object desc, Object qual) {
+        Object jsValue = jsToAttr(value);
+        if(jsValue == null) { return false; }
+        return withCheckedArgs("attributeGroupIdForValue()", desc, false, qual, null, false, (d,q,i) ->
+            this.appObject.group_id_of_group_with_attr(groupDesc, jsValue, d, q));
+    }
+
     public Object jsFunction_valuesEqual(Scriptable object, Object desc, Object qual) {
         if(object == null) {
             throw new OAPIException("Object passed to valuesEqual() may not be null or undefined");
@@ -380,10 +396,23 @@ public class KObject extends KScriptable {
         final Runtime runtime = Runtime.getCurrentRuntime();
         return withCheckedArgs("every()", desc, false, qual, iterator, true, (d,q,i) -> {
             if(i != null) {
-                this.appObject.jsEach(d, q, (iValue, iDesc, iQual) -> {
-                    i.call(runtime.getContext(), i, i,
-                            new Object[]{attrToJs(runtime, iValue), iDesc, iQual});
-                    return true;
+                this.appObject.jsEach(d, q, new AppObject.AttrIterator() {
+                    public boolean attribute(Object iValue, int iDesc, int iQual, Object iExtension) {
+                        Object[] args = null;
+                        if(null == iExtension) {
+                            args = new Object[]{attrToJs(runtime, iValue), iDesc, iQual};
+                        } else {
+                            if(!(iExtension instanceof KObjectAttributeExtension)) {
+                                throw new RuntimeException("Logic error: bad extension");
+                            }
+                            args = new Object[]{attrToJs(runtime, iValue), iDesc, iQual, iExtension};
+                        }
+                        i.call(runtime.getContext(), i, i, args);
+                        return true;
+                    }
+                    public Object createJSExtensionValue(int desc, int groupId) {
+                        return KObject.createObjectAttributeExtension(desc, groupId);
+                    }
                 });
                 return Context.getUndefinedValue();
             } else {
@@ -414,39 +443,60 @@ public class KObject extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public Object jsFunction_append(Object value, int desc, int qual) {
+    public Object jsFunction_append(Object value, int desc, int qual, Object extension) {
         mustBeMutableObject("append()");
         Object jsValue = jsToAttr(value);
         if(jsValue == null) {
             throw new OAPIException("null and undefined cannot be appended to a StoreObject");
         }
-        this.appObject.add_attr(jsValue, desc, qual);
+        if((extension == null) || (extension instanceof org.mozilla.javascript.Undefined)) {
+            this.appObject.add_attr(jsValue, desc, qual);
+        } else {
+            if(!(extension instanceof KObjectAttributeExtension)) {
+                throw new OAPIException("extension argument isn't a StoreObjectAttributeExtension object");
+            }
+            KObjectAttributeExtension ext = (KObjectAttributeExtension)extension;
+            this.appObject.jsAddAttrWithExtension(jsValue, desc, qual, ext.getDesc(), ext.getGroupId());
+        }
         return this;
     }
 
-    public Object jsFunction_appendWithIntValue(Object value, int desc, int qual) {
+    public Object jsFunction_appendWithIntValue(Object value, int desc, int qual, Object extension) {
         mustBeMutableObject("appendWithIntValue()");
         if(!(value instanceof Number)) {
             throw new OAPIException("Not a numeric type when calling appendWithIntValue()");
         }
-        return jsFunction_append(((Number)value).intValue(), desc, qual);
+        return jsFunction_append(((Number)value).intValue(), desc, qual, extension);
     }
 
-    public Object jsFunction_appendParent(Object value, int qual) { return jsFunction_append(value, A_PARENT, qual); }
-    public Object jsFunction_appendType(Object value, int qual) { return jsFunction_append(value, A_TYPE, qual); }
-    public Object jsFunction_appendTitle(Object value, int qual) { return jsFunction_append(value, A_TITLE, qual); }
+    public Object jsFunction_appendParent(Object value, int qual) { return jsFunction_append(value, A_PARENT, qual, null); }
+    public Object jsFunction_appendType(Object value, int qual) { return jsFunction_append(value, A_TYPE, qual, null); }
+    public Object jsFunction_appendTitle(Object value, int qual) { return jsFunction_append(value, A_TITLE, qual, null); }
 
     public Object jsFunction_remove(Object desc, Object qual, Object iterator) {
         mustBeMutableObject("remove()");
         return withCheckedArgs("remove()", desc, true, qual, iterator, true, (d,q,i) -> {
-            if(i == null) {
-                this.appObject.jsDeleteAttrs(d,q);
-            } else {
+            if(i != null) {
                 final Runtime runtime = Runtime.getCurrentRuntime();
-                this.appObject.jsDeleteAttrsIterator(d, q, (iValue, iDesc, iQual) -> {
-                    return ScriptRuntime.toBoolean(i.call(runtime.getContext(), i, i,
-                        new Object[]{attrToJs(runtime, iValue), iDesc, iQual}));
+                this.appObject.jsDeleteAttrsIterator(d, q, new AppObject.AttrIterator() {
+                    public boolean attribute(Object iValue, int iDesc, int iQual, Object iExtension) {
+                        Object[] args = null;
+                        if(null == iExtension) {
+                            args = new Object[]{attrToJs(runtime, iValue), iDesc, iQual};
+                        } else {
+                            if(!(iExtension instanceof KObjectAttributeExtension)) {
+                                throw new RuntimeException("Logic error: bad extension");
+                            }
+                            args = new Object[]{attrToJs(runtime, iValue), iDesc, iQual, iExtension};
+                        }
+                        return ScriptRuntime.toBoolean(i.call(runtime.getContext(), i, i, args));
+                    }
+                    public Object createJSExtensionValue(int desc, int groupId) {
+                        return KObject.createObjectAttributeExtension(desc, groupId);
+                    }
                 });
+            } else {
+                this.appObject.jsDeleteAttrs(d,q);
             }
             return this;
         });
@@ -483,6 +533,18 @@ public class KObject extends KScriptable {
         return this.ref;
     }
 
+    public Scriptable jsFunction_newAttributeGroup(int groupDesc) {
+        mustBeMutableObject("newAttributeGroup()");
+        int gid = this.appObject.allocate_new_extension_group_id();
+        return KObject.createObjectAttributeExtension(groupDesc, gid);
+    }
+
+    public Scriptable jsFunction_getAttributeGroupIds(Object desc) {
+        Object[] ids = this.appObject.jsGroupIdsForDesc((desc instanceof Integer) ? (Integer)desc : null);
+        Runtime runtime = Runtime.getCurrentRuntime();
+        return runtime.getContext().newArray(runtime.getJavaScriptScope(), ids);
+    }
+
     public Scriptable jsFunction_save(Object labelChanges) {
         mustBeMutableObject("save()");
         AppLabelChanges appLabelChanges = null;
@@ -502,6 +564,52 @@ public class KObject extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+
+    public Scriptable jsFunction_extractAllAttributeGroups() {
+        Runtime runtime = Runtime.getCurrentRuntime();
+        AppObjectAttributeGroups ungrouped = rubyInterface.extractAllAttributeGroups(this.appObject);
+
+        Scriptable jsUngrouped = runtime.createHostObject("Object");
+
+        jsUngrouped.put("ungroupedAttributes", jsUngrouped, KObject.fromAppObject(ungrouped.ungrouped_attributes(), false));
+
+        AppObjectAttributeGroups.GroupEntry groups[] = ungrouped.groups();
+        Object jsGroups[] = new Object[groups.length];  // needs to be Object[] for newArray()
+        for(int i = 0; i < groups.length; ++i) {
+            AppObjectAttributeGroups.GroupEntry e = groups[i];
+            Scriptable g = runtime.createHostObject("Object");
+            g.put("object", g, KObject.fromAppObject(e.object(), false));
+            KObjectAttributeExtension extension = (KObjectAttributeExtension)runtime.createHostObject("$StoreObjectAttributeExtension");
+            extension.setValues(e.desc(), e.group_id());
+            g.put("extension", g, extension);
+            jsGroups[i] = g;
+        }
+        jsUngrouped.put("groups", jsUngrouped, runtime.getContext().newArray(runtime.getJavaScriptScope(), jsGroups));
+
+        return jsUngrouped;
+    }
+
+    public Scriptable jsFunction_extractSingleAttributeGroupMaybe(int groupId) {
+        AppObject grp = rubyInterface.extractSingleAttributeGroupMaybe(this.appObject, groupId);
+        return (grp == null) ? null : KObject.fromAppObject(grp, false /* not mutable */);
+    }
+
+    public Scriptable jsFunction_extractSingleAttributeGroup(int groupId) {
+        Scriptable group = jsFunction_extractSingleAttributeGroupMaybe(groupId);
+        if(group == null) {
+            throw new OAPIException("Attribute group not found: "+groupId);
+        }
+        return group;
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+
+    public Scriptable jsFunction_reindex() {
+        if(this.appObject != null && this.appObject.version() > 0) {
+            rubyInterface.reindex(this.appObject);
+        }
+        return this;
+    }
 
     public Scriptable jsFunction_reindexText() {
         if(this.appObject != null && this.appObject.version() > 0) {
@@ -572,6 +680,14 @@ public class KObject extends KScriptable {
         return null;
     }
 
+    // for the x in (v,d,q,x)
+    private static KObjectAttributeExtension createObjectAttributeExtension(int desc, int groupId) {
+        Runtime runtime = Runtime.getCurrentRuntime();
+        KObjectAttributeExtension x = (KObjectAttributeExtension)runtime.createHostObject("$StoreObjectAttributeExtension");
+        x.setValues(desc, groupId);
+        return x;
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     static public Integer[] getObjectHierarchyIdPath(Integer objId) {
         return rubyInterface.getObjectHierarchyIdPath(objId);
@@ -598,6 +714,10 @@ public class KObject extends KScriptable {
 
         public AppObject relabelObject(Object object, AppLabelChanges labelChanges);
 
+        public AppObjectAttributeGroups extractAllAttributeGroups(AppObject object);
+        public AppObject extractSingleAttributeGroupMaybe(AppObject object, int groupId);
+
+        public void reindex(AppObject object);
         public void reindexText(AppObject object);
 
         public boolean objectIsKindOf(AppObject object, int objId);

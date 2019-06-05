@@ -51,11 +51,12 @@ P.globalTemplateFunction("std:web-publisher:widget:query:list:search-result", fu
     var fallbackRenderer = function(object) {
         return P.template("widget/query/list-search-result-item-fallback").deferredRender(object);
     };
+    var context = P.getRenderingContext();
     this.render(P.template("widget/query/list-search-result").deferredRender({
         results: _.map(specification.results ? specification.results : specification.query.execute(),
                 function(object) {
                     var r = renderers.get(object.firstType()) || defaultRenderer || fallbackRenderer;
-                    return r(object);
+                    return r(object, context);
                 }
             )
     }));
@@ -89,7 +90,11 @@ P.globalTemplateFunction("std:web-publisher:utils:title:name", function(object) 
 // --------------------------------------------------------------------------
 // Replaceable templates
 
-var replaceableTemplates = {};
+var replaceableTemplates = {
+    // Default replaceable templates
+    "std:web-publisher:error:internal": ["error/internal", P],
+    "std:web-publisher:error:stop":     ["error/stop", P]
+};
 
 P.publisherReplaceableTemplate = function(code, templateName) {
     replaceableTemplates[code] = [templateName, P];
@@ -118,8 +123,18 @@ P.Publication.prototype.getReplaceableTemplate = function(code) {
         throw new Error("Replaceable template not found: "+code);
     }
     var template = plugin.template(templateName);
+    if($host.templateDebuggingEnabled) {
+        template.addDebugComment("replaceable with "+code);
+    }
     cached[code] = template;
     return template;
+};
+
+// For --turbo option in developer mode
+P.__removeCachedTemplates = function() {
+    _.each(P.allPublications, function(publication) {
+        delete publication._cachedReplaceableTemplates;
+    });
 };
 
 P.globalTemplateFunction("std:web-publisher:template", function(code) {

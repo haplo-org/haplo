@@ -38,3 +38,13 @@ img.haplo-file-thumbnail {
 .haplo-results-paging-next {
     float: right;
 }
+
+/* ---------------------------------------------------------------------- */
+/* objects */
+
+.haplo-object-nested-attribute-name {
+    font-weight: bold;
+    font-size: 0.8em;
+    line-height: 0.85em;
+    margin: 5px 0 2px 0;
+}

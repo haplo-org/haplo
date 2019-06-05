@@ -34,9 +34,10 @@ module JSStdWebPublisherSupport
       hide_attributes = r.hideAttributes unless r.hideAttributes.empty?
     end
     # Apply Restrictions and hide additional attributes
-    restricted_attributes = AuthContext.user.kobject_restricted_attributes(unmodified_object)
-    restricted_attributes.hide_additional_attributes(hide_attributes) unless hide_attributes.nil?
-    object = object.dup_restricted(restricted_attributes)
+    restricted_attributes_factory = AuthContext.user.kobject_restricted_attributes_factory
+    restricted_attributes_factory.hide_additional_attributes(hide_attributes) unless hide_attributes.nil?
+    restricted_attributes = restricted_attributes_factory.restricted_attributes_for(unmodified_object)
+    object = object.dup_restricted(restricted_attributes_factory, restricted_attributes)
 
     # Get permissions of current user, for manual permission checks
     permissions = AuthContext.user.permissions
@@ -49,8 +50,7 @@ module JSStdWebPublisherSupport
     # Prepare without permission enforcement (handling security carefully)
     # but send to template outside this, so any functions there work under the
     # expected user for the public view.
-    rendered_values = []
-    KObjectStore.with_superuser_permissions do
+    rendered_values = KObjectStore.with_superuser_permissions do
       schema = object.store.schema
       transformed = KAttrAlias.attr_aliasing_transform(object,schema,true) do |value,desc,qualifier,is_alias|
         if only_attrs && !only_attrs.include?(desc)
@@ -62,25 +62,39 @@ module JSStdWebPublisherSupport
         end
       end
 
-      transformed.each do |toa|
-        attribute_name = toa.descriptor.printable_name.to_s
-        first_attribute = true
-        toa.attributes.each do |value,desc,qualifier|
-          qualifier_name = nil
-          unless qualifier.nil?
-            qd = schema.qualifier_descriptor(qualifier)
-            qualifier_name = qd ? qd.printable_name.to_s : nil
-          end
-          vhtml = render_value(value, toa.descriptor.desc, object, permissions, web_publisher)
-          unless vhtml.nil?
-            rendered_values << [first_attribute, attribute_name, qualifier_name, vhtml]
-            first_attribute = false
-          end
-        end
-      end
+      _object_widget_transformed_to_render_attributes(web_publisher, schema, object, permissions, transformed)
     end
 
     RenderedAttributeList.new(rendered_values)
+  end
+
+  def self._object_widget_transformed_to_render_attributes(web_publisher, schema, object, permissions, transformed)
+    rendered_values = []
+    first_attribute = true
+    transformed.each do |toa|
+      attribute_name = toa.descriptor.printable_name.to_s
+      first_value = true
+      toa.attributes.each do |value,desc,qualifier|
+        qualifier_name = nil
+        unless qualifier.nil?
+          qd = schema.qualifier_descriptor(qualifier)
+          qualifier_name = qd ? qd.printable_name.to_s : nil
+        end
+        if value.k_typecode == KConstants::T_ATTRIBUTE_GROUP
+          # TODO: Should there be something in the API so values can be filtered out of the group?
+          nested_rendered_values = _object_widget_transformed_to_render_attributes(web_publisher, schema, object, permissions, value.transformed)
+          rendered_values << [first_attribute, first_value, attribute_name, qualifier_name, nil, nested_rendered_values]
+        else
+          vhtml = render_value(value, toa.descriptor.desc, object, permissions, web_publisher)
+          unless vhtml.nil?
+            rendered_values << [first_attribute, first_value, attribute_name, qualifier_name, vhtml]
+            first_value = false
+          end
+        end
+      end
+      first_attribute = false
+    end
+    rendered_values
   end
 
   class RenderedAttributeList
@@ -91,11 +105,13 @@ module JSStdWebPublisherSupport
       @rendered_values.length
     end
     def fillInRenderObjectValue(index, rov)
-      first_attribute,attribute_name,qualifier_name,value_html = @rendered_values[index]
-      rov.first = first_attribute
+      first_attribute,first_value,attribute_name,qualifier_name,value_html,nested_values = @rendered_values[index]
+      rov.firstAttribute = first_attribute
+      rov.firstValue = first_value
       rov.attributeName = attribute_name
       rov.qualifierName = qualifier_name
       rov.valueHTML = value_html
+      rov.nestedValues = nested_values ? RenderedAttributeList.new(nested_values) : nil
     end
   end
 

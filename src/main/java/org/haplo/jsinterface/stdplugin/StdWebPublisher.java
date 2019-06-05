@@ -132,10 +132,12 @@ public class StdWebPublisher extends ScriptableObject {
     // ----------------------------------------------------------------------
 
     static public class RenderObjectValue {
-        public boolean first;
+        public boolean firstAttribute;
+        public boolean firstValue;
         public String attributeName;
         public String qualifierName;
         public String valueHTML;
+        public RenderedAttributeList nestedValues;
     }
 
     public interface RenderedAttributeList {
@@ -186,13 +188,24 @@ public class StdWebPublisher extends ScriptableObject {
         public ValueView() { this.value = new RenderObjectValue(); };
         public String getClassName() { return "$StdWebPublisher_ValueView"; }
         RenderObjectValue getValue() { return this.value; }
-        public boolean jsGet_first() { return this.value.first;}
+        public boolean jsGet_first() { return this.value.firstValue;}
+        public boolean jsGet_nestedValuesDisplayAttributeName() {
+            return this.value.firstValue && !this.value.firstAttribute;
+        }
         public String jsGet_attributeName() { return this.value.attributeName; }
         public String jsGet_qualifierName() { return this.value.qualifierName; }
         public Scriptable jsGet_value() { return this; } // Use this object as the deferred
         public void renderDeferred(StringBuilder builder, Context context) throws RenderException {
             if(context != Context.TEXT) { throw new OAPIException("Can't render this deferred render outside TEXT context"); }
             builder.append(value.valueHTML);
+        }
+        public boolean jsGet_hasNestedValues() { return this.value.nestedValues != null; }
+        public Scriptable jsGet_nestedValues() {
+            if(this.value.nestedValues == null) { throw new OAPIException("Check hasNestedValues before getting nestedValues"); }
+            RenderedAttributeListView view = 
+                (RenderedAttributeListView)Runtime.createHostObjectInCurrentRuntime("$StdWebPublisher_RenderedAttributeListView");
+            view.setList(this.value.nestedValues);
+            return view;
         }
     }
 

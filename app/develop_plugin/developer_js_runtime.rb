@@ -80,7 +80,7 @@ class DeveloperJSPluginRuntime < KJSPluginRuntime
     jsscope = @runtime.getJavaScriptScope()
     jscontext = @runtime.getContext()
     fn = jsscope.get("$fasterLoadRemoveCachedTemplates", jsscope)
-    fn.call(jscontext, jsscope, fn, [])
+    fn.call(jscontext, jsscope, fn, [nil != KPlugin.get("std_web_publisher")])
   end
 
   def _store_runtime_for_reloading
@@ -114,13 +114,16 @@ class DeveloperJSPluginRuntime < KJSPluginRuntime
         });
         return JSON.stringify(versions);
     };
-    var $fasterLoadRemoveCachedTemplates = function() {
+    var $fasterLoadRemoveCachedTemplates = function(webPublisherInstalled) {
         var root = (function() { return this; })();
         _.each($fasterLoad.plugin, function(i, name) {
             if(root[name]) {
                 root[name].$templates = {};
             }
         });
+        if(webPublisherInstalled) {
+            std_web_publisher.__removeCachedTemplates();
+        }
     };
     var $fasterLoad = {
         plugin: {},

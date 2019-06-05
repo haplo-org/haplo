@@ -389,7 +389,7 @@ class KObjectStore
     # Shortcut returning the fresh copy of the existing object if there are no changes
     return obj if changes.empty?
     # Update database (using relabelled_obj as attribute visibility will be determined by this object)
-    index_sql, has_text_to_index = _generate_index_update_sql(schema, obj.objref.obj_id, relabelled_obj, is_schema_obj?(obj), false)
+    index_sql = _generate_index_update_sql(schema, obj.objref.obj_id, relabelled_obj, is_schema_obj?(obj), false)
     pg = KApp.get_pg_database
     modified_obj = nil
     begin
@@ -409,9 +409,7 @@ class KObjectStore
         pg.exec(index_sql)
       end
     end
-    if has_text_to_index
-      TEXTIDX_FLAG_GENERAL.setFlag()
-    end
+    TEXTIDX_FLAG_GENERAL.setFlag()
     # All good - uncache, inform delegate using definitive object from the database
     @object_cache.delete(obj.objref.obj_id)
     schema_update_and_inform_delegate(obj, modified_obj, :relabel)
@@ -451,6 +449,18 @@ class KObjectStore
       end
       KObjectStore.relabel(obj, changes)
     end
+  end
+
+  def reindex_object(objref)
+    obj = read(objref)
+    index_sql = _generate_index_update_sql(schema, obj.objref.obj_id, obj, is_schema_obj?(obj), false)
+    pg = KApp.get_pg_database
+    begin
+      _with_object_update_database_transaction_and_retry(pg, obj.objref.obj_id) do
+        pg.exec(index_sql)
+      end
+    end
+    TEXTIDX_FLAG_GENERAL.setFlag()
   end
 
   # Trigger a text reindex, for example, if something is altering the indexed object to add additional text
@@ -510,6 +520,53 @@ class KObjectStore
     schema_update_and_inform_delegate(obj, obj, :erase)
 
     nil
+  end
+
+  # ----------------------------------------------------------------------------------------------------------
+  # Attribute groups
+
+  AttrsGroup = Struct.new(:desc, :group_id, :object)
+
+  AttrsUngrouped = Struct.new(
+    :ungrouped_attributes,  # => KObject
+    :groups # => [Group, ...]
+  )
+
+  def extract_groups(container)
+    self.schema # ensure read
+    ungrouped_attributes = KObject.new(container.labels)
+    groups = {}
+    container.each do |v,d,q,x|
+      unless x
+        # Normal attribute
+        ungrouped_attributes.add_attr(v,d,q)
+      else
+        # Attribute is part of a group
+        group_desc, group_id = *x
+        group = groups[x]
+        unless group
+          # Create object with correct type for the attribute group
+          obj = KObject.new
+          gad = @schema.attribute_descriptor(group_desc)
+          group_type = gad ? gad.attribute_group_type : nil
+          group_type ||= KConstants::O_TYPE_UNKNOWN
+          obj.add_attr(group_type, KConstants::A_TYPE)
+          group = AttrsGroup.new(group_desc, group_id, obj)
+          groups[x] = group
+        end
+        group.object.add_attr(v,d,q)
+      end
+    end
+
+    # Delegate labels the extracted groups
+    groups.each_value do |group|
+      @delegate.label_extracted_object_group(container, group)
+    end
+
+    AttrsUngrouped.new(
+      ungrouped_attributes,
+      groups.values
+    )
   end
 
   # ----------------------------------------------------------------------------------------------------------
@@ -884,7 +941,7 @@ private
     end
     # -----------------------------------------------------------------------------------
 
-    index_sql, has_text_to_index = _generate_index_update_sql(schema, obj_id, obj, obj_is_schema_obj, create_operation)
+    index_sql = _generate_index_update_sql(schema, obj_id, obj, obj_is_schema_obj, create_operation)
     sql << index_sql
 
     # Commit to store, checking that state hasn't changed
@@ -920,9 +977,8 @@ private
         pg.exec(sql)
 
         # For updates, need to update indicies of objects linking to this object?
-        if !create_operation && generate_reindex_entries_for_linking_objects(pg, obj_id, previous_version_of_obj, obj)
-          # Make sure reindexer is triggered
-          has_text_to_index = true
+        if !create_operation
+          generate_reindex_entries_for_linking_objects(pg, obj_id, previous_version_of_obj, obj)
         end
       end
     ensure
@@ -931,14 +987,33 @@ private
       @object_cache.delete(obj_id)
     end
 
-    if has_text_to_index
-      # Start the index job AFTER the transaction has been committed in the db
-      TEXTIDX_FLAG_GENERAL.setFlag()
-    end
+    # Start the index job AFTER the transaction has been committed in the db
+    TEXTIDX_FLAG_GENERAL.setFlag()
 
     obj.freeze
 
     schema_update_and_inform_delegate(previous_version_of_obj, obj, create_operation ? :create : :update)
+  end
+
+  def _ungrouped_object_with_restrictions(obj_indexable, obj_unmodified)
+    objs_to_index = []
+    ungrouped = extract_groups(obj_indexable)
+    # First, all attributes which aren't in an attribute group
+    # Get restrictions from the _unmodified_ object, as the delegate may have modified it in a way which changes which restrictions match
+    objs_to_index << [
+      ungrouped.ungrouped_attributes,
+      schema._get_restricted_attributes_for_object(obj_unmodified).hidden
+    ]
+    # Then add the fake objects which contain the grouped attributes -- removing the type attribute
+    # from the fake group which shouldn't be included in the index.
+    ungrouped.groups.each do |g|
+      group_attrs = g.object
+      # get restriction while it still has the type attribute
+      group_restriction = schema._get_restricted_attributes_for_object(group_attrs).hidden
+      group_attrs.delete_attrs!(A_TYPE) # do this last
+      objs_to_index << [group_attrs, group_restriction]
+    end
+    objs_to_index
   end
 
   def _generate_index_update_sql(schema, obj_id, obj, obj_is_schema_obj, create_operation)
@@ -951,8 +1026,6 @@ private
     sql_fragment1 = ' (id,attr_desc,qualifier,value'
     sql_fragment2 = ",restrictions) VALUES (#{obj_id},"
     sql_fragment = sql_fragment1 + sql_fragment2
-    # Flag for text
-    has_text_to_index = false
     # Write new index entries. Delegate may want to alter the object which is indexed.
     obj_indexable = @delegate.indexed_version_of_object(obj, obj_is_schema_obj)
 
@@ -962,47 +1035,48 @@ private
       td = schema.type_descriptor(td.root_type)
     end
 
-    # Get restrictions from the _unmodified_ object, as the delegate may have modified it in a way which changes which restrictions match
-    restrictions = schema._get_restricted_attributes_for_object(obj).hidden
+    # Ungroup the object and generate a list of restrictions and objects to index
+    objs_to_index = _ungrouped_object_with_restrictions(obj_indexable, obj)
 
-    obj_indexable.each do |value,desc,qualifier_v|
-      if restrictions.has_key?(desc)
-        restriction_labels = "'{" + restrictions[desc].map {|l|l.to_i}.join(",") + "}'::int[]" # map to_i for safety when generating SQL
-      else
-        restriction_labels = "NULL" # All public
-      end
-      qualifier = (qualifier_v == nil) ? 0 : qualifier_v
-      if value.class == Fixnum || value.class == Bignum
-        sql << "INSERT INTO os_index_int"+sql_fragment+"#{desc},#{qualifier},#{value},#{restriction_labels});"
-      elsif value.class == KObjRef
-        # Insert full path of link into the index
-        pids = full_obj_id_path(value).join(',')
-        sql << %Q!INSERT INTO os_index_link #{sql_fragment1},object_id#{sql_fragment2}#{desc},#{qualifier},'{#{pids}}'::int[],#{value.obj_id},#{restriction_labels});!
-      elsif value.k_is_string_type?
-        # Mark this field as requiring text indexing
-        has_text_to_index = true
-
-        # Identifiers are also derived from text, but have a special index
-        identifier_index_str = value.to_identifier_index_str()
-        if identifier_index_str
-          unless identifier_index_str.kind_of?(String) && identifier_index_str.length > 0
-            raise "Bad indexed form for identifier"
-          end
-          sql << "INSERT INTO os_index_identifier#{sql_fragment1},identifier_type#{sql_fragment2}#{desc},#{qualifier},#{PGconn.quote(identifier_index_str)},#{value.k_typecode},#{restriction_labels});"
+    # Write SQL statements to index each of the attributes within each of the objects, with their
+    # individual restrictions.
+    objs_to_index.each do |iobj, restrictions|
+      iobj.each do |value,desc,qualifier_v|
+        if restrictions.has_key?(desc)
+          restriction_labels = "'{" + restrictions[desc].map {|l|l.to_i}.join(",") + "}'::int[]" # map to_i for safety when generating SQL
+        else
+          restriction_labels = "NULL" # All public
         end
-      elsif value.class == KDateTime
-        # Store the range in the datetime index
-        dtr1, dtr2 = value.range_pg
-        sql << "INSERT INTO os_index_datetime#{sql_fragment1},value2#{sql_fragment2}#{desc},#{qualifier},'#{dtr1}','#{dtr2}',#{restriction_labels});"
+        qualifier = (qualifier_v == nil) ? 0 : qualifier_v
+        if value.class == Fixnum || value.class == Bignum
+          sql << "INSERT INTO os_index_int"+sql_fragment+"#{desc},#{qualifier},#{value},#{restriction_labels});"
+        elsif value.class == KObjRef
+          # Insert full path of link into the index
+          pids = full_obj_id_path(value).join(',')
+          sql << %Q!INSERT INTO os_index_link #{sql_fragment1},object_id#{sql_fragment2}#{desc},#{qualifier},'{#{pids}}'::int[],#{value.obj_id},#{restriction_labels});!
+        elsif value.k_is_string_type?
+          # Identifiers are also derived from text, but have a special index
+          identifier_index_str = value.to_identifier_index_str()
+          if identifier_index_str
+            unless identifier_index_str.kind_of?(String) && identifier_index_str.length > 0
+              raise "Bad indexed form for identifier"
+            end
+            sql << "INSERT INTO os_index_identifier#{sql_fragment1},identifier_type#{sql_fragment2}#{desc},#{qualifier},#{PGconn.quote(identifier_index_str)},#{value.k_typecode},#{restriction_labels});"
+          end
+        elsif value.class == KDateTime
+          # Store the range in the datetime index
+          dtr1, dtr2 = value.range_pg
+          sql << "INSERT INTO os_index_datetime#{sql_fragment1},value2#{sql_fragment2}#{desc},#{qualifier},'#{dtr1}','#{dtr2}',#{restriction_labels});"
+        end
       end
     end
 
-    if has_text_to_index
-      sql << "INSERT INTO os_dirty_text(app_id,osobj_id) VALUES(#{@application_id.to_i},#{obj_id});"
-      # Note semaphore trigger must be called by caller after database COMMIT
-    end
+    # Must always reindex text, even if there doesn't appears to be any, because a plugin might add additional text,
+    # or it's removing text from a previous version.
+    sql << "INSERT INTO os_dirty_text(app_id,osobj_id) VALUES(#{@application_id.to_i},#{obj_id});"
+    # Note semaphore trigger must be called by caller after database COMMIT
 
-    [sql, has_text_to_index]
+    sql
   end
 
   def _with_object_update_database_transaction_and_retry(pg, obj_id)

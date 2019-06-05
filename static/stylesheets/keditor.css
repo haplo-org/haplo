@@ -339,6 +339,26 @@ div.z__editor_objref_lookup_text input /* input control */ {
     padding-left: 20px;
 }
 
+/* attribute groups */
+
+.z__editor_attribute_group .z__keyvalue_col1 {
+    font-size: 10px;
+    line-height: 11px;
+    text-transform: uppercase;
+    color: #666;
+}
+
+/* no dividing lines within attribute group */
+.z__editor_attribute_group .z__keyvalue_divider {
+    border-top: none;
+}
+
+.z__keyvalue_row:not(:last-child) .z__editor_attribute_group {
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #666;
+    margin-bottom: 8px;
+}
+
 /* attached files */
 
 .z__editor_attached_file {

@@ -193,6 +193,7 @@ module KConstants
   A_ATTR_ALIAS_OF               = 2116      # For aliased attributes
   A_ATTR_UI_OPTIONS             = 2117      # Data type specific options
   A_ATTR_DATA_TYPE_OPTIONS      = 2118      # String, refines info about data type
+  A_ATTR_GROUP_TYPE             = 2119
 
   # Generic structural
   A_ORDERING                    = 2121      # Used to put lists in order

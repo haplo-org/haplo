@@ -17,6 +17,7 @@ class SchemaController < ApplicationController
     T_PSEUDO_TAXONOMY_OBJREF => [:control_by_types],
     T_DATETIME => [:ui_options],
     T_TEXT_PERSON_NAME => [:ui_options],
+    T_ATTRIBUTE_GROUP => [:attribute_group_type],
     T_TEXT_PLUGIN_DEFINED => [:data_type_options] # type name of the plugin defined value type
   }
 
@@ -96,7 +97,8 @@ class SchemaController < ApplicationController
       subtypes = descs.map do |td|
         [td.objref.to_presentation, td.printable_name.to_s, (td.create_show_type ? 1 : 0), td.remove_attributes]
       end
-      types << [subtypes, root_desc.objref.to_presentation, root_desc.create_default_subtype.to_presentation]
+      # TODO: Only include root_desc.attributes if the type is used for an attribute group? Maybe not worth this optimisation.
+      types << [subtypes, root_desc.objref.to_presentation, root_desc.create_default_subtype.to_presentation, root_desc.attributes]
     end
 
     # --- ATTRIBUTES -------------------------------------------------------------

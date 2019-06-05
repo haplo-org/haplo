@@ -406,4 +406,5 @@ TEST(function() {
 
     // FINALLY request a text reindex
     O.ref(OBJ_TO_REINDEX).load().reindexText();
+    // reindex() tested in Ruby test afterwards
 });

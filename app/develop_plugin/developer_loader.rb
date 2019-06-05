@@ -169,6 +169,8 @@ class DeveloperLoader
     REQUIRED_POLICY = KPolicyRegistry.to_bitmask(:not_anonymous, :setup_system)
 
     ALLOWED_PLUGIN_DIRECTORIES = ['js', 'template', 'static', 'test', 'file']
+    ALLOWED_DIR_REGEX = /\A[a-zA-Z0-9_\-]+([a-zA-Z0-9_\.\-]+[a-zA-Z0-9_\-])?\z/ # no initial '.' in directories to prevent filesystem traversal
+    ALLOWED_FILENAME_REGEX = /\A[a-zA-Z0-9_-][a-zA-Z0-9_\.-]*\.[a-zA-Z0-9]+\z/
 
     # Implement very minimal pre- and post-handle checks. These avoid anything implemented by a plugin,
     # so even if the plugin uplaoded breaks everything, the loader will still work so the corrected version
@@ -516,6 +518,13 @@ class DeveloperLoader
       render :text => 'OK'
     end
 
+    # Template debugging tools
+    _PostOnly
+    def handle_template_debugging_api
+      KApp.set_global_bool(:debug_config_template_debugging, params[:enable] == '1')
+      render :text => 'OK'
+    end
+
     # -----------------------------------------------------------------------------------------------------------------------------
     # Notifications API
 
@@ -593,15 +602,16 @@ class DeveloperLoader
       # Checked directory
       @directory = params[:directory]
       if @directory != nil
-        raise "Bad directory" unless @directory =~ /\A([a-zA-Z0-9_\-]+)[a-zA-Z0-9_\/\-]*\z/  # no '.' for filesystem traversal
-        raise "Bad root directory" unless ALLOWED_PLUGIN_DIRECTORIES.include?($1)
-        raise "Bad directory" if @directory =~ /\/\z/ # prevents double // getting into manifests
-        raise "Directory name contains dot" if @directory.include?('.') # paranoid extra check
+        directory_elements = @directory.split('/')
+        directory_elements.each do |dir|
+          raise "Bad directory" unless dir =~ ALLOWED_DIR_REGEX
+        end
+        raise "Bad root directory" unless ALLOWED_PLUGIN_DIRECTORIES.include?(directory_elements.first)
       end
       # Checked filename
       @filename = params[:filename]
       raise "Bad filename" if @filename =~ BANNED_FILENAMES
-      raise "Bad filename" unless @filename =~ /\A[a-zA-Z0-9_-]+\.[a-zA-Z0-9]+\z/
+      raise "Bad filename" unless @filename =~ ALLOWED_FILENAME_REGEX
       # Plugin path
       @plugin_pathname = (@directory == nil) ? @filename : "#{@directory}/#{@filename}"
       # Generate pathname

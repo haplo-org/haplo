@@ -31,6 +31,9 @@ public class Escape {
             case URL_PATH:
                 escapeURL(input, builder, true); // paths in URLs need reserved characters unescaped
                 break;
+            case COMMENT:
+                escapeHTMLComment(input, builder);
+                break;
             case UNSAFE:
                 builder.append(input);
                 break;
@@ -132,4 +135,13 @@ public class Escape {
             c = c << 4;
         }
     }
+
+    // ----------------------------------------------------------------------
+
+    // Not intended to be a particularly efficient implementation, as it should only be used for debugging.
+    static private void escapeHTMLComment(CharSequence input, StringBuilder builder) {
+        // HTML/XML comments don't allow -- within them, but otherwise don't need escaping
+        builder.append(input.toString().replace("--", "- -"));
+    }
+
 }

@@ -652,7 +652,7 @@ class KObjectStoreTest < Test::Unit::TestCase
     assert_equal [], p_ra_common.read_only_attributes()
     assert_equal [], p_ra_confidential.read_only_attributes()
 
-    p_as_nobody = p.dup_restricted(KObject::RestrictedAttributes.new(p, []))
+    p_as_nobody = p.dup_restricted(nil, KObject::RestrictedAttributes.new(p, []))
     assert_equal tn, p_as_nobody.first_attr(A_TELEPHONE_NUMBER)
 
     # Restrict view of telephone numbers on confidential objects to people with label 'common' or 'confidential'
@@ -702,9 +702,9 @@ __E
     assert_equal [A_TELEPHONE_NUMBER], p_ra_common.read_only_attributes()
     assert_equal [], p_ra_confidential.read_only_attributes()
 
-    p_as_nobody = p.dup_restricted(KObject::RestrictedAttributes.new(p, []))
-    p_as_common = p.dup_restricted(KObject::RestrictedAttributes.new(p, [O_LABEL_COMMON.to_i]))
-    p_as_confidential = p.dup_restricted(KObject::RestrictedAttributes.new(p, [O_LABEL_CONFIDENTIAL.to_i]))
+    p_as_nobody = p.dup_restricted(nil, KObject::RestrictedAttributes.new(p, []))
+    p_as_common = p.dup_restricted(nil, KObject::RestrictedAttributes.new(p, [O_LABEL_COMMON.to_i]))
+    p_as_confidential = p.dup_restricted(nil, KObject::RestrictedAttributes.new(p, [O_LABEL_CONFIDENTIAL.to_i]))
 
     # Can add additional hidden attributes (convenience method for displaying objects)
     p_ra_none_with_additional = KObject::RestrictedAttributes.new(p, [])
@@ -3518,6 +3518,9 @@ _OBJS
     run_outstanding_text_indexing
     assert_equal 4, Thread.current[:_change_indexing_plugin_calls]
 
+    # Check expected version
+    assert_equal 2, KObjectStore.read(book.objref).version
+
     assert_equal 1, count_linked_to.call(O_TYPE_BOOK)
     assert_equal 1, count_linked_to.call(O_TYPE_PERSON) # added by plugin
     assert_equal 0, count_text_results.call('X1234Y', A_NOTES) # removed
@@ -3535,6 +3538,27 @@ _OBJS
     KObjectStore.update(KObjectStore.read(O_TYPE_BOOK).dup)
     run_outstanding_text_indexing
     assert_equal 5, Thread.current[:_change_indexing_plugin_calls]
+
+    # Test reindexing the object
+    assert_equal 1, count_linked_to.call(O_TYPE_BOOK)
+    assert_equal 1, count_linked_to.call(O_TYPE_PERSON) # added by plugin
+    KObjectStore.reindex_object(book.objref)
+    run_outstanding_text_indexing
+    # unchanged ...
+    assert_equal 1, count_linked_to.call(O_TYPE_BOOK)
+    assert_equal 1, count_linked_to.call(O_TYPE_PERSON) # added by plugin
+    assert_equal 1, count_text_results.call('MMM8877', A_NOTES) # now added
+    # ... until the plugin is removed
+    KPlugin.uninstall_plugin("k_object_store_test/change_indexing")
+    KObjectStore.reindex_object(book.objref)
+    run_outstanding_text_indexing
+    assert_equal 1, count_linked_to.call(O_TYPE_BOOK)
+    assert_equal 0, count_linked_to.call(O_TYPE_PERSON) # previous added by plugin
+    assert_equal 0, count_text_results.call('MMM8877', A_NOTES) # previous added by plugin
+
+    # Object was never changed
+    assert_equal 2, KObjectStore.read(book.objref).version
+
   ensure
     KPlugin.uninstall_plugin("k_object_store_test/change_indexing")
   end

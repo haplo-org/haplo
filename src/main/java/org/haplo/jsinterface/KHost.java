@@ -42,6 +42,7 @@ public class KHost extends KScriptable {
     private Function renderSearchResultFunction;
     private HashMap<String, KObjRef> behaviourRefCache;
     private HashMap<Integer, String> refBehaviourCache;
+    private boolean templateDebuggingEnabled = false;
 
     public KHost() {
         this.plugins = new LinkedHashMap<String, Scriptable>(8);
@@ -496,6 +497,14 @@ public class KHost extends KScriptable {
 
     // --------------------------------------------------------------------------------------------------------------
     // Rendering and views
+    public void enableTemplateDebugging() {
+        this.templateDebuggingEnabled = true;
+    }
+
+    public boolean jsGet_templateDebuggingEnabled() {
+        return this.templateDebuggingEnabled;
+    }
+
     public String renderObject(AppObject object, String style) {
         return this.supportRoot.renderObject(object, style);
     }
@@ -513,6 +522,9 @@ public class KHost extends KScriptable {
             HaploTemplate template = (HaploTemplate)cx.newObject(scope, "$HaploTemplate", new Object[]{r[0], templateName});
             template.put("kind", template, "html");
             template.setOwner(plugin);
+            if(this.templateDebuggingEnabled) {
+                template.jsFunction_addDebugComment(pluginName+"/template/"+templateName);
+            }
             return template;
         }
         final Scriptable o = (Scriptable)sharedScope.get("O", sharedScope);

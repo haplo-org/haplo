@@ -27,6 +27,14 @@ module KHooks
     h.result      :changes,     KLabelChanges,  nil,  "Changes to apply to the label list"
   end
 
+  define_hook :hLabelAttributeGroupObject do |h|
+    h.argument    :container,   KObject,  "The object which contains this attribute group"
+    h.argument    :object,      KObject,  "The temporary object containing the group of attributes"
+    h.argument    :desc,        Fixnum,   "Descriptor of group"
+    h.argument    :groupId,     Fixnum,   "Group ID of group"
+    h.result      :changes,     KLabelChanges,  nil,  "Changes to apply to the label list"
+  end
+
   define_hook :hPreIndexObject do |h|
     h.argument    :object,      KObject,  "The object which is being updated"
     h.result      :replacementObject, KObject, nil, "An object which will be indexed in place of the given object, or null for no effect"

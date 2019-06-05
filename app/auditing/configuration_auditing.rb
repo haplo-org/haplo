@@ -20,6 +20,8 @@ module KAuditing
     :js_plugin_schema_requirements,
     # Controlled externally
     :billing_page_html,
+    # Debug configuration
+    :debug_config_template_debugging,
     # Don't store secrets in the audit trail
     :otp_override
   ]

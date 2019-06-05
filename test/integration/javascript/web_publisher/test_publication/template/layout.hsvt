@@ -1,3 +1,4 @@
+<h1 class="title-in-layout"> context.pageTitle </h1>
 <div class="in-layout">
     render(blocks.body)
 </div>

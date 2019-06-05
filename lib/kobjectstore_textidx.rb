@@ -412,8 +412,8 @@ class KObjectStore
           # Delegate may need to alter the indexed object
           object = delegate.indexed_version_of_object(raw_object, store.is_schema_obj?(raw_object))
 
-          # Get restrictions from the _unmodified_ object, as the delegate may have modified it in a way which changes which restrictions match
-          restrictions = schema._get_restricted_attributes_for_object(raw_object).hidden
+          # Pass in _unmodified_ object for determining restrictions, as the delegate may have modified it in a way which changes which restrictions match
+          objs_to_index = _ungrouped_object_with_restrictions(object, raw_object)
 
           # TODO: Should cache be the unaltered object, or the one modified by the plugin? If modified, the obj_cache needs to be updated too
           obj_cache[object.objref] = raw_object
@@ -426,51 +426,55 @@ class KObjectStore
 
           term_position = 1 # Position starts at 1 for Xapian terms - http://xapian.org/docs/quickstart.html ("preparing the document")
 
-          object.each do |value,desc,qualifier_v|
+          objs_to_index.each do |iobj, restrictions|
 
-            # No qualifier needs to be presented as null
-            qualifier = (qualifier_v == nil) ? 0 : qualifier_v
+            iobj.each do |value,desc,qualifier_v|
 
-            restriction_labels = restrictions[desc] || []
+              # No qualifier needs to be presented as null
+              qualifier = (qualifier_v == nil) ? 0 : qualifier_v
 
-            if value.kind_of? KObjRef
-              # Add terms from the linked object and parents
-              limit = TEXT_INDEX_MAX_PARENT_COUNT
-              scan = value
-              while limit > 0 && scan && scan.kind_of?(KObjRef)
-                # Don't let bad stores cause infinite loops
-                limit -= 1
-                # Get linked object from store or cache
-                linked_object = obj_cache[scan]
-                if linked_object
-                  # Get instructions for which fields to include, and their weights, falling back to a default specification
-                  term_inclusion_spec = nil
-                  linked_type_desc = schema.type_descriptor(linked_object.first_attr(A_TYPE))
-                  if linked_type_desc
-                    term_inclusion_spec = linked_type_desc.term_inclusion
-                  end
-                  term_inclusion_spec ||= KSchema::DEFAULT_TERM_INCLUSION_SPECIFICATION
-                  # Include all terms, according to the spec
-                  term_inclusion_spec.inclusions.each do |inclusion|
-                    linked_object.each(inclusion.desc) do |linked_value,d,q|
-                      # Don't index 'slow' text values, eg files
-                      if linked_value.k_is_string_type? && !(linked_value.to_terms_is_slow?)
-                        # We use the restriction labels of the link
-                        # attribute, not those of the attributes on
-                        # the linked object. TODO: Look into avoiding
-                        # this minor information leak.
-                        term_position = post_terms(writer, attr_weightings, desc, qualifier, restriction_labels, term_position, linked_value, inclusion.relevancy_weight)
+              restriction_labels = restrictions[desc] || []
+
+              if value.kind_of? KObjRef
+                # Add terms from the linked object and parents
+                limit = TEXT_INDEX_MAX_PARENT_COUNT
+                scan = value
+                while limit > 0 && scan && scan.kind_of?(KObjRef)
+                  # Don't let bad stores cause infinite loops
+                  limit -= 1
+                  # Get linked object from store or cache
+                  linked_object = obj_cache[scan]
+                  if linked_object
+                    # Get instructions for which fields to include, and their weights, falling back to a default specification
+                    term_inclusion_spec = nil
+                    linked_type_desc = schema.type_descriptor(linked_object.first_attr(A_TYPE))
+                    if linked_type_desc
+                      term_inclusion_spec = linked_type_desc.term_inclusion
+                    end
+                    term_inclusion_spec ||= KSchema::DEFAULT_TERM_INCLUSION_SPECIFICATION
+                    # Include all terms, according to the spec
+                    term_inclusion_spec.inclusions.each do |inclusion|
+                      linked_object.each(inclusion.desc) do |linked_value,d,q|
+                        # Don't index 'slow' text values, eg files
+                        if linked_value.k_is_string_type? && !(linked_value.to_terms_is_slow?)
+                          # We use the restriction labels of the link
+                          # attribute, not those of the attributes on
+                          # the linked object. TODO: Look into avoiding
+                          # this minor information leak.
+                          term_position = post_terms(writer, attr_weightings, desc, qualifier, restriction_labels, term_position, linked_value, inclusion.relevancy_weight)
+                        end
                       end
                     end
+                    # Parent?
+                    scan = linked_object.first_attr(A_PARENT)
                   end
-                  # Parent?
-                  scan = linked_object.first_attr(A_PARENT)
+                  # TODO: Optimise indexing of linked values by storing processed terms, rather than repeatedly converting values
                 end
-                # TODO: Optimise indexing of linked values by storing processed terms, rather than repeatedly converting values
-              end
 
-            elsif value.k_is_string_type?
-              term_position = post_terms(writer, attr_weightings, desc, qualifier, restriction_labels, term_position, value)
+              elsif value.k_is_string_type?
+                term_position = post_terms(writer, attr_weightings, desc, qualifier, restriction_labels, term_position, value)
+
+              end
 
             end
 

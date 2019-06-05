@@ -1,0 +1,4 @@
+pageTitle(object.title)
+<div class="object-table">
+  render(object.asTable)
+</div>

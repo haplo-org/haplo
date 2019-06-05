@@ -80,7 +80,7 @@ module KEditor
     # Hidden restricted attributes and read only attributes are read only in the editor
     # SUPPORT user ignores this, as it hinders support work
     unless user.kind == User::KIND_SUPER_USER
-      restricted_attributes = user.kobject_restricted_attributes(object)
+      restricted_attributes = user.kobject_restricted_attributes_factory.restricted_attributes_for(object)
       read_only_attributes.concat(restricted_attributes.read_only_attributes)
       read_only_attributes.concat(restricted_attributes.hidden_attributes)
       # remove from read only any attributes that we want to force to be available
@@ -385,6 +385,9 @@ module KEditor
     end,
     T_TEXT_PLUGIN_DEFINED => proc do |a|
       [a.plugin_type_name, a.json_encoded_value]
+    end,
+    T_ATTRIBUTE_GROUP => proc do |a|
+      [generate_attr_js(a.transformed), a.group_id]
     end
   }
 
@@ -392,9 +395,6 @@ module KEditor
   # ------------------------------------------------------------------------------
   #  Decode tokenised return from js KEditor into an object
   # ------------------------------------------------------------------------------
-  #
-  # opts
-  #   :attrs_present -> Array to fill with descs used
   #
   def self.apply_tokenised_to_obj(tokenised, obj, opts = {})
     unedited_object = obj.dup
@@ -405,7 +405,6 @@ module KEditor
     # Find the current type of the object in case the user deletes all the types
     original_type = obj.first_attr(A_TYPE)
 
-    attrs_present = opts[:attrs_present]
     no_aliasing = !!(opts[:no_aliasing])
     read_only_attributes = (opts[:read_only_attributes] || [])
 
@@ -426,6 +425,8 @@ module KEditor
     descs_replaced = Hash.new
     attrs_decoded = Array.new
 
+    current_group = nil
+
     # Read data
     omit_value = nil # for enforcing the read only attributes (which may be used for security)
     while(i < len && !decode_error)
@@ -445,8 +446,10 @@ module KEditor
           sq = alias_descriptor.specified_qualifiers
           null_qualifier_rewrite = sq.first if sq.length == 1
         end
-        # Mark the underlying desc replacement (has been unaliased above)
-        descs_replaced[desc] = true unless omit_value
+        # Mark the underlying desc replacement (has been unaliased above
+        # or is part of an attribute group, in which case the group desc
+        # is the relevant desc)
+        descs_replaced[desc] = true unless omit_value || current_group
 
         # Move to next bit
         i += KE_A__LEN
@@ -462,11 +465,24 @@ module KEditor
           if inc != nil
             i += inc + KE_V__DATA
             # Add the attribute
-            attrs_decoded << [val, desc, qualifier] unless omit_value
+            attrs_decoded << [val, desc, qualifier, current_group] unless omit_value
             ok = true
           end
         end
         decode_error = true unless ok
+      when 'G'  # start of attribute group
+        group_desc = tokens[i+KE_G_GRPDESC].to_i
+        group_id = tokens[i+KE_G_GROUPID].to_i
+        if group_id < 0
+          group_id = obj.allocate_new_extension_group_id
+        end
+        current_group = [group_desc, group_id]
+        i += KE_G__LEN
+        # NOTE: This relies on the client side to send G tokens even if group as been deleted
+        descs_replaced[group_desc] = true
+      when 'g'  # end of attribute group
+        current_group = nil
+        i += 1
       else
         # Safety!
         decode_error = true
@@ -477,13 +493,14 @@ module KEditor
       raise "Error decoding edited object"
     end
 
-    if attrs_present != nil
-      attrs_present << descs_replaced.keys
-      attrs_present.flatten!
+    obj.delete_attr_if do |v,desc,q,x|
+      # Use the group desc from the extension if this is an attribute in a group,
+      # as grouped attributes need to behave (from the point of view of the editor)
+      # as a single attribute.
+      relevant_desc = x ? x.first : desc
+      descs_replaced.has_key?(relevant_desc)
     end
-
-    obj.delete_attr_if { |v,desc,q| descs_replaced.has_key?(desc) }
-    attrs_decoded.each { |val, desc, qualifier| obj.add_attr(val, desc, qualifier) }
+    attrs_decoded.each { |a| obj.add_attr(*a) }
 
     # Check there's still a type
     if nil == obj.first_attr(A_TYPE) && !(opts != nil && opts[:no_type_attr_restoration])
@@ -598,4 +615,7 @@ module KEditor
   KE_V_QUALIFIER = 1
   KE_V_TYPE      = 2
   KE_V__DATA     = 3
+  KE_G_GRPDESC   = 1
+  KE_G_GROUPID   = 2
+  KE_G__LEN      = 3
 end

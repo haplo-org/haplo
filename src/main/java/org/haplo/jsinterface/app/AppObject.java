@@ -8,7 +8,8 @@ package org.haplo.jsinterface.app;
 
 public interface AppObject {
     public interface AttrIterator {
-        public boolean attr(Object value, int desc, int qual);
+        public boolean attribute(Object value, int desc, int qual, Object extension);
+        public Object createJSExtensionValue(int desc, int groupId);
     }
 
     public AppObjRef objref();
@@ -33,6 +34,8 @@ public interface AppObject {
 
     public boolean has_attr(Object value, Integer desc, Integer qualifier);
 
+    public Integer group_id_of_group_with_attr(int groupDesc, Object value, Integer desc, Integer qualifier);
+
     public boolean values_equal(AppObject object, Integer desc, Integer qualifier);
 
     public void jsEach(Integer desc, Integer qualifier, AttrIterator iterator);
@@ -42,6 +45,10 @@ public interface AppObject {
     public boolean frozen();
 
     public void add_attr(Object value, int desc, int qualifier);
+    public void jsAddAttrWithExtension(Object value, int desc, int qualifier, Integer extDesc, Integer extGroupId);
+
+    public int allocate_new_extension_group_id();
+    public Object[] jsGroupIdsForDesc(Integer desc);
 
     public void jsDeleteAttrs(Integer desc, Integer qualifier);
 
@@ -49,7 +56,7 @@ public interface AppObject {
 
     public boolean restricted();
 
-    public AppObject dup_restricted(AppObjectRestrictedAttributes restrictedAttributes);
+    public AppObject dup_restricted(AppObjectRestrictedAttributesFactory raFactory, AppObjectRestrictedAttributes restrictedAttributes);
 
     public boolean needs_to_compute_attrs();
 

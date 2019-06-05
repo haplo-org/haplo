@@ -68,6 +68,7 @@ module SchemaRequirements
     "datetime" => T_DATETIME,
     "integer" => T_INTEGER,
     "number" => T_NUMBER,
+    "attribute-group" => T_ATTRIBUTE_GROUP,
     "text" => T_TEXT,
     "text-paragraph" => T_TEXT_PARAGRAPH,
     "text-document" => T_TEXT_DOCUMENT,
@@ -96,7 +97,8 @@ module SchemaRequirements
                               Proc.new { |v,context| ATTR_DATA_TYPE.key(v) }),
     "ui-options"        => StoreObjectRuleSingle.new(A_ATTR_UI_OPTIONS),
     "data-type-options" => StoreObjectRuleSingle.new(A_ATTR_DATA_TYPE_OPTIONS),
-    "linked-type"       => StoreObjectRuleMulti.new(A_ATTR_CONTROL_BY_TYPE, *mappers_for(O_TYPE_APP_VISIBLE))
+    "linked-type"       => StoreObjectRuleMulti.new(A_ATTR_CONTROL_BY_TYPE, *mappers_for(O_TYPE_APP_VISIBLE)),
+    "group-type"        => StoreObjectRuleSingle.new(A_ATTR_GROUP_TYPE, *mappers_for(O_TYPE_APP_VISIBLE))
   }
 
   # ---------------------------------------------------------------------------------------------------------------

@@ -1,3 +1,4 @@
+#option:disable-debug-comments
 url(
   "https://"
   hostname "/download/"

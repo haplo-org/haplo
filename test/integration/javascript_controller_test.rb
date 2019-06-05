@@ -263,6 +263,8 @@ class JavaScriptControllerTest < IntegrationTest
     assert_select '#testresponse', "Automatically chosen template."
     get "/do/plugin_test/auto_template2"
     assert_select '#testresponse', "Automatically chosen template 2 (x=64)."
+    get "/do/plugin_test/specified_as_template_object"
+    assert_select '#testresponse', "Template specified with template object (x=65)"
 
     # Standard templates
     get "/do/plugin_test/std_template1"
@@ -706,10 +708,6 @@ __E
     # Handlebars helper functions
     get '/do/plugin_test/hbhelper1'
     assert_equal 'START<div class="bhhelper">VALUE</div>END', response.body
-    get '/do/plugin_test/hbhelper2'
-    assert_equal 'START<div class="bhhelper">VALUE2</div>|X-SOMETHINGEND', response.body
-    get '/do/plugin_test/hbhelper3'
-    assert_equal 'START<div class="bhhelper">VALUE2</div>|Y-SOMETHINGEND', response.body
 
     # Sidebar rendering
     get '/do/plugin_test/render_into_sidebar'

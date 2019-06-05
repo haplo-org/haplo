@@ -37,6 +37,7 @@ module KHooks
   define_hook :hObjectAttributeRestrictionLabelsForUser do |h|
     h.argument    :user,   User,            "SecurityPrincipal being queried"
     h.argument    :object, KObject,         "Object being queries"
+    h.argument    :container, KObject,      "Container object, which may be the object itself"
     h.result      :userLabelsForObject, KLabelChanges,  nil,  "Per-object labels enabling the user to view or edit restricted attributes, specified as changes from the empty label list."
   end
 

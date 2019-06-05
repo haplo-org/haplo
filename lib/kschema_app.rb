@@ -252,6 +252,7 @@ class KSchemaApp < KSchema
     attr_reader :allowed_qualifiers
     attr_reader :control_by_types   # Array of objrefs from A_ATTR_CONTROL_BY_TYPE
     attr_reader :control_relaxed    # A_ATTR_CONTROL_RELAXED
+    attr_reader :attribute_group_type # A_ATTR_GROUP_TYPE
     attr_reader :ui_options         # A_ATTR_UI_OPTIONS
     attr_reader :data_type_options  # A_ATTR_DATA_TYPE_OPTIONS
     attr_reader :alias_of           # So it can be called and will return nil for non-aliased attributes
@@ -277,6 +278,9 @@ class KSchemaApp < KSchema
         r = ado.first_attr(KConstants::A_ATTR_CONTROL_RELAXED)
         @control_relaxed = r if r != nil && r.class == Fixnum
       end
+
+      # Group type
+      @attribute_group_type = ado.first_attr(KConstants::A_ATTR_GROUP_TYPE)
 
       # UI options?
       @ui_options = ado.first_attr(KConstants::A_ATTR_UI_OPTIONS)

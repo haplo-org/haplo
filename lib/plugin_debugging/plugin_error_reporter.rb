@@ -128,11 +128,13 @@ module PluginDebugging
 <head><title>Plugin error</title></head>
 <body>
   <h1>Plugin error</h1>
-  <h2>#{message}</h2>
+  <h2>#{ERB::Util.h(message)}</h2>
   <hr>
   <h3>Error location</h3>
-  <pre>
-#{backtrace.join("\n")}
+  <pre>#{ERB::Util.h(backtrace.join("\n"))}
+  </pre>
+  <h3 style="margin-top:32px">Full backtrace</h3>
+  <pre>#{ERB::Util.h(exception.backtrace.join("\n"))}
   </pre>
 </body>
 </html>

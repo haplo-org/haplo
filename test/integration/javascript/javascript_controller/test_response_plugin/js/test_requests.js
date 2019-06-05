@@ -157,6 +157,11 @@
         E.render({x:64});
     });
 
+    P.respond("GET", "/do/plugin_test/specified_as_template_object", [
+    ], function(E) {
+        E.render({x:65}, P.template("specified_template"));
+    });
+
     P.respond("GET", "/do/plugin_test/std_template1", [
     ], function(E) {
         E.render({test:"hello"}, "std:test");
@@ -520,25 +525,11 @@
         E.render({layout:false});
     });
 
-    P.respond("GET", "/do/plugin_test/hbhelper2", [
-    ], function(E) {
-        // Template uses plugin global helper function & request local helper function
-        var helpers = {viewhelper: function(v) { return 'X-'+v; }};
-        E.render({layout:false}, {helpers:helpers}); // implicit template name
-    });
-
-    P.respond("GET", "/do/plugin_test/hbhelper3", [
-    ], function(E) {
-        // Template uses plugin global helper function & request local helper function
-        var helpers = {viewhelper: function(v) { return 'Y-'+v; }};
-        E.render({layout:false}, "hbhelper2", {helpers:helpers}); // explicit template name
-    });
-
     P.respond("GET", "/do/plugin_test/render_into_sidebar", [
     ], function(E) {
         // Do two renders to make sure they both get output, one of which uses a helper to do the outputting
         E.renderIntoSidebar({text:"Sidebar One"}, "sidebar");
-        E.renderIntoSidebar(undefined, "sidebar", {helpers:{text:function() { return 'Second Sidebar'; }}});
+        E.renderIntoSidebar({text:"Second Sidebar"}, P.template("sidebar2"));
         E.appendSidebarHTML('<div class="test_sidebar">AS HTML</div>');
         // Render the normal way
         E.render({}, "test1");

@@ -84,6 +84,21 @@ module JSKObjectSupport
     KObjectStore.relabel(obj_or_objref, label_changes)
   end
 
+  def self.extractAllAttributeGroups(object)
+    KObjectStore.extract_groups(object)
+  end
+
+  def self.extractSingleAttributeGroupMaybe(object, group_id)
+    # TODO: Write this API more efficiently
+    ungrouped = KObjectStore.extract_groups(object)
+    i = ungrouped.groups.find { |g| g.group_id == group_id }
+    i ? i.object : nil
+  end
+
+  def self.reindex(object)
+    KObjectStore.reindex_object(object.objref);
+  end
+
   def self.reindexText(object)
     KObjectStore.reindex_text_for_object(object.objref);
   end

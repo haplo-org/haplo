@@ -31,5 +31,5 @@ public interface AppUser {
 
     public AppObject kobject_dup_restricted(AppObject object);
 
-    public AppObjectRestrictedAttributes kobject_restricted_attributes(AppObject object);
+    public AppObjectRestrictedAttributesFactory kobject_restricted_attributes_factory();
 }

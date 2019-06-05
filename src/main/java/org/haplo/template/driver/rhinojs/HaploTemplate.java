@@ -71,6 +71,12 @@ public class HaploTemplate extends ScriptableObject implements Callable, Driver.
         return deferred;
     }
 
+    public Scriptable jsFunction_addDebugComment(String comment) {
+        if(this.template == null) { throw new RuntimeException("No template"); }
+        this.template.addDebugComment(comment);
+        return this;
+    }
+
     protected RhinoJavaScriptDriver createDriver(Object view) {
         RhinoJavaScriptDriver driver = new RhinoJavaScriptDriver(view);
         driver.setIncludedTemplateRenderer(this);

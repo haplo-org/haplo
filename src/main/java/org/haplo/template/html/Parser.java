@@ -20,6 +20,7 @@ final public class Parser {
     private boolean inEnclosingViewBlock = false;
     private int nextRememberIndex = 0;
     private boolean optionTagAttributeQuoteMinimisation = true;
+    private boolean optionDisableDebugComments = false;
 
     static final ParserConfiguration DEFAULT_CONFIGURATION = new ParserConfiguration();
 
@@ -36,6 +37,9 @@ final public class Parser {
 
     public Template parse() throws ParseException {
         Template template = new Template(this.templateName, parseList(-1, "template"), this.nextRememberIndex);
+        if(optionDisableDebugComments) {
+            template.disableDebugComments();
+        }
         if(!this.nesting.empty()) { throw new RuntimeException("logic error"); }
         return template;
     }
@@ -530,6 +534,10 @@ final public class Parser {
             case "option:no-tag-attribute-quote-minimisation":
             case "option:no-tag-attribute-quote-minimization": // simplified English spelling
                 optionTagAttributeQuoteMinimisation = false;
+                break;
+
+            case "option:disable-debug-comments":
+                optionDisableDebugComments = true;
                 break;
 
             default:

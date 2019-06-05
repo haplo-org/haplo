@@ -12,7 +12,7 @@ P.hook('hUserAttributeRestrictionLabels', function(response, user) {
     }
 });
 
-P.hook('hObjectAttributeRestrictionLabelsForUser', function(response, user, object) {
+P.hook('hObjectAttributeRestrictionLabelsForUser', function(response, user, object, container) {
     if(user && user.email === "user3@example.com") {
         if(-1 !== object.title.indexOf("PER_OBJECT_LIFT")) {
             response.userLabelsForObject.add(LABEL["std:label:common"]);

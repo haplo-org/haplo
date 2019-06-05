@@ -106,7 +106,7 @@ class KObjectTest < Test::Unit::TestCase
     assert ra_none.can_modify_attribute?(4)
 
     # See the object as a user with label 200 only; attribute 1 disappears, but 3 and 4 remain
-    robj = obj.dup_restricted(ra_200)
+    robj = obj.dup_restricted(nil, ra_200)
     assert (not obj.restricted?)
     assert robj.restricted?
     assert_equal "a", robj.first_attr(3).to_s
@@ -186,6 +186,20 @@ class KObjectTest < Test::Unit::TestCase
 
     # Can't specify any desc but give a qualifier
     assert_raises(RuntimeError) { obj1.values_equal?(obj2, nil, Q_NULL) }
+
+    # With attribute groups
+    obj_ag1 = make_obj.call([ ["X", 1, nil, [13,23726525]], ["Y", 1, nil, [13,278262]], ["Z", 2], [7, 2] ])
+    obj_ag2 = make_obj.call([ ["X", 1, nil, [13,23726525]], ["Y", 1, nil, [13,278262]], ["Z", 2, nil, [2,37265]], [7, 2] ])
+
+    assert_equal false, obj_ag1.values_equal?(obj1) # has same values as obj1, but a couple are in a group
+    assert_equal false, obj_ag1.values_equal?(obj_ag2)
+    assert_equal true,  obj_ag1.values_equal?(obj_ag1)
+    assert_equal true,  obj_ag2.values_equal?(obj_ag2)
+    assert_equal true,  obj_ag1.values_equal?(obj_ag1, 1)
+    assert_equal true,  obj_ag2.values_equal?(obj_ag2, 1)
+
+    test_with_other_obj.call(obj_ag1, false, false, [ ["X", 1, nil, [13,23726527]], ["Y", 1, nil, [13,278262]], ["Z", 2], [7, 2] ]) # oen group ID is different
+    test_with_other_obj.call(obj_ag1, false, true, [ ["X", 1, nil, [13,23726525]], ["Y", 1, nil, [13,278262]], ["Z", 2, nil, [2,37265]], [7, 2] ])
 
   end
 

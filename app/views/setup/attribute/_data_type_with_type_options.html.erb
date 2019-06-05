@@ -34,4 +34,17 @@
     %>
   </div>
 </div>
+<div class="z__data_type_option" id="z__data_type_option_<%= KConstants::T_ATTRIBUTE_GROUP %>"<% unless @data_type == KConstants::T_ATTRIBUTE_GROUP%> style="display:none"<% end %>>
+  <p>Attribute group defined by type:</p>
+  <p>
+    <%=
+      radio_buttons_seperated(
+        'attr_group_type',
+        '<br>',
+        @schema.root_type_descs_sorted_by_printable_name.map { |td| [td.printable_name.to_s, td.objref.to_presentation] },
+          @data_type_attribute_group_type ? @data_type_attribute_group_type.to_presentation : nil
+      )
+    %>
+  </p>
+</div>
 <% client_side_controller_js('data_type') %>

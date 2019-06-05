@@ -18,6 +18,7 @@ class KJSPluginRuntime
     [:jspluginruntime_internal, :invalidation_requested],
     [:os_schema_change],
     [:app_global_change, :javascript_config_data],
+    [:app_global_change, :debug_config_template_debugging],
     [:plugin,            :install],
     [:plugin,            :uninstall],
     [:keychain,          :modified],
@@ -89,6 +90,9 @@ class KJSPluginRuntime
             # Quick check that nothing has been loaded into this runtime yet
             unless 0 == @runtime.host.getNumberOfPluginsRegistered()
               raise "Runtime in bad state - already has plugins registered."
+            end
+            if PLUGIN_DEBUGGING_SUPPORT_LOADED && KApp.global_bool(:debug_config_template_debugging)
+              @runtime.host.enableTemplateDebugging()
             end
             # Load basic schema information into runtime
             @runtime.evaluateString(KSchemaToJavaScript.schema_to_js(KObjectStore.schema), "<schema>")

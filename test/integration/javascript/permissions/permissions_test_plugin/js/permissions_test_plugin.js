@@ -12,6 +12,6 @@ P.respond("GET", "/do/permissions-test-plugin/object-title", [
     E.response.body = O.ref(refStr).load().title;
 });
 
-P.hook('hObjectAttributeRestrictionLabelsForUser', function(response, user, object) {
+P.hook('hObjectAttributeRestrictionLabelsForUser', function(response, user, object, container) {
     response.userLabelsForObject.add(O.ref(100));
 });

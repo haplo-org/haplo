@@ -421,6 +421,7 @@ public class Runtime {
             defineSealedHostClass(scope, KLabelStatements.class);
             defineSealedHostClass(scope, KDateTime.class);
             defineSealedHostClass(scope, KObject.class);
+            defineSealedHostClass(scope, KObjectAttributeExtension.class);
             defineSealedHostClass(scope, KText.class);
             defineSealedHostClass(scope, KQueryClause.class);
             defineSealedHostClass(scope, KQueryResults.class);

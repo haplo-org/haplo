@@ -1,3 +1,4 @@
+pageTitle("Test title")
 <div class="test-publication" data-uid=uid>
     parameter
 </div>

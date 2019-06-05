@@ -38,6 +38,7 @@ var KEdType;
 /*CONST*/ SCHEMATYPE_ROOT_SUBTYPES            = 0;
 /*CONST*/ SCHEMATYPE_ROOT_ROOT_REF            = 1;
 /*CONST*/ SCHEMATYPE_ROOT_DEFAULT_REF         = 2;
+/*CONST*/ SCHEMATYPE_ROOT_ATTRIBUTES          = 3;
 // Sub-type info in schema (includes root type)
 /*CONST*/ SCHEMATYPE_SUBTYPE_REF              = 0;
 /*CONST*/ SCHEMATYPE_SUBTYPE_NAME             = 1;
@@ -81,6 +82,7 @@ var KEditorSchemaTypeSpecifics = {}; // needs to be a dictionary, not an array, 
     KEditorSchemaTypeSpecifics[T_DATETIME] = ['p__uiOptions'];
     KEditorSchemaTypeSpecifics[T_TEXT_PERSON_NAME] = ['p__uiOptions'];
     KEditorSchemaTypeSpecifics[T_TEXT_PLUGIN_DEFINED] = ['p__pluginDataType'];
+    KEditorSchemaTypeSpecifics[T_ATTRIBUTE_GROUP] = ['p__groupType'];
 
 /* global */ KEditorSchema = {
     // Properties:
@@ -2184,6 +2186,111 @@ j__makeKeditorValueClass(T_TEXT_PLUGIN_DEFINED, KEdPluginDefinedText, ['p__jsonF
     }
 });
 
+
+// ----------------------------------------------------------------------------------------------------
+
+// Negative group IDs are used to signal to the server that they need to be replaced by random numbers
+var q__attributeGroupNextId = -1;
+
+// Suffixes on DOM ids:
+
+var KEdAttributeGroup = function(attributeValues) {
+    this.q__initialAttributeValues = attributeValues;
+};
+_.extend(KEdAttributeGroup.prototype, KControl.prototype);
+_.extend(KEdAttributeGroup.prototype, {
+    // p__keditorValueControl -- should be set to KEdValue object containing this (done by default)
+    j__generateHtml2: function(i) {
+        var groupDesc = this.p__keditorValueControl.q__defn.p__desc;
+        var groupTypeRef = this.p__keditorValueControl.q__defn.p__groupType;
+        var groupType = _.find(KEditorSchema.p__schema.types, function(t) { return t[SCHEMATYPE_ROOT_ROOT_REF] === groupTypeRef; });
+        var attributes = [];
+        if(groupType) {
+            attributes = groupType[SCHEMATYPE_ROOT_ATTRIBUTES];
+        }
+
+        var controls = this.q__controls = [];
+        var html = '<div id="'+i+'" class="z__editor_attribute_group">';
+
+        var parentContainer = this.p__keditorValueControl.p__parentContainer;
+        var keditor = parentContainer.p__keditor;
+
+        var initialValuesByDesc = {};
+        _.each(this.q__initialAttributeValues, function(v) {
+            KEditor.j__adjustAttribute(v);
+            initialValuesByDesc[v[0]] = v[1];
+        });
+
+        if(attributes.length === 0) {
+            // Make it very obvious when schema isn't set up correctly. This will generally only
+            // happen when a plugin sets up an object incorrectly.
+            html += '<div style="color:red">Schema not valid for attribute group with desc '+_.escape(''+groupDesc)+'</div>';
+        }
+
+        var first = true;
+        _.each(attributes, function(desc) {
+            var defn = KEditorSchema.j__attrDefn(desc);
+            var val = initialValuesByDesc[desc];
+            if(!val) {
+                val = (defn.p__normalDataType === T_IDENTIFIER_FILE) ? [] : [defn.p__newCreationData];
+            }
+            var nestedContainer = new KAttrContainer(keditor, desc, val);
+            nestedContainer.p__singleValue = true;
+            if(first) {
+                nestedContainer.p__omitAttributeName = true;
+                first = false;
+            }
+            controls.push(nestedContainer);
+            html += nestedContainer.j__generateHtml();
+        });
+
+        // Modify parentContainer to override the value generation, using values from the nested containers
+        parentContainer.j__value = function() {
+            var values = [];
+            _.each(parentContainer.q__values, function(attributeGroupValue) {
+                // Need to send a group start, even if it has been deleted, so that
+                // deletion works properly on the server side.
+                values.push('G`'+groupDesc+'`'+(attributeGroupValue.q__control.j__getGroupId()));
+                if(!attributeGroupValue.q__deleted) {
+                    _.each(attributeGroupValue.q__control.q__controls, function(c) {
+                        values.push(c.j__value());
+                    });
+                }
+                values.push('g');
+            });
+            return values.join('`');
+        };
+
+        // TODO: Modify parentContainer to override busy/error state functions
+
+        return html+'</div>';
+    },
+    j__attach2: function(i) {
+        _.each(this.q__controls, function(control) {
+            control.j__attach();
+        });
+    },
+    j__getGroupId: function() {
+        // New group IDs are special negative IDs which are replaced on the server
+        if(!this.q__attributeGroupId) {
+            this.q__attributeGroupId = q__attributeGroupNextId;
+            q__attributeGroupNextId--; // more negative
+        }
+        return this.q__attributeGroupId;
+    }
+    // doesn't have a j__value() method, as it's been implemented/overridden at the container level
+});
+
+j__makeKeditorValueClass(T_ATTRIBUTE_GROUP, KEdAttributeGroup, ['q__attributeGroupId'], {
+    j__deleteShouldRemoveValueFromDisplay: function() {
+        return false;
+    },
+    j__textForUndoableDeleted: function() {
+        // TODO: Better display of deleted attribute group
+        return "(deleted)";
+    }
+});
+
 // ----------------------------------------------------------------------------------------------------
 
 // Suffixes on DOM ids:
@@ -2253,7 +2360,10 @@ _.extend(KAttrContainer.prototype, {
             // Add the 'add' button
             h += '<div class="z__editor_add"><a id="'+i+'_a" href="#"><img src="/images/clearbut.gif" height="14" width="14" alt="add" title="add '+n.toLowerCase()+'"></a></div>';
         }
-        h += '<div class="z__keyvalue_row"><div class="z__keyvalue_col1">'+n+'</div>';
+        h += '<div class="z__keyvalue_row">';
+        if(!this.p__omitAttributeName) {
+            h += '<div class="z__keyvalue_col1">'+n+'</div>';
+        }
         h += '</div>' + this.p__top_html; // include HTML from plugins
 
         // Containers of file values need a target for uploading new files
@@ -2365,7 +2475,8 @@ _.extend(KAttrContainer.prototype, {
         this.q__values.push(v);
 
         // Add the control HTML at the end of the values container
-        $('.z__editor_attr_container_value_container', this.q__domObj).append(v.j__generateHtml());
+        // The first() is required because containers may be nested
+        $('.z__editor_attr_container_value_container', this.q__domObj).first().append(v.j__generateHtml());
 
         // Attach control
         v.j__attach();
@@ -2498,24 +2609,7 @@ var j__ensureKeditorShortcutsCreated = function() {
     _.extend(this, options);
 
     // Adjust the ObjRef attributes to use pseudo types based on their UI options
-    _.each(attr, function(ax) {
-        var defn = KEditorSchema.j__attrDefn(ax[0]);
-        var axx = ax[1];    // attributes
-        var dataType = defn.p__normalDataType;
-        if(dataType <= T_PSEUDO_TYPE_OBJREF_UISTYLE_MAX) {
-            // It's one of the special objref values for a particular UI style - change
-            // any T_OBJREF types to this pseudo type in the attributes.
-            for(var i = 0; i < axx.length; ++i) {
-                if(axx[i][VL_TYPE] === T_OBJREF) {
-                    axx[i][VL_TYPE] = dataType;
-                }
-            }
-            // Special handling for checkboxes
-            if(dataType === T_PSEUDO_TYPE_OBJREF_CHECKBOX) {
-                ax[1] = KEdObjRefCheckbox_rewriteAttrOnEditorInit(axx, defn);
-            }
-        }
-    });
+    _.each(attr, KEditor.j__adjustAttribute);
 
     // Initialise this object
     this.q__initialAttr = attr;
@@ -2566,6 +2660,24 @@ var j__ensureKeditorShortcutsCreated = function() {
     }
     this.q__attrContainers = c;
     this.q__typeAttrDesc = type_attr_desc || A_TYPE;
+};
+KEditor.j__adjustAttribute = function(ax) {
+    var defn = KEditorSchema.j__attrDefn(ax[0]);
+    var axx = ax[1];    // attributes
+    var dataType = defn.p__normalDataType;
+    if(dataType <= T_PSEUDO_TYPE_OBJREF_UISTYLE_MAX) {
+        // It's one of the special objref values for a particular UI style - change
+        // any T_OBJREF types to this pseudo type in the attributes.
+        for(var i = 0; i < axx.length; ++i) {
+            if(axx[i][VL_TYPE] === T_OBJREF) {
+                axx[i][VL_TYPE] = dataType;
+            }
+        }
+        // Special handling for checkboxes
+        if(dataType === T_PSEUDO_TYPE_OBJREF_CHECKBOX) {
+            ax[1] = KEdObjRefCheckbox_rewriteAttrOnEditorInit(axx, defn);
+        }
+    }
 };
 _.extend(KEditor.prototype, KControl.prototype);
 _.extend(KEditor.prototype, {

@@ -16,14 +16,21 @@ DescriptorAndAttrs = Struct.new(
 module KAttrAlias
   include KConstants
 
+  class AliasedGroups < Struct.new(:transformed, :group_id)
+    # TODO: This feels a bit icky to be using the typecode here, but it makes rendering convenient
+    def k_typecode; KConstants::T_ATTRIBUTE_GROUP end
+  end
+
   # Takes an object, and an optional block, and transforms it into the user displayable format
   # using the aliased definitions where appropraite. Returns array of DescriptorAndAttrs
   # yields value,desc,qualifier,is_aliased
   # Takes the allow_aliasing parameter so aliasing can be switched off easily without
   # consumers of the output having to write two versions.
-  def self.attr_aliasing_transform(obj, schema = nil, allow_aliasing = true)
-    transformed = Array.new
-    schema ||= obj.store.schema
+  def self.attr_aliasing_transform(obj_in, schema = nil, allow_aliasing = true)
+    schema ||= obj_in.store.schema
+
+    ungrouped = obj_in.store.extract_groups(obj_in)
+    obj = ungrouped.ungrouped_attributes
 
     # Get the object's type descriptor to find the list of attributes, which may include aliases
     type_objref = obj.first_attr(A_TYPE)
@@ -32,8 +39,20 @@ module KAttrAlias
     type_descriptor = schema.type_descriptor(type_descriptor.root_type) if type_descriptor
     attributes = type_descriptor ? type_descriptor.attributes : []
 
-    # Build an initial list of all the attributes, with a lookup
-    transformed_lookup = Hash.new
+    # Transformed list and lookup
+    transformed = Array.new
+    transformed_lookup = Hash.new do |h,desc|
+      descriptor = schema.attribute_descriptor(desc)
+      if descriptor
+        toa = DescriptorAndAttrs.new(descriptor, Array.new)
+        transformed << toa
+        h[desc] = toa
+      else
+        h[desc] = nil
+      end
+    end
+
+    # Build an initial list of all the attributes
     aliases_on = Hash.new         # non-aliased desc -> array of alias type descriptors
     attributes.each do |desc|
       descriptor = schema.attribute_descriptor(desc)
@@ -43,12 +62,12 @@ module KAttrAlias
         alias_descriptor = schema.aliased_attribute_descriptor(desc)
         descriptor = alias_descriptor
       end
-      if descriptor != nil && !transformed_lookup.has_key?(desc)
-        toa = DescriptorAndAttrs.new(descriptor, Array.new)
-        transformed << toa
-        transformed_lookup[desc] = toa
+      if descriptor != nil
+        toa = transformed_lookup[desc]
         # Alias lookups
-        if alias_descriptor != nil
+        if alias_descriptor
+          toa = transformed_lookup[desc] = DescriptorAndAttrs.new(alias_descriptor, Array.new)
+          transformed << toa
           aliases_on[alias_descriptor.alias_of] ||= Array.new
           aliases_on[alias_descriptor.alias_of] << toa
         end
@@ -117,17 +136,18 @@ module KAttrAlias
         unless did_alias
           # Not aliased; add normally
           toa = transformed_lookup[desc]
-          if toa == nil
-            # Need to make a new one
-            descriptor = schema.attribute_descriptor(desc)
-            if descriptor != nil
-              toa = DescriptorAndAttrs.new(descriptor, Array.new)
-              transformed << toa
-              transformed_lookup[desc] = toa
-            end
-          end
           toa.attributes << [value,desc,qual] if toa != nil
         end
+      end
+    end
+
+    # Add in the grouped attributes
+    ungrouped.groups.each do |group|
+      group_transformed = self.attr_aliasing_transform(group.object, schema, allow_aliasing)
+      toa = transformed_lookup[group.desc]
+      if toa
+        group_value = AliasedGroups.new(group_transformed, group.group_id)
+        toa.attributes << [group_value, group.desc, KConstants::Q_NULL]
       end
     end
 

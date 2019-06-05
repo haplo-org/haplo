@@ -531,19 +531,29 @@ class User < ActiveRecord::Base
       end || []
   end
 
-  def kobject_restricted_attributes(object)
-    labels = []
-    call_hook(:hObjectAttributeRestrictionLabelsForUser) do |hooks|
-      hooks.response.userLabelsForObject = KLabelChanges.new
-      r = hooks.run(self, object)
-      raise "userLabelsForObject property removed in hook" unless r.userLabelsForObject
-      labels = r.userLabelsForObject.change(KLabelList.new([]))._to_internal
+  def kobject_restricted_attributes_factory
+    UserRestrictedAttributesFactory.new(self)
+  end
+
+  class UserRestrictedAttributesFactory < KObject::RestrictedAttributesFactory
+    include KPlugin::HookSite
+    def initialize(user)
+      @user = user
     end
-    KObject::RestrictedAttributes.new(object, labels + self.attribute_restriction_labels)
+    def make_restricted_attributes_for(object, container)
+      labels = []
+      call_hook(:hObjectAttributeRestrictionLabelsForUser) do |hooks|
+        hooks.response.userLabelsForObject = KLabelChanges.new
+        r = hooks.run(@user, object, container)
+        raise "userLabelsForObject property removed in hook" unless r.userLabelsForObject
+        labels = r.userLabelsForObject.change(KLabelList.new([]))._to_internal
+      end
+      KObject::RestrictedAttributes.new(object, labels + @user.attribute_restriction_labels)
+    end
   end
 
   def kobject_dup_restricted(object)
-    object.dup_restricted(self.kobject_restricted_attributes(object))
+    object.dup_restricted(self.kobject_restricted_attributes_factory)
   end
 
   def policy

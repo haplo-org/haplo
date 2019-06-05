@@ -41,6 +41,7 @@ module Setup_AttributeHelper
       end
     end
     o << ['Integer', KConstants::T_INTEGER.to_s]
+    o << ['Attribute group', KConstants::T_ATTRIBUTE_GROUP.to_s]
     call_hook(:hObjectTextValueDiscover) do |hooks|
       hooks.run().types.each do |type, description|
         o << ["#{description} [plugin]", "#{KConstants::T_TEXT_PLUGIN_DEFINED} #{type}"]

@@ -103,11 +103,13 @@ class KObject
     end
   end
 
-  def add_attr(value, desc, qualifier = Q_NULL)
+  def add_attr(value, desc, qualifier = Q_NULL, x = nil)
     raise "Restricted objects are read-only" if @restricted
     @needs_to_compute_attrs = true
     value = convert_attr_value(value)
-    @attrs << [desc.to_i, qualifier.to_i, value]
+    a = [desc.to_i, qualifier.to_i, value]
+    a << x unless x.nil?  # only have a quad if x is specified
+    @attrs << a
     value
   end
 
@@ -127,7 +129,7 @@ class KObject
       raise "qualifier must be nil if desc == nil" if qualifier != nil
       # No desc specified, so values need sorting by desc, but preserve the order within them
       by_desc = Hash.new { |h,k| h[k] = [] }
-      @attrs.each { |d,q,v| by_desc[d].push([d,q,v]) }
+      @attrs.each_entry { |e| by_desc[e.first].push(e) }
       values = []
       by_desc.keys.sort.each { |k| values.concat(by_desc[k]) }
       values
@@ -162,19 +164,19 @@ class KObject
     end
   end
 
-  # yields: value, desc, qualifier
+  # yields: value, desc, qualifier, x
   def each(desc = nil, qualifier = nil)
     if desc == nil
       @attrs.each do |i|
-        yield i[2],i[0],i[1]
+        yield i[2],i[0],i[1],i[3]
       end
     elsif desc != nil && qualifier == nil
       @attrs.each do |i|
-        yield i[2],i[0],i[1] if i[0] == desc
+        yield i[2],i[0],i[1],i[3] if i[0] == desc
       end
     else
       @attrs.each do |i|
-        yield i[2],i[0],i[1] if i[0] == desc && i[1] == qualifier
+        yield i[2],i[0],i[1],i[3] if i[0] == desc && i[1] == qualifier
       end
     end
   end
@@ -194,8 +196,21 @@ class KObject
   def delete_attr_if
     @needs_to_compute_attrs = true
     @attrs.delete_if do |i|
-      yield i[2],i[0],i[1]
+      yield i[2],i[0],i[1],i[3]
     end
+  end
+
+  def has_grouped_attributes?
+    # For now, if there is an x in v,d,q,x, it means there's a group. May be extended later.
+    !!(@attrs.find { |i| i[3] })
+  end
+
+  def group_id_of_group_with_attr(group_desc, value, desc = nil, qualifier = nil)
+    value = convert_attr_value(value)
+    each(desc, qualifier) do |v,d,q,x|
+      return x.last if x && (value == v) && (x.first == group_desc)
+    end
+    nil
   end
 
   # XML output
@@ -338,11 +353,33 @@ class KObject
   end
 
   # Duplicate the object, without the restricted attributes
-  def dup_restricted(restricted_attributes)
+  # Pass in a RestrictedAttributesFactory, and optionally a RestrictedAttributes for the original object
+  # which is used when restrictions need to be calculated against a different object.
+  def dup_restricted(ra_factory, ra_for_this_object = nil)
     self.compute_attrs_if_required!
     raise "Already restricted" if @restricted
-    obj = self.dup
-    obj._restrict_to(restricted_attributes)
+    unless ra_for_this_object
+      ra_for_this_object = ra_factory.restricted_attributes_for(self, self)
+    end
+    obj = nil
+    if self.has_grouped_attributes?
+      ungrouped = self.store.extract_groups(self)
+      collected = ungrouped.ungrouped_attributes._restrict_to(ra_for_this_object)
+      collected_attrs = collected.__internal__attrs
+      ungrouped.groups.each do |g|
+        x = [g.desc, g.group_id]
+        grp = g.object.dup._restrict_to(ra_factory.restricted_attributes_for(g.object, self))
+        grp.each do |v,d,q|
+          collected_attrs << [d,q,v,x] unless d == A_TYPE
+        end
+      end
+      obj = self.dup
+      obj.__internal__attrs = collected.__internal__attrs
+    else
+      # Simple case where there aren't any grouped attributes
+      obj = self.dup._restrict_to(ra_for_this_object)
+    end
+    obj.freeze
     obj
   end
 
@@ -358,7 +395,25 @@ class KObject
     end
     @restricted = true
     @attrs = new_attrs
-    self.freeze
+    self
+  end
+
+  class RestrictedAttributesFactory
+    def restricted_attributes_for(object, container = nil)
+      ra = make_restricted_attributes_for(object, container || object)
+      if @hide_additional_attributes
+        ra.hide_additional_attributes(@hide_additional_attributes)
+      end
+      ra
+    end
+    def hide_additional_attributes(attrs)
+      raise "hide_additional_attributes() already called" if @hide_additional_attributes # TODO: allow this to be called multiple times
+      @hide_additional_attributes = attrs
+    end
+    # should be overriden by subclass
+    def make_restricted_attributes_for(object, container)
+      raise "Not implemented"
+    end
   end
 
   class RestrictedAttributes
@@ -382,18 +437,77 @@ class KObject
     end
   end
 
+  def __internal__attrs;      @attrs;     end
+  def __internal__attrs=(a);  @attrs = a; end
+
   # =============================================================================================================
   #   JavaScript interface
   # =============================================================================================================
 
   def jsEach(desc, qual, iterator)
-    each(desc, qual) { |v,d,q| iterator.attr(v,d,q) }
+    extension_values = nil
+    each(desc, qual) do |v,d,q,x|
+      if x
+        # Ensure that the same extension value is used for the same x
+        extension_values ||= Hash.new # lazy allocation
+        iterator.attribute(v, d, q, extension_values[x] ||= iterator.createJSExtensionValue(*x))
+      else
+        iterator.attribute(v, d, q, nil)
+      end
+    end
+  end
+
+  def allocate_new_extension_group_id()
+    # Use a random number so it's highly unlikely it'll be reused, even if groups are deleted.
+    used_group_ids = {}
+    @attrs.each do |a|
+      if a[3]
+        used_group_ids[a[3].last] = true
+      end
+    end
+    safety = 256
+    while safety > 0
+      gid = KRandom.random_int32
+      if (gid > 8096) && (gid < java.lang.Integer::MAX_VALUE) && !used_group_ids[gid]
+        return gid
+      end
+    end
+    raise "Couldn't find unused group ID"
+  end
+
+  def jsGroupIdsForDesc(desc)
+    groups_ids = []
+    @attrs.each do |a|
+      if a[3]
+        gd, gid = *a[3]
+        if desc.nil? || gd == desc
+          groups_ids << gid
+        end
+      end
+    end
+    groups_ids.sort.uniq.to_java
+  end
+
+  def jsAddAttrWithExtension(value, desc, qualifier, extDesc, extGroupId)
+    raise "No extension" unless extDesc && extGroupId
+    add_attr(value, desc, qualifier, [extDesc.to_i, extGroupId.to_i])
   end
 
   def jsDeleteAttrsIterator(desc, qual, iterator)
     raise "Bad call to jsDeleteAttrsIterator" if desc == nil
-    delete_attr_if do |v,d,q|
-      d == desc && (qual == nil || q == qual) && iterator.attr(v,d,q)
+    extension_values = nil
+    delete_attr_if do |v,d,q,x|
+      if d != desc
+        false
+      elsif (qual == nil || q == qual)
+        if x
+          # Ensure that the same extension value is used for the same x
+          extension_values ||= Hash.new # lazy allocation
+          iterator.attribute(v, d, q, extension_values[x] ||= iterator.createJSExtensionValue(*x))
+        else
+          iterator.attribute(v, d, q, nil)
+        end
+      end
     end
   end
 

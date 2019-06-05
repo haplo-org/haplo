@@ -12,6 +12,7 @@ public enum Context {
     TEXT,
     TAG,
     ATTRIBUTE_VALUE,
+    COMMENT,
     URL,
     URL_PATH
 }

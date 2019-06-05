@@ -48,9 +48,9 @@ class WebPublisherTest < IntegrationTest
     assert_equal %Q!<div class="test-publication" data-uid="#{service_user.id}">something</div>!, response.body
 
     get "/test-publication?layout=1"
-    assert_equal %Q!<div class="in-layout"><div class="test-publication" data-uid="#{service_user.id}"></div></div>!, response.body
+    assert_equal %Q!<h1 class="title-in-layout">Test title</h1><div class="in-layout"><div class="test-publication" data-uid="#{service_user.id}"></div></div>!, response.body
     get "/test-publication?layout=1&sidebar=1"
-    assert_equal %Q!<div class="in-layout"><div class="test-publication" data-uid="#{service_user.id}"></div></div><div class="in-sidebar"><span>Sidebar</span></div>!, response.body
+    assert_equal %Q!<h1 class="title-in-layout">Test title</h1><div class="in-layout"><div class="test-publication" data-uid="#{service_user.id}"></div></div><div class="in-sidebar"><span>Sidebar</span></div>!, response.body
 
     get_201 "/test-publication/all-exchange?t2=abc"
     assert_equal "201", response.code
@@ -97,6 +97,19 @@ class WebPublisherTest < IntegrationTest
     assert_equal "application/json; charset=utf-8", response.header["Content-Type"]
     assert_equal '{"a":42}', response.body
 
+    # O.stop() and exceptions return a nice HTML response in the layout
+    get "/publication/response-kinds/stop"
+    assert_equal "text/html; charset=utf-8", response.header["Content-Type"]
+    assert_select 'h1.title-in-layout', 'Title for stop1'
+    assert_select 'div.haplo-error', 'Stop error message1'
+    get "/publication/response-kinds/stop-no-layout"
+    assert_equal "text/html; charset=utf-8", response.header["Content-Type"]
+    assert_select 'div.haplo-error', 'Stop error message2'
+    get_500 "/publication/response-kinds/exception"
+    assert_equal "text/html; charset=utf-8", response.header["Content-Type"]
+    assert_select 'h1.title-in-layout', 'Error'
+    assert_select 'div.haplo-error', 'Internal error'
+
     # File download & thumbnails
     assert WebPublisherTestPlugin::CALLS[_TEST_APP_ID].empty?
     stored_file = StoredFile.from_upload(fixture_file_upload('files/example3.pdf', 'application/pdf'))
@@ -106,11 +119,30 @@ class WebPublisherTest < IntegrationTest
     assert WebPublisherTestPlugin::CALLS[_TEST_APP_ID].empty?
 
     # Add an object which gives permission for the service user to download it
-    obj = KObject.new([O_TYPE_BOOK])
+    obj = KObject.new([O_TYPE_BOOK,O_LABEL_COMMON])
     obj.add_attr(KConstants::O_TYPE_BOOK, KConstants::A_TYPE)
-    obj.add_attr("File", KConstants::A_TITLE)
+    obj.add_attr("Test file", KConstants::A_TITLE)
     obj.add_attr(KIdentifierFile.new(stored_file), KConstants::A_FILE)
     KObjectStore.create(obj)
+
+    # Check the object renders nicely
+    get "/testobject/#{obj.objref.to_presentation}/slug"
+    assert_select 'h1.title-in-layout', 'Test file'
+    assert response.body =~ /example3\.pdf/
+
+    # Check non-existent objects return a 404
+    get_404 "/testobject/#{123}/slug"
+    assert_select 'h1.title-in-layout', 'Not found'
+    assert_select 'div.haplo-error', 'The requested item was not found'
+
+    # Check objects without permissions return not found too
+    rule = PermissionRule.new_rule! :deny, User.cache.group_code_to_id_lookup['test:group:publisher-service-group'], O_LABEL_COMMON, :read
+    get_404 "/testobject/#{obj.objref.to_presentation}/slug" # this object does exist
+    assert_select 'h1.title-in-layout', 'Not found'
+    assert_select 'div.haplo-error', 'The requested item was not found'
+    rule.destroy
+    get "/testobject/#{obj.objref.to_presentation}/slug" # check it's visible again
+
     # Now the downloads work
     get "/download/#{stored_file.digest}/#{stored_file.size}/#{stored_file.upload_filename}"
     assert_equal "application/pdf", response.header["Content-Type"]
@@ -154,8 +186,8 @@ Allow: /test-publication/all-exchange
 Allow: /post-test-exact
 Allow: /post-test-directory/
 Allow: /publication/response-kinds/
-Allow: /testdir/
 Allow: /testobject/
+Allow: /testdir/
 Disallow: /
 Disallow: /test-disallow/1
 __E

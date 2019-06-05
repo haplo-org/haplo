@@ -55,11 +55,12 @@ module Application_RenderHelper
     else
       # Because plugins can modify objects radically before they're displayed, use the unmodified
       # object for determining the permissions. This means the two hooks won't interact and confuse.
-      restricted_attributes = @request_user.kobject_restricted_attributes(
+      restricted_attributes_factory = @request_user.kobject_restricted_attributes_factory
+      restricted_attributes_factory.hide_additional_attributes(hide_attributes)
+      restricted_attributes = restricted_attributes_factory.restricted_attributes_for(
         (render_options||{})[:unmodified_object] || render_object
       )
-      restricted_attributes.hide_additional_attributes(hide_attributes)
-      obj = render_object.dup_restricted(restricted_attributes)
+      obj = render_object.dup_restricted(restricted_attributes_factory, restricted_attributes)
     end
 
     # Make a new options structure, so it can be modified by rendering to pass data around.
@@ -273,6 +274,7 @@ module Application_RenderHelper
   RENDER_VALUE_METHODS = {
     T_OBJREF => :render_value_objref,
     T_DATETIME => :render_value_datetime,
+    T_ATTRIBUTE_GROUP => :render_value_attribute_group,
     T_TEXT_DOCUMENT => :render_value_document,
     T_IDENTIFIER_FILE => :render_value_identifier_file,
     T_IDENTIFIER_URL => :render_value_identifier_url,
@@ -354,6 +356,25 @@ module Application_RenderHelper
     else
       value.to_html
     end
+  end
+
+  def render_value_attribute_group(value, obj, render_options, attr_desc)
+    if value.transformed.empty?
+      return ''
+    end
+    first = true
+    h = '<div class="z__object_attribute_group">'
+    value.transformed.each do |t|
+      unless t.attributes.empty?
+        h << %Q!<div class="z__object_attribute_group_attribute_name">#{ERB::Util.h(t.descriptor.printable_name.to_s)}</div>! unless first
+        t.attributes.each do |v,d,q|
+          h << render_value(v, obj, render_options, attr_desc)
+        end
+      end
+      first = false # only omit the title on the first attribute in the type definition
+    end
+    h << '</div>'
+    h
   end
 
   def render_value_document(value, obj, render_options, attr_desc)
@@ -552,15 +573,16 @@ module Application_RenderHelper
         # Not first: output divider, stop current section, start new section
         html << '<div class="z__keyvalue_divider"></div></div><div class="z__keyvalue_section">'
       end
-      first_in_section = true
-      toa.attributes.each do |value,desc,qualifier|
+      last_index = toa.attributes.length - 1
+      toa.attributes.each_with_index do |vdq,index|
+        value,desc,qualifier = vdq
         html << '<div class="z__keyvalue_row">'
         # Descriptor name?
-        html << %Q!<div class="z__keyvalue_col1">#{h(toa.descriptor.printable_name.to_s)}</div>! if first_in_section
+        html << %Q!<div class="z__keyvalue_col1">#{h(toa.descriptor.printable_name.to_s)}</div>! if index == 0
         if qualifier != nil
           qual_descriptor = schema.qualifier_descriptor(qualifier)
           if qual_descriptor != nil
-            if first_in_section
+            if index == 0
               # If desc+qual are on one line, then it overlaps nasily. Start a new row, with special spacer.
               html << '<div class="z__keyvalue_col2">&nbsp;</div></div><div class="z__keyvalue_row">'
             end
@@ -568,8 +590,9 @@ module Application_RenderHelper
           end
         end
         # Value and finish row div
-        html << %Q!<div class="z__keyvalue_col2">#{render_value(value, obj, render_options, desc)}</div></div>\n!
-        first_in_section = false
+        html << '<div class="z__keyvalue_col2'
+        html << ' z__object_last_attribute_value' if index == last_index
+        html << %Q!">#{render_value(value, obj, render_options, desc)}</div></div>\n!
       end
     end
     html << '<div class="z__keyvalue_divider"></div></div>'

@@ -55,4 +55,56 @@ class DeveloperLoaderTest < IntegrationTest
     end
   end
 
+  # -------------------------------------------------------------------------
+
+  def test_allowed_upload_filenames
+    # Simple check of allowed path with dots within filenames and dirs
+    r = check_upload_name("static/a.b/ce", "xyz.min.js")
+    assert_equal "static/a.b/ce", r.directory
+    assert_equal "xyz.min.js", r.filename
+    assert_equal "static/a.b/ce/xyz.min.js", r.plugin_pathname
+
+    r = check_upload_name("js", "something.js")
+    assert_equal "js", r.directory
+    assert_equal "something.js", r.filename
+    assert_equal "js/something.js", r.plugin_pathname
+
+    r = check_upload_name(nil, "plugin.json")
+    assert_equal nil, r.directory
+    assert_equal "plugin.json", r.filename
+    assert_equal "plugin.json", r.plugin_pathname
+
+    # Things which aren't allowed
+    assert_raises(RuntimeError) { check_upload_name("not/allowed", "x.txt")}
+    assert_raises(RuntimeError) { check_upload_name("static/..", "x.txt")}
+    assert_raises(RuntimeError) { check_upload_name("static/.ping/dir", "x.txt")}
+    assert_raises(RuntimeError) { check_upload_name("static", ".x.txt")}
+    assert_raises(RuntimeError) { check_upload_name("static", "x.txt.")}
+    assert_raises(RuntimeError) { check_upload_name("static", "..x.txt")}
+    assert_raises(RuntimeError) { check_upload_name("static", "..")}
+    assert_raises(RuntimeError) { check_upload_name("static/.x", "x.txt")}
+    assert_raises(RuntimeError) { check_upload_name("static/x.", "x.txt")}
+    assert_raises(RuntimeError) { check_upload_name("..", "x.txt")}
+    assert_raises(RuntimeError) { check_upload_name("../static", "x.txt")}
+    assert_raises(RuntimeError) { check_upload_name(".", "x.txt")}
+    assert_raises(RuntimeError) { check_upload_name("./static", "x.txt")}
+    assert_raises(RuntimeError) { check_upload_name("static", "x!.txt")}
+    assert_raises(RuntimeError) { check_upload_name(nil, "__loader.json")}
+  end
+
+  CheckUploadName = Struct.new(:directory, :filename, :plugin_pathname, :pathname)
+  FakeExchange = Struct.new(:params)
+
+  def check_upload_name(directory, filename)
+    loader = DeveloperLoader::Controller.new
+    loader.instance_variable_set(:@exchange, FakeExchange.new({:directory => directory, :filename => filename}))
+    loader.__send__(:setup_file_path_info)
+    r = CheckUploadName.new
+    r.directory = loader.instance_variable_get(:@directory)
+    r.filename = loader.instance_variable_get(:@filename)
+    r.plugin_pathname = loader.instance_variable_get(:@plugin_pathname)
+    r.pathname = loader.instance_variable_get(:@pathname)
+    r
+  end
+
 end

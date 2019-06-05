@@ -11,8 +11,11 @@ var Publication = P.webPublication.register(P.webPublication.DEFAULT).
     permitFileDownloadsForServiceUser();
 
 Publication.layout(function(E, context, blocks) {
-    if(context.hint.useLayout) {
-        return P.template('layout').render({blocks:blocks});
+    if(context.hint.useLayout || -1 !== E.request.path.indexOf("testobject")) {
+        return P.template('layout').render({
+            context: context,
+            blocks: blocks
+        });
     }
 });
 
@@ -71,12 +74,27 @@ Publication.respondToDirectory("/publication/response-kinds", function(E, contex
     } else if(kind === "json") {
         E.response.kind = "json";
         E.response.body = JSON.stringify({"a":42});
+    } else if(kind === "stop") {
+        context.hint.useLayout = true;
+        O.stop("Stop error message1", "Title for stop1");
+    } else if(kind === "stop-no-layout") {
+        O.stop("Stop error message2", "Title for stop2");
+    } else if(kind === "exception") {
+        context.hint.useLayout = true;
+        throw new Error("ping");
     }
 });
 
+Publication.respondWithObject("/testobject", [T.Book],
+    function(E, context, object) {
+        E.render({
+            object: P.webPublication.widget.object(object)
+        });
+    }
+);
+
 // For testing robots.txt
 Publication.respondToDirectory("/testdir", function(E, context) {});
-Publication.respondWithObject("/testobject", [], function(E, context) {});
 Publication.addRobotsTxtDisallow("/test-disallow/1");
 
 // For testing downloads

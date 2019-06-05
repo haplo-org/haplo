@@ -646,6 +646,27 @@ a.z__link_to_deleted_object {
 
 /* ---------------------------------------------------------------------- */
 
+/* Attribute groups */
+
+.z__object_attribute_group {
+    margin-bottom: 8px;
+}
+
+/* separator line between multiple attribute groups in a single attribute - can't use CSS sibling combinators because values are nested in row divs */
+.z__keyvalue_col2:not(.z__object_last_attribute_value) .z__object_attribute_group {
+    border-bottom: 1px dashed #ccc;
+}
+
+.z__object_attribute_group_attribute_name {
+    margin-top: 4px;
+    font-size: 10px;
+    line-height: 11px;
+    text-transform: uppercase;
+    color: #666;
+}
+
+/* ---------------------------------------------------------------------- */
+
 /* Covering - iframes which cover the existing UI */
 
 .z__covering_background {

@@ -144,6 +144,18 @@ class KObjectStoreApplicationDelegate
     return KSchemaApp.new
   end
 
+  # Label extracted attribute group objects with normal policy and a special hook for plugins
+  def label_extracted_object_group(container, group)
+    label_changes = KLabelChanges.new
+    call_hook(:hLabelAttributeGroupObject) do |hooks|
+      hooks.response.changes = label_changes
+      h = hooks.run(container, group.object, group.desc, group.group_id)
+      label_changes = h.changes
+    end
+    @labelling_policy.modify_changes_to_apply_labelling_policy(label_changes, :create, group.object, nil)
+    group.object._set_labels(label_changes.change(KLabelList.new([])))
+  end
+
   # Health reporting for text indexing
   def textidx_exception_indexing_object(object, exception)
     OBJECT_STORE_TEXTIDX_HEALTH_EVENTS.log_and_report_exception(exception, "objectstore textidx of #{object.objref.to_presentation}")

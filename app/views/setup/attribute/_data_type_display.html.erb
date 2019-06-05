@@ -62,3 +62,11 @@
     end
   %>
 <% end -%>
+
+<%
+  if @data_type == KConstants::T_ATTRIBUTE_GROUP
+    if @data_type_attribute_group_type
+      %><br>based on type <i><%= h(@schema.type_descriptor(@data_type_attribute_group_type).printable_name.to_s) %></i><%
+    end
+  end
+%>
