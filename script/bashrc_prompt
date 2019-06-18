@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2019            https://www.haplo.com
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+export PS1="Haplo $ "
+
+cd /opt/haplo
+. config/paths-`uname`.sh
+
+
+export KFRAMEWORK_ENV=production
+export KHQ_LOG_FILE=/haplo/log/prompt.log
+export TMPDIR=/haplo/files/tmp
+
+# we want a bare 'cd' to bring us back to /opt/haplo
+export HOME=/opt/haplo
+
+echo ==============================================
+echo Log file: $KHQ_LOG_FILE
+echo
+echo Haplo command prompt
+echo
+echo Type exit to end
+echo
+
+# List applications on this server
+psql -P pager=off -c "SELECT * FROM applications ORDER BY hostname"

@@ -325,6 +325,11 @@ echo " *** Generating deployable archive ***"
 echo " *** Deployable archive generated ***"
 
 #
+# copy platform-prompt to somewhere likely to be in the default PATH
+#
+sudo cp script/platform-prompt /usr/bin
+
+#
 # iff the target code area is empty, for example if this is the first
 # time this script has been run, unpack the tarball in the right place
 #
