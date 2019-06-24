@@ -39,9 +39,29 @@ else
     cat /etc/ssl/certs/*.pem > /tmp/haplo-build/ssl/cacert.pem
 fi
 cd /tmp/haplo-build
+#
+# we want to make the deployable image, and thus the docker image,
+# no larger than they need to be
+#
 # don't deploy the git metadata
 rm -fr .git
 rm -f .gitignore
+# tidy up bits of jruby we'll never use
+rm -f vendor/jruby/bin/*.exe
+rm -f vendor/jruby/bin/*.dll
+rm -fr vendor/jruby/tool
+rm -fr vendor/jruby/samples
+rm -f vendor/jruby/bin/*.bat
+rm -fr vendor/jruby/lib/jni/*Windows
+rm -fr vendor/jruby/lib/jni/ppc*
+rm -fr vendor/jruby/docs/man
+rm -f vendor/jruby/docs/pom.xml
+# remove duplication
+if [ -f jars/jruby.jar -a -f vendor/jruby/lib/jruby.jar ]; then
+    rm -f jars/jruby.jar
+    ln vendor/jruby/lib/jruby.jar jars/jruby.jar
+fi
+# create deployable tarball
 tar cf /tmp/haplo-build.tar .
 cd /tmp
 rm -fr haplo-build
