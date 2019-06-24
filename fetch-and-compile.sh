@@ -43,6 +43,10 @@ if ! which gcc; then
     echo gcc is not available, have you installed the developer tools?
     exit 1
 fi
+if ! which g++; then
+    echo g++ is not available, have you installed the developer tools?
+    exit 1
+fi
 if ! which patch; then
     echo patch is not available
     exit 1
