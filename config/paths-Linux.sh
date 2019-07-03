@@ -9,6 +9,9 @@ KHOST_OPERATING_SYSTEM=Linux
 export KHOST_OPERATING_SYSTEM
 
 KINFORMATION_HOME=~/haplo-dev-support/information
+if [ -d `pwd`/information ]; then
+    KINFORMATION_HOME=`pwd`/information
+fi
 export KINFORMATION_HOME
 
 JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64

@@ -31,6 +31,10 @@ fi
 mkdir -p /tmp/haplo-build/vendor
 cd $JRUBY_HOME/..
 tar cf - jruby | ( cd /tmp/haplo-build/vendor ; tar xf -)
+# and copy maxmind
+mkdir -p /tmp/haplo-build/information
+cd $KINFORMATION_HOME
+tar cf - maxmind-geolite2 | ( cd /tmp/haplo-build/information ; tar xf -)
 # and we need a copy of cacert.pem in a known location
 mkdir -p /tmp/haplo-build/ssl
 if [ -f /etc/ssl/cacert.pem ]; then
