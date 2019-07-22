@@ -195,8 +195,8 @@ fi
 # https://dev.maxmind.com/geoip/geoip2/geolite2/
 # NOTE: this is a continually moving target
 
-MAXMIND_DB_VERSION=20190702
-MAXMIND_DB_DIGEST=b92a85c8fa848f5d3e5deccbe9ecc1f772501f87
+MAXMIND_DB_VERSION=20190716
+MAXMIND_DB_DIGEST=2310594f861999c9f9cd8e2ff583d5cb02c79749
 MAXMIND_DB_FILENAME=GeoLite2-Country_${MAXMIND_DB_VERSION}.tar.gz
 MAXMIND_DB_URL=http://geolite.maxmind.com/download/geoip/database/$MAXMIND_DB_FILENAME
 
@@ -207,6 +207,8 @@ if ! [ -f ${INFORMATION_DIR}/maxmind-geolite2/GeoLite2-Country.mmdb ]; then
     cd $INFORMATION_DIR
     tar xvzf $MAXMIND_DB_FILENAME
     mv GeoLite2-Country_${MAXMIND_DB_VERSION}/* maxmind-geolite2/
+    rm -fr GeoLite2-Country_${MAXMIND_DB_VERSION}
+    rm -f $MAXMIND_DB_FILENAME
     cd $CODE_DIR
 fi
 
