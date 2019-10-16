@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= @locale.locale_id %>">
 <head>
   <title><%= h(if @page_title != nil && @page_title != '' then @page_title.to_s + ' : ' else '' end) %><%= KApp.global(:product_name) %></title>
 <%= render(:partial => 'shared/client_side_resources') -%>
@@ -7,7 +7,7 @@
 <body class="<% if webfonts_enabled? %>z__webfonts_enabled <% end %>z__minimal_layout<%= @minimal_layout_extra_body_class || '' %>"<%= body_tag_data_attributes %>>
 
 <% unless @minimal_layout_no_cancel -%>
-  <a id="z__spawn_close" href="#">Cancel</a>
+  <a id="z__spawn_close" href="#"><%= @locale.text(:Layouts_View_Cancel) %></a>
 <% end -%>
   
 <div id="z__page">

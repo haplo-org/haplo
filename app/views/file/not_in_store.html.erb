@@ -1,9 +1,10 @@
-<html>
+<!DOCTYPE html>
+<html lang="<%= @locale.locale_id %>">
   <head>
-    <title>Not found</title>
+    <title><%= @locale.text(:File_View_Not_found) %></title>
   </head>
   <body>
-    <h1>Not found</h1>
-    <p>The file requested is not available in the file store.</p>
+    <h1><%= @locale.text(:File_View_Not_found) %></h1>
+    <p><%= @locale.text(:File_View_The_file_requested_is_not_available___) %></p>
   </body>
 </html>

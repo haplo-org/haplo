@@ -75,6 +75,10 @@ public abstract class NodeFunction extends Node {
         }
     }
 
+    protected boolean hasAnyBlocks() {
+        return (this.anonymousBlock != null) || (this.blocksHead != null);
+    }
+
     protected Node findBlockNamed(String name) {
         Block block = this.blocksHead;
         while(block != null) {

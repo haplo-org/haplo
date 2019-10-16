@@ -30,13 +30,12 @@
 #    @request_user        - User which made this request
 #    @current_api_key     - nil, or ApiKey object for the current request
 #    @request_uses_api_key - true if the request uses authentication via an api key -- errors returned differently
+#    @locale              - KLocale object for the current session
 #
 # -- set by controllers for layout and other bits of the system to use:
 #
 #    @page_title          - title for the page in the HTML head and h1 in layout - must have been h()ed
 # TODO: Check @page_title assignments -- maybe have automated thing to check non-constants have h()?
-# TODO: @page_title_html to be removed?
-#    @page_title_html     - if set, alternative HTML output for the h1 link and surrounding divs
 #    @page_creation_label_html - HTML for creation label at bottom of page
 #    @edit_link           - link for editing the current item, if appropraite (edit button)
 #    @represented_objref  - the ref of the object this page represents (add to basket button)
@@ -84,6 +83,11 @@ class ApplicationController
   # Standard libraries
   include ERB::Util
 
+  # Function for shortcut to translated text in code
+  def T(sym)
+    @locale.text(sym)
+  end
+
   # Security headers
   HEADER_X_FRAME_OPTIONS = 'X-Frame-Options'
   HEADER_X_FRAME_OPTIONS_DEFAULT = 'SAMEORIGIN'
@@ -102,6 +106,7 @@ class ApplicationController
   # Get information (for use by plugins and other parts of the system)
   attr_reader :current_api_key
   attr_reader :request_uses_api_key
+  attr_reader :locale
 
   # Class objects are used as the controller factories
   class << self
@@ -116,6 +121,7 @@ class ApplicationController
   def _setup_background_controller(user, exchange = nil)
     @request_user = user
     @exchange = exchange
+    @locale = KLocale::ID_TO_LOCALE[user.get_user_data(UserData::NAME_LOCALE) || KLocale::DEFAULT_LOCALE.locale_id]
     self
   end
 
@@ -224,6 +230,9 @@ class ApplicationController
   #   Get things ready for the application
 
   def pre_handle
+    # Make sure there's always a locale available. It'll be replaced by the user's locale early on in request handling.
+    @locale = KLocale::DEFAULT_LOCALE
+    # Inherited behaviour
     super
     # Check the application is active
     unless KApp.global(:status) == KApp::STATUS_ACTIVE
@@ -251,6 +260,13 @@ class ApplicationController
         return false
       end
     end
+    # Set user's locale. Session contains the locale so it's in memory to avoid database access, and can be
+    # changed independently of any user data configuration (eg for ANONYMOUS)
+    locale_id = session[:locale]
+    unless locale_id
+      locale_id = session[:locale] = @request_user.get_user_data(UserData::NAME_LOCALE) || KLocale::DEFAULT_LOCALE.locale_id
+    end
+    @locale = KLocale::ID_TO_LOCALE[locale_id] || KLocale::DEFAULT_LOCALE
     # Set up important class variables which should always be created, to avoid messy repeated code
     init_standard_controller_class_variables()
     # Send pre-request handling notification

@@ -9,6 +9,7 @@
   <link href="<%= dynamic_stylesheet_path s %>" rel="stylesheet" type="text/css">
 <% end; end -%>
 <% if !(@suppress_normal_js) || (resources[:javascript] != nil && !(resources[:javascript].empty?)) || (@client_side_resources_plugin != nil) -%>
+  <script src="/_dev_ctrl_js/browser_text/<%= @locale.locale_id %>?t=<%= File.mtime("app/locale/#{@locale.locale_id}.browser.strings").to_i %>"></script>
   <script src="<%= client_side_javascript_urlpath 'jquery__min' %>"></script>
   <script src="<%= client_side_javascript_urlpath 'underscore' %>"></script>
   <script src="<%= client_side_javascript_urlpath 'kconstants' %>"></script>

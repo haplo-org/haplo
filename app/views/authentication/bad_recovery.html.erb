@@ -1,16 +1,16 @@
 <%
-  @page_title = 'Forgotten password'
+  @page_title = T(:Authentication_Title_Forgotten_password)
   @breadcrumbs = [:login]
 -%>
 
-<p><b>Step 3</b></p>
+<p><b><%= @locale.text(:Authentication_View_Step_3) %></b></p>
 
-<p>The link you clicked was not a valid link to set a new password. Possible causes are:</p>
+<p><%= @locale.text(:Authentication_View_The_link_you_clicked_was_not_a_valid___) %></p>
 
 <ul>
-  <li>If the link was split into multiple lines in the email, you may have only clicked on part of the link. Try copying and pasting the whole link into your browser.
-  <li>You submitted more than one change password request. Only the link in the latest email will work.
-  <li>The link you used has expired.
+  <li><%= @locale.text(:Authentication_View_If_the_link_was_split_into_multiple___) %></li>
+  <li><%= @locale.text(:Authentication_View_You_submitted_more_than_one_change___) %></li>
+  <li><%= @locale.text(:Authentication_View_The_link_you_used_has_expired_) %></li>
 </ul>
 
-<p><a href="/do/authentication/recovery">Request a new email.</a></p>
+<p><a href="/do/authentication/recovery"><%= @locale.text(:Authentication_View_Request_a_new_email_) %></a></p>

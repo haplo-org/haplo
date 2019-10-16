@@ -1,16 +1,16 @@
 <% @breadcrumbs = [:account] -%>
-<% @page_title = h(possessive_case_of(@request_user.name))+" account information" -%>
+<% @page_title = @locale.text_format(:Account_Title_Account_information, @locale.possessive_case_of(@request_user.name)) -%>
 
-<h2>Log in email address</h2>
-<p>You log into <%= KApp.global(:product_name) %> with your email address, <b><%= h(@user.email) %></b>.</p>
-<p>Contact an administrator if you need to change this.</p>
-
-
-<h2>Items</h2>
-<p><a href="/search?w=%23U<%= @request_user.id %>%23">&raquo; View all items you've created</a></p>
+<h2><%= @locale.text(:Account_View_Log_in_email_address) %></h2>
+<p><%= @locale.text_format(:Account_You_log_in_with_your_email_address, KApp.global(:product_name), @user.email) %></p>
+<p><%= @locale.text(:Account_View_Contact_an_administrator_if_you_need___) %></p>
 
 
-<h2>Group membership</h2>
+<h2><%= @locale.text(:Account_View_Items) %></h2>
+<p><a href="/search?w=%23U<%= @request_user.id %>%23">&raquo; <%= @locale.text(:Account_View_View_all_items_you_ve_created) %></a></p>
+
+
+<h2><%= @locale.text(:Account_View_Group_membership) %></h2>
 <p><%
   @user_groups.each do |group|
     %><%= h(group.name) %><br><%

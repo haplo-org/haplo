@@ -1,0 +1,4 @@
+std:resource:_plugin_document_edit_control_support()
+<div class="z__kctrl_document_text_plugin" data-name=name data-value=value>
+  <i> "Loading editor..." </i>
+</div>

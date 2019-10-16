@@ -1,9 +1,7 @@
-<% @page_title = 'Login failed' %>
+<% @page_title = T(:Authentication_Title_Login_failed) %>
 
-<p>The identity service could not verify your identity, or encountered an error. Please contact your administrator for assistance.</p>
+<p><%= @locale.text(:Authentication_View_The_identity_service_could_not_verify___) %></p>
 
-<p>When contacting your administrator, tell them the error is 
-    <span class="error_code"><%= @error.error_code %></span>
-</p>
+<p><%= @locale.text_format(:Authentication_OAuth_Failure_Error_Code, @error.error_code) %></p>
 
-<p><a href="/do/authentication/login">Try again</a></p>
+<p><a href="/do/authentication/login"><%= @locale.text(:Authentication_View_Try_again) %></a></p>

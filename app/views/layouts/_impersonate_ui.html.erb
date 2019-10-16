@@ -4,7 +4,7 @@
     client_side_resources(:impersonate_ui)
     # Add the platform_impersonate_ui class so screenshot utilities can temporarily remove the divs
     %><div id="z__impersonate_ui_top_container" class="platform_impersonate_ui">
-      <form id="z__impersonate_ui_top_finish_form" method="POST" action="/do/authentication/end_impersonation"><b>Impersonating <i id="z__impersonating_name"><%= h(@request_user.name) %></i></b> <%= form_csrf_token %><input type="submit" value="Finish"></form>
+      <form id="z__impersonate_ui_top_finish_form" method="POST" action="/do/authentication/end_impersonation"><b><%= @locale.text(:ImpersonateUI_Impersonating) %> <i id="z__impersonating_name"><%= h(@request_user.name) %></i></b> <%= form_csrf_token %><input type="submit" value="<%= @locale.text(:ImpersonateUI_Finish) %>"></form>
     </div><%
     if PLUGIN_DEBUGGING_SUPPORT_LOADED
       history = session[:impersonate_history] || []

@@ -2,7 +2,7 @@ std:plugin:resources("viewer.css")
 
 if(_showFormNavigation) {
   <div class="z__docstore_nav_box">
-    <div class="z__docstore_nav_title"> "Sections" </div>
+    <div class="z__docstore_nav_title"> i("Sections") </div>
     each(_viewerForms) {
       <div> <a href=["#" formId] > formTitle </a> </div>
     }
@@ -11,7 +11,7 @@ if(_showFormNavigation) {
 
 if(options.showVersions) {
   <div class="z__docstore_nav_box">
-    <div class="z__docstore_nav_title"> "Versions" </div>
+    <div class="z__docstore_nav_title"> i("Versions") </div>
     each(_versionsView) {
       do() {
         if(selected) {
@@ -21,7 +21,7 @@ if(options.showVersions) {
         }
       } text {
         if(editedVersion) {
-          "Edited version"
+          i("Edited version")
         } else {
           std:date(datetime) " (" row.user.name ")"
         }

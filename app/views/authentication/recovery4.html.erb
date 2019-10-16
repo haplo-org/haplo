@@ -1,8 +1,8 @@
 <%
-  @page_title = 'Forgotten password'
+  @page_title = T(:Authentication_Title_Forgotten_password)
   @breadcrumbs = [:login]
 -%>
 
-<p><b>Your password has been changed.</b></p>
+<p><b><%= @locale.text(:Authentication_View_Your_password_has_been_changed_) %></b></p>
 
-<p><a href="/do/authentication/login">Log in to <%= KApp.global(:product_name) %></a></p>
+<p><a href="/do/authentication/login"><%= @locale.text_format(:Authentication_Log_in_to_product, KApp.global(:product_name)) %></a></p>

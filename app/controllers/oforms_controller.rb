@@ -19,15 +19,16 @@ class OFormsController < ApplicationController
   def handle_bundle_api
     javascript = nil
     # Decode the URL path to find the plugin's path component and the form's ID
-    raise "Bad oForms bundle request" unless request.path =~ /\/\~\d+\/(\w+)\/([a-zA-Z0-9_-]+)\/\d+\z/
+    raise "Bad oForms bundle request" unless request.path =~ /\/\~\d+\/(\w+)\/([a-zA-Z_]+?)\/([a-zA-Z0-9_-]+)\/\d+\z/
     path_component = $1
-    form_id = $2
+    locale_id = $2
+    form_id = $3
     # If there's a plugin which uses this path component, call the private hook to get the
     # response JavaScript from the plugin.
     plugin = KPlugin.get_by_path_component(path_component)
     if plugin
       call_hook(:hPlatformInternalOFormsBundle) do |hooks|
-        h = hooks.run(plugin.name, form_id)
+        h = hooks.run(plugin.name, form_id, locale_id)
         javascript = h.bundle
       end
     end

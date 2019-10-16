@@ -7,11 +7,11 @@ if(dashboard.specification.backLink) {
 std:plugin:resources("dashboard.css")
 
 if(dashboard.collection.isUpdatingFacts) {
-  std:ui:notice("This dashboard is being updated. Some data may be out of date.")
+  std:ui:notice(i("This dashboard is being updated. Some data may be out of date."))
 }
 
 if(dashboard.invalidFactsAtRequested) {
-  std:ui:notice("Invalid time requested, showing current data.")
+  std:ui:notice(i("Invalid time requested, showing current data."))
 }
 
 each(dashboard.$displays.above-summary) { render(.) }

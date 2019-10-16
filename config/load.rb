@@ -81,8 +81,10 @@ require 'bcrypt_j'
 require 'hmac'
 
 # Load essential classes and utilities
+require 'tzinfo_java'
 require 'k_hostname'        # from lib/common
 require 'kapp_common'       # from lib/common
+require 'klocale'
 require 'kapp'
 require 'kaccounting'
 require 'kjob'

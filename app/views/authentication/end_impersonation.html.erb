@@ -1,14 +1,14 @@
 <%
-  @page_title = "Impersonation"
+  @page_title = T(:Authentication_Title_Impersonation)
 %>
 
 <div class="z__plugin_ui_confirm">
   <div class="z__plugin_ui_confirm_message">
-    <p>Finish impersonating <%= h(@request_user.name) %>?</p>
+    <p><%= @locale.text_format(:ImpersonateUI_Finish_User, @request_user.name) %></p>
   </div>
   <div class="z__plugin_ui_confirm_action">
     <form method="POST"><%= form_csrf_token %>
-      <input type="submit" value="End impersonation">
+      <input type="submit" value="<%= @locale.text(:Authentication_View_End_impersonation) %>">
     </form>
   </div>
   <div class="z__plugin_ui_confirm_end"></div>

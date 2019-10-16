@@ -1,27 +1,26 @@
 <%
-  @page_title = 'Forgotten password'
+  @page_title = T(:Authentication_Title_Forgotten_password)
   @breadcrumbs = [:login]
 -%>
 
-<p>If you have forgotten your password, you can set a new password by confirming you have access to your
-email account.</p>
+<p><%= @locale.text(:Authentication_View_If_you_have_forgotten_your_password___) %></p>
 
 <ul>
-  <li>Enter your email address below
-  <li>Check your email inbox for a message from <%= KApp.global(:product_name) %>
-  <li>Click the link in the email
-  <li>Choose your new password
+  <li><%= @locale.text(:Authentication_View_Enter_your_email_address_below) %></li>
+  <li><%= @locale.text(:Authentication_View_Check_your_email_inbox_for_a_message) %></li>
+  <li><%= @locale.text(:Authentication_View_Click_the_link_in_the_email) %></li>
+  <li><%= @locale.text(:Authentication_View_Choose_your_new_password) %></li>
 </ul>
 
 <p>&nbsp;</p>
-<p><b>Step 1</b></p>
+<p><b><%= @locale.text(:Authentication_View_Step_1) %></b></p>
 
 <form method="post"><%= form_csrf_token %>
 <% if @invalid_email_address -%>
-  <p><b style="color:red">Invalid email addresss</b></p>
-  <p>Please check the email address you entered.</p>
+  <p><b style="color:red"><%= @locale.text(:Authentication_View_Invalid_email_address) %></b></p>
+  <p><%= @locale.text(:Authentication_View_Please_check_the_email_address_you___) %></p>
 <% end -%>
 
-<p>Enter your email address, then click the button.<br>
-<input type="text" name="email" value="<%= h(params[:email]) %>" class="z__focus_candidate"> <input type="submit" value="Send email"></p>
+<p><%= @locale.text(:Authentication_View_Enter_your_email_address__then_click___) %><br>
+<input type="text" name="email" value="<%= h(params[:email]) %>" class="z__focus_candidate"> <input type="submit" value="<%= @locale.text(:Authentication_View_Send_email) %>"></p>
 </form>

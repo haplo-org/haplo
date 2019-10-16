@@ -1,8 +1,8 @@
 <hr>
-<h3> "Recent notes" </h3>
+<h3> i("Recent notes") </h3>
 each(notes) {
   <p> <b> author </b> "  &nbsp; &nbsp; " <span style="color:#aaaaaa"> std:date:time(datetime) </span> if(isPrivate) { " &nbsp; &nbsp; " <b style="color:#ff0000"> NAME("std:workflow:notes-private-email-marker" "PRIVATE") </b> } </p>
   std:text:paragraph(text)
   <p> "&nbsp;" </p>
 }
-<p> <i> "Only notes from the last " maxAge " hours are included in this notification. Log in to see the full notes." </i> </p>
+<p> <i> i("Only notes from the last {} hours are included in this notification. Log in to see the full notes.") { maxAge} </i> </p>

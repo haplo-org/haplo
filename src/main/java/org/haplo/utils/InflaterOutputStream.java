@@ -30,13 +30,6 @@ public class InflaterOutputStream extends OutputStream {
         decompBuffer = null;
     }
 
-    protected void finalize() throws Throwable {
-        if(decompBuffer != null) {
-            close();
-        }
-        super.finalize();
-    }
-
     public void close() throws IOException {
         decompBuffer = null;
         inflater.end();

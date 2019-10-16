@@ -2,7 +2,7 @@ if(incomplete) {
   if(message) {
     std:ui:notice(message)
   } else {
-    std:ui:notice("Please complete all the required fields.")
+    std:ui:notice(i("Please complete all the required fields."))
   }
 }
 std:form(form)

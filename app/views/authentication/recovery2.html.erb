@@ -1,11 +1,11 @@
 <%
-  @page_title = 'Forgotten password'
+  @page_title = T(:Authentication_Title_Forgotten_password)
   @breadcrumbs = [:login]
 -%>
 
-<p><b>Step 2</b></p>
+<p><b><%= @locale.text(:Authentication_View_Step_2) %></b></p>
 
-<p>An email has been sent to you. Please click the link in the email to continue.</p>
+<p><%= @locale.text(:Authentication_View_An_email_has_been_sent_to_you__Please___) %></p>
 
-<p>This process is used to confirm that you have access to the email account corresponding to your user account.</p>
+<p><%= @locale.text(:Authentication_View_This_process_is_used_to_confirm_that___) %></p>
 

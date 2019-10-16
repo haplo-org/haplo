@@ -38,14 +38,14 @@ if(additionalUI.top) { render(additionalUI.top) }
 <div>
   if(options.viewComments) {
     if(currentParams.comment) {
-      std:ui:button-link:active(url ? *currentParams !comment) { "Showing comments" }
+      std:ui:button-link:active(url ? *currentParams !comment) { i("Showing comments") }
     } else {
-      std:ui:button-link(url ? *currentParams comment="1") { "Show comments" }
+      std:ui:button-link(url ? *currentParams comment="1") { i("Show comments") }
     }
   }
   if(showChangesFrom) {
     if(currentParams.changes) {
-      std:ui:button-link:active(url ? *currentParams !changes) { "Changes from:" }
+      std:ui:button-link:active(url ? *currentParams !changes) { i("Changes from:") }
       <select id="z__docstore_choose_version" style="max-width:19%;">
         each(_changesVersionView) {
             <option
@@ -57,24 +57,24 @@ if(additionalUI.top) { render(additionalUI.top) }
         }
       </select>
     } else {
-      std:ui:button-link(url ? *currentParams changes="1") { "Show changes" }
+      std:ui:button-link(url ? *currentParams changes="1") { i("Show changes") }
     }
   }
   <div style="float:right;">
   if(canFilter) {
     if(currentParams.filter) {
-      std:ui:button-link:active(url ? *currentParams !filter) { "Filtering questions" }
+      std:ui:button-link:active(url ? *currentParams !filter) { i("Filtering questions") }
     } else {
-      std:ui:button-link(url ? *currentParams filter="1") { "Filter questions" }
+      std:ui:button-link(url ? *currentParams filter="1") { i("Filter questions") }
     }
   }
   </div>
-  <div id="z__no_changes_warning" style="display:none;">std:ui:notice("No changes to display")</div>
-  <div id="z__no_comments_warning" style="display:none;">std:ui:notice("No comments to display")</div>
+  <div id="z__no_changes_warning" style="display:none;">std:ui:notice(i("No changes to display"))</div>
+  <div id="z__no_comments_warning" style="display:none;">std:ui:notice(i("No comments to display"))</div>
 </div>
 
 unless(document) {
-  std:ui:notice("The form has not yet been completed.")
+  std:ui:notice(i("The form has not yet been completed."))
 } else {
   if(showingCurrent) {
     if(_uncommittedChangesWarningText) {

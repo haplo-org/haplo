@@ -36,11 +36,11 @@ class TrayController < ApplicationController
     if @objs.length > 0
       # Add make intranet page entry only if user can create intranet pages
       if @request_user.policy.can_create_object_of_type?(O_TYPE_INTRANET_PAGE)
-        menu_entries << ['/do/tray/makepage', 'Make Intranet page...']
+        menu_entries << ['/do/tray/makepage', T(:Tray_Make_Intranet_page___)]
       end
       # Add export action if user is allowed to export data
       if @request_user.policy.can_export_data?
-        menu_entries << ['/do/tray/export', 'Export tray contents...']
+        menu_entries << ['/do/tray/export', T(:Tray_Export_tray_contents___)]
       end
     end
 
@@ -50,7 +50,7 @@ class TrayController < ApplicationController
     end
 
     unless menu_entries.empty?
-      @title_bar_buttons['Tray contents'] = menu_entries
+      @title_bar_buttons[T(:Tray_Tray_contents)] = menu_entries
     end
   end
 
@@ -61,7 +61,7 @@ class TrayController < ApplicationController
     end
 
     # Make a document which contains references to all the objects
-    document = "<doc><h1>Tray contents</h1>"
+    document = "<doc><h1>#{T(:Tray_Tray_contents)}</h1>"
     tray_contents.each do |r|
       objref = KObjRef.from_presentation(r)
       obj = (objref == nil) ? nil : KObjectStore.read(objref)
@@ -76,7 +76,7 @@ class TrayController < ApplicationController
     # Make the page object we'd like to present to the user for editing
     @page = KObject.new()
     @page.add_attr(O_TYPE_INTRANET_PAGE, A_TYPE)
-    @page.add_attr('Tray contents', A_TITLE)
+    @page.add_attr(T(:Tray_Tray_contents), A_TITLE)
     @page.add_attr(KTextDocument.new(document), A_DOCUMENT)
   end
 
@@ -96,7 +96,7 @@ class TrayController < ApplicationController
         @obj_title = (obj.first_attr(A_TITLE) || '????').to_s
       end
     end
-    json = {:tab => tray_text_for_tab_with_num_items(tray_contents.length) }
+    json = {:tab => @locale.text_format_with_count(:Indicator_Tray, tray_contents.length) }
     json["title"] = @obj_title if @obj_title != nil
     render :text => json.to_json, :kind => :json
   end

@@ -36,6 +36,7 @@ class UserData < ActiveRecord::Base
   # NAME_PREFERRED_LANGUAGE     = allocate_name(7, :inheritable) # NOT USED, RESERVED
   NAME_LATEST_EMAIL_TEMPLATE  = allocate_name(8, :inheritable, INT_READER)  # EmailTemplate.id
   NAME_TIME_ZONE              = allocate_name(9, :inheritable)  # string of TZ timezone name for the user, affects localised display
+  NAME_LOCALE                 = allocate_name(10, :inheritable) # string of locale ID for the user, affects localised display
 
   # JavaScript user data storage
   # TODO: Make JavaScript user data storage a bit nicer, allow inheritable values

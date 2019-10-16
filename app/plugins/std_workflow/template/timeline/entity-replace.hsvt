@@ -1,5 +1,6 @@
 std:plugin:resources("w.css")
 <div>
   <i> entry.user.name </i> " " actionText " " displayName
-  if(set) { " to " replacement }
+  if(set) { " " i("entity-replace:set-to") " " replacement }
+  // TODO: This might need to be internationalised better
 </div>

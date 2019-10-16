@@ -1,2 +1,2 @@
-pageTitle("Action complete")
-<p> "You've already taken an action. Perhaps you clicked the Back button in your browser?" </p>
+pageTitle(i("Action complete"))
+std:ui:notice(i("You've already taken an action. Perhaps you clicked the Back button in your browser?"))

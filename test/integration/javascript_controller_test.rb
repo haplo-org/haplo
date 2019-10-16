@@ -117,6 +117,10 @@ class JavaScriptControllerTest < IntegrationTest
     post '/do/plugin_test/body2', {"bar" => "foo"}
     assert response.body =~ /\A_bar=foo&__=.+?_\z/
 
+    # PUT requests
+    make_request "/do/plugin_test/put_returning_body", {"ping" => "pong"}, nil, :put
+    assert response.body.start_with?('<<ping=pong')
+
     # Can use id and action parameters (and Rails compatibility doesn't override them)
     get '/do/plugin_test/param_out/id?id=12345'
     assert_equal '12345', response.body
@@ -826,6 +830,63 @@ __E
     obj.add_attr(title, A_TITLE)
     KObjectStore.create(obj)
     obj.objref.to_presentation
+  end
+
+  # -----------------------------------------------------------------------------------------------------------------------------------
+
+  def test_large_request_body
+    max_size = 1024*1024
+    assert_equal max_size, org.haplo.framework.RequestHandler::MAX_IN_MEMORY_BODY_SIZE
+    random_data = File.read('/dev/urandom', max_size*3)
+    random_data_text = [random_data].pack('m')
+    assert random_data.length > (max_size*2)
+
+    # Need an API key for testing POSTS without having to deal with CSRF protection
+    @api_key = ApiKey.new
+    @api_key.user_id = @user.id
+    @api_key.path = '/'
+    @api_key.name = 'TEST'
+    key = @api_key.set_random_api_key
+    @api_key.save
+    headers = {'Authorization' => "Basic #{["haplo:"+key].pack('m').gsub("\n",'')}"}
+
+    # Below limit (string only)
+    data_below_limit = random_data_text[0,max_size-128]
+    assert data_below_limit.length < max_size
+    post '/do/plugin_test/body2', data_below_limit, headers.dup
+    assert_equal "_#{data_below_limit}_", response.body
+
+    # Above limit (string only) which isn't allowed to have large bodies
+    data_above_limit = random_data_text[0,max_size+6000] # which is greater than the buffer size in the request handler
+    assert data_above_limit.length > max_size
+    begin
+      post_500 '/do/plugin_test/body2', data_above_limit, headers.dup
+    rescue => e
+      # Might not result in a 500, might also close the connection..
+      assert e.kind_of?(Errno::EPIPE)
+    end
+
+    # Below limit binary data to a handler with binaryData
+    data_below_limit_binary = random_data[0,max_size-6000]
+    post '/do/plugin_test/digest_of_post_body', data_below_limit_binary, headers.dup.merge!({
+      "Content-Type"=>"application/random-type",
+      "Content-Disposition"=>'attachment; filename="abc/test.xyz"'
+    })
+    assert_equal Digest::SHA2.new(256).hexdigest(data_below_limit_binary)+'__application/random-type__test.xyz__.__BinaryDataInMemory', response.body
+
+    # Above limit to a handler which allows with binaryData which allows long limits
+    data_above_limit_binary = random_data[0,max_size+10000]
+    post '/do/plugin_test/digest_of_post_body', data_above_limit_binary, headers.dup
+    assert_equal Digest::SHA2.new(256).hexdigest(data_above_limit_binary)+'__application/x-www-form-urlencoded__data.bin__BinaryDataTempFile__.', response.body
+
+    # Above limit to PUT handler
+    make_request "/do/plugin_test/digest_of_put_body", random_data, headers.dup.merge!({
+      "Content-Type"=>"application/something",
+      "Content-Disposition"=>'attachment; filename="ping.pong"'
+    }), :put
+    assert_equal Digest::SHA2.new(256).hexdigest(random_data)+'__application/something__ping.pong__BinaryDataTempFile__.', response.body
+  ensure
+    @api_key.delete if @api_key
   end
 
   # -----------------------------------------------------------------------------------------------------------------------------------

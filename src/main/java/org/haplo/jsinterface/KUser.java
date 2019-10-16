@@ -156,6 +156,18 @@ public class KUser extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+    // i18n
+
+    public String jsGet_localeId() {
+        return rubyInterface.getLocaleId(this.user);
+    }
+
+    public void jsFunction_setLocaleId(String localeId) {
+        Runtime.privilegeRequired("pSetUserLocaleId", "call user.setLocaleId()");
+        rubyInterface.setLocaleId(this.user, localeId);
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
     public Scriptable jsGet_data() {
         if(this.data == null) {
             // Lazily create the data object
@@ -386,6 +398,9 @@ public class KUser extends KScriptable {
         public boolean isSuperUser(AppUser user);
         public boolean isServiceUser(AppUser user);
         public boolean isAnonymous(AppUser user);
+
+        public String getLocaleId(AppUser user);
+        public void setLocaleId(AppUser user, String localeId);
 
         public String getUserDataJSON(AppUser user);
 

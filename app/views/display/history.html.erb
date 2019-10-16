@@ -1,6 +1,6 @@
 <%
-  @page_title = 'History of '+h(@history.object.first_attr(KConstants::A_TITLE))
-  @breadcrumbs = [[object_urlpath(@history.object), "Back"]]
+  @page_title = @locale.text_format(:Display_Title_History_of, @history.object.first_attr(KConstants::A_TITLE))
+  @breadcrumbs = [[object_urlpath(@history.object), T(:Display_Back)]]
 
   in_right_column render :partial => 'history_timeline'
 

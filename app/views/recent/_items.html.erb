@@ -13,7 +13,7 @@
 
     day.entries.each do |entry|
 
-      action = nil
+      action_text_key = nil
       object = nil
 
       # Decode the audit entry
@@ -37,7 +37,7 @@
             end
             if file_identifier
               displayed << [entry, object,
-                  " uploaded version #{ERB::Util.h(file_identifier.version_string)} of ",
+                  :RecentListing_Action_New_Version, file_identifier.version_string,
                   Application_IconHelper::ICON_SPECIAL_RECENT_VERSION,
                   render(:partial => 'file_version', :data_for_template => {:object => object, :file_identifier => file_identifier})
                 ]
@@ -50,44 +50,44 @@
           # Slightly different renderings
           case entry.kind
           when 'CREATE'
-            action = 'added'
+            action_text_key = :RecentListing_Action_CREATE
           when 'UPDATE'
-            action = 'edited'
+            action_text_key = :RecentListing_Action_UPDATE
           when 'RELABEL'
             # PERM TODO: Better display of delete/undelete in recent listing, with icons/other visual hints
             data = entry.data
             if data.has_key?('delete')
               if data['delete']
-                action = 'deleted'
+                action_text_key = :RecentListing_Action_RELABEL_deleted
               else
-                action = 'undeleted'
+                action_text_key = :RecentListing_Action_RELABEL_undeleted
               end
             else
-              action = 'changed permissions'
+              action_text_key = :RecentListing_Action_RELABEL
             end
           end
           type_desc = KObjectStore.schema.type_descriptor(object.first_attr(KConstants::A_TYPE))
           if type_desc
-            displayed << [entry, object, action, type_desc.render_icon, render_obj(object, :recent_web)]
+            displayed << [entry, object, action_text_key, nil, type_desc.render_icon, render_obj(object, :recent_web)]
           end
         end
 
       when 'ERASE'
         displayed << [entry, nil,
-            'erased an item',
+            :RecentListing_Action_ERASE, nil,
             Application_IconHelper::ICON_SPECIAL_RECENT_ERASE_OBJ
           ]
       end
     end
 
-    displayed.each do |entry, object, action, icon, html|
+    displayed.each do |entry, object, action_text_key, format_arg2, icon, html|
       user_name = User.cache[entry.user_id].name
       %>
         <div class="z__recent_entry">
           <% if object %><div class="z__recent_entry_quick_look"><a href="#<%= object.objref.to_presentation %>/<%= object.version %>">&#xE009;</a></div><% end %>
           <%= html_for_icon(icon, :small) %>
           <div class="z__recent_entry_contents">
-            <div class="z__recent_entry_who"><span><%= h(user_name) %></span> <%= action %></div>
+            <div class="z__recent_entry_who"><%= @locale.text_format(action_text_key, user_name, format_arg2) %></div>
             <%= html %>
           </div>
         </div>

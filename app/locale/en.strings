@@ -1,0 +1,502 @@
+
+# Standard layout
+Quick_search=Quick search
+Search=Search
+Browse=Browse
+Recent=Recent
+Add=Add
+Tasks=Tasks
+Help=Help
+Log_in=Log in
+ImpersonateUI_Impersonating=Impersonating
+ImpersonateUI_Finish=Finish
+ImpersonateUI_Finish_User=Finish impersonating %1$s?
+
+# Authentication
+Authentication_Title_Welcome_to=Welcome to %1$s
+Authentication_Title_Log_in_to_your_account=Log in to your account
+Authentication_You_have_logged_out_of=You have logged out of %1$s.
+Authentication_Throttled_Please_Wait=For security, logins from your internet connection have been temporarily disabled. <b>Please wait %1$d minutes and try again.</b>
+Authentication_Log_in_to_product=Log in to %1$s
+Authentication_Hello_user=Hello %1$s.
+Authencation_Welcome_Log_in_with_email=To log in, use the password with your registered email address, <b>%1$s</b>.
+Authencation_Welcome_Password_not_set=Password not set.
+Authentication_Password_Requirement_Statement=Passwords must contain at least 8 characters and include both letters and numbers.
+Authentication_Recovery_Email_Subject_Change_password=Change %1$s password
+Authentication_Recovery_Someone_submitted_a_password_change=Someone, hopefully you, submitted a password change request at your %1$s system.
+Authentication_OAuth_Failure_Error_Code=When contacting your administrator, tell them the error is <span class="error_code">%1$s</span>
+
+# Tray indicator
+Indicator_Tray=Tray <span>%1$d</span>
+
+# Object display
+Display_Title_linked_items_suffix=(linked items)
+Display_Linked_items_icon_title=Linked items
+Display_Title_History_of=History of %1$s
+Display_Modification_Info_Dates=Created %1$s, last modified %2$s.
+Display_Modification_Info_User_Same=Created and last modified by %1$s.
+Display_Modification_Info_User_Different=Created by %1$s, last modified by %2$s.
+Display_History_Current_Time=%1$s (current)
+
+# Files
+FileVersion_Title_Versions_of=Versions of %1$s
+FileVersion_Log_Reverted_To_Version=Reverted to version %1$s
+
+# Search results
+Search_Results_Count=<b>%1$d</b> [plural one{result} other{results}]
+Search_Results_Count_Filtered=<b>%3$d</b> of <b>%1$d</b> [plural one{result} other{results}]
+Search_Results_Count_With_Subset=<b>%1$d</b> [plural one{result} other{results}] in <b>%2$s</b>
+Search_Results_Count_Filtered_With_Subset=<b>%3$d</b> of <b>%1$d</b> [plural one{result} other{results}] in <b>%2$s</b>
+
+Search_Results_Search_within=Search within
+Search_Results_No_results_found=No results found
+Search_Results_ordered_by=ordered by
+
+Search_Standalone_Result_Count=<b>%1$d</b> [plural one{item} other{items}] found
+Search_Standalone_Result_Count__count0=<b>No items found</b>
+Search_Standalone_Search_within___=Search within...
+
+Search_Results_Machine_Items_Classified=items classified under
+Search_Results_Machine_Items_Linked_To=items linked to
+Search_Results_Machine_Items_Created_By=items created by <b>%1$s</b>
+
+Search_Did_You_Mean=Did you mean:
+Search_Did_You_Mean_Count=(%1$d [plural one{result} other{results}])
+
+SearchSortChoice_relevance=relevance
+SearchSortChoice_title=title
+SearchSortChoice_date=date
+
+# Recent listing
+RecentListing_Action_CREATE=<span>%1$s</span> added
+RecentListing_Action_UPDATE=<span>%1$s</span> edited
+RecentListing_Action_RELABEL_deleted=<span>%1$s</span> deleted
+RecentListing_Action_RELABEL_undeleted=<span>%1$s</span> undeleted
+RecentListing_Action_RELABEL=<span>%1$s</span> changed permissions
+RecentListing_Action_ERASE=<span>%1$s</span> erased an item
+RecentListing_Action_New_Version=<span>%1$s</span> uploaded version %2$s of
+
+# Account
+Account_Title_Account_information=%1$s account information
+Account_You_log_in_with_your_email_address=You log into %1$s with your email address, <b>%2$s</b>.
+
+# Latest updates
+Latest_Title_Settings=%1$s settings
+Latest_Title_Choose=Choose %1$s
+
+# Latest updates send options
+Latest_Working_Days1=on
+Latest_Working_Days2=working days only
+Latest_Weekly_On=on
+Latest_Day_Of_Month1=on the
+Latest_Day_Of_Month2=of each month
+
+# Latest updates
+Latest_Too_many_results=Too many results, showing first %1$d.
+
+# Standard plugins
+DisplayElements_View_all_notes_for_organisation=View <b>%1$s</b> to see all notes for the organisation...
+ContactsButtonPlugin_Add_note_to=Add note to %1$s
+
+# Generated files UI
+GenFile_Preparing_download_of=<b>Preparing <span>%1$s</span> &mdash;</b> download will start automatically.
+
+# ---------------------------------------------------------------------------
+# Automatically gathered strings follow
+# ---------------------------------------------------------------------------
+
+# Account
+Account_Title_Your_devices=Your devices
+Account_Your_devices=Your devices
+Account_View_There_are_no_devices_activated_for___=There are no devices activated for use with your account.
+Account_View_Name=Name
+Account_View_Kind=Kind
+Account_View_Deactivate=Deactivate
+Account_View_Activate_devices=Activate devices
+Account_View_System_administrators=System administrators
+Account_View_Contact_an_administrator_for_help___=Contact an administrator for help with your account.
+Account_View_Log_in_email_address=Log in email address
+Account_View_Contact_an_administrator_if_you_need___=Contact an administrator if you need to change this.
+Account_View_Items=Items
+Account_View_View_all_items_you_ve_created=View all items you've created
+Account_View_Group_membership=Group membership
+
+# Authentication
+Authentication_View_Click_here_to_continue_the_process_=Click here to continue the process.
+Authentication_View_You_will_be_asked_to_select_a_new___=You will be asked to select a new password.
+Authentication_View_If_you_did_not_request_this_email___=If you did not request this email, please ignore it and accept our apologies.
+Authentication_View_If_you_get_many_of_these_emails___=If you get many of these emails, please click here to contact us so we can resolve the issue.
+Authentication_Title_Forgotten_password=Forgotten password
+Authentication_Forgotten_password=Forgotten password
+Authentication_View_Step_3=Step 3
+Authentication_View_The_link_you_clicked_was_not_a_valid___=The link you clicked was not a valid link to set a new password. Possible causes are:
+Authentication_View_If_the_link_was_split_into_multiple___=If the link was split into multiple lines in the email, you may have only clicked on part of the link. Try copying and pasting the whole link into your browser.
+Authentication_View_You_submitted_more_than_one_change___=You submitted more than one change password request. Only the link in the latest email will work.
+Authentication_View_The_link_you_used_has_expired_=The link you used has expired.
+Authentication_View_Request_a_new_email_=Request a new email.
+Authentication_View_Please_choose_a_new_password_=Please choose a new password.
+Authentication_View_New_password=New password
+Authentication_View_Re_enter_new_password_to_confirm=Re-enter new password to confirm
+Authentication_View_Change_password=Change password
+Authentication_Title_Access_denied=Access denied
+Authentication_Access_denied=Access denied
+Authentication_View_You_don_t_have_permission_to_view_the___=You don't have permission to view the linked item.
+Authentication_View_The__access_denied__placeholder_is___=The 'access denied' placeholder is shown to alert you to the existence of information, without revealing what it is. Contact someone with permission to view this item if you need to know this information.
+Authentication_View_Click_your_browser_s_Back_button_to___=Click your browser's Back button to return to the previous page.
+Authentication_Title_Login_failed=Login failed
+Authentication_Login_failed=Login failed
+Authentication_View_The_identity_service_could_not_verify___=The identity service could not verify your identity, or encountered an error. Please contact your administrator for assistance.
+Authentication_View_Try_again=Try again
+Authentication_Title_Logged_out=Logged out
+Authentication_Logged_out=Logged out
+Authentication_View_Log_in=Log in
+Authentication_View_Log_in_button=Log in
+Authentication_Title_Password_changed=Password changed
+Authentication_Password_changed=Password changed
+Authentication_View_Your_password_has_been_changed_=Your password has been changed.
+Authentication_View_Step_2=Step 2
+Authentication_View_An_email_has_been_sent_to_you__Please___=An email has been sent to you. Please click the link in the email to continue.
+Authentication_View_This_process_is_used_to_confirm_that___=This process is used to confirm that you have access to the email account corresponding to your user account.
+Authentication_Title_Authentication_with_token_required=Authentication with token required
+Authentication_Authentication_with_token_required=Authentication with token required
+Authentication_View_You_cannot_log_on_because_you_are___=You cannot log on because you are required to use a token, but have not been issued with a token.
+Authentication_View_Please_choose_a_password_=Please choose a password.
+Authentication_View_Password=Password
+Authentication_View_Confirm_password=Confirm password
+Authentication_View_Set_password=Set password
+Authentication_Title_Expired_link=Expired link
+Authentication_Expired_link=Expired link
+Authentication_View_You_ve_clicked_on_a_link_to_set_your___=You've clicked on a link to set your initial password. However, this link has expired.
+Authentication_View_For_security_reasons__these_welcome___=For security reasons, these welcome links expire after a few days, and can only be used once.
+Authentication_View_To_set_a_password_for_your_account___=To set a password for your account, use the <a href="/do/authentication/recovery">forgotten password system</a>.
+Authentication_View_Next=Next
+Authentication_View__It_s_important_to_choose_a_secure___=<b>It's important to choose a secure password.</b> The security of your information depends on choosing a password which is not easily guessed. Choose a password which you don't use anywhere else. Make sure it includes some random letters and numbers, and try not to include common words.
+Authentication_Title_Locked_out=Locked out
+Authentication_Locked_out=Locked out
+Authentication_View_There_have_been_too_many_failed_login___=There have been too many failed login attempts from you, or other users sharing your internet connection.
+Authentication_View_While_inconvenient_to_forgetful___=While inconvenient to forgetful users, this security measure prevents automated systems from guessing your password.
+Authentication_Title_Authenticate_with_token=Authenticate with token
+Authentication_Authenticate_with_token=Authenticate with token
+Authentication_View_Incorrect_code__please_try_again_=Incorrect code, please try again.
+Authentication_View_Press_the_button_on_your_token=Press the button on your token
+Authentication_View_Type_the_code_into_the_box_below=Type the code into the box below
+Authentication_View__WARNING____Never_let_anyone_else_use___=<b>WARNING</b> &nbsp; Never let anyone else use your token, and keep the codes confidential.
+Authentication_Title_Impersonate_user=Impersonate user
+Authentication_Impersonate_user=Impersonate user
+Authentication_View_Use_impersonation_responsibly_=Use impersonation responsibly.
+Authentication_View_When_you_have_completed_your_task___=When you have completed your task, click the 'Finish' button to return to your user account.
+Authentication_View_There_is_no_user_account_for_the___=There is no user account for the email address entered. We send this email to avoid revealing the existence or otherwise of an account on the web, for security reasons.
+Authentication_Title_Impersonation=Impersonation
+Authentication_Impersonation=Impersonation
+Authentication_View_End_impersonation=End impersonation
+Authentication_Please_contact_your_administrator_for___=Please contact your administrator for assistance in changing your password.
+Authentication_Title_Change_password=Change password
+Authentication_Change_password=Change password
+Authentication_View_An_error_occurred_when_logging_you___=An error occurred when logging you in. Please contact your administrator for help.
+Authentication_Title_Password_set=Password set
+Authentication_Password_set=Password set
+Authentication_View_Your_password_has_been_set_=Your password has been set.
+Authentication_View_Enter_your_current_password__then___=Enter your current password, then your new password twice. Passwords are case sensitive, 'a' is different to 'A'.
+Authentication_View_Password_not_changed_=Password not changed.
+Authentication_View_The_old_password_entered_was___=The old password entered was incorrect.
+Authentication_View_The_new_passwords_entered_did_not___=The new passwords entered did not match.
+Authentication_View_The_new_password_did_not_meet_minimum___=The new password did not meet minimum security requirements:
+Authentication_View_Old_password=Old password
+Authentication_View_Incorrect_login_please_try_again=Incorrect login, please try again.
+Authentication_View_You_are_not_currently_logged_in__To___=You are not currently logged in. To continue, you need to log into your account.
+Authentication_View_Email=Email
+Authentication_View_Forgotten_your_password_=Forgotten your password?
+Authentication_View_Remember_me_on_this_computer=Remember me on this computer
+Authentication_View__WARNING___Do_not_check_this_box_on___=<b>WARNING</b>: Do not check this box on public computers or if anyone else uses this computer.
+Authentication_Title_Logging_out___=Logging out...
+Authentication_Logging_out___=Logging out...
+Authentication_View_Please_wait___=Please wait...
+Authentication_View_Log_out=Log out
+Authentication_Title_Unauthorised=Unauthorised
+Authentication_Unauthorised=Unauthorised
+Authentication_View_You_do_not_have_the_necessary___=You do not have the necessary permission.
+Authentication_View_The_passwords_entered_did_not_match___=The passwords entered did not match. Passwords are case sensitive, 'a' is different to 'A'.
+Authentication_View_The_password_did_not_meet_minimum___=The password did not meet minimum security requirements:
+Authentication_View_If_you_have_forgotten_your_password___=If you have forgotten your password, you can set a new password by confirming you have access to your email account.
+Authentication_View_Enter_your_email_address_below=Enter your email address below
+Authentication_View_Check_your_email_inbox_for_a_message=Check your email inbox for a message
+Authentication_View_Click_the_link_in_the_email=Click the link in the email
+Authentication_View_Choose_your_new_password=Choose your new password
+Authentication_View_Step_1=Step 1
+Authentication_View_Invalid_email_address=Invalid email address
+Authentication_View_Please_check_the_email_address_you___=Please check the email address you entered.
+Authentication_View_Enter_your_email_address__then_click___=Enter your email address, then click the button.
+Authentication_View_Send_email=Send email
+Authentication_Can_t_change_super_user_password_=Can't change super user password.
+
+# Copyright
+Copyright_Title_Copyright_Notice=Copyright Notice
+Copyright_Copyright_Notice=Copyright Notice
+Copyright_View_Software_Copyright=Software Copyright
+
+# Display
+Display_Back=Back
+Display_View_Undelete=Undelete
+Display_View_This_is_an_old_version_of_the_item=This is an old version of the item
+Display_View_No_results_found=No results found
+Display_Title_No_item=No item
+Display_No_item=No item
+Display_View_The_item_requested_does_not_exist_=The item requested does not exist.
+Display_Download=Download
+Display_Versions=Versions
+Display_Preview=Preview
+Display_Delete___=Delete...
+Display_History___=History...
+Display_Default_Obj_BackLinkText=Return
+
+# Edit
+Edit_Title_Returning_to_editor___=Returning to editor...
+Edit_Returning_to_editor___=Returning to editor...
+Edit_View_Permissions=Permissions
+Edit_Title_Object_deleted=Object deleted
+Edit_Object_deleted=Object deleted
+Edit_View_This_item_has_been_deleted_=This item has been deleted.
+Edit_Cancel_edit=Cancel edit
+Edit_View_Preview=Preview
+Edit_View_Save=Save
+Edit_Title_Choose_permissions___=Choose permissions...
+Edit_Choose_permissions___=Choose permissions...
+Edit_Title_Error=Error
+Edit_Error=Error
+Edit_View_Changes_not_saved_=Changes not saved.
+Edit_View_Your_browser_didn_t_send_anything_to___=Your browser didn't send anything to the server. Please make sure you have JavaScript enabled and wait for the editor to load.
+Edit_Title_Delete_item_=Delete item?
+Edit_Delete_item_=Delete item?
+Edit_Cancel=Cancel
+Edit_View_You_can_delete_this_item__but_it_will___=You can delete this item, but it will affect other items because:
+Edit_View_Really_delete_this_item_=Really delete this item?
+Edit_View_Delete_item=Delete item
+Edit_View_Cancel=Cancel
+Edit_Title_Choose_type_of_new_item=Choose type of new item
+Edit_Choose_type_of_new_item=Choose type of new item
+Edit_Title_Deleted=Deleted
+Edit_Deleted=Deleted
+Edit_View_The_item_has_been_deleted_=The item has been deleted.
+Edit_Title_Add_new___=Add new...
+Edit_New_Full_list___=Full list...
+Edit_Add_new___=Add new...
+Edit_This_item_is_linked_to_other_items_=This item is linked to other items.
+Edit_This_item_is_included_in_the_left___=This item is included in the left hand navigation.
+
+# File
+File_View_Not_found=Not found
+File_View_The_file_requested_is_not_available___=The file requested is not available in the file store.
+File_View_previous=previous
+File_View_next=next
+File_View_Conversion_failed=Conversion failed
+File_View_An_error_occurred_during_file___=An error occurred during file conversion. This file cannot be displayed.
+File_Title_Not_found=Not found
+File_Not_found=Not found
+File_View_The_file_requested_is_not_available_=The file requested is not available.
+
+# FileVersion
+FileVersion_Back=Back
+FileVersion_View_Filename=Filename
+FileVersion_View_Log_message=Log message
+FileVersion_View__briefly_describe_your_changes_=(briefly describe your changes)
+FileVersion_View_Version=Version
+FileVersion_View_Uploading_new_version___=Uploading new version...
+FileVersion_View_Contents_not_changed_since_the___=Contents not changed since the previous version
+
+# Latest
+Latest_View_Nothing_found_=Nothing found.
+Latest_Choose=Choose
+Latest_Settings=Settings
+Latest_Never=Never
+Latest_Daily=Daily
+Latest_Weekly=Weekly
+Latest_Monthly=Monthly
+Latest_Sunday=Sunday
+Latest_Monday=Monday
+Latest_Tuesday=Tuesday
+Latest_Wednesday=Wednesday
+Latest_Thursday=Thursday
+Latest_Friday=Friday
+Latest_Saturday=Saturday
+Latest_Plain=Plain
+Latest_Formatted=Formatted
+Latest_View_Send_emails_=Send emails:
+Latest_View__no_emails_will_be_sent_=(no emails will be sent)
+Latest_View_Email_format_=Email format:
+Latest_View_Save_settings=Save settings
+Latest_View_Look_up___=Look up...
+Latest_View_Your_extra_choices=Your extra choices
+Latest_View_Save_choices=Save choices
+
+# Layouts
+Layouts_View_Cancel=Cancel
+Layouts_View_Close=Close
+Layouts_View_Edit=Edit
+Layouts_View_Edit_menu=Edit menu
+Layouts_View_Remove_from_tray=Remove from tray
+Layouts_View_Add_to_tray=Add to tray
+Layouts_View_Copyright_Notice=Copyright Notice
+
+# Navigation
+Navigation_Home=Home
+
+# Recent
+Recent_Title_Recent=Recent
+Recent_Recent=Recent
+Recent_View_Load_more=Load more
+Recent_View_Loading___=Loading...
+Recent_View_Preview=Preview
+
+# Search
+Search_Title_Export_search_results=Export search results
+Search_Export_search_results=Export search results
+Search_Results=Results
+Search_Download_search_results=Download search results
+Search_View_Export_results_for=Export results for
+Search_View_within=within
+Search_View_in_search_subset=in search subset
+Search_Title_Search=Search
+Search_Search=Search
+Search_No_search=No search
+Search_View_Browse=Browse
+Search_View_Search_in=Search in
+Search_Title_Browse=Browse
+Search_Browse=Browse
+Search_View_Search=Search
+Search_View_edit=edit
+Search_View_show_fields=show fields
+Search_View_search_tips=search tips
+Search_View_Fields___options=Fields &amp; options
+Search_Title_Search_tips=Search tips
+Search_Search_tips=Search tips
+Search_View__Truncation__survi___finds_survivor___=<td>Truncation</td><td>survi*</td><td>finds survivor, survival, survive, etc</td><
+Search_View__Or__caravan_or_campervan__finds___=<td>Or</td><td>caravan or campervan</td><td>finds either term</td>
+Search_View__Proximity__client__10_proposal___=<td>Proximity</td><td>client _10 proposal </td><td>finds client within ten words of proposal</td>
+Search_View__Field__title_Business_Plan__finds___=<td>Field</td><td>title:Business Plan</td><td>finds Business Plan in the title field</td>
+Search_View_Not_finding_anything_=Not finding anything?
+Search_View_If_you_ve_used_abbreviations__try_the___=If you've used abbreviations, try the full word.
+Search_View_Check_you_ve_spelled_everything___=Check you've spelled everything correctly.
+Search_View_Less_specific_queries_with_fewer___=Less specific queries with fewer search terms will find more items.
+Search_Export_search_results___=Export search results...
+TreeSource_Browse_Types=Types
+
+# Session
+Session_Title_Spawned_new_sub_task=Spawned new sub-task
+Session_Spawned_new_sub_task=Spawned new sub-task
+Session_View_This_is_a_new_window__The_task___=This is a new window. The task underneath is paused.
+Session_View_When_the_return_button_in_the_top___=When the return button in the top left of this window is active, you can return to the previous task selecting whatever is in this window.
+Session_View_Search_and_navigate_around_the_system___=Search and navigate around the system as normal to continue.
+Session_View_Objects_added_to_the_tray_in_the_this___=Objects added to the tray in the this window will be available in the main task. Just add them to the basket then click Close.
+
+# Shared
+Shared_View_previous=previous
+Shared_View_next=next
+Shared_Storage_limit_reached=Storage limit reached
+Shared_Item_limit_reached=Item limit reached
+Shared_View_Preview=Preview
+Shared_View_Save=Save
+Shared_View_Export_all_data=Export all data
+Shared_View_Include_item_URLs=Include item URLs
+Shared_View_Your_download_has_started_=Your download has started.
+Shared_View_You_re_using_a_very_old_version_of___=You're using a very old version of Internet Explorer. Some features will not display properly or be unavailable. If possible, please upgrade to the latest version of Internet Explorer (at least version 7), or use a modern standards-compliant browser such as Firefox, Safari or Chrome.
+
+# StdContactsButton
+StdContactsButton_Add_Contact_note=Add Contact note
+StdContactsButton_Add_Person=Add Person
+StdContactsButton_Contact=Contact
+StdContactsButton_Cancel=Cancel
+StdContactsButton_Title_Add_Person=Add Person
+
+# StdDisplayElements
+StdDisplayElements_Related_items=Related items
+StdDisplayElements_All_items___=All items...
+StdDisplayElements_Items_created=Items created
+StdDisplayElements_Show_closed_tasks___=Show closed tasks...
+StdDisplayElements_Tasks=Tasks
+StdDisplayElements_Show_all___=Show all...
+StdDisplayElements_No_notes_have_been_added_to_this_item_=No notes have been added to this item.
+StdDisplayElements_Contact_notes=Contact notes
+
+# StdHomePageElements
+StdHomePageElements_More=More
+StdHomePageElements_Recent_additions=Recent additions
+StdHomePageElements_Edit_links=Edit links
+StdHomePageElements_Add_link=Add link
+StdHomePageElements_Quick_links=Quick links
+StdHomePageElements_Add_notice=Add notice
+StdHomePageElements_Noticeboard=Noticeboard
+
+# Tasks
+Tasks_Future_tasks=Future tasks
+Tasks_Tasks=Tasks
+Tasks_Current=Current
+Tasks_Show_current_tasks=Show current tasks
+Tasks_Show_future_tasks=Show future tasks
+
+# Tools
+Tools_Title_Tools=Tools
+Tools_Tools=Tools
+Tools_Today=Today
+Tools_Account=Account
+Tools_Devices___Computers=Devices &amp; Computers
+Tools_Content=Content
+Tools_Utilities=Utilities
+Tools_System=System
+Tools_Devices=Devices
+Tools_Account_details=Account details
+Tools_Change_password=Change password
+Tools_Log_out=Log out
+Tools_Tasks=Tasks
+Tools_Edit_taxonomies=Edit taxonomies
+Tools_Manage_tokens=Manage tokens
+Tools_Impersonate_user=Impersonate user
+Tools_Finish_impersonation=Finish impersonation
+Tools_Billing_and_usage=Billing and usage
+Tools_System_management=System management
+Tools_Title_Reports=Reports
+
+# Tray
+Tray_Title_Tray=Tray
+Tray_Tray=Tray
+Tray_Empty_tray=Empty tray
+Tray_View_There_are_no_items_in_the_tray_=There are no items in the tray.
+Tray_Title_Export_tray_contents=Export tray contents
+Tray_Export_tray_contents=Export tray contents
+Tray_Download_tray_contents=Download tray contents
+Tray_Title_Create_new_Intranet_Page_from_Tray___=Create new Intranet Page from Tray Contents
+Tray_Create_new_Intranet_Page_from_Tray___=Create new Intranet Page from Tray Contents
+Tray_Make_Intranet_page___=Make Intranet page...
+Tray_Export_tray_contents___=Export tray contents...
+Tray_Tray_contents=Tray contents
+
+# Platform code in JavaScript
+JS_ACTION_PANEL_STATUS=Status
+
+# oForms
+OFORMSMSG_REQUIRED_FIELD=Required field
+OFORMSMSG_REPSEC_ERR_MIN=Not enough entries, {} required
+OFORMSMSG_REPSEC_ERR_MAX=Too many entries, {} maximum
+OFORMSMSG_CHOICES_ERR_MIN=Not enough options chosen, {} required
+OFORMSMSG_CHOICES_ERR_MAX=Too many options chosen, {} maximum
+OFORMSMSG_TEXT_VALIDATION_REGEXP_FAILURE=Incorrect format
+OFORMSMSG_CHOICE_DEFAULT_PROMPT=-- select --
+OFORMSMSG_NUMBER_INVALID=Number required, using numeric digits only
+OFORMSMSG_NUMBER_LESSTHAN=Must be at least {}
+OFORMSMSG_NUMBER_GREATERTHAN=Must be no more than {}
+OFORMSMSG_INTEGER_INVALID=Whole number required
+OFORMSMSG_DEFAULT_BOOLEAN_LABEL_TRUE=Yes
+OFORMSMSG_DEFAULT_BOOLEAN_LABEL_FALSE=No
+OFORMSMSG_DATE_INVALID=Not a valid date
+OFORMSMSG_DATE_OUT_OF_RANGE=Date is not within allowed range
+OFORMSMSG_CONFIRM_NOT_CHECKED=Required
+OFORMSMSG_PARAGRAPH_LIMIT_UNIT_WORD=Words
+OFORMSMSG_PARAGRAPH_LIMIT_UNIT_CHARACTER=Characters
+OFORMSMSG_PARAGRAPH_LIMIT_MIN=min {}
+OFORMSMSG_PARAGRAPH_LIMIT_MAX=max {}
+OFORMSMSG_PARAGRAPH_FAILURE_COUNT_MIN_WORD=Too short, minimum {} words
+OFORMSMSG_PARAGRAPH_FAILURE_COUNT_MAX_WORD=Too long, maximum {} words
+OFORMSMSG_PARAGRAPH_FAILURE_COUNT_MIN_CHARACTER=Too short, minimum {} characters
+OFORMSMSG_PARAGRAPH_FAILURE_COUNT_MAX_CHARACTER=Too long, maximum {} characters
+OFORMSMSG_PARAGRAPH_FAILURE_MIN=Too short, {} required
+OFORMSMSG_PARAGRAPH_FAILURE_MAX=Too long, {} maximum
+

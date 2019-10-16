@@ -108,8 +108,8 @@ __E
       html << controller.render_obj(obj, :searchresultmini) unless !obj || obj.deleted?
       break if html.length >= number_items
     end
-    html << '<div class="z__home_page_panel_actions"><a href="/do/recent">More</a></div>'
-    result.title = 'Recent additions'
+    html << %Q!<div class="z__home_page_panel_actions"><a href="/do/recent">#{controller.T(:StdHomePageElements_More)}</a></div>!
+    result.title = controller.T(:StdHomePageElements_Recent_additions)
     result.html = html.join('')
   end
 
@@ -130,9 +130,9 @@ __E
     end
     html << '</div>'
     if AuthContext.user.policy.can_create_object_of_type?(KConstants::O_TYPE_QUICK_LINK)
-      html << %Q!<div class="z__home_page_panel_actions"><a href="/search?w=%23L#{KConstants::O_TYPE_QUICK_LINK.to_presentation}%23" class="z__home_page_panel_actions_right">Edit links</a><a href="/do/edit?new=#{KConstants::O_TYPE_QUICK_LINK.to_presentation}">Add link</a></div>!
+      html << %Q!<div class="z__home_page_panel_actions"><a href="/search?w=%23L#{KConstants::O_TYPE_QUICK_LINK.to_presentation}%23" class="z__home_page_panel_actions_right">#{controller.T(:StdHomePageElements_Edit_links)}</a><a href="/do/edit?new=#{KConstants::O_TYPE_QUICK_LINK.to_presentation}">#{controller.T(:StdHomePageElements_Add_link)}</a></div>!
     end
-    result.title = 'Quick links'
+    result.title = controller.T(:StdHomePageElements_Quick_links)
     result.html = html
   end
 
@@ -167,9 +167,9 @@ __E
       html << controller.render_obj(obj, :noticeboard, {:noticeboard_plink => plink})
     end
     if AuthContext.user.policy.can_create_object_of_type?(KConstants::O_TYPE_NEWS)
-      html << %Q!<div class="z__home_page_panel_actions"><a href="/do/edit?new=#{KConstants::O_TYPE_NEWS.to_presentation}">Add notice</a></div>!
+      html << %Q!<div class="z__home_page_panel_actions"><a href="/do/edit?new=#{KConstants::O_TYPE_NEWS.to_presentation}">#{controller.T(:StdHomePageElements_Add_notice)}</a></div>!
     end
-    result.title = 'Noticeboard'
+    result.title = controller.T(:StdHomePageElements_Noticeboard)
     result.html = html
   end
 

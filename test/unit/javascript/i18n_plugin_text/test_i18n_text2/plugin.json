@@ -1,0 +1,9 @@
+{
+  "pluginName": "test_i18n_text2",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Test Plugin Text 2",
+  "displayDescription": "For testing",
+  "apiVersion": 4,
+  "load": []
+}

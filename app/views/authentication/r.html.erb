@@ -1,23 +1,23 @@
 <%
-  @page_title = 'Forgotten password'
+  @page_title = T(:Authentication_Title_Forgotten_password)
   @breadcrumbs = [:login]
 -%>
 
-<p><b>Step 3</b></p>
+<p><b><%= @locale.text(:Authentication_View_Step_3) %></b></p>
 
-<p>Please choose a new password, which <%= User::SECURITY_REQUIREMENTS_TEXT %>.</p>
+<p><%= @locale.text(:Authentication_View_Please_choose_a_new_password_) %> <%= @locale.text(:Authentication_Password_Requirement_Statement) %></p>
 
 <%= render :partial => 'bad_password', :data_for_template => { :message => 'Password not changed.' } %>
 
 <form method="POST"><%= form_csrf_token %>
 
-<p>New password<br>
+<p><%= @locale.text(:Authentication_View_New_password) %><br>
 <input type="password" name="pw1" value="" class="z__focus_candidate"></p>
 
-<p>Re-enter new password to confirm<br>
+<p><%= @locale.text(:Authentication_View_Re_enter_new_password_to_confirm) %><br>
 <input type="password" name="pw2" value=""></p>
 
-<p><input type="submit" value="Change password"></p>
+<p><input type="submit" value="<%= @locale.text(:Authentication_View_Change_password) %>"></p>
 
 </form>
 

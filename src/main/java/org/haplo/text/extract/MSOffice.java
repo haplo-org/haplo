@@ -6,8 +6,8 @@
 
 package org.haplo.text.extract;
 
-import org.apache.poi.extractor.ExtractorFactory;
-import org.apache.poi.POITextExtractor;
+import org.apache.poi.ooxml.extractor.ExtractorFactory; // while in ooxml package, also detects old OLE2 file formats
+import org.apache.poi.extractor.POITextExtractor;
 import org.apache.xmlbeans.XmlException;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 

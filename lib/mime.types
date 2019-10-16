@@ -442,6 +442,8 @@ image/x-rgb					rgb
 image/x-xbitmap					xbm
 image/x-xpixmap					xpm
 image/x-xwindowdump				xwd
+image/heif					heif
+image/heic					heic
 message/rfc822					eml mime
 model/iges					igs iges
 model/mesh					msh mesh silo

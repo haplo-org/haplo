@@ -8,7 +8,7 @@ std:plugin:resources("dashboard.css")
 
 <div style="text-align:right;margin-bottom:12px">
   <form method="POST" action=[spec.path "/export" ? *dashboard._linkParameters]> std:form:token()
-    <input type="submit" value="Export">
+    <input type="submit" value=i("Export")>
   </form>
 </div>
 

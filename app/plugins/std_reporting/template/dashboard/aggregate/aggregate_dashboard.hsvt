@@ -3,7 +3,7 @@ std:layout:wide()
 template:dashboard:common:dashboard-page() {
   
   if(dashboard._droppedValuesFromGroupByAggregate) {
-    std:ui:notice("This dashboard does not include all data. Some rows are omitted.")
+    std:ui:notice(i("This dashboard does not include all data. Some rows are omitted."))
   }
   
   each(dashboard.$displays.above-export) { render(.) }

@@ -22,15 +22,17 @@ class StdContactsButtonPlugin < KTrustedPlugin
 
     current_user = AuthContext.user
 
+    controller = KFramework.request_context.controller
+
     triggered_items = Array.new
     if root_type == O_TYPE_ORGANISATION || root_type == O_TYPE_PERSON
       if current_user.policy.can_create_object_of_type?(O_TYPE_CONTACT_NOTE)
-        triggered_items << ["/do/contacts/add_note/#{object.objref.to_presentation}", 'Add Contact note']
+        triggered_items << ["/do/contacts/add_note/#{object.objref.to_presentation}", controller.T(:StdContactsButton_Add_Contact_note)]
       end
     end
     if root_type == O_TYPE_ORGANISATION
       if current_user.policy.can_create_object_of_type?(O_TYPE_PERSON)
-        triggered_items << ["/do/contacts/add_person/#{object.objref.to_presentation}", 'Add Person']
+        triggered_items << ["/do/contacts/add_person/#{object.objref.to_presentation}", controller.T(:StdContactsButton_Add_Person)]
       end
     end
 
@@ -38,7 +40,7 @@ class StdContactsButtonPlugin < KTrustedPlugin
 
     # Build the contact menu.
     buttons = response.buttons
-    items = (buttons['Contact'] ||= Array.new)
+    items = (buttons[controller.T(:StdContactsButton_Contact)] ||= Array.new)
     items.concat(triggered_items)
   end
 

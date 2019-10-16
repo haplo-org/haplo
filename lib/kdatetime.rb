@@ -63,7 +63,7 @@ class KDateTime
     # Choose precision
     @p = precision || LENGTH_TO_PRECISION[start_time_i.length]
     if timezone != nil
-      raise "Bad timezone" unless timezone.class == String && timezone =~ /\A[A-Za-z0-9_\/\+-]+\z/ && nil != TZInfo::Timezone.get(timezone)
+      raise "Bad timezone" unless timezone.kind_of?(String) && TZInfo::Timezone.valid?(timezone)
       @z = timezone
     end
   end
@@ -272,9 +272,7 @@ private
   # If there's a timezone, return a new datetime in GMT, otherwise return this datetime as it's processed as if it's GMT
   def _to_gmt(datetime)
     return datetime if @z == nil
-    tz = TZInfo::Timezone.get(@z)
-    raise "Bad timezone" unless tz != nil
-    tz.local_to_utc(datetime)
+    TZInfo::Timezone.get(@z).local_to_utc(datetime)
   end
 
   # --------------------------------------------------------------------------------------------------------------
@@ -317,7 +315,6 @@ private
     if timezone != nil
       r = r.map { |d| _to_gmt(d) }
       tz = TZInfo::Timezone.get(timezone)
-      raise "Bad timezone #{timezone}" if tz == nil
       r = r.map { |d| tz.utc_to_local(d) }
     end
     # Format times

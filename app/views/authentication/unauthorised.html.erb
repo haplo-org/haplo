@@ -5,11 +5,12 @@
   # Keep the important vars
   vars.delete(:@request_user)
   vars.delete(:@exchange)
+  vars.delete(:@locale)
   vars.each do |n|
     remove_instance_variable(n)
   end
   # Set for display
   init_standard_controller_class_variables()
-  @page_title = 'Unauthorised'
+  @page_title = T(:Authentication_Title_Unauthorised)
 %>
-<p>You do not have the necessary permission.</p>
+<p><%= @locale.text(:Authentication_View_You_do_not_have_the_necessary___) %></p>

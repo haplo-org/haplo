@@ -31,4 +31,11 @@ public class JSPlatformIntegration {
     public interface JSFunctionRenderer {
         boolean renderFunction(Scriptable owner, StringBuilder builder, FunctionBinding binding) throws RenderException;
     }
+
+    // Implementation of text translation interface
+    public static JSTextTranslatorFactory textTranslatorFactory;
+
+    public interface JSTextTranslatorFactory {
+        Driver.TextTranslator getTextTranslator(Scriptable owner, String category);
+    }
 }

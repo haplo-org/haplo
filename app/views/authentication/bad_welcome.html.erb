@@ -1,13 +1,13 @@
 <%
-  @page_title = 'Expired link'
+  @page_title = T(:Authentication_Title_Expired_link)
   @breadcrumbs = [:login]
 -%>
 
-<p>You've clicked on a link to set your initial <%= KApp.global(:product_name) %> password. However, this link has expired.</p>
+<p><%= @locale.text(:Authentication_View_You_ve_clicked_on_a_link_to_set_your___) %></p>
 
-<p>For security reasons, these welcome links expire after a few days, and can only be used once.</p>
+<p><%= @locale.text(:Authentication_View_For_security_reasons__these_welcome___) %></p>
 
-<p>To set a password for your account, use the <a href="/do/authentication/recovery">forgotten password system</a>.</p>
+<p><%= @locale.text(:Authentication_View_To_set_a_password_for_your_account___) %></p>
 
 <p>&nbsp;</p>
-<form method="GET" action="/do/authentication/recovery"><input type="submit" value="Next &raquo;"></form>
+<form method="GET" action="/do/authentication/recovery"><input type="submit" value="<%= @locale.text(:Authentication_View_Next) %> &raquo;"></form>

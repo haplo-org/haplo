@@ -8,10 +8,6 @@
 module Application_TrayHelper
   include KConstants
 
-  def tray_text_for_tab_with_num_items(n)
-    "Tray <span>#{n.to_s}</span>"
-  end
-
   # Returns nil if the tray doesn't need to be sent
   def tray_client_side_url
     i = tray_contents_full_info

@@ -1,4 +1,4 @@
-backLink(M.url) { "Cancel" }
+backLink(M.url) { i("Cancel") }
 
 if(M.entities.object_maybe) { std:object(M.entities.object "linkedheading") }
 

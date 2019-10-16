@@ -1,0 +1,9 @@
+pageTitle(i("translated-page-title"))
+backLink("/") { i("translated-back") }
+
+<div> i("string-1") </div>
+<p> i:category-one("string-1") </p>
+
+<p> i("Interpolated {} things") { value } </p>
+
+<p> i("NAME(name-one), NAME(something else)") </p>

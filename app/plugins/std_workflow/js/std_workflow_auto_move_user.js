@@ -87,7 +87,7 @@ P.backgroundCallback("update_actionableby", function(data) {
         _.each(O.work.query().isOpen().tag(ref.toString()+'.ABD',"t"), function(workUnit) {
             var workflow = P.allWorkflows[workUnit.workType];
             if(workflow) {
-                var M = workflow.instanceForRef(workUnit.ref);
+                var M = workflow.instance(workUnit);
                 var currentActionableById = workUnit.actionableBy.id;
                 var actionableByName = M._findCurrentActionableByNameFromStateDefinitions();
                 if(actionableByName) {

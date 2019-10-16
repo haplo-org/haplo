@@ -1,6 +1,6 @@
 <%
-  @page_title = 'Add Person'
-  @breadcrumbs = [[object_urlpath(@add_to), 'Cancel']]
+  @page_title = T(:StdContactsButton_Title_Add_Person)
+  @breadcrumbs = [[object_urlpath(@add_to), T(:StdContactsButton_Cancel)]]
 %>
 
 <%= render(:partial => 'shared/editor_for_new_object', :data_for_template => {:object => @object}) %>

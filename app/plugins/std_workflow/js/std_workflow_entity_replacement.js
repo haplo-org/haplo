@@ -84,11 +84,12 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
     //   * only displaying if there is at least one selected replacement
     //   * get link label from text system
     workflow.actionPanelTransitionUI({}, function(M, builder) {
+        let i = P.locale().text("template");
         // TODO: replace with a selector calculated from the list of non-duplicated assignableWhen selectors
         if(M.workUnit.isActionableBy(O.currentUser) &&
                 ((!_.isEmpty(findCurrentlyReplaceable(workflow, M, specification))) ||
                 (!_.isEmpty(findCurrentlySelectable(M, specification))))) {
-            var label = M._getTextMaybe(['entity-replacement:ui:action-panel-label'], [M.state]) || "Choose replacements";
+            var label = M._getTextMaybe(['entity-replacement:ui:action-panel-label'], [M.state]) || i["Choose replacements"];
             builder.link("default", "/do/workflow/entity-replacement/"+M.workUnit.id, label);
         }
     });
@@ -97,8 +98,9 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
     workflow.renderTimelineEntryDeferred(function(M, entry) {
         var data = entry.data;
         if(entry.action === 'ENTITY_REPLACE') {
+            let i = P.locale().text("template");
             var action = data.replacement ? 'replaced' : 'removed-replacement';
-            var actionText = M._getTextMaybe(['entity-replacement:timeline-text'], [action]) || "changed the";
+            var actionText = M._getTextMaybe(['entity-replacement:timeline-text'], [action]) || i["changed the"];
             var n = data.replacement ? O.ref(data.replacement).load().title : undefined;
             return P.template("timeline/entity-replace").deferredRender({
                 entry: entry,
@@ -263,19 +265,22 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
             });
         });
     });
+
+    let i = P.locale().text("template");
+
     var deferredRenders = [];
     if("onRenderUI" in specification) {
         specification.onRenderUI(M, {
             addDeferredRender: function(deferred) { deferredRenders.push(deferred); },
             addSidebarButton: function(link, label, indicator) {
                 E.renderIntoSidebar({
-                    elements: [{ href: link, label: label || "Continue", indicator: indicator || "primary" }]
+                    elements: [{ href: link, label: label || i["Continue"], indicator: indicator || "primary" }]
                 }, "std:ui:panel");
             }
         });
     }
     E.render({
-        pageTitle: M._getTextMaybe(['entity-replacement:ui:page-title'], ['summary']) || "Replacements summary",
+        pageTitle: M._getTextMaybe(['entity-replacement:ui:page-title'], ['summary']) || i["Replacements summary"],
         backLink: M.entities.object.url(),
         data: data,
         neverSelectable: neverSelectable,
@@ -327,8 +332,10 @@ P.respond("GET,POST", "/do/workflow/replace", [
         return E.response.redirect("/do/workflow/entity-replacement/"+M.workUnit.id);
     }
 
+    let i = P.locale().text("template");
+
     E.render({
-        pageTitle: (M._getTextMaybe(['entity-replacement:ui:page-title'], ['form']) || "Replacement")+
+        pageTitle: (M._getTextMaybe(['entity-replacement:ui:page-title'], ['form']) || i["Replacement"])+
                     ": "+M._getText(['entity-replacement:display-name'], [entityName]),
         backLink: "/do/workflow/entity-replacement/"+workUnit.id,
         entityDisplayName: M._getText(['entity-replacement:display-name'], [entityName]),

@@ -3,10 +3,10 @@
 <div class="box">
     <p>
         if(wasTakeOver) {
-            "This task was taken over"
+            i("This task was taken over")
         } else {
-            "This task was delegated to " <b> M.workUnit.actionableBy.name </b>
+            i("This task was delegated to {}") { <b> M.workUnit.actionableBy.name </b> }
         }
-        " by " row.setByUser.name "."
+        " " i("shared-role:action-performed-by") " " row.setByUser.name "."
     </p>
 </div>

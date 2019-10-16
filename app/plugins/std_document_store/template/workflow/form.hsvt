@@ -1,3 +1,6 @@
+pageTitle(i("Edit {}: {instanceTitle}") {spec.title} instanceTitle {instance.key.title})
+backLink(instance.key.url)
+
 if(deferredPreForm) {
   render(deferredPreForm)
 }

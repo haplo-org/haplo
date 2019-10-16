@@ -1,6 +1,5 @@
-<i> entry.user.name </i>
 if(hide) {
-  " hid this task."
+  i("{} hid this task.") { <i> entry.user.name </i> }
 } else {
-  " made this task visible."
+  i("{} made this task visible.") { <i> entry.user.name </i> }
 }

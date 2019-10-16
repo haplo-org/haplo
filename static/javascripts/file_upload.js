@@ -12,7 +12,7 @@
 
 var KFileUpload = (function($) {
 
-    var TEXT_UPGRADE_MESSAGE = 'Your browser is too old to support to support all features. Please upgrade.';
+    var TEXT_UPGRADE_MESSAGE = KApp.j__text('FileBrowserUpgrade');
 
     // Requires: File and JSON objects, and drag and drop events.
     var browserSupportsFileUpload = (function() {
@@ -63,7 +63,7 @@ var KFileUpload = (function($) {
                 // Duration of 250 seems to work nicely with typical update frequency, stop() before to avoid them all queuing up if rapid updates
                 $('.z__file_target_process_bar_progress',progressBarElement).stop(true,true).animate({width:width}, 250, "linear");
                 // ... and as text...
-                var display = "Uploading: "+bytesText(completeBytes)+' of '+bytesText(uploadsTotalSize);
+                var display = KApp.j__text('FileProgress', {DONE:bytesText(completeBytes), TOTAL:bytesText(uploadsTotalSize)});
                 $('.z__file_target_process_text',progressBarElement).text(display);
             }
         } else {
@@ -94,7 +94,7 @@ var KFileUpload = (function($) {
         xhr.open('POST', '/api/edit/upload-file/'+uploadInfo.p__serverToken);
         var onError = xhr.onerror = function(e) {
             // Ask user if they'd like to retry it?
-            if(window.confirm("An error occurred when uploading\n\n    "+uploadInfo.p__file.name+"\n\nWould you like to try uploading it again?")) {
+            if(window.confirm(KApp.j__text("FileError", {FILE:"\n\n "+uploadInfo.p__file.name+"\n\n"}))) {
                 uploads.unshift(uploadInfo);
             } else {
                 // User gave up, tell delegate
@@ -278,7 +278,7 @@ var KFileUpload = (function($) {
             var fileTarget = targetForElement(evt.target);
             if(!fileTarget) {
                 // Multiple visible targets on the page, so ignore any drops on the page
-                window.alert("To upload, drop the file onto one of the boxes marked 'Drag files here'.");
+                window.alert(KApp.j__text("FileToUpload"));
                 return;
             }
             // If we're going to handle this, stop anything else handling it -- don't want multiple uploads of the same thing.
@@ -325,13 +325,12 @@ var KFileUpload = (function($) {
                     if(!browserSupportsFileUpload) {
                         return html + '<a href="#">Upload file...</a></div>';
                     }
-                    html += this.q__delegate.p__singleFileOnly ? 'Drag a file here ' : 'Drag files here ';
-                    if(delegate.p__targetTitle) {
-                        html += _.escape(delegate.p__targetTitle)+' ';
-                    }
-                    html += 'or <a href="#"><input type="file"';
+                    html += KApp.j__text(this.q__delegate.p__singleFileOnly ? 'FileDrag1' : 'FileDragS', {
+                        TITLE: delegate.p__targetTitle ? _.escape(delegate.p__targetTitle) : ''
+                    });
+                    html += ' <a href="#"><input type="file"';
                     if(!this.q__delegate.p__singleFileOnly) { html += ' multiple="multiple"'; }
-                    html += '>choose file...</a></div>';
+                    html += '>'+KApp.j__text('FileChoose')+'</a></div>';
                     return html;
                 },
                 j__uploadFiles: function(files, userData) {

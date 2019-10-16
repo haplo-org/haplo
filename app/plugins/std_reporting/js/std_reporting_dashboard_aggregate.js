@@ -40,7 +40,8 @@ DashboardAggregate.prototype._calculateValues = function() {
     // Check dimensions have at least one entry, otherwise dashboard is empty
     [x, y, outerX, outerY].forEach(function(dimension) {
         if(!(_.isArray(dimension) && dimension.length > 0)) {
-            O.stop("This dashboard cannot be displayed because the data which determines the rows and columns is missing.", "Cannot display dashboard");
+            let i = P.locale().text("template");
+            O.stop(i["This dashboard cannot be displayed because the data which determines the rows and columns is missing."], i["Cannot display dashboard"]);
         }
     });
 

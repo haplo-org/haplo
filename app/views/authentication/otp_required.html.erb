@@ -1,6 +1,6 @@
 <% @breadcrumbs = [:login] -%>
-<% @page_title = 'Authentication with token required' -%>
+<% @page_title = T(:Authentication_Title_Authentication_with_token_required) -%>
 
-<p>You cannot log on because you are required to use a token, but have not been issued with a token.</p>
+<p><%= @locale.text(:Authentication_View_You_cannot_log_on_because_you_are___) %></p>
 
 <p><%= h(otp_admin_contact_text) %></p>

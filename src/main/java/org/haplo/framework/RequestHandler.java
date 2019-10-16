@@ -11,6 +11,8 @@ import java.util.Formatter;
 import java.util.Enumeration;
 import java.util.List;
 
+import javax.net.ssl.SSLSession;
+
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -32,7 +34,7 @@ import org.haplo.utils.LimitedFilterOutputStream;
  * Request handler for the HTTP server.
  */
 public class RequestHandler extends AbstractHandler {
-    static final int MAX_BODY_SIZE = 1024 * 1024;
+    public static final int MAX_IN_MEMORY_BODY_SIZE = 1024 * 1024; // request handlers need to opt in to large request bodies
 
     private static final String HEALTH_URL = "/-health/"+System.getProperty("org.haplo.healthurl");
 
@@ -156,7 +158,7 @@ public class RequestHandler extends AbstractHandler {
             if(fileUploads != null) {
                 // Get details of what to do with the file uploads from the framework
                 long frameworkStartTime = System.currentTimeMillis();
-                Response r = handleWithFramework(baseRequest, request, app, fileUploads);
+                Response r = readRequestBodyAndreadRequestBodyAndHandleWithFramework(baseRequest, request, app, fileUploads);
                 frameworkHandleTime += System.currentTimeMillis() - frameworkStartTime;
 
                 // Check the handler didn't return any content
@@ -200,7 +202,7 @@ public class RequestHandler extends AbstractHandler {
         // Get the Ruby framework to handle the request if nothing else handled it
         if(response == null) {
             long frameworkStartTime = System.currentTimeMillis();
-            response = handleWithFramework(baseRequest, request, app, fileUploads);
+            response = readRequestBodyAndreadRequestBodyAndHandleWithFramework(baseRequest, request, app, fileUploads);
             frameworkHandleTime += System.currentTimeMillis() - frameworkStartTime;
         }
 
@@ -358,10 +360,16 @@ public class RequestHandler extends AbstractHandler {
         // SSL?
         String cipher = "-";
         if(isRequestSSL(baseRequest)) {
-            cipher = (String)baseRequest.getAttributes().getAttribute("javax.servlet.request.cipher_suite");
-            if(cipher == null) {
-                cipher = "unknown";
+            SSLSession sslSession = (SSLSession)request.getAttribute("org.eclipse.jetty.servlet.request.ssl_session");
+            String tlsversion = "";
+            if(sslSession != null) {
+                tlsversion =sslSession.getProtocol();
             }
+            String ncipher = (String)baseRequest.getAttributes().getAttribute("javax.servlet.request.cipher_suite");
+            if(ncipher == null) {
+                ncipher = "unknown";
+            }
+            cipher = tlsversion + ":" + ncipher;
         }
 
         // Reconstruct the URI
@@ -525,19 +533,101 @@ public class RequestHandler extends AbstractHandler {
     /**
      * Use the Ruby framework to handle the request
      */
-    private Response handleWithFramework(Request baseRequest, HttpServletRequest request, Application app, FileUploads fileUploads) throws IOException {
-        // Read the body if it's a POST request and FileUploads haven't been triggered
-        byte[] body = (fileUploads != null) ? null : readRequestBodySizeLimited(request);
+    private Response readRequestBodyAndreadRequestBodyAndHandleWithFramework(Request baseRequest, HttpServletRequest request, Application app, FileUploads fileUploads) throws IOException {
+        byte[] body = null;
+        String bodySpillPathname = null;
 
-        // Invoke a method on the framework to handle the request
-        return withPerApplicationRequestThrottle(app, () -> {
-            // Call into Ruby interpreter
-            Response response = framework.handleFromJava(request, app, body, isRequestSSL(baseRequest), fileUploads);
-            if(response == null) {
-                throw new RuntimeException("No response from Ruby interpreter");
+        try {
+            // Read the body if it's a POST request and FileUploads haven't been triggered
+            if(fileUploads == null) {
+                // Only read the body if we expect it
+                String method = request.getMethod();
+                if("POST".equals(method) || "PUT".equals(method)) {
+                    // See if there's a request body - but have a maximum amount of data to read
+                    int contentLength = -1;
+                    String contentLengthAsString = request.getHeader("Content-Length");
+                    if(contentLengthAsString != null) {
+                        contentLength = Integer.parseInt(contentLengthAsString);
+                    }
+                    if(contentLength != 0) {
+                        // Read the data into a byte array, spilling into a file if it gets too long
+                        InputStream bin = request.getInputStream();
+                        OutputStream out = null;
+                        ByteArrayOutputStream memoryOut = null;
+                        boolean shouldSpill = false;
+                        if(contentLength == -1) {
+                            out = memoryOut = new ByteArrayOutputStream(1024); // unknown input size
+                        } else if(contentLength < MAX_IN_MEMORY_BODY_SIZE) {
+                            out = memoryOut = new ByteArrayOutputStream(contentLength); // known input size
+                        } else {
+                            shouldSpill = true; // it's going to be too big for memory, so spill immediately
+                            if(!framework.request_large_body_spill_allowed(app.getApplicationID(), method, request.getRequestURI())) {
+                                this.logger.error("Throwing exception to prevent reading long body because Content-Length is too long and plugins don't opt-in to large bodies.");
+                                throw new RuntimeException("POST/PUT Advertised Content-Length of body is too long.");
+                            }
+                        }
+                        try {
+                            byte[] buffer = new byte[4096];
+                            int count = 0;
+                            int n = 0;
+                            while(-1 != (n = bin.read(buffer))) {
+                                if(shouldSpill) {
+                                    if(!framework.request_large_body_spill_allowed(app.getApplicationID(), method, request.getRequestURI())) {
+                                        this.logger.error("Throwing exception to prevent reading long body because too many bytes received and plugins don't opt-in to large bodies.");
+                                        throw new RuntimeException("POST/PUT too many bytes read from body.");
+                                    }
+                                    // Find unused spill filename
+                                    String dir = framework.get_directory_for_request_spill_file();
+                                    int fileId = 0;
+                                    do {
+                                        bodySpillPathname = String.format("%1$s/rbs%2$d.%3$d", dir, Thread.currentThread().getId(), fileId++);
+                                    } while(!(new File(bodySpillPathname)).createNewFile());
+                                    // Replace output stream
+                                    out = new FileOutputStream(bodySpillPathname);
+                                    // Flush in memory stream to file
+                                    if(memoryOut != null) {
+                                        out.write(memoryOut.toByteArray());
+                                        memoryOut.close();
+                                        memoryOut = null;
+                                    }
+                                    shouldSpill = false;
+                                }
+                                out.write(buffer, 0, n);
+                                count += n;
+                                if((memoryOut != null) && (count > MAX_IN_MEMORY_BODY_SIZE)) {
+                                    shouldSpill = true;
+                                }
+                            }
+
+                            // Only pass the in memory byte array to the request handle if it didn't spill
+                            if(memoryOut != null) {
+                                body = memoryOut.toByteArray();
+                            }
+                        } finally {
+                            out.close();
+                        }
+                    }
+                }
             }
-            return response;
-        });
+
+            // Invoke a method on the framework to handle the request
+            final byte[] bodyBytes = body;
+            final String bodySpillPathname2 = bodySpillPathname;
+            return withPerApplicationRequestThrottle(app, () -> {
+                // Call into Ruby interpreter
+                Response response = framework.handle_from_java(request, app, bodyBytes, bodySpillPathname2, isRequestSSL(baseRequest), fileUploads);
+                if(response == null) {
+                    throw new RuntimeException("No response from Ruby interpreter");
+                }
+                return response;
+            });
+
+        } finally {
+            if(bodySpillPathname != null) {
+                File file = new File(bodySpillPathname);
+                if(file.exists()) { file.delete(); }
+            }
+        }
     }
 
     /**
@@ -545,43 +635,6 @@ public class RequestHandler extends AbstractHandler {
      */
     private boolean isRequestSSL(Request baseRequest) {
         return (null != baseRequest.getAttributes().getAttribute("javax.servlet.request.ssl_session_id"));
-    }
-
-    /**
-     * Read an HTTP request body, if required and subject to size limits.
-     */
-    private byte[] readRequestBodySizeLimited(HttpServletRequest request) throws IOException {
-        byte[] body = null;
-
-        // Only read the body if we expect it
-        if(request.getMethod().equals("POST")) {
-            // See if there's a request body - but have a maximum amount of data to read
-            int contentLength = -1;
-            String contentLengthAsString = request.getHeader("Content-Length");
-            if(contentLengthAsString != null) {
-                contentLength = Integer.parseInt(contentLengthAsString);
-                if(contentLength > MAX_BODY_SIZE) {
-                    // Return without doing anything
-                    throw new RuntimeException("POST Advertised Content-Length of body is too long.");
-                }
-            }
-            // Read the data into a byte array, stopping if it gets too long
-            InputStream bin = request.getInputStream();
-            ByteArrayOutputStream b = new ByteArrayOutputStream((contentLength == -1) ? 1024 : contentLength);
-            byte[] buffer = new byte[4096];
-            int count = 0;
-            int n = 0;
-            while(-1 != (n = bin.read(buffer))) {
-                b.write(buffer, 0, n);
-                count += n;
-                if(count > MAX_BODY_SIZE) {
-                    throw new RuntimeException("POST too many bytes read from body.");
-                }
-            }
-            body = b.toByteArray();
-        }
-
-        return body;
     }
 
     /**

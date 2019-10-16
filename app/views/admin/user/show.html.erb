@@ -268,6 +268,10 @@
 <table class="z__mangement_kv_table">
   <tr><th>Home country</th><td><%= KCountry::COUNTRY_BY_ISO[@home_country].name %> (<%= h(@home_country_source) %>)</td></tr>
   <tr><th>Time zone</th><td><%= @time_zone %> (<%= h(@time_zone_source) %>)</td></tr>
+  <%
+    display_locale = KLocale::ID_TO_LOCALE[@locale_id]
+  %>
+  <tr><th>Locale</th><td><%= display_locale.name %> (<%= display_locale.locale_id %>) (<%= h(@locale_source) %>)</td></tr>
 </table>
 
 <%= (is_active && show_property_buttons) ? sys_mng_edit_button("/do/admin/user/localisation/#{@user.id}") : sys_mng_edit_button_disabled() %>

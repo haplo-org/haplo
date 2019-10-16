@@ -12,12 +12,6 @@ module ApplicationHelper
   include KConstants
 
   # ========================================================================================================
-  # Misc bits and pieces
-  def possessive_case_of(name)
-    (name =~ /[sS]\z/) ? "#{name}'" : "#{name}'s"
-  end
-
-  # ========================================================================================================
   # Data attributes in body tag
   def body_tag_data_attributes
     attrs = ''

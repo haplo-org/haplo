@@ -24,7 +24,8 @@
         end
       end
       # Checkbox
-      %><p><label><input type="checkbox" name="u[<%= uid %>]"<% if is_member %> checked<% end %>><%= h(user.name) %></label></p><%
+      email = user.email
+      %><p><label><input type="checkbox" name="u[<%= uid %>]"<% if is_member %> checked<% end %>><span class="z__mng_user_edit_member_list_name"><%= h(user.name) %><% if email %></span><span class="z__mng_user_edit_member_list_email"><%= h(email) %></span><% end %></label></p><%
     end
   end
 %>

@@ -1,10 +1,10 @@
 <%
-  @page_title = "Impersonate user"
+  @page_title = T(:Authentication_Title_Impersonate_user)
   @breadcrumbs = [:menu]
   client_side_controller_js("impersonate")
 %>
 
-<div class="z__general_alert">Use impersonation responsibly.</div>
+<div class="z__general_alert"><%= @locale.text(:Authentication_View_Use_impersonation_responsibly_) %></div>
 <p>&nbsp;</p>
 
 <form method="post"><%= form_csrf_token %>
@@ -24,4 +24,4 @@
 
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p>When you have completed your task, click the 'Finish' button to return to your user account.</p>
+<p><%= @locale.text(:Authentication_View_When_you_have_completed_your_task___) %></p>

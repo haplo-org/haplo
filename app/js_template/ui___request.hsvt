@@ -1,0 +1,4 @@
+<div class="z__user_action_request">
+  if(message) { std:text:paragraph(message) }
+  ifHasBlock() { yield() }
+</div>

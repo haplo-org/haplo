@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="<%= @locale.locale_id %>">
 <head>
   <title><%= h(if @page_title != nil && @page_title != '' then @page_title.to_s + ' : ' else '' end) %><%= KApp.global(:product_name) %></title>
 <%= render(:partial => 'shared/client_side_resources') -%>

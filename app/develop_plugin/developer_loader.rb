@@ -168,7 +168,7 @@ class DeveloperLoader
   class Controller < ApplicationController
     REQUIRED_POLICY = KPolicyRegistry.to_bitmask(:not_anonymous, :setup_system)
 
-    ALLOWED_PLUGIN_DIRECTORIES = ['js', 'template', 'static', 'test', 'file']
+    ALLOWED_PLUGIN_DIRECTORIES = ['js', 'template', 'static', 'test', 'file', 'i18n']
     ALLOWED_DIR_REGEX = /\A[a-zA-Z0-9_\-]+([a-zA-Z0-9_\.\-]+[a-zA-Z0-9_\-])?\z/ # no initial '.' in directories to prevent filesystem traversal
     ALLOWED_FILENAME_REGEX = /\A[a-zA-Z0-9_-][a-zA-Z0-9_\.-]*\.[a-zA-Z0-9]+\z/
 
@@ -522,6 +522,13 @@ class DeveloperLoader
     _PostOnly
     def handle_template_debugging_api
       KApp.set_global_bool(:debug_config_template_debugging, params[:enable] == '1')
+      render :text => 'OK'
+    end
+
+    # Internationalisation debugging tools
+    _PostOnly
+    def handle_i18n_debugging_api
+      KApp.set_global_bool(:debug_config_i18n_debugging, params[:enable] == '1')
       render :text => 'OK'
     end
 

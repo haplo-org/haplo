@@ -1,7 +1,7 @@
 unless(hideExport) {
   <form method="POST">
     <div class="z__std_reporting_export_form">
-      std:form:token() <input type="submit" value="Export"> 
+      std:form:token() <input type="submit" value=i("Export")>
     </div>
     yield()
   </form>

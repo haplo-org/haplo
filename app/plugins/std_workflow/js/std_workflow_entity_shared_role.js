@@ -97,13 +97,14 @@ P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow,
         if(list.length > 1) {
             var userRef = O.currentUser.ref;
             if(userRef && _.find(list, function(r) { return r == userRef; })) {
+                let i = P.locale().text("template");
                 if(M.workUnit.isActionableBy(O.currentUser)) {
                     builder.link(11, "/do/workflow/shared-role/delegate/"+M.workUnit.id,
-                        M._getTextMaybe(['shared-role-delegate'], [M.state]) || "Delegate this task",
+                        M._getTextMaybe(['shared-role-delegate'], [M.state]) || i["Delegate this task"],
                         "standard");
                 } else {
                     builder.link(11, "/do/workflow/shared-role/take-over/"+M.workUnit.id,
-                        M._getTextMaybe(['shared-role-take-over'], [M.state]) || "Take over this task",
+                        M._getTextMaybe(['shared-role-take-over'], [M.state]) || i["Take over this task"],
                         "standard");
                 }
             }
@@ -138,7 +139,11 @@ P.respond("GET,POST", "/do/workflow/shared-role", [
     {pathElement:1, as:"workUnit", allUsers:true},
     {parameter:"ref", as:"ref", optional:true}
 ], function(E, action, workUnit, changeRefTo) {
-    if(workUnit.closed) { O.stop("Process has finished"); }
+    let i = P.locale().text("template");
+
+    if(workUnit.closed) {
+        O.stop(i["Task has finished"]);
+    }
 
     var workflow = P.allWorkflows[workUnit.workType];
     if(!workflow) { O.stop("Workflow not implemented"); }
@@ -154,16 +159,18 @@ P.respond("GET,POST", "/do/workflow/shared-role", [
 
     var list = M.entities[actionableBy+"_refList"],
         listWithoutCurrentUser = _.filter(list, function(e) { return e != currentUserRef; });
-    if(list.length <= 1) { O.stop("There are no other users who can work with you on this process."); }
+    if(list.length <= 1) {
+        O.stop(i["There are no other users who can work with you on this task."]);
+    }
     // If the lists are the same length, then the current user isn't in the list
-    if(list.length === listWithoutCurrentUser.length) { O.stop("You aren't a permitted user for this process."); }
+    if(list.length === listWithoutCurrentUser.length) { O.stop(i["You aren't a permitted user for this task."]); }
 
     // User selected?
     if((E.request.method === "POST") && changeRefTo) {
         if(!_.find(list, function(r) { return r == changeRefTo; })) { O.stop("Selected user is not in the list"); }
 
         var user = O.user(changeRefTo);
-        if(!user) { O.stop("User doesn't have an account."); }
+        if(!user) { O.stop(i["User doesn't have an account."]); }
         // Store changed ref so the role change is sticky
         var row = P.db.sharedRoles.create({
             workUnitId: workUnit.id,
@@ -187,9 +194,9 @@ P.respond("GET,POST", "/do/workflow/shared-role", [
     // Confirm or user selection UI
     var view = {M:M};
     if(action === "delegate") {
-        view.pageTitle = (M._getTextMaybe(['shared-role-delegate-title'], [M.state]) || "Delegate: ")+M.title;
+        view.pageTitle = (M._getTextMaybe(['shared-role-delegate-title'], [M.state]) || i["Delegate:"])+" "+M.title;
         view.isDelegate = true;
-        view.text = (M._getTextMaybe(['shared-role-delegate-message'], [M.state]) || "Delegate this process to:");
+        view.text = (M._getTextMaybe(['shared-role-delegate-message'], [M.state]) || i["Delegate this task to:"]);
         view.options = _.map(listWithoutCurrentUser, function(ref) {
             return {
                 label: ref.load().title,
@@ -197,11 +204,11 @@ P.respond("GET,POST", "/do/workflow/shared-role", [
             };
         });
     } else {
-        if(workUnit.isActionableBy(O.currentUser)) { O.stop("This process is already with you."); }
-        view.pageTitle = (M._getTextMaybe(['shared-role-take-over-title'], [M.state]) || "Take over: ")+M.title;
-        view.text = (M._getTextMaybe(['shared-role-take-over-message'], [M.state]) || "Would you like to take over this process?");
+        if(workUnit.isActionableBy(O.currentUser)) { O.stop(i["This task is already with you."]); }
+        view.pageTitle = (M._getTextMaybe(['shared-role-take-over-title'], [M.state]) || i["Take over:"])+" "+M.title;
+        view.text = (M._getTextMaybe(['shared-role-take-over-message'], [M.state]) || i["Would you like to take over this task?"]);
         view.options = [{
-            label: "Take over",
+            label: i["Take over"],
             parameters: {ref:O.currentUser.ref}
         }];
     }

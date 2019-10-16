@@ -5,7 +5,7 @@
     @breadcrumbs = [:new_obj]
   else
     # Edit existing object
-    @breadcrumbs = [[object_urlpath(@object_to_edit), 'Cancel edit']]
+    @breadcrumbs = [[object_urlpath(@object_to_edit), T(:Edit_Cancel_edit)]]
   end
   client_side_resources(:object_editor)
   
@@ -15,9 +15,15 @@
 
 <% in_right_column render :partial => 'editor_labelling' %>
 
+<%
+  if @continue_editing_message
+    %><div class="z__acknowledgment_notice"><%= h(@continue_editing_message) %></div><%
+  end
+%>
+
 <form method="POST" id="z__keditor_form" action="/do/edit<% if params.has_key?(:id) %>/<%= h(params[:id]) %><% end %>"><%= form_csrf_token %>
   <div class="z__editor_buttons">
-    <input type="submit" name="save" value="Preview" class="z__editor_buttons_preview"> <input type="submit" name="save" value="Save" class="z__editor_buttons_save">
+    <input type="submit" name="save" value="<%= @locale.text(:Edit_View_Preview) %>" class="z__editor_buttons_preview"> <input type="submit" name="save" value="<%= @locale.text(:Edit_View_Save) %>" class="z__editor_buttons_save">
   </div>
   <div class="z__editor_buttons_end"></div>
 <%

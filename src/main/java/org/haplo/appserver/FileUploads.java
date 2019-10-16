@@ -91,16 +91,6 @@ public class FileUploads {
         this.params = new HashMap<String, String>();
     }
 
-    // Make sure all the files are cleaned up when the object is garbage collected.
-    protected void finalize() throws Throwable {
-        try {
-            // Make sure that the files are deleted from disc
-            cleanUp();
-        } finally {
-            super.finalize();
-        }
-    }
-
     /**
      * @return Whether this object is waiting for instructions on what to do
      * with upload files.
@@ -311,28 +301,31 @@ public class FileUploads {
                 } while(!outFile.createNewFile());
 
                 OutputStream outStream = new FileOutputStream(outFile);
-
-                // Decorate with a digest?
                 MessageDigest digest = null;
-                if(upload.getDigestName() != null) {
-                    try {
-                        digest = MessageDigest.getInstance(upload.getDigestName());
-                    } catch(java.security.NoSuchAlgorithmException e) {
-                        digest = null;
-                    }
-                    if(digest != null) {
-                        outStream = new DigestOutputStream(outStream, digest);
-                    }
-                }
 
-                // Decorate with a decompressor?
-                String filterName = upload.getFilterName();
-                if(filterName != null && filterName.equals("inflate")) {
-                    outStream = new InflaterOutputStream(outStream);
-                }
+                try {
+                    // Decorate with a digest?
+                    if(upload.getDigestName() != null) {
+                        try {
+                            digest = MessageDigest.getInstance(upload.getDigestName());
+                        } catch(java.security.NoSuchAlgorithmException e) {
+                            digest = null;
+                        }
+                        if(digest != null) {
+                            outStream = new DigestOutputStream(outStream, digest);
+                        }
+                    }
 
-                multipart.readBodyData(outStream);
-                outStream.close();
+                    // Decorate with a decompressor?
+                    String filterName = upload.getFilterName();
+                    if(filterName != null && filterName.equals("inflate")) {
+                        outStream = new InflaterOutputStream(outStream);
+                    }
+
+                    multipart.readBodyData(outStream);
+                } finally {
+                    outStream.close();
+                }
 
                 String digestAsString = null;
                 if(digest != null) {
@@ -361,9 +354,6 @@ public class FileUploads {
 
     /**
      * Clean up any files which weren't deleted by the caller.
-     *
-     * Automatically called on finalization, but should be called after request
-     * handling.
      */
     public void cleanUp() {
         for(Map.Entry<String, Upload> e : files.entrySet()) {
@@ -381,9 +371,6 @@ public class FileUploads {
                 }
             }
         }
-
-        // Remove everything from the array, now they've been deleted.
-        // Avoids the finalizer() doing stuff it needn't do.
         files.clear();
     }
 

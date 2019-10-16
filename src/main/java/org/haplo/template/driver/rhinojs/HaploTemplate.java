@@ -18,9 +18,13 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ScriptableObject;
 import org.mozilla.javascript.WrappedException;
 
-public class HaploTemplate extends ScriptableObject implements Callable, Driver.IncludedTemplateRenderer {
+public class HaploTemplate extends ScriptableObject implements Callable, Driver.IncludedTemplateRenderer, Driver.TextTranslator {
     private Template template;
     private Scriptable owner;
+
+    // Cache of text translator
+    private Driver.TextTranslator textTranslator;
+    private String textTranslatorCategory;
 
     public String getClassName() {
         return "$HaploTemplate";
@@ -44,6 +48,18 @@ public class HaploTemplate extends ScriptableObject implements Callable, Driver.
 
     public void renderIncludedTemplate(String templateName, StringBuilder builder, Driver driver, org.haplo.template.html.Context context) throws RenderException {
         JSPlatformIntegration.includedTemplateRenderer.renderIncludedTemplate(this.owner, templateName, builder, driver, context);
+    }
+
+    public String getLocaleId() {
+        return (this.textTranslator != null) ? this.textTranslator.getLocaleId() : Driver.DEFAULT_LOCALE_ID;
+    }
+
+    public String translate(String category, String text) {
+        if(this.textTranslator == null || !category.equals(this.textTranslatorCategory)) {
+            this.textTranslator = JSPlatformIntegration.textTranslatorFactory.getTextTranslator(this.owner, category);
+            this.textTranslatorCategory = category;
+        }
+        return this.textTranslator.translate(category, text);
     }
 
     public String jsFunction_render(Object view) throws RenderException {
@@ -81,6 +97,7 @@ public class HaploTemplate extends ScriptableObject implements Callable, Driver.
         RhinoJavaScriptDriver driver = new RhinoJavaScriptDriver(view);
         driver.setIncludedTemplateRenderer(this);
         driver.setFunctionRenderer(new JSFunctionRenderer(this));
+        driver.setTextTranslator(this);
         return driver;
     }
 }

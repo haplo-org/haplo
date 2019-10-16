@@ -21,6 +21,31 @@
         E.response.kind = "text";
     });
 
+    P.respond("PUT", "/do/plugin_test/put_returning_body", [
+        {body:"body", as:"string"}
+    ], function(E, body) {
+        E.response.body = "<<"+body+">>";
+        E.response.kind = "text";
+    });
+
+    var respondWithBodyBinaryDataInfo = function(E, body) {
+        var info = [
+            body.digest,
+            body.mimeType,
+            body.filename,
+            (body instanceof $BinaryDataTempFile) ? 'BinaryDataTempFile' : '.',
+            (body instanceof $BinaryDataInMemory) ? 'BinaryDataInMemory' : '.'
+        ];
+        E.response.body = info.join('__');
+        E.response.kind = "text";
+    };
+    P.respond("PUT", "/do/plugin_test/digest_of_put_body", [
+        {body:"body", as:"binaryData"}
+    ], respondWithBodyBinaryDataInfo);
+    P.respond("POST", "/do/plugin_test/digest_of_post_body", [
+        {body:"body", as:"binaryData"}
+    ], respondWithBodyBinaryDataInfo);
+
     P.respond("GET", "/do/plugin_test/with_layout", [], function(E) {
         E.response.body = "TEST PLUGIN";
         E.response.kind = "html";

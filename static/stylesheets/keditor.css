@@ -19,11 +19,11 @@
     text-align: right;
 }
 .z__editor_buttons_save {
-    width: 96px;
-    margin-left: 18px;
+    width: 102px;
+    margin-left: 20px;
 }
 .z__editor_buttons_preview {
-    width: 70px;
+    width: 80px;
 }
 
 /* z__editor_container -- contains the editor

@@ -445,6 +445,13 @@ WorkflowInstanceBase.prototype = {
                 search[0] = names[n];
                 var text = this._call('$text', search.join(':'));
                 if(typeof(text) === "string") {
+                    // First run the string through the locale's text translation
+                    var translate = this.$i18nTextTranslate;
+                    if(!translate) {
+                        translate = this.$i18nTextTranslate = this.$plugin.locale().text("workflow");
+                    }
+                    text = translate[text];
+                    // Then interpolate the translated string
                     return this._applyFunctionListToValue('$textInterpolate', text) || text;
                 }
             }
@@ -751,7 +758,8 @@ Workflow.prototype = {
     // Sometimes it's necessary to get a workflow name without an instance of the workflow being available.
     // A slightly grubby way of getting it, but the full text system is not available without an instance.
     getWorkflowProcessName: function() {
-        return this.$instanceClass.prototype.$textLookup['workflow-process-name'] || 'Workflow';
+        let i = P.locale().text("template");
+        return this.$instanceClass.prototype.$textLookup['workflow-process-name'] || i['Workflow'];
     },
 
     // ----------------------------------------------------------------------

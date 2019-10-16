@@ -12,5 +12,7 @@
 
 <p>Time zone:<br><select name="tz"><option value="">(use setting from parent group)</option><%= options_for_select(Application_TimeHelper::TIMEZONE_NAMES, @time_zone) %></select></p>
 
+<p>Locale:<br><select name="locale"><option value="">(use setting from parent group)</option><%= options_for_select(KLocale::LOCALES.map { |l| ["#{l.name} (#{l.locale_id})", l.locale_id]}, @user_locale_id) %></select></p>
+
 <p><input type="submit" value="Save"></p>
 </form>

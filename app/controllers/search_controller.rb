@@ -62,7 +62,7 @@ class SearchController < ApplicationController
       end
 
       if @request_user.policy.can_export_data?
-        @title_bar_buttons['Results'] = [["/search/export?#{search_url_params(@search_spec)}", 'Export search results...']]
+        @title_bar_buttons[T(:Search_Results)] = [["/search/export?#{search_url_params(@search_spec)}", T(:Search_Export_search_results___)]]
       end
 
       # Do spelling suggestions if there aren't very many results returned

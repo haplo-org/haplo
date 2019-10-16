@@ -3,7 +3,7 @@
   @breadcrumbs = [:menu, ['/do/admin/otp', 'Tokens']]
 %>
 
-<p>You are about to create a temporary code which will allow someone with <%= h(possessive_case_of(@user.name)) %> password to log into this system.</p>
+<p>You are about to create a temporary code which will allow someone with <%= h(@locale.possessive_case_of(@user.name)) %> password to log into this system.</p>
 
 <p>If you are not sure that you're giving it to <b><%= h(@user.name) %></b>, you <b>must not</b> create this temporary code.</p>
 

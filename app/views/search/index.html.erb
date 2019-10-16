@@ -1,5 +1,5 @@
 <%
-  @page_title = 'Search'
+  @page_title = T(:Search_Title_Search)
   client_side_resources(:search)
   @breadcrumbs = [:search]
 -%>
@@ -21,7 +21,7 @@
         type_desc = KObjectStore.schema.type_descriptor(possible_type)
         if type_desc != nil && type_desc.is_hierarchical?
           subject_text = search_within_linked_objref_to_html(item_ref, nil, "/search/browse/#{item_ref.to_presentation}")
-          search_within_html = %Q!items classified under #{subject_text}! if subject_text != nil
+          search_within_html = @locale.text(:Search_Results_Machine_Items_Classified)+' '+subject_text if subject_text != nil
         end
       end
     end
@@ -36,7 +36,7 @@
           rep = %Q!items of type <a href="/search/browse/#{item_ref.to_presentation}">#{h(type_desc.printable_name.to_s)}</a>!
         else
           # Otherwise, replace objref with link if user is allowed to read it
-          rep = search_within_linked_objref_to_html(item_ref, 'items linked to ')
+          rep = search_within_linked_objref_to_html(item_ref, @locale.text(:Search_Results_Machine_Items_Linked_To)+' ')
         end
       end
       (rep != nil) ? "#{rep}" : m
@@ -44,12 +44,12 @@
     search_within_html.gsub!(/#U(\d+)#/) do |m|
       created_by_user = nil
       begin; created_by_user = User.cache[$1.to_i]; rescue; end # ignore lookup failures
-      (created_by_user != nil) ? "items created by <b>#{h(created_by_user.name)}</b>" : m
+      (created_by_user != nil) ? @locale.text_format(:Search_Results_Machine_Items_Created_By, created_by_user.name) : m
     end
     
     %><div class="z__search_query_search_within_container">
       <input type="hidden" name="w" value="<%=h(search_within)%>">
-      Search within <b><%= search_within_html %></b>
+      <%= @locale.text(:Search_Results_Search_within) %> <b><%= search_within_html %></b>
     </div><%
   end
 -%>
@@ -69,23 +69,21 @@
     <% end %>
     
     <div class="z__search_results_found_statement"><%
-      # Show filtered count?
+      # Determine optional subset and counts
+      subset = @search_results.has_key?(:subset_object) ? @search_results[:subset_object].first_attr(KConstants::A_TITLE) : nil
+      count = results ? results.length : nil
+      filtered_count = nil
       if @search_results.has_key?(:type)
-        %><b><%= results.length %></b> of <%
+        filtered_count = count
+        count = results.unfiltered_count
       end
-      # Simple count of number of results
-      count = if @search_results.has_key?(:type)
-        results.unfiltered_count
-      elsif results == nil
-        0
+      # Choose text key and format
+      text_key = if subset.nil?
+        filtered_count.nil? ? :Search_Results_Count : :Search_Results_Count_Filtered
       else
-        results.length
+        filtered_count.nil? ? :Search_Results_Count_With_Subset : :Search_Results_Count_Filtered_With_Subset
       end
-      %><b><%= count %></b> result<% if count != 1 %>s<% end %><%
-      # Subset?
-      if @search_results.has_key?(:subset_object)
-        %> in <b><%= h(@search_results[:subset_object].first_attr(KConstants::A_TITLE)) %></b><%
-      end
+      %><%= @locale.text_format_with_count(text_key, count, subset, filtered_count) %><%
     %></div>
     
     <% if @type_counts != nil -%>
@@ -117,21 +115,21 @@
   </div>
   
   <% if @search_results[:results].length == 0 %>
-    <p>&nbsp;</p><p><i>No results found</i></p>
+    <p>&nbsp;</p><p><i><%= @locale.text(:Search_Results_No_results_found) %></i></p>
   <% end %>
 
   <%
     if @spelling_suggested_query != nil
-      %><div class="z__search_did_you_mean"><span>Did you mean:</span> <a href="/search?<%= search_url_params(@spelling_suggested_search_spec) %>"><%= h(@spelling_suggested_query) %></a> (<%= @spelling_suggested_search_count %> result<% if @spelling_suggested_search_count != 1 %>s<% end %>)</div><%
+      %><div class="z__search_did_you_mean"><span><%= @locale.text(:Search_Did_You_Mean) %></span> <a href="/search?<%= search_url_params(@spelling_suggested_search_spec) %>"><%= h(@spelling_suggested_query) %></a> <%= @locale.text_format_with_count(:Search_Did_You_Mean_Count, @spelling_suggested_search_count) %></div><%
     end
   %>
   
   <% if @search_results[:results].length > 0 %>
     <div class="z__search_results_sort_by">
       <% if @search_results[:relevance_possible] -%>
-        ordered by<%= search_sort_choices(@search_results, [:relevance, :title, :date]) %>
+        <%= @locale.text(:Search_Results_ordered_by) %><%= search_sort_choices(@search_results, [:relevance, :title, :date]) %>
       <% else %>
-        ordered by <span class="z__search_results_sort_by_not_selectable">relevance</span><%= search_sort_choices(@search_results, [:title, :date]) %>
+        <%= @locale.text(:Search_Results_ordered_by) %> <span class="z__search_results_sort_by_not_selectable"><%= @locale.text(:SearchSortChoice_relevance) %></span><%= search_sort_choices(@search_results, [:title, :date]) %>
       <% end %>
     </div>
   <% end %>

@@ -11,15 +11,47 @@ unless(transition) {
     <input type="hidden" name="transition" value=transition>
     if(requestedTarget) { <input type="hidden" name="target" value=requestedTarget> }
 
-    each(topFormDeferreds) { render(.) }
+    each(aboveConfirmFormDeferreds) { render(.) }
 
-    if(transitionProperties.confirmText) {
-      std:text:paragraph(transitionProperties.confirmText)
+    if(NEW_TRANSITION_UI) {
+      <div class="z__workflow_choosen_transition_container">
+        do() {
+          within(transitionProperties) {
+            template:std:ui:choose:selected-item() { yield:confirm-ui() }
+          }
+        } confirm-ui {
+          <div class="z__workflow_confirm_container">
+            <a href=backLink> i("Cancel") </a> " " <input type="submit" value=[i("Confirm:") " " transitionProperties.label]>
+          </div>
+        }
+      </div>
     }
 
-    <p> <input type="submit" value=["Confirm: " transitionProperties.label]> " &nbsp; &nbsp; " <a href=backLink> "Cancel" </a> </p>
+    if(NEW_TRANSITION_UI) {
 
-    each(bottomFormDeferreds) { render(.) }
+      // Top and bottom form deferreds are a concept from the old UI, but treated the same in the new UI
+      each(topFormDeferreds) {
+        <div class="z__workflow_confirm_deferred_holder">
+          render(.)
+        </div>
+      }
+      each(bottomFormDeferreds) {
+        <div class="z__workflow_confirm_deferred_holder">
+          render(.)
+        </div>
+      }
+
+    } else {
+
+      each(topFormDeferreds) { render(.) }
+
+      if(transitionProperties.confirmText) {
+        std:text:paragraph(transitionProperties.confirmText)
+      }
+      <p> <input type="submit" value=[i("Confirm:") " " transitionProperties.label]> " &nbsp; &nbsp; " <a href=backLink> i("Cancel") </a> </p>
+
+      each(bottomFormDeferreds) { render(.) }
+    }
 
   </form>
 }

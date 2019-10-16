@@ -21,6 +21,7 @@ module KHooks
     h.private_hook
     h.argument    :pluginName, String,    "Name of the plugin"
     h.argument    :formId,     String,    "ID of the form"
+    h.argument    :localeId,   String,    "Locale for the form"
     h.result      :bundle,     String,    nil,  "JavaScript response"
   end
 

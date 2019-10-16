@@ -100,6 +100,7 @@ const ENTITY_SUFFIX_REPLACEMENTS = {
 
 var toId = function(u) { return u.id; };
 
+// TODO I18N: Send emails needs to work in the locale of the recipient
 var sendEmail = function(specification, entities, M) {
     if(M) {
         // Allow global changes (which have to be quite carefully written)
@@ -148,10 +149,11 @@ var sendEmail = function(specification, entities, M) {
 
     // Send emails to the main recipients
     var firstBody, firstSubject, firstUser;
+    let i = P.locale().text("template");
     to.forEach(function(user) {
         view.toUser = user;
         var body = template.render(view);
-        var subject = view.emailSubject || 'Notification';
+        var subject = view.emailSubject || i['Notification'];
         if(!firstBody) { firstBody = body; firstSubject = subject; }    // store for CC later
         emailTemplate.deliver(user.email, user.name, subject, body);
     });

@@ -39,7 +39,7 @@
 
 <form method="POST" id="z__keditor_form" action="/do/edit"><%= form_csrf_token %>
 <div class="z__editor_buttons">
-<input type="submit" name="save" value="Preview" class="z__editor_buttons_preview"> <input type="submit" name="save" value="Save" class="z__editor_buttons_save">
+<input type="submit" name="save" value="<%= @locale.text(:Shared_View_Preview) %>" class="z__editor_buttons_preview"> <input type="submit" name="save" value="<%= @locale.text(:Shared_View_Save) %>" class="z__editor_buttons_save">
 </div>
 
 <input type="hidden" name="new" value="<%= type.to_presentation %>">

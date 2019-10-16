@@ -27,6 +27,9 @@ class KFileTransform
   # Internal format for handling HTML with attached images in a single zip file
   MIME_TYPE_HTML_IN_ZIP = 'x-oneis/html-zipped'
 
+  # Internal MIME type for JSON representation of spreadsheets
+  HAPLO_SPREADSHEET_JSON_MIME_TYPE = 'application/vnd.haplo.spreadsheet+json'
+
   # These constants are also used by the KTextExtract module
   THUMBNAIL_MAX_DIMENSION = 192.0 # float
   THUMBNAIL_MIN_DIMENSION = 4     # int
@@ -37,6 +40,7 @@ class KFileTransform
   MSOFFICE_OLD_MIME_TYPES = %w(doc dot xls xlt ppt pot).map {|a| KMIMETypes::MIME_TYPE_FROM_EXTENSION[a]}
   MSOFFICE_NEW_MIME_TYPES = %w(xlsx xltx potx ppsx pptx sldx docx dotx).map {|a| KMIMETypes::MIME_TYPE_FROM_EXTENSION[a]}
   MSOFFICE_RTF_MIME_TYPE = 'application/rtf'
+  MSOFFICE_SPREADSHEET_MIME_TYPES = %w(xls xlt xlsx xltx).map {|a| KMIMETypes::MIME_TYPE_FROM_EXTENSION[a]}
   IWORK_MIME_TYPES = %w(pages template key kth numbers nmbtemplate).map {|a| KMIMETypes::MIME_TYPE_FROM_EXTENSION[a]}
   FIXED_INDEXABLE_MIME_TYPES = ['application/pdf', 'application/rtf', 'text/html', 'text/plain']
 
@@ -53,6 +57,7 @@ class KFileTransform
   ImageTransform = Java::OrgHaploGraphics::ImageTransform
   ThumbnailFinder = Java::OrgHaploGraphics::ThumbnailFinder
   HTMLToText = Java::OrgHaploConvert::HTMLToText
+  ExcelToJSON = Java::OrgHaploConvert::ExcelToJSON
 
   # -----------------------------------------------------------------------------------------------------------------
 
@@ -190,6 +195,9 @@ class KFileTransform
     elsif input_mime_type == 'text/html' && output_mime_type == 'text/plain'
       TransformHTMLToText.new
 
+    elsif output_mime_type == HAPLO_SPREADSHEET_JSON_MIME_TYPE && MSOFFICE_SPREADSHEET_MIME_TYPES.include?(input_mime_type)
+      TransformExcelToJSON.new
+
     else
       COMPONENTS.each do |transform_component|
         transformer = transform_component.get_transformer(input_mime_type, output_mime_type)
@@ -226,6 +234,18 @@ class KFileTransform
     def make_op(input_disk_pathname, output_disk_pathname, input_mime_type, output_mime_type, output_options)
       @output_disk_pathname = output_disk_pathname
       HTMLToText.new(input_disk_pathname, output_disk_pathname)
+    end
+    def complete_op(op)
+      File.exist?(@output_disk_pathname)
+    end
+    def clean_up
+    end
+  end
+
+  class TransformExcelToJSON
+    def make_op(input_disk_pathname, output_disk_pathname, input_mime_type, output_mime_type, output_options)
+      @output_disk_pathname = output_disk_pathname
+      ExcelToJSON.new(input_disk_pathname, output_disk_pathname)
     end
     def complete_op(op)
       File.exist?(@output_disk_pathname)

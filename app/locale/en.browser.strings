@@ -1,0 +1,67 @@
+
+# Object editor
+EditorButtonEdit=< Edit
+EditorButtonPreview=Preview
+EditorClickToSet=click to set
+EditorLookupNoItems=No items found.
+EditorLookupCreateUnctl=Enter as free text (if not found)
+EditorLookupCreateNew=Create new $TYPE
+EditorDropdownChoose=-- choose --
+EditorFileEditName=Edit filename (will be automatically given a .$EXT extension)
+EditorFileNewVer=New version...
+EditorFileEditVer=Edit version number
+EditorChangesNotSaved=Your changes have not been saved.
+EditorDiscardChanges=Do you want to discard your changes?
+EditorLoadingPreview=Loading preview...
+EditorPreviewOfItemNotSaved=This is a preview of a new item which has not yet been saved.
+EditorPreviewOpenLink=Click OK to open this link in a new window or tab, then return to this window to save the new item.
+
+EditorErrTitleReq=You must enter a $TITLE.
+EditorErrFieldsNotFilled=Some of the fields have not been filled in correctly.
+EditorErrCheckFieldsWithErrs=Please check the fields marked with error messages.
+EditorErrFileUploading=A file is currently being uploaded. Please wait until it has finished, and try again.
+EditorErrSelectChoice=A choice must be selected: choose from the list.
+EditorErrPhoneNum=A number must be entered, not just an extension.
+EditorErrPhoneNoPlus=Numbers should not contain + symbols. Use the drop down box to select the country.
+EditorErrPhoneChars=Phone numbers should only contain numbers and spaces.
+EditorErrPhoneInvalidExt=Extensions must only letters and digits.
+EditorErrPhoneInvalidEmail=This is not a valid email address.
+EditorErrPhoneInvalidConfigName=This is not a valid configuration name.
+EditorErrPhoneInvalidNumber=This is not a whole number. Do not use symbols or decimal points.
+
+# Person's name data type (in editor)
+PNameCulture_w=Western
+PNameCulture_L=Western list
+PNameCulture_e=Eastern
+PNameField_w_t=Title
+PNameField_w_f=First
+PNameField_w_m=Middle
+PNameField_w_l=Last
+PNameField_w_s=Suffix
+PNameField_e_t=Title
+PNameField_e_f=Given
+PNameField_e_m=Middle
+PNameField_e_l=Family
+PNameField_e_s=Suffix
+
+# Address fields (separated by |, note street 2 is empty)
+EditorAddressFields=Number / building name, Street||City|County / State / Province|Postcode / Zip
+
+# File uploads & file versions
+FileBrowserUpgrade=Your browser is too old to support to support all features. Please upgrade.
+FileError=An error occurred when uploading$FILEWould you like to try uploading it again?
+FileToUpload=To upload, drop the file onto one of the boxes marked 'Drag files here'.
+FileDrag1=Drag a file here $TITLE or
+FileDragS=Drag files here $TITLE or
+VersionTarget=to upload a new version
+FileChoose=choose file...
+FileProgress=Uploading: $DONE of $TOTAL
+VersionCreate=Create new version
+
+# Generated files UI
+GenFileErr=Error preparing file.
+GenFileDownStart=Download started: $FILE
+GenFileFail=File generation failed.
+
+# Control
+Control_LinkOnly=Link only

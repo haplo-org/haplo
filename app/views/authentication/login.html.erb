@@ -1,16 +1,16 @@
 <%
   @breadcrumbs = [:login]
-  @page_title = 'Log in to your account'
+  @page_title = @locale.text(:Authentication_Title_Log_in_to_your_account)
   
   entered_email = (params[:email] || '').strip
 %>
 
 <% if @login_attempted %>
-  <p class="z__general_alert">Incorrect login, please try again.</p>
+  <p class="z__general_alert"><%= @locale.text(:Authentication_View_Incorrect_login_please_try_again) %></p>
 <% end %>
 
 <% if params.has_key?(:rdr) -%>
-  <p>You are not currently logged in. To continue, you need to log into your account.</p>
+  <p><%= @locale.text(:Authentication_View_You_are_not_currently_logged_in__To___) %></p>
 <% end -%>
 
 <form method="POST" action="/do/authentication/login"><%= form_csrf_token %>
@@ -19,16 +19,16 @@
   <input type="hidden" name="rdr" value="<%= h(params[:rdr]) %>">
 <% end -%>
 
-<p><label for="email">Email</label><br>
+<p><label for="email"><%= @locale.text(:Authentication_View_Email) %></label><br>
 <input id="email" name="email" size="30" type="email" class="z__login_input_field<% if entered_email.length == 0 %> z__focus_candidate<% end %>" value="<%= h(entered_email) %>"></p>
 
-<p><label for="password">Password</label><br>
-<input id="password" name="password" size="30" type="password" class="z__login_input_field<% if entered_email.length != 0 %> z__focus_candidate<% end %>"> <input type="submit" value="Log in" class="z__login_button"></p>
-<a href="/do/authentication/recovery" class="z__login_get_password_reminder"<% if @login_attempted %> id="z__login_get_password_reminder_login_attempt"<% end %>><span id="z__login_get_password_reminder_disp">Forgotten your password?</span></a>
+<p><label for="password"><%= @locale.text(:Authentication_View_Password) %></label><br>
+<input id="password" name="password" size="30" type="password" class="z__login_input_field<% if entered_email.length != 0 %> z__focus_candidate<% end %>"> <input type="submit" value="<%= @locale.text(:Authentication_View_Log_in_button) %>" class="z__login_button"></p>
+<a href="/do/authentication/recovery" class="z__login_get_password_reminder"<% if @login_attempted %> id="z__login_get_password_reminder_login_attempt"<% end %>><span id="z__login_get_password_reminder_disp"><%= @locale.text(:Authentication_View_Forgotten_your_password_) %></span></a>
 
 <% if @autologin_allowed -%>
-<p class="z__login_autologin_ui">&nbsp;<br><input id="autologin" name="autologin" type="checkbox" value="yes"> Remember me on this computer<br>
-<b>WARNING</b>: Do not check this box on public computers or if anyone else uses this computer.</p>
+<p class="z__login_autologin_ui">&nbsp;<br><input id="autologin" name="autologin" type="checkbox" value="yes"> <%= @locale.text(:Authentication_View_Remember_me_on_this_computer) %><br>
+<%= @locale.text(:Authentication_View__WARNING___Do_not_check_this_box_on___) %></p>
 <% end -%>
 
 </form>

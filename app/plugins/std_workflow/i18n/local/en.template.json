@@ -1,0 +1,6 @@
+{
+    "entity-replace:set-to": "to",
+    "list:last-two-entry-joiner": "and",
+    "shared-role:action-performed-by": "by",
+    "user-name:system": "System"
+}

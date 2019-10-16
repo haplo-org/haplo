@@ -126,7 +126,7 @@ public class Boot {
         framework = (Framework)iro;
 
         // Initialise the shared JavaScript environment
-        org.haplo.javascript.Runtime.initializeSharedEnvironment(rootDir, framework.pluginDebuggingEnabled());
+        org.haplo.javascript.Runtime.initializeSharedEnvironment(rootDir, framework.runtimeSharedJavaScriptInitialiser(), framework.pluginDebuggingEnabled());
 
         // TODO: Pause unless the parent runner asks to start the servers
         // All looks good, continue...

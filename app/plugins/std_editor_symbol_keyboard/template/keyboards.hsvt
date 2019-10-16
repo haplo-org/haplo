@@ -1,5 +1,5 @@
-pageTitle("Symbol virtual keyboards")
+pageTitle(i("Symbol virtual keyboards"))
 
-<p> std:ui:button-link("/do/std-editor-symbol-keyboard/edit") { "Edit keyboards" } </p>
+<p> std:ui:button-link("/do/std-editor-symbol-keyboard/edit") { i("Edit keyboards") } </p>
 
 std:document(keyboards)

@@ -588,3 +588,15 @@ table.z__mng_permission_display td.z__mng_permission_deny {
     font-size: 10px;
     margin-left: 16px;
 }
+
+/* user editing */
+
+.z__mng_user_edit_member_list_name {
+    display: inline-block;
+    min-width: 160px;
+}
+.z__mng_user_edit_member_list_email {
+    display: inline-block;
+    margin-left: 16px;
+    color: #444;
+}

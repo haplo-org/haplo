@@ -26,7 +26,7 @@ module KAttrAlias
   # yields value,desc,qualifier,is_aliased
   # Takes the allow_aliasing parameter so aliasing can be switched off easily without
   # consumers of the output having to write two versions.
-  def self.attr_aliasing_transform(obj_in, schema = nil, allow_aliasing = true)
+  def self.attr_aliasing_transform(obj_in, schema = nil, allow_aliasing = true, use_root_attributes = false)
     schema ||= obj_in.store.schema
 
     ungrouped = obj_in.store.extract_groups(obj_in)
@@ -36,7 +36,7 @@ module KAttrAlias
     type_objref = obj.first_attr(A_TYPE)
     return [] if type_objref == nil
     type_descriptor = schema.type_descriptor(type_objref)
-    type_descriptor = schema.type_descriptor(type_descriptor.root_type) if type_descriptor
+    type_descriptor = schema.type_descriptor(type_descriptor.root_type) if use_root_attributes && type_descriptor
     attributes = type_descriptor ? type_descriptor.attributes : []
 
     # Transformed list and lookup

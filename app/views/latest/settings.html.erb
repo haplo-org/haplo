@@ -1,5 +1,5 @@
 <%
-  @page_title = KApp.global(:name_latest).capitalize + ' settings'
+  @page_title = @locale.text_format(:Latest_Title_Settings, KApp.global(:name_latest).capitalize)
   @breadcrumbs = [:account, ['/do/latest', KApp.global(:name_latest).capitalize]]
 -%>
 <% in_right_column render(:partial => 'menu') %>

@@ -45,6 +45,7 @@ Handlebars
 moment
 XDate
 console
+$i18n_platform_text
 $haplo_framework_initialiser
 O
 HTTP
@@ -53,6 +54,7 @@ DBTime
 $DbObject
 $Exchange
 $Exchange_Request
+$Locale
 $Plugin
 oForms
 $LabelStatementsBuilder

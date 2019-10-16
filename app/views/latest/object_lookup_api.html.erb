@@ -1,5 +1,5 @@
 <% if @results == nil || @results.length == 0 -%>
-  Nothing found.
+  <%= @locale.text(:Latest_View_Nothing_found_) %>
 <% else -%>
   <% @results.each do |obj| -%>
     <p><a id="r<%= obj.objref.to_presentation %>"><%= h(obj.first_attr(KConstants::A_TITLE).to_s) %></a></p>

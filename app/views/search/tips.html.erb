@@ -1,20 +1,20 @@
 <%
-  @page_title = 'Search tips'
+  @page_title = T(:Search_Title_Search_tips)
   @minimal_layout_no_cancel = true
 %>
 
 <table style="width:450px">
-  <tr><td>Truncation</td><td>survi*</td><td>finds survivor, survival, survive, etc</td></tr>
-  <tr><td>Or</td><td>caravan or campervan</td><td>finds either term</td></tr>
-  <tr><td>Proximity</td><td>client _10 proposal </td><td>finds client within ten words of proposal</td></tr>
-  <tr><td>Field</td><td>title:Business Plan</td><td>finds Business Plan in the title field</td></tr>
+  <tr><%= @locale.text(:Search_View__Truncation__survi___finds_survivor___) %>/tr>
+  <tr><%= @locale.text(:Search_View__Or__caravan_or_campervan__finds___) %></tr>
+  <tr><%= @locale.text(:Search_View__Proximity__client__10_proposal___) %></tr>
+  <tr><%= @locale.text(:Search_View__Field__title_Business_Plan__finds___) %></tr>
 </table>
 
 <p>&nbsp;</p>
-<p>Not finding anything?</p>
+<p><%= @locale.text(:Search_View_Not_finding_anything_) %></p>
 
 <ul>
-  <li>If you've used abbreviations, try the full word.</li>
-  <li>Check you've spelled everything correctly.</li>
-  <li>Less specific queries with fewer search terms will find more items.</li>
+  <li><%= @locale.text(:Search_View_If_you_ve_used_abbreviations__try_the___) %></li>
+  <li><%= @locale.text(:Search_View_Check_you_ve_spelled_everything___) %></li>
+  <li><%= @locale.text(:Search_View_Less_specific_queries_with_fewer___) %></li>
 </ul>

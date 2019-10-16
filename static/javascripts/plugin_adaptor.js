@@ -252,6 +252,12 @@ var ONEIS = Haplo;
             j__getValue: function(i) {
                 return this.q__pluginInterface.getValue($('#'+i));
             },
+            j__validate: function() {
+                if("validate" in this.q__pluginInterface) {
+                    return this.q__pluginInterface.validate();
+                }
+                return null;
+            },
             j__undoableDeletedText: function(i) {
                 var container = $('#'+i);
                 if(this.q__pluginInterface.undoableDeletedText) {

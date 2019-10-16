@@ -1,6 +1,6 @@
 <%
-  @page_title = 'Add note to '+h(@add_to.first_attr(KConstants::A_TITLE).to_s)
-  @breadcrumbs = [[object_urlpath(@add_to), 'Cancel']]
+  @page_title = @locale.text_format(:ContactsButtonPlugin_Add_note_to, @add_to.first_attr(KConstants::A_TITLE).to_s)
+  @breadcrumbs = [[object_urlpath(@add_to), T(:StdContactsButton_Cancel)]]
 %>
 
 <%= render(:partial => 'shared/editor_for_new_object', :data_for_template => {:object => @object}) %>

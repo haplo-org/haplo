@@ -1,5 +1,5 @@
 <%
-  @page_title = 'Copyright Notice'
+  @page_title = T(:Copyright_Title_Copyright_Notice)
 
 # User copyright statement
 %><%= render_doc_as_html(KTextDocument.new(KApp.global(:copyright_statement) || '<doc></doc>'), KObjectStore.store) %>
@@ -7,7 +7,7 @@
 <p>&nbsp;</p>
 
 <div class="z__document">
-  <h2>Software Copyright</h2>
+  <h2><%= @locale.text(:Copyright_View_Software_Copyright) %></h2>
   <%
     if KApp.global(:product_name) != 'Haplo'
       %><p><%= h(KApp.global(:product_name)) %> is a product built on the Haplo Information Management Platform (Haplo Software).</p><%

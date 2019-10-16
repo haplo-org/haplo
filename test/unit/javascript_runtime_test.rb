@@ -153,6 +153,16 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     assert_equal 57, created.first_attr(564)
     assert created.first_attr(565).kind_of?(Fixnum)
     assert_equal 58, created.first_attr(565)
+    assert created.first_attr(566).kind_of?(Fixnum) # output from parseInt() is a float, lovely JavaScript, etc.
+    assert_equal 23, created.first_attr(566)
+    assert created.first_attr(567).kind_of?(Float)
+    assert_equal 23.5, created.first_attr(567)
+    assert created.first_attr(568).kind_of?(Float)
+    assert_equal 25.0, created.first_attr(568)
+    assert created.first_attr(569).kind_of?(Float)
+    assert_equal 25.0, created.first_attr(569)
+    assert created.first_attr(570).kind_of?(Float)
+    assert_equal 25.5, created.first_attr(570)
     created_notes = created.first_attr(A_NOTES)
     assert created_notes.class == KTextParagraph
     assert_equal "Ping\ncarrots", created_notes.to_s
@@ -1258,7 +1268,7 @@ __E
       'Math'=>true, 'StopIteration'=>true, 'JSON'=>true, 'Handlebars'=>true, 'console'=>true, 'HTTP'=>true,
       'oForms'=>true, 'decodeURI'=>true, 'decodeURIComponent'=>true, 'encodeURI'=>true, 'encodeURIComponent'=>true,
       'escape'=>true, 'eval'=>true, 'isFinite'=>true, 'isNaN'=>true, 'parseFloat'=>true, 'parseInt'=>true,
-      'unescape'=>true, 'uneval'=>true
+      'unescape'=>true, 'uneval'=>true, '$i18n_platform_text'=>true
     }
     symbols.each do |symbol|
       checks += 1
@@ -1332,6 +1342,12 @@ __E
     KJSPluginRuntime.current.runtime.evaluateString("var x = 4;", "TEST")
     runtime4 = KJSPluginRuntime.current.__id__
     assert_equal runtime4, runtime3
+  end
+
+  def test_dynamic_file_invalidation_from_javascript
+    serial_before = KApp.global(:appearance_update_serial)
+    KJSPluginRuntime.current.runtime.evaluateString("O.reloadPlatformDynamicFiles();", "TEST")
+    assert KApp.global(:appearance_update_serial) > serial_before
   end
 
   # ===============================================================================================

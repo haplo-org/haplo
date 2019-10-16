@@ -1,6 +1,6 @@
 <%
-  @page_title = 'Export search results'
-  @breadcrumbs = [['/search?'+search_url_params(@search_spec), 'Results']]
+  @page_title = T(:Search_Title_Export_search_results)
+  @breadcrumbs = [['/search?'+search_url_params(@search_spec), T(:Search_Results)]]
   
   subset = nil
   if @search_spec.has_key?(:subset)
@@ -16,11 +16,11 @@
   end
 -%>
 
-<p>Export results for <i><%= h(@search_spec[:q]) %> <%= fields_summary%></i><% if @search_spec.has_key?(:w) %> within <i><%= h(@search_spec[:w]) %></i><% end %><% if subset != nil %> in search subset <i><%= h(subset) %></i><% end %></p>
+<p><%= @locale.text(:Search_View_Export_results_for) %> <i><%= h(@search_spec[:q]) %> <%= fields_summary%></i><% if @search_spec.has_key?(:w) %> <%= @locale.text(:Search_View_within) %> <i><%= h(@search_spec[:w]) %></i><% end %><% if subset != nil %> <%= @locale.text(:Search_View_in_search_subset) %> <i><%= h(subset) %></i><% end %></p>
 
 <%= render :partial => 'shared/export_objects', :data_for_template => {
   :action => '/search/export',
-  :button => 'Download search results',
+  :button => T(:Search_Download_search_results),
   :extra_html => search_params_as_hidden(@search_spec)
 } %>
 

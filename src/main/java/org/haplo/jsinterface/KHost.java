@@ -20,6 +20,9 @@ import org.haplo.jsinterface.template.TemplateIncludedRenderer;
 import org.haplo.jsinterface.template.TemplatePlatformFunctions;
 import org.haplo.template.driver.rhinojs.HaploTemplate;
 import org.haplo.httpclient.HTTPClient;
+import org.haplo.i18n.RuntimeStrings;
+import org.haplo.i18n.StringTranslate;
+import org.haplo.jsinterface.i18n.KPluginStrings;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -43,6 +46,7 @@ public class KHost extends KScriptable {
     private HashMap<String, KObjRef> behaviourRefCache;
     private HashMap<Integer, String> refBehaviourCache;
     private boolean templateDebuggingEnabled = false;
+    private boolean i18nDebuggingEnabled = false;
 
     public KHost() {
         this.plugins = new LinkedHashMap<String, Scriptable>(8);
@@ -453,6 +457,24 @@ public class KHost extends KScriptable {
         return this.supportRoot.fetchRequestInformation(infoName);
     }
 
+    public Object jsFunction_fetchRequestBodyAsBinaryData() {
+        AppRoot.RequestBodyBinaryDataInfo info = new AppRoot.RequestBodyBinaryDataInfo();
+        this.supportRoot.fetchRequestBodyBinaryData(info);
+        if(info.bytes != null) {
+            KBinaryDataInMemory data = (KBinaryDataInMemory)Runtime.createHostObjectInCurrentRuntime(
+                "$BinaryDataInMemory", false, null, null, info.filename, info.mimeType
+            );
+            data.setBinaryData(info.bytes);
+            return data;
+        }
+        if(info.spillFilePathname != null) {
+            KBinaryDataTempFile tempFile = (KBinaryDataTempFile)Runtime.createHostObjectInCurrentRuntime("$BinaryDataTempFile");
+            tempFile.setTempFile(info.spillFilePathname, info.filename, info.mimeType);
+            return tempFile;
+        }
+        throw new OAPIException("Couldn't fetch request body as binary data");
+    }
+
     public KUploadedFile jsFunction_fetchRequestUploadedFile(String parameterName) {
         FileUploads uploads = this.supportRoot.fetchRequestUploads();
         if(uploads == null) {
@@ -635,6 +657,10 @@ public class KHost extends KScriptable {
         this.supportRoot.reloadUserSchema();
     }
 
+    public void jsFunction_reloadPlatformDynamicFiles() {
+        this.supportRoot.reloadPlatformDynamicFiles();
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     // HTTP Client
     public void jsFunction_httpClientRequest(String callbackName,
@@ -648,6 +674,60 @@ public class KHost extends KScriptable {
                                                        requestSettings));
         }
         HTTPClient.queueHttpClientRequest(callbackName, callbackData, requestSettingsMap);
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
+    // i18n
+    public String jsFunction_i18n_getCurrentLocaleId() {
+        return this.supportRoot.i18n_getCurrentLocaleId();
+    }
+
+    public void jsFunction_i18n_setSessionLocaleId(String localeId) {
+        this.supportRoot.i18n_setSessionLocaleId(localeId);
+    }
+
+    public Scriptable jsFunction_i18n_getRuntimeStringsForPlugin(String pluginName, String localeId, String category) {
+        RuntimeStrings runtimeStrings = this.supportRoot.i18n_getRuntimeStringsForLocale(localeId);
+        KPluginStrings strings = (KPluginStrings)Runtime.createHostObjectInCurrentRuntime("$PluginStrings");
+        StringTranslate translate = runtimeStrings.stringsForPlugin(pluginName).getCategory(category);
+        if(this.i18nDebuggingEnabled) {
+            translate = new DebugStringTranslate(translate);
+        }
+        strings.setStrings(pluginName, localeId, category, translate);
+        return strings;
+    }
+
+    public StringTranslate i18n_getFallbackStringsForPlugin(String pluginName, String localeId, String category) {
+        Scriptable plugin = this.plugins.get(pluginName);
+        if(plugin == null) {
+            throw new OAPIException("Unknown plugin: "+pluginName);
+        }
+        Object defaultLocaleIdProperty = ScriptableObject.getProperty(plugin, "defaultLocaleId");
+        if(!(defaultLocaleIdProperty instanceof CharSequence)) {
+            throw new OAPIException("defaultLocaleId not defined in plugin "+pluginName);
+        }
+        String pluginDefaultLocaleId = defaultLocaleIdProperty.toString();
+        RuntimeStrings runtimeStrings = this.supportRoot.i18n_getRuntimeStringsForLocale(pluginDefaultLocaleId);
+        return runtimeStrings.stringsForPlugin(pluginName).getCategory(category);
+    }
+
+    public void enableI18nDebugging() {
+        this.i18nDebuggingEnabled = true;
+    }
+
+    public static class DebugStringTranslate implements StringTranslate {
+        private StringTranslate translate;
+        DebugStringTranslate(StringTranslate translate) {
+            this.translate = translate;
+        }
+        public String get(String input, Fallback fallback) {
+            return debugVersionOfTranslatedString(this.translate.get(input, fallback)); // ConsString is checked
+        }
+        public static String debugVersionOfTranslatedString(String input) {
+            // Surround the string with other characters, because doing any transforms to the text
+            // is just likely to cause problems with interpolations or NAME().
+            return "•["+input+"]•";
+        }
     }
 
     // --------------------------------------------------------------------------------------------------------------

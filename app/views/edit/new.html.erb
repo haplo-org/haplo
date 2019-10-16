@@ -1,5 +1,5 @@
 <%
-  @page_title = 'Add new...'
+  @page_title = T(:Edit_Title_Add_new___)
   @breadcrumbs = [:new_obj]
 -%>
 
@@ -14,7 +14,7 @@
 <%= render :partial => 'new_object_types', :data_for_template => [
     Range.new(KConstants::TYPEUIPOS_NORMAL, KConstants::TYPEUIPOS_NORMAL),
     :default,
-    params.has_key?(:full) ? nil : ['/do/edit/new?full=1', 'Full list...']
+    params.has_key?(:full) ? nil : ['/do/edit/new?full=1', T(:Edit_New_Full_list___)]
   ] %>
 
 <% if params.has_key?(:full) %>

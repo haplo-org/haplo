@@ -20,7 +20,7 @@ if(navigation) {
 }
 
 if(showFormError) {
-  std:ui:notice("Please complete all the required fields.")
+  std:ui:notice(i("Please complete all the required fields."))
 }
 
 if(additionalUI.formTop) { render(additionalUI.formTop) }
@@ -35,13 +35,13 @@ if(additionalUI.formBottom) { render(additionalUI.formBottom) }
 
 <div class="z__docstore_save">
   <input type="submit" value=
-    switch(saveButtonStyle) { "Save" }
-                   continue { "Save and continue" }
-                     finish { "Save and finish" }
+    switch(saveButtonStyle) { i("Save") }
+                   continue { i("Save and continue") }
+                     finish { i("Save and finish") }
   >
   " "
   <button name="__later" value="s">
-    "Save for later"
+    i("Save for later")
   </button>
 </div>
 

@@ -21,13 +21,19 @@ import org.haplo.template.driver.rhinojs.JSPlatformIntegration.JSIncludedTemplat
 public class TemplateIncludedRenderer implements JSIncludedTemplateRenderer {
 
     public void renderIncludedTemplate(Scriptable owner, String templateName, StringBuilder builder, Driver driver, Context context) throws RenderException {
-        if(owner == null) {
-            throw new OAPIException("Attempt to include template by unowned template.");
-        }
         Runtime runtime = Runtime.getCurrentRuntime();
+        if(owner == null) {
+            if(templateName.startsWith("std:")) {
+                // Inclusion of std: HSVT template within another std: HSVT template when called from a Handlebars template
+                Object x = runtime.callSharedScopeJSClassFunction("Handlebars", "$getFakeTemplateOwner", new Object[] {});
+                owner = (Scriptable)x;
+            } else {
+                throw new OAPIException("Attempt to include template by unowned template.");
+            }
+        }
         Callable templateLoader = (Callable)JsGet.objectOfClass("template", owner.getPrototype(), Callable.class);
         if(templateLoader == null) {
-            throw new OAPIException("Unexpected modification of JavaScript runtime");
+            throw new OAPIException("Unexpected modification of JavaScript runtime, template() should be in prototype of plugin object");
         }
         Object r = templateLoader.call(runtime.getContext(), runtime.getJavaScriptScope(), owner, new Object[]{templateName}); // ConsString is checked
         if(r instanceof HaploTemplate) {
@@ -38,7 +44,7 @@ public class TemplateIncludedRenderer implements JSIncludedTemplateRenderer {
             Object renderFn = t.get("render", t); // ConsString is checked
             if(renderFn instanceof Callable) {
                 if(context != Context.TEXT) {
-                    throw new OAPIException("Cannot call Handlebars templates from new templates outside TEXT context");
+                    throw new OAPIException("Cannot include Handlebars templates in HSVT templates outside TEXT context");
                 }
                 Object html = ((Callable)renderFn).call(runtime.getContext(), t, t, new Object[]{driver.getRootView()}); // ConsString is checked
                 if(html instanceof CharSequence) {
@@ -47,6 +53,6 @@ public class TemplateIncludedRenderer implements JSIncludedTemplateRenderer {
                 return;
             }
         }
-        throw new OAPIException("Template "+templateName+"not known or is not renderable");
+        throw new OAPIException("Template "+templateName+" not known or is not renderable");
     }
 }

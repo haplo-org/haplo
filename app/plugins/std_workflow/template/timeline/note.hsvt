@@ -1,10 +1,13 @@
-<i> entry.user.name </i> " added a " if(entry.data.private) { <b> NAME("std:workflow:notes-private-adjective" "private") </b> " " } "note:"
+i("{} added a {kind}note:")
+  { <i> entry.user.name </i> }
+  kind { if(entry.data.private) { <b> NAME("std:workflow:notes-private-adjective" "private") </b> " " } }
+
 <div class=[
     "z__workflow_timeline_entry_note"
     if(entry.data.private){"z__workflow_timeline_entry_note_private"}
   ]>
   if(showEditLink) {
-    <div class="z__workflow_timeline_entry_note_edit"> <a href=["/do/workflow/note/" M.workUnit.id ? e=entry.id]> "EDIT" </a> </div>
+    <div class="z__workflow_timeline_entry_note_edit"> <a href=["/do/workflow/note/" M.workUnit.id ? e=entry.id]> i("EDIT") </a> </div>
   }
   std:text:paragraph(entry.data.text)
 </div>

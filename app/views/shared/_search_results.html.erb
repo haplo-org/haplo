@@ -2,16 +2,7 @@
 search_results = data_for_template
 count = search_results[:results].length
 if search_results[:show_result_count]
-  %><div class="z__search_results_found_statement_standalone"><%
-    case count
-    when 0
-      %><b>No items found</b><%
-    when 1
-      %><b>1</b> item found<%
-    else
-      %><b><%= count %></b> items found<%
-    end
-  %></div><%
+  %><div class="z__search_results_found_statement_standalone"><%= @locale.text_format_with_count(:Search_Standalone_Result_Count, count) %></div><%
 end
 if search_results[:search_within_ui] != nil && count > 0
   search_results_w = search_results.dup
@@ -20,7 +11,7 @@ if search_results[:search_within_ui] != nil && count > 0
   case search_results_w[:search_within_ui]
   when :link
     %><div class="z__search_results_search_within_link">
-    <a href="/search?<%= search_url_params(search_results_w, :render_style) %>">Search within...</a>
+    <a href="/search?<%= search_url_params(search_results_w, :render_style) %>"><%= @locale.text(:Search_Standalone_Search_within___) %></a>
     </div><%
   when :field
     %><div class="z__search_results_search_within_field">
@@ -163,8 +154,8 @@ end
       %> ...<%
     end
     %><div><%
-    if prev_url == nil then %><span>previous</span> <% else  %><a href="<%= prev_url %>">previous</a> <% end
-    if next_url == nil then %><span>next</span> <% else %><a href="<%= next_url %>">next</a> <% end
+    if prev_url == nil then %><span><%= @locale.text(:Shared_View_previous) %></span> <% else  %><a href="<%= prev_url %>"><%= @locale.text(:Shared_View_previous) %></a> <% end
+    if next_url == nil then %><span><%= @locale.text(:Shared_View_next) %></span> <% else %><a href="<%= next_url %>"><%= @locale.text(:Shared_View_next) %></a> <% end
     %></div></div><%
   end
   

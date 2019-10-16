@@ -1,5 +1,5 @@
 <%
-  @page_title = 'Recent'
+  @page_title = T(:Recent_Title_Recent)
   @breadcrumbs = [:recent]
   client_side_resources :recent
   client_side_controller_js('recent')
@@ -13,7 +13,7 @@
     last_entry = @days.last.entries.last
     %>
       <p>&nbsp;</p>
-      <p><a id="z__recent_load_more" href="#" data-time="<%= last_entry.id %>" data-date="<%= h(@days.last.date_text) %>">Load more</a><span style="display:none" id="z__recent_loading_more">Loading...</span></p>
+      <p><a id="z__recent_load_more" href="#" data-time="<%= last_entry.id %>" data-date="<%= h(@days.last.date_text) %>"><%= @locale.text(:Recent_View_Load_more) %></a><span style="display:none" id="z__recent_loading_more"><%= @locale.text(:Recent_View_Loading___) %></span></p>
     <%
   end
 %>

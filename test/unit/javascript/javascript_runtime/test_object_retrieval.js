@@ -188,8 +188,14 @@ TEST(function() {
     x.append(56, 563);
     x.appendWithIntValue(57.5, 564);
     x.appendWithIntValue(58, 565);
+    x.append(parseInt("23",10), 566);   // parseInt returns Double objects in Rhino
+    x.append(23.5, 567);
+    x.appendWithFloatValue(25, 568);
+    x.appendWithFloatValue(parseInt("25",10), 569);
+    x.appendWithFloatValue(25.5, 570);
     TEST.assert_exceptions(function() { x.appendWithIntValue(undefined); }, "Not a numeric type when calling appendWithIntValue()");
     TEST.assert_exceptions(function() { x.appendWithIntValue("12"); }, "Not a numeric type when calling appendWithIntValue()");
+    TEST.assert_exceptions(function() { x.appendWithFloatValue("12"); }, "Not a numeric type when calling appendWithFloatValue()");
     x.append(O.text(O.T_TEXT_PARAGRAPH, "Ping\ncarrots"), ATTR["std:attribute:notes"]);
     x.save();
     TEST.assert(x.ref !== null);

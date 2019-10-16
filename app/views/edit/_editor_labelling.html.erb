@@ -1,7 +1,7 @@
 <%
   if @labeller.should_display_labelling_ui?
 
-    %><div id="z__editor_labelling"><h3>Permissions</h3><%
+    %><div id="z__editor_labelling"><h3><%= @locale.text(:Edit_View_Permissions) %></h3><%
 
     if @labeller.allowed_applicable_labels.length > 1
       selected = @labeller.selected_applicable_label

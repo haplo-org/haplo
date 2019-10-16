@@ -17,11 +17,11 @@
         # Main type icon
         if @show_linked_objects && @show_linked_objects_type == nil
           %><div><div class="z__linked_icon_selected">
-            <%= html_for_icon(Application_IconHelper::ICON_SPECIAL_LINKED_ITEMS_SELECTED, :medium, "Linked items (#{@total_linked_objects})") %>
+            <%= html_for_icon(Application_IconHelper::ICON_SPECIAL_LINKED_ITEMS_SELECTED, :medium, "#{@locale.text(:Display_Linked_items_icon_title)} (#{@total_linked_objects})") %>
           </div></div><%
         else
           %><div><a href="<%= @obj_urlpath %>/linked" class="z__linked_icon_not_selected z__linked_icon_all_linked_adjustment">
-            <%= html_for_icon(Application_IconHelper::ICON_SPECIAL_LINKED_ITEMS, :medium, "Linked items (#{@total_linked_objects})") %>            
+            <%= html_for_icon(Application_IconHelper::ICON_SPECIAL_LINKED_ITEMS, :medium, "#{@locale.text(:Display_Linked_items_icon_title)} (#{@total_linked_objects})") %>            
           </a></div><%
         end
         # Output icons for each root type

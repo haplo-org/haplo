@@ -1,5 +1,5 @@
 <div class="z__workflow_note_header">
-  <b> "Notes" </b>
+  <b> i("Notes") </b>
   if(everyoneNoteExplaination) { " (" everyoneNoteExplaination ")" }
 </div>
 <div class="z__workflow_note_container">
@@ -8,6 +8,7 @@
 
 if(canSeePrivateNotes) {
   <div class="z__workflow_note_header">
+    // TODO I18N: Sort out NAME and i18n
     <b> NAME("std:workflow:notes-private-label-plural" "Private notes") </b>
     if(privateNoteExplaination) { " (" privateNoteExplaination ")" }
   </div>

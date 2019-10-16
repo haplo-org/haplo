@@ -585,6 +585,8 @@ $javascript_mapping = mapping_info[:javascript] = {}
 default_js_pathname = "#{export_dir}/static/javascripts/default.js"
 default_js = File.open(default_js_pathname, "w")
 rewrite_file("#{export_dir}/app/views/shared/_client_side_resources.html.erb") do |contents|
+  # Remove development mode locale strings JS include
+  contents.gsub!(/<script src="\/_dev_ctrl_js\/browser_text.+?<\/script>/,'')
   contents.gsub(/((\s*<script src="<%= client_side_javascript_urlpath '\w+' %>"><\/script>)+)/m) do |m|
     tags = $1
     tags.scan(/'(\w+)'/) do |t|
@@ -604,8 +606,30 @@ rewrite_file("#{export_dir}/app/views/shared/_client_side_resources.html.erb") d
     default_js_digest_filename = digest_filename(default_js_pathname)
     $javascript_mapping["default.js"] = "#{default_js_digest_filename}.js" # save mapping for tests
     File.rename(default_js_pathname, "#{export_dir}/static/javascripts/#{default_js_digest_filename}.js")
-    %Q!<script src="/-/#{default_js_digest_filename}.js"></script>!
+    # Replace with single script tag that loads the right file depending on locale
+    %Q!<script src="/-/<%= @locale._localised_default_js_digest_filename %>.js"></script>!
   end
+end
+
+# Build the localised JS files and the mapping of locale to script digest
+require "#{export_dir}/lib/klocale"
+require "#{export_dir}/app/locale/locales"
+locale_mapping = "\n\n\n# added by deployment script\nclass KLocale\n  attr_accessor :_localised_default_js_digest_filename\nend\n"
+KLocale::LOCALES.each do |locale|
+  localised_js_pathname = "#{export_dir}/static/javascripts/default.#{locale.locale_id}.js"
+  File.open(localised_js_pathname, 'w') do |file|
+    file.write "//#{locale.locale_id}\n"
+    file.write KLocale.browser_text_lookup_to_js(locale.text_lookup_for_browser(KLocale::DEFAULT_LOCALE))
+    file.write "\n"
+    file.write File.open("#{export_dir}/static/javascripts/#{$javascript_mapping["default.js"]}") { |f| f.read }
+  end
+  digest = digest_filename(localised_js_pathname)
+  $javascript_mapping["default.#{locale.locale_id}.js"] = "#{digest}.js"
+  File.rename(localised_js_pathname, "#{export_dir}/static/javascripts/#{digest}.js")
+  locale_mapping << "KLocale::ID_TO_LOCALE['#{locale.locale_id}']._localised_default_js_digest_filename='#{digest}'.freeze\n"
+end
+rewrite_file("#{export_dir}/app/locale/locales.rb") do |contents|
+  contents + locale_mapping
 end
 
 # Change the way the paths of javascript files are generated to use the new names

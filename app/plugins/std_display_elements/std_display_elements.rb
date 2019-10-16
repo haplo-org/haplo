@@ -94,7 +94,7 @@ class StdDisplayElementsPlugin < KTrustedPlugin
     # Perform the search and render
     search = controller.perform_search_for_rendering(spec)
     result.html = controller.render(:partial => 'shared/search_results', :data_for_template => search)
-    result.title = opts["title"] || 'Related items'
+    result.title = opts["title"] || controller.T(:StdDisplayElements_Related_items)
   end
 
   # -----------------------------------------------------------------------------------------------------------------
@@ -115,10 +115,10 @@ class StdDisplayElementsPlugin < KTrustedPlugin
     # Render
     html = created.map { |obj| controller.render_obj(obj, :searchresultmini) } .join('')
     # Link to all items search
-    html << %Q!<a class="z__element_more_link" href="/search?w=%23U#{user.id}%23">All items...</a>!
+    html << %Q!<a class="z__element_more_link" href="/search?w=%23U#{user.id}%23">#{controller.T(:StdDisplayElements_All_items___)}</a>!
 
     result.html = html
-    result.title = opts["title"] || 'Items created'
+    result.title = opts["title"] || controller.T(:StdDisplayElements_Items_created)
   end
 
   # -----------------------------------------------------------------------------------------------------------------
@@ -147,14 +147,14 @@ class StdDisplayElementsPlugin < KTrustedPlugin
       end
     end
     if show_closed_work_unit_link
-      work_unit_html << '<p style="margin-top:12px"><a href="?closed_work=1">Show closed tasks...</a></p>'
+      work_unit_html << %Q!<p style="margin-top:12px"><a href="?closed_work=1">#{controller.T(:StdDisplayElements_Show_closed_tasks___)}</a></p>!
     end
 
     work_unit_html.compact!
     return if work_unit_html.empty?
 
     result.html = work_unit_html.join()
-    result.title = opts["title"] || 'Tasks'
+    result.title = opts["title"] || controller.T(:StdDisplayElements_Tasks)
   end
 
   # -----------------------------------------------------------------------------------------------------------------
@@ -184,14 +184,14 @@ class StdDisplayElementsPlugin < KTrustedPlugin
     notes.each do |note|
       if n >= CONTACT_NOTES_MAX_RESULTS
         # TODO: Use a search subset which will include all the objects... but how to know what that is?
-        html << %Q!<p><a href="/search?sort=date&w=%23L#{object.objref.to_presentation}%23%20%23L#{O_TYPE_CONTACT_NOTE.to_presentation}%23&q=">Show all...</a></p>!
+        html << %Q!<p><a href="/search?sort=date&w=%23L#{object.objref.to_presentation}%23%20%23L#{O_TYPE_CONTACT_NOTE.to_presentation}%23&q=">#{controller.T(:StdDisplayElements_Show_all___)}</a></p>!
       else
         html << controller.render_obj(note, :crm_note, crm_note_opts)
       end
       n += 1
     end
     if n == 0
-      html << '<p><i>No notes have been added to this item.</i></p>'
+      html << %Q!<p><i>#{controller.T(:StdDisplayElements_No_notes_have_been_added_to_this_item_)}</i></p>!
     end
 
     # Add a link to the organisation?
@@ -199,12 +199,12 @@ class StdDisplayElementsPlugin < KTrustedPlugin
     if org != nil && org.k_typecode == T_OBJREF
       organisation_obj = KObjectStore.read(org)
       if organisation_obj != nil
-        html << %Q!<p class="z__crm_note_view_org_link"><a href="#{controller.object_urlpath(organisation_obj)}">View <b>#{h(organisation_obj.first_attr(A_TITLE))}</b> to see all notes for the organisation...</a></p>!
+        html << %Q!<p class="z__crm_note_view_org_link"><a href="#{controller.object_urlpath(organisation_obj)}">#{controller.locale.text_format(:DisplayElements_View_all_notes_for_organisation, organisation_obj.first_attr(A_TITLE))}</a></p>!
       end
     end
 
     result.html = html
-    result.title = opts["title"] || 'Contact notes'
+    result.title = opts["title"] || controller.T(:StdDisplayElements_Contact_notes)
   end
 
   # -----------------------------------------------------------------------------------------------------------------

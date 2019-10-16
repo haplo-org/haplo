@@ -34,7 +34,8 @@ P.registerWorkflowFeature("std:notes", function(workflow, spec) {
     // Display link to add note, but only if workflow is in progress
     workflow.actionPanel({closed:false}, function(M, builder) {
         if(canAddNonTransitionNote(M, O.currentUser)) {
-            builder.panel(1500).link("default", "/do/workflow/note/"+M.workUnit.id, "Add note", "standard");
+            let i = P.locale().text("template");
+            builder.panel(1500).link("default", "/do/workflow/note/"+M.workUnit.id, i["Add note"], "standard");
         }
     });
 
@@ -51,12 +52,13 @@ P.registerWorkflowFeature("std:notes", function(workflow, spec) {
     workflow.transitionUI({}, function(M, E, ui) {
         var userCanSeePrivateNotes = canSeePrivateNotes(M, O.currentUser);
         var parameters = E.request.parameters;
+        let i = P.locale().text("template");
         ui.addFormDeferred("bottom", P.template("notes/transition-notes-form").deferredRender({
             canSeePrivateNotes: userCanSeePrivateNotes,
             everyoneNoteExplaination: M._getTextMaybe(['notes-explanation-everyone'], ['transition-ui']) ||
-                NAME("std:workflow:notes-explanation-everyone", "Notes can be seen by the applicant and all staff reviewing this application."),
+                NAME("std:workflow:notes-explanation-everyone", i["Notes can be seen by the applicant and all staff reviewing this application."]),
             privateNoteExplaination: M._getTextMaybe(['notes-explanation-private'], ['transition-ui']) ||
-                NAME("std:workflow:notes-explanation-private", "Seen only by staff reviewing this application, not seen by the applicant."),
+                NAME("std:workflow:notes-explanation-private", i["Seen only by staff reviewing this application, not seen by the applicant."]),
             notes: parameters['notes'],
             privateNotes: parameters['privateNotes']
         }));
@@ -150,7 +152,8 @@ P.respond("GET,POST", "/do/workflow/note", [
             if(!entry) {
                 return E.response.redirect(taskUrl);
             } else {
-                note = '(REMOVED)';
+                let i = P.locale().text("template");
+                note = i['(REMOVED)'];
             }
         }
         var timelineData = {

@@ -449,6 +449,24 @@ public class KObject extends KScriptable {
         if(jsValue == null) {
             throw new OAPIException("null and undefined cannot be appended to a StoreObject");
         }
+
+        // JavaScript is a bit horrid in that it doesn't have integer data types, but the vast majority
+        // of values used in Haplo applications are integers. So if a floating point value is passed
+        // in which represents an integer, automatically convert it into an integer object.
+        // In Rhino, parseInt() returns a floating point value, which is particularly annoying,
+        // especially as in most other places, adding integers "just works" because optimisations
+        // tend to use integers.
+        if(jsValue instanceof Float || jsValue instanceof Double) {
+            double d = ((Number)jsValue).doubleValue();
+            double df = Math.floor(d);
+            if(df == d) {
+                jsValue = new Long((long)df);
+            }
+        }
+
+        return appendJsValueHandlingExtension(jsValue, desc, qual, extension);
+    }
+    private Object appendJsValueHandlingExtension(Object jsValue, int desc, int qual, Object extension) {
         if((extension == null) || (extension instanceof org.mozilla.javascript.Undefined)) {
             this.appObject.add_attr(jsValue, desc, qual);
         } else {
@@ -461,12 +479,20 @@ public class KObject extends KScriptable {
         return this;
     }
 
+    public Object jsFunction_appendWithFloatValue(Object value, int desc, int qual, Object extension) {
+        mustBeMutableObject("appendWithFloatValue()");
+        if(!(value instanceof Number)) {
+            throw new OAPIException("Not a numeric type when calling appendWithFloatValue()");
+        }
+        return appendJsValueHandlingExtension(new Double(((Number)value).doubleValue()), desc, qual, extension);
+    }
+
     public Object jsFunction_appendWithIntValue(Object value, int desc, int qual, Object extension) {
         mustBeMutableObject("appendWithIntValue()");
         if(!(value instanceof Number)) {
             throw new OAPIException("Not a numeric type when calling appendWithIntValue()");
         }
-        return jsFunction_append(((Number)value).intValue(), desc, qual, extension);
+        return appendJsValueHandlingExtension(((Number)value).intValue(), desc, qual, extension);
     }
 
     public Object jsFunction_appendParent(Object value, int qual) { return jsFunction_append(value, A_PARENT, qual, null); }

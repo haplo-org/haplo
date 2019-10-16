@@ -73,6 +73,9 @@ class Admin_UserController < ApplicationController
     # Time zone
     @time_zone, @time_zone_source =
         get_user_data_with_source_description(@user, UserData::NAME_TIME_ZONE, KDisplayConfig::DEFAULT_TIME_ZONE)
+    # Locale
+    @locale_id, @locale_source =
+        get_user_data_with_source_description(@user, UserData::NAME_LOCALE, KLocale::DEFAULT_LOCALE.locale_id)
     # API keys
     if @is_user || @is_service_user
       @api_keys = ApiKey.find(:all, :conditions => ['user_id=?', @user.id], :order => 'name')
@@ -356,6 +359,8 @@ class Admin_UserController < ApplicationController
     @home_country = nil if home_country_uid != @user.id
     @time_zone, time_zone_uid = UserData.get(@user, UserData::NAME_TIME_ZONE, :value_and_uid)
     @time_zone = nil if time_zone_uid != @user.id
+    @user_locale_id, locale_uid = UserData.get(@user, UserData::NAME_LOCALE, :value_and_uid)
+    @user_locale_id = nil if locale_uid != @user.id
     # Update?
     if request.post?
       # Home country
@@ -369,6 +374,12 @@ class Admin_UserController < ApplicationController
         UserData.set(@user, UserData::NAME_TIME_ZONE, params[:tz])
       else
         UserData.delete(@user, UserData::NAME_TIME_ZONE)
+      end
+      # Locale
+      if KLocale::ID_TO_LOCALE.has_key?(params[:locale])
+        UserData.set(@user, UserData::NAME_LOCALE, params[:locale])
+      else
+        UserData.delete(@user, UserData::NAME_LOCALE)
       end
       # Finish and update
       redirect_to "/do/admin/user/#{show_action_for(@user)}/#{@user.id}"

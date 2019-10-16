@@ -101,7 +101,7 @@ class ApplicationController
       end
     end
 
-    root_level << ['Types', 'TYPES', 'TYPES'] if include_types_root
+    root_level << [T(:TreeSource_Browse_Types), 'TYPES', 'TYPES'] if include_types_root
     # TODO: Support loading of type nodes in tree source root generation so client side doesn't have to demand load type nodes immediately when one is selected via the URL (then change comment in j__treeSelectionChange in ksearch.rb)
 
     root_level

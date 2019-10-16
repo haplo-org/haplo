@@ -349,6 +349,7 @@ private
       else
         # Plugins get another look at the object
         # TODO: Proper tests for hPostObjectEdit hook
+        should_redisplay = false
         call_hook(:hPostObjectEdit) do |hooks|
           unless @object_to_edit.objref
             # A plugin might need to know the ref, for example, if it's going to redirect to another URL including it, so preallocate
@@ -357,6 +358,11 @@ private
           r = hooks.run(@object_to_edit, @object_previous_version)
           @object_to_edit = r.replacementObject if r.replacementObject
           @post_edit_redirect = r.redirectPath
+          # Plugins can prevent commit
+          if r.continueEditingWithMessage
+            @continue_editing_message = r.continueEditingWithMessage
+            should_redisplay = true
+          end
         end
 
         # Now that the object has been decoded and potentially modified by plugins, create the labeller to apply
@@ -367,12 +373,16 @@ private
         label_changes = KLabelChanges.new()
         @labeller.update_label_changes(params[:labelling], label_changes)
 
-        if @objref != nil
-          KObjectStore.update(@object_to_edit, label_changes)
+        if should_redisplay
+          return_code = :display
         else
-          KObjectStore.create(@object_to_edit, label_changes)
+          if @objref != nil
+            KObjectStore.update(@object_to_edit, label_changes)
+          else
+            KObjectStore.create(@object_to_edit, label_changes)
+          end
+          return_code = :committed
         end
-        return_code = :committed
       end
     end
 
@@ -428,11 +438,11 @@ public
     query = KObjectStore.query_and.link(@objref)
     query.maximum_results(2)
     if query.execute().length > 0
-      @warnings << "This item is linked to other items."
+      @warnings << T(:Edit_This_item_is_linked_to_other_items_)
     end
 
     if navigation_references_objref?(@objref)
-      @warnings << "This item is included in the left hand navigation."
+      @warnings << T(:Edit_This_item_is_included_in_the_left___)
     end
 
     if request.post?

@@ -10,10 +10,10 @@
 <form method="POST" action="<%= form_action %>" id="z__download_form"><%= form_csrf_token %>
 <%= extra_html %>
 
-<p><select name="output_form"><option value="">Export all data</option>
+<p><select name="output_form"><option value=""><%= @locale.text(:Shared_View_Export_all_data) %></option>
   <%
     ExportObjectsHelper::EXPORT_OUTPUTS.each do |key,info|
-      %><option value="<%= key %>"><%= info.first %></option><%
+      %><option value="<%= key %>"><%= T(info.first) %></option><%
     end
   %>
 </select> as <select name="output_format">
@@ -22,8 +22,8 @@
   <option value="tsv">TSV</option>
 </select></p>
 
-<p><label><input type="checkbox" name="urls" value="1">Include item URLs</label></p>
+<p><label><input type="checkbox" name="urls" value="1"><%= @locale.text(:Shared_View_Include_item_URLs) %></label></p>
 
-<p><input type="submit" value="<%= button_label %>"> <span id="z__download_message" style="display:none">Your download has started.</span></p>
+<p><input type="submit" value="<%= button_label %>"> <span id="z__download_message" style="display:none"><%= @locale.text(:Shared_View_Your_download_has_started_) %></span></p>
 
 </form>

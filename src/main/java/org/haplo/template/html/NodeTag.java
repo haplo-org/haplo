@@ -151,4 +151,15 @@ final class NodeTag extends Node {
                     append(attributesBuilder);
         }
     }
+
+    protected void interateOverAttributes(AttributeIterator i) {
+        Attribute attribute = this.attributesHead;
+        while(attribute != null) {
+            i.attribute(attribute.name, attribute.value, attribute.valueContext);
+            attribute = attribute.nextAttribute;
+        }
+    }
+    protected interface AttributeIterator {
+        void attribute(String name, Node value, Context context);
+    }
 }

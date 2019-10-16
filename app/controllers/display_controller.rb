@@ -8,6 +8,7 @@
 class DisplayController < ApplicationController
   policies_required nil
   include DisplayHelper
+  include SearchHelper
 
   OBJECT_ELEMENT_STYLE = ElementDisplayStyle.new('<h2>', '</h2>')
 
@@ -148,13 +149,13 @@ class DisplayController < ApplicationController
     # Add menu items to files?
     user_can_see_file_versions = @request_user.policy.has_permission?(:update, @obj)
     @render_options[:file_identifier_menu] = proc do |file_identifier, file_link|
-      m = [['Download',"#{file_link}?attachment=1",'z__file_extra_action_link_open']]
+      m = [[T(:Display_Download),"#{file_link}?attachment=1",'z__file_extra_action_link_open']]
       if user_can_see_file_versions
-        m << ['Versions',"/do/file-version/of/#{@objref.to_presentation}/#{file_identifier.tracking_id}",'z__file_extra_action_link_versions']
+        m << [T(:Display_Versions),"/do/file-version/of/#{@objref.to_presentation}/#{file_identifier.tracking_id}",'z__file_extra_action_link_versions']
       end
       preview_url = file_url_path(file_identifier, :preview)
       if preview_url != nil
-        m << ['Preview',preview_url,'z__file_preview_link']
+        m << [T(:Display_Preview),preview_url,'z__file_preview_link']
       end
       m
     end
@@ -170,10 +171,10 @@ class DisplayController < ApplicationController
       unless @request_user.policy.is_anonymous?
         edit_entries = []
         if @request_user.policy.has_permission?(:delete, @obj)
-          edit_entries << ["/do/edit/delete/#{@objref.to_presentation}", 'Delete...']
+          edit_entries << ["/do/edit/delete/#{@objref.to_presentation}", T(:Display_Delete___)]
         end
         if @request_user.policy.can_view_history_of?(@obj)
-          edit_entries << ["/do/display/history/#{@objref.to_presentation}", 'History...']
+          edit_entries << ["/do/display/history/#{@objref.to_presentation}", T(:Display_History___)]
         end
         if @request_user.policy.can_setup_system?
           edit_entries << ["/do/admin/relabel/object/#{@objref.to_presentation}", 'Relabel...']
@@ -185,7 +186,7 @@ class DisplayController < ApplicationController
         @plugin_object_display_behaviour = hooks.run(@obj)
         @title_bar_buttons.merge!(@plugin_object_display_behaviour.buttons)
         if @plugin_object_display_behaviour.backLink
-          @breadcrumbs = [[@plugin_object_display_behaviour.backLink, @plugin_object_display_behaviour.backLinkText || 'Return']]
+          @breadcrumbs = [[@plugin_object_display_behaviour.backLink, @plugin_object_display_behaviour.backLinkText || T(:Display_Default_Obj_BackLinkText)]]
         end
       end
 

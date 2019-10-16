@@ -4,7 +4,7 @@
 -%>
 <% unless subsets.empty? -%>
   <div class="z__search_form_offered_subsets">
-    <span><% if params[:action] == 'browse' %>Browse<% else %>Search in<% end %></span> <select name="subset" id="z__search_subset_selection">
+    <span><% if params[:action] == 'browse' %><%= @locale.text(:Search_View_Browse) %><% else %><%= @locale.text(:Search_View_Search_in) %><% end %></span> <select name="subset" id="z__search_subset_selection">
       <%
         subsets.each do |subset|
           ref = subset.objref.to_presentation

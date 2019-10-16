@@ -60,6 +60,17 @@ class JavaScriptGeneratedFileTest < IntegrationTest
     get "/do/generated/download/#{KRandom.random_api_key}"
     assert_select("h1", "File not available")
     assert_select("div.z__general_alert", "This file is no longer available.")
+    # Layout options
+    get_302 "/do/test-generated-file/convert-to-pdf-redirect-to-built-in-ui/#{word_file.digest}?minimal=1"
+    get response['location']
+    assert response.body =~ /z__minimal_layout/
+    assert response.body !~ /z__generated_download_close_covering_on_finish/
+    run_all_jobs :expected_job_count => 1
+    get_302 "/do/test-generated-file/convert-to-pdf-redirect-to-built-in-ui/#{word_file.digest}?minimal=1&closeButton=1"
+    get response['location']
+    assert response.body =~ /z__minimal_layout/
+    assert response.body =~ /z__generated_download_close_covering_on_finish/
+    run_all_jobs :expected_job_count => 1
 
     # Check wait UI
     get_302 "/do/test-generated-file/convert-to-pdf-redirect-to-wait-ui/#{word_file.digest}"
@@ -67,6 +78,7 @@ class JavaScriptGeneratedFileTest < IntegrationTest
     assert redirected_to =~ /\A\/do\/generated\/wait\/([a-zA-Z0-9_-]{32,})\z/
     identifier = $1
     get redirected_to
+    assert response.body =~ /z__action_entry_points/  # standard layout
     assert_select("h1", "Wait&gt;")
     assert_select("#z__heading_back_nav a", "TEST BACK2&gt;")
     assert_select("a[href=/do/test-back-link2]", "TEST BACK2&gt;")

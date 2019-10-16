@@ -39,6 +39,7 @@ module KHooks
     h.argument    :previous,    KObject,  "The previous version of the object, or null"
     h.result      :replacementObject, KObject, nil, "An object to store in place of the edited object, or null for no effect"
     h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of the newly edited object"
+    h.result      :continueEditingWithMessage, String, nil, "Set to a string to prevent the object being saved, and present it for editing again with the given message displayed prominently."
   end
 
   define_hook :hObjectDeleteUserInterface do |h|

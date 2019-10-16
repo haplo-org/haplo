@@ -6,14 +6,21 @@
 
 module SearchHelper
 
-  def search_sort_choices(search_spec, choices)
+  SEARCH_SORT_CHOICES_TRANSLATION = {
+    :relevance => :SearchSortChoice_relevance,
+    :title => :SearchSortChoice_title,
+    :date => :SearchSortChoice_date
+  }
+
+  def search_sort_choices(search_spec, choices, *without_params)
     html = ''
     sort = search_spec[:sort]
+    base_params = search_url_params(search_spec, :sort, *without_params)
     choices.each do |choice|
       if sort == choice
-        html << " <span>#{choice}</span>"
+        html << " <span>#{T(SEARCH_SORT_CHOICES_TRANSLATION[choice])}</span>"
       else
-        html << %Q! <a href="/search?sort=#{choice}&#{search_url_params(search_spec, :sort)}">#{choice}</a>!
+        html << %Q! <a href="?sort=#{choice}&#{base_params}">#{T(SEARCH_SORT_CHOICES_TRANSLATION[choice])}</a>!
       end
     end
     html

@@ -78,6 +78,7 @@ class User < ActiveRecord::Base
       end
     end
     if self.kind == KIND_USER && @last_password_failed_validation
+      # TODO: Localise SECURITY_REQUIREMENTS_TEXT in user validation
       errors.add(:password, SECURITY_REQUIREMENTS_TEXT)
     end
     if self.email =~ /\s/
@@ -156,7 +157,7 @@ class User < ActiveRecord::Base
   end
 
   # Password criteria
-  SECURITY_REQUIREMENTS_TEXT = 'must contain at least 8 characters and include both letters and numbers'
+  SECURITY_REQUIREMENTS_TEXT = 'must contain at least 8 characters and include both letters and numbers' # TODO: Localise with :Authentication_Password_Requirement_Statement
   def self.is_password_secure_enough?(pw)
     return false unless pw.class == String
     without_spaces = pw.gsub(/\s/,'')
@@ -371,7 +372,7 @@ class User < ActiveRecord::Base
   def all_users_and_groups_with_is_member_flag
     return [] unless kind.to_i == KIND_GROUP
     User.find(:all,
-          :select => "id,name,kind,id IN (SELECT user_id FROM user_memberships WHERE member_of = #{self.id} AND is_active) AS is_member",
+          :select => "id,name,kind,email,id IN (SELECT user_id FROM user_memberships WHERE member_of = #{self.id} AND is_active) AS is_member",
           :conditions => "kind <= #{KIND__MAX_ACTIVE}",
           :order => 'kind DESC,lower(name)')
   end

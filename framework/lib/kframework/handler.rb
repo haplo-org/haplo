@@ -22,12 +22,16 @@ class KFramework
   # Interface to the request object from the Java web server
   class JavaRequest
     include RequestMixin
-    def initialize(servlet_request, body, is_ssl)
+    def initialize(servlet_request, body_as_bytes, body_spill_pathaname, is_ssl)
       @servlet_request = servlet_request
-      @body = body
+      @body_as_bytes = body_as_bytes
+      @body_spill_pathaname = body_spill_pathaname
+      # Turn the byte[] body from java into a string
+      @body = (body_as_bytes == nil) ? '' : String.from_java_bytes(body_as_bytes)
+      @body.force_encoding(REQUEST_ENCODING)
       @is_ssl = is_ssl
     end
-    attr_reader :body
+    attr_reader :body, :body_as_bytes, :body_spill_pathaname
     def path
       @path ||= @servlet_request.getRequestURI()
     end
@@ -109,12 +113,20 @@ class KFramework
     end
   end
 
-  def handle_from_java(servlet_request, application, body_as_bytes, is_ssl, file_uploads)
+  def get_directory_for_request_spill_file
+    FILE_UPLOADS_TEMPORARY_DIR
+  end
+
+  def request_large_body_spill_allowed(application_id, method, path)
+    KApp.in_application(application_id) do
+      runtime = KJSPluginRuntime.current
+      !!runtime.runtime.callSharedScopeJSClassFunction("$Plugin", "$requestLargeBodySpillAllowed", [method, path])
+    end
+  end
+
+  def handle_from_java(servlet_request, application, body_as_bytes, body_spill_pathaname, is_ssl, file_uploads)
     begin
-      # Turn the byte[] body from java into a string
-      body = (body_as_bytes == nil) ? '' : String.from_java_bytes(body_as_bytes)
-      body.force_encoding(REQUEST_ENCODING)
-      request = JavaRequest.new(servlet_request, body, is_ssl)
+      request = JavaRequest.new(servlet_request, body_as_bytes, body_spill_pathaname, is_ssl)
       exchange = Exchange.new(application.getApplicationID(), request)
       exchange.annotations[:uploads] = file_uploads if file_uploads != nil
       handle_with_decode_and_catch(exchange)
@@ -173,8 +185,12 @@ class KFramework
     # Sniff the content, rather than trusting content-type headers, as clients may not do this correctly.
     if exchange.request.post?
       body = exchange.request.body
-      unless body.empty? || body =~ /\A\s*[\<\{\[]/
-        params.merge!(Utils.parse_nested_query(body))
+      begin
+        unless body.empty? || body =~ /\A\s*[\<\{\[]/
+          params.merge!(Utils.parse_nested_query(body))
+        end
+      rescue => e
+        KApp.logger.warn("Request body couldn't be parsed as parameters: #{e.message}")
       end
     end
     # Add params from file upload?

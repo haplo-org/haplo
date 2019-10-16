@@ -26,9 +26,12 @@ public interface Framework {
     Application.DynamicFileFactory getDynamicFileFactory();
 
     // Request handling
-    Response handleFromJava(HttpServletRequest request, Application app, byte[] body, boolean isRequestSSL, FileUploads fileUploads);
+    Response handle_from_java(HttpServletRequest request, Application app, byte[] body, String bodySpillPathname, boolean isRequestSSL, FileUploads fileUploads);
 
     void handleSaml2IntegrationFromJava(String path, HttpServletRequest request, HttpServletResponse response, Application app);
+
+    String get_directory_for_request_spill_file();
+    boolean request_large_body_spill_allowed(long applicationId, String method, String path);
 
     String checkHealth() throws Exception;
 
@@ -38,6 +41,9 @@ public interface Framework {
     // Installation properties
     String getInstallProperty(String name, String defaultValue);
     boolean pluginDebuggingEnabled();
+
+    // JavaScript runtime
+    String runtimeSharedJavaScriptInitialiser();
 
     // Development mode support
     boolean devmodeCheckReload();

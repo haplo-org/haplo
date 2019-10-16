@@ -186,7 +186,7 @@ class Saml2ServiceProviderController
       # Create a controller and set as active request to enable it to use the normal handling
       # infrastructure, even though this controller is 'special'. Some poking is required to
       # get the current user for this session.
-      exchange = KFramework::Exchange.new(KApp.current_application, KFramework::JavaRequest.new(request, '', true))
+      exchange = KFramework::Exchange.new(KApp.current_application, KFramework::JavaRequest.new(request, nil, nil, true))
       session = ApplicationController.make_background_controller(User.cache[User::USER_ANONYMOUS], exchange).session
       user = User.cache[session[:uid] || User::USER_ANONYMOUS]
       AuthContext.with_user(user) do

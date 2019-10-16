@@ -12,6 +12,7 @@ require 'js_support/kjavascript_plugin'
 require 'js_support/javascript_api_version'
 require 'js_support/js_template'
 require 'js_support/js_ruby_templates'
+require 'js_support/js_i18n_text_support'
 # Interfaces to Ruby code for JavaScript
 require 'js_support/js_convert_support'
 require 'js_support/js_objref_support'
@@ -186,6 +187,21 @@ class JSSupportRoot
       continuation.setAttribute(JS_IDENTIFIER_CONTINUATION_ATTRIBUTE, identifier.to_java_string)
     end
     continuation
+  end
+
+  def fetchRequestBodyBinaryData(info)
+    c = controller
+    raise "Cannot fetch request information - bad state or not in request context" unless c
+    info.bytes = c.request.body_as_bytes
+    info.spillFilePathname = c.request.body_spill_pathaname
+    info.mimeType = c.request.headers['Content-Type'] || "application/octet-stream"
+    filename = 'data.bin';
+    disposition = c.request.headers['Content-Disposition']
+    if disposition && disposition =~ /\bfilename=".*?([^\/\\]+?)"/
+      filename = $1
+    end
+    info.filename = filename;
+    nil
   end
 
   def getSessionJSON()
@@ -365,6 +381,37 @@ class JSSupportRoot
 
   def reloadUserSchema
     KNotificationCentre.notify(:javascript_plugin_reload_user_schema)
+  end
+
+  def reloadPlatformDynamicFiles
+    KDynamicFiles.invalidate_all_cached_files_in_current_app
+  end
+
+  # -------------------------------------------------------------------------------------------------------
+  # i18n
+
+  def i18n_getCurrentLocaleId
+    # Try getting the locale from the session
+    c = controller
+    if c
+      locale = c.locale
+      return locale.locale_id if locale
+    end
+    # Otherwise get it from the user, defaulting to the default locale
+    AuthContext.user.get_user_data(UserData::NAME_LOCALE) || KLocale::DEFAULT_LOCALE.locale_id
+  end
+
+  def i18n_setSessionLocaleId(locale_id)
+    raise JavaScriptAPIError, "Unknown locale: #{locale_id}" unless KLocale::ID_TO_LOCALE[locale_id]
+    c = controller
+    raise JavaScriptAPIError, "Can't set current locale without a session" unless c
+    c.session_create if c.session.discarded_after_request?
+    c.session[:locale] = locale_id
+  end
+
+  def i18n_getRuntimeStringsForLocale(locale_id)
+    raise JavaScriptAPIError, "Unknown locale: #{locale_id}" unless KLocale::ID_TO_LOCALE[locale_id]
+    JSUserI18nTextSupport.get_runtime_strings_for_locale(locale_id)
   end
 
   # -------------------------------------------------------------------------------------------------------

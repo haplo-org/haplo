@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
+// TODO I18N: client side localisation of docstore comments
+
 (function($) {
 
     $(document).ready(function() {

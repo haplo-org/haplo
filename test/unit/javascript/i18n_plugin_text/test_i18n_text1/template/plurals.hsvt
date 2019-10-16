@@ -1,0 +1,4 @@
+<p>
+  i("There {,plural,one{is} other{are}} {} {,plural,one{item} other{items}}")
+    { count }
+</p>

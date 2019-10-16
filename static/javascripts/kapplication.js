@@ -1,4 +1,4 @@
-/*global Ks, KTray */
+/*global Ks, KTray, KUIText */
 
 /* Haplo Platform                                     http://haplo.org
  * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
@@ -63,6 +63,21 @@ var KApp = (function($) {
 
         // Quick utility accessors
         j__callWhenAjaxProved: function(fn) { ajax_proof.push(fn); }
+    };
+
+    // ----------------------------------------------------------------------------------------------------
+    //             Localised text
+    // ----------------------------------------------------------------------------------------------------
+
+    app.j__text = function(key, replacements) {
+        var text = KUIText[key] || '????';
+        if(replacements) {
+            _.each(replacements, function(value,key) {
+                text = text.replace("$"+key, value);
+            });
+        }
+        text = text.replace(/ +/g,' '); // callers assume only spaces are trimmed
+        return text;
     };
 
     // ----------------------------------------------------------------------------------------------------

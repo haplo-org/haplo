@@ -186,8 +186,9 @@ DocumentViewer.prototype.__defineGetter__("_viewerShowChangesFromDocumentDeferre
 });
 
 DocumentViewer.prototype.__defineGetter__("_uncommittedChangesWarningText", function() {
+    let i = P.locale().text("template");
     return (this.options.uncommittedChangesWarningText === undefined) ?
-        "You've made some changes, but they're not visible to anyone else yet." :
+        i["You've made some changes, but they're not visible to anyone else yet."] :
         this.options.uncommittedChangesWarningText;
 });
 

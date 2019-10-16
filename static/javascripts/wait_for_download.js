@@ -15,13 +15,19 @@
             var container = this;
             var identifier = container.getAttribute('data-identifier');
             var progress = 0;
+            var failWithMessage = function(key) {
+                complete = true;
+                progress = 1.0;
+                $('.z__wait_for_download_inner', container).text(KApp.j__text(key));
+                $(container).addClass('z__wait_for_download_done');
+            };
             if(identifier) {
                 var complete = false;
 
                 var getStatus = function() {
                     $.get("/api/generated/availability/"+identifier+"?t="+(new Date()).getTime(), function(data) {
                         if(data.status === "unknown") {
-                            $(container).text("File generation failed.");
+                            failWithMessage('GenFileFail');
 
                         } else if(data.status === "available") {
                             complete = true;
@@ -29,7 +35,7 @@
                                 window.location = data.redirectTo;
                             } else {
                                 var filename = $('.z__wait_for_download_inner span', container).text();
-                                $('.z__wait_for_download_inner', container).text('Download started: '+filename);
+                                $('.z__wait_for_download_inner', container).text(KApp.j__text('GenFileDownStart', {FILE:filename}));
                                 window.setTimeout(function() {
                                     // No easy/reliable way to find out when download complete, so change to a 
                                     // vaguely ambigous display a few seconds later, and hope it finished.
@@ -39,6 +45,12 @@
                                     src: data.url,
                                     style: "visibility:hidden;display:none"
                                 }).appendTo($('#z__page'));
+                                // UI for closing covering
+                                $('#z__generated_download_close_covering_on_finish').show();
+                                $('#z__generated_download_close_covering_on_finish a').on('click', function(evt) {
+                                    evt.preventDefault();
+                                    window.parent.KApp.j__closeCovering();
+                                });
                             }
 
                         } else {
@@ -47,10 +59,7 @@
                         }
 
                     }).fail(function() {
-                        complete = true;
-                        progress = 1.0;
-                        $('.z__wait_for_download_inner', container).text("Error preparing file.");
-                        $(container).addClass('z__wait_for_download_done');
+                        failWithMessage('GenFileErr');
                     });
                 };
                 getStatus();

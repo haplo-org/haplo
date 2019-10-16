@@ -287,6 +287,7 @@ class AuthenticationController < ApplicationController
         session[:impersonate_uid] = impersonate_uid
         history = (session[:impersonate_history] ||= [])
         history.push(impersonate_uid) unless history.include?(impersonate_uid)
+        session[:locale] = nil
         rdr = params[:rdr]
         redirect_to((rdr != nil && rdr =~ SAFE_REDIRECT_URL_PATH) ? rdr : '/')
       end
@@ -300,6 +301,7 @@ class AuthenticationController < ApplicationController
   def handle_end_impersonation
     if request.post?
       session.delete(:impersonate_uid)
+      session[:locale] = nil
       redirect_to '/' # as good as anywhere
     end
   end
@@ -328,7 +330,7 @@ class AuthenticationController < ApplicationController
   _PoliciesRequired :not_anonymous
   def handle_change_password
     if @request_user.kind == User::KIND_SUPER_USER
-      @change_msg = "Can't change super user password."
+      @change_msg = T(:Authentication_Can_t_change_super_user_password_)
       return render :action => 'change_password_disabled'
     end
 
@@ -382,7 +384,7 @@ class AuthenticationController < ApplicationController
           # Send an email explaining there isn't something at that address
           template.deliver(
             :to => email,
-            :subject => "Change #{KApp.global(:product_name)} password",
+            :subject => @locale.text_format(:Authentication_Recovery_Email_Subject_Change_password, KApp.global(:product_name)),
             :message => render(:partial => 'email_recovery_no_account')
           )
         else
@@ -392,7 +394,7 @@ class AuthenticationController < ApplicationController
 
           template.deliver(
             :to => user_record,
-            :subject => "Change #{KApp.global(:product_name)} password",
+            :subject => @locale.text_format(:Authentication_Recovery_Email_Subject_Change_password, KApp.global(:product_name)),
             :message => render(:partial => 'email_recovery')
           )
         end

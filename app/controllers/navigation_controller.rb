@@ -33,11 +33,15 @@ class NavigationController < ApplicationController
   # ---------------------------------------------------------------------------------------------------------------
 
   def handle_left_api
+    # Force locale to the locale in the URL, so changes of the locale in the session reflect in the navigation,
+    # and the locale is part of the key in the browser's cache.
+    @locale = KLocale::ID_TO_LOCALE[params[:id]] || KLocale::DEFAULT_LOCALE
+
     nav_groups = navigation_for_user(@request_user, :expand_plugin_positions)
 
     if @request_user.permissions.something_allowed?(:read)
       # If the current user can read anything, a home link needs to go at the top
-      nav_groups.unshift({:items => [['/', 'Home']]})
+      nav_groups.unshift({:items => [['/', T(:Navigation_Home)]]})
     end
 
     # Sent to client as executable JavaScript file with long expiry time, version number used to invalidate

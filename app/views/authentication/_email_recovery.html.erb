@@ -1,12 +1,12 @@
 
 <p><%= @name %>,</p>
 
-<p>Someone, hopefully you, submitted a password change request at your <%= KApp.global(:product_name) %> system.</p>
+<p><%= @locale.text_format(:Authentication_Recovery_Someone_submitted_a_password_change, KApp.global(:product_name)) %></p>
 
-<p class="button"><a href="<%= @url %>">Click here to continue the process.</a></p>
+<p class="button"><a href="<%= @url %>"><%= @locale.text(:Authentication_View_Click_here_to_continue_the_process_) %></a></p>
 
-<p>You will be asked to select a new password.</p>
+<p><%= @locale.text(:Authentication_View_You_will_be_asked_to_select_a_new___) %></p>
 
-<p>If you did not request this email, please ignore it and accept our apologies.</p>
+<p><%= @locale.text(:Authentication_View_If_you_did_not_request_this_email___) %></p>
 
 <p>If you get many of these emails, please reply to this email and we will resolve the issue.</p>

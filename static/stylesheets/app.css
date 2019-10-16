@@ -899,28 +899,45 @@ span.z__button_link_disabled {
 }
 
 /* generic UI for choosing between options */
-a.z__ui_choose_option_entry, a.z__ui_choose_option_entry:visited {
+a.z__ui_choose_option_entry,
+a.z__ui_choose_option_entry:visited,
+span.z__ui_choose_option_entry {
     display: block;
     position: relative;
-    padding: 0 32px 8px 48px;
+    padding: 0 31px 6px 47px;
     margin: 0 0 8px 0;
     text-decoration: none;
-    color: #888;
+    color: #555;
+    border: 1px solid transparent;
+    border-radius: 4px;
 }
 a.z__ui_choose_option_entry:hover {
     background: #eee;
+    border-color: #eee;
 }
-a.z__ui_choose_option_entry span, a.z__ui_choose_option_entry:visited span {
+a.z__ui_choose_option_entry span,
+a.z__ui_choose_option_entry:visited span,
+span.z__ui_choose_option_entry span {
     display: block;
     padding: 4px 0 0 0;
 }
 .z__ui_choose_option_entry span.z__ui_choose_option_entry_name {
     font-size: $FONT_SIZE_LARGE;
     padding-top: 8px;
+}
+a.z__ui_choose_option_entry span.z__ui_choose_option_entry_name {
     color: $ANCHOR_COLOUR;
+}
+span.z__ui_choose_option_entry span.z__ui_choose_option_entry_name {
+    color: #222;
 }
 a.z__ui_choose_option_entry_highlight {
     font-weight: bold;
+}
+
+span.z__ui_choose_option_entry.z__selected {
+    background: #f8f8f8;
+    border-color: #ddd;
 }
 
 .z__ui_choose_container .z__ui_indicator {
@@ -934,6 +951,10 @@ a.z__ui_choose_option_entry_highlight {
     left: 8px;
     font-size: 24px;
 }
+.z__ui_choose_container_selected_item .z__ui_indicator:before {
+    /* When using the 'selected item' template, use an open ring instead of the full circle, so it doesn't look so clickable */
+    content: "\e500";
+}
 .z__ui_choose_container .z__ui_indicator:after {
     position: absolute;
     top: 14px;
@@ -942,6 +963,10 @@ a.z__ui_choose_option_entry_highlight {
 }
 .z__ui_choose_container .z__ui_indicate_arrow_back:after {
     left: 17px;
+}
+
+.z__ui_choose_option_entry_extra_ui_container {
+    margin: 8px 0 12px 0;
 }
 
 /* drag handles for reordering lists, for example in tracker current work listings */
@@ -1388,6 +1413,9 @@ span.z__drag_handle {  /* drag handle */
     margin: 0 0 1em 0;
 }
 
+#z__ws_content table.z__keyvalue_table tr td {
+    border-style: none;
+}
 
 /* ---------------------------------------------------------------------------- */
 
@@ -1658,6 +1686,20 @@ body.z__minimal_layout {
 
 .z__acknowledgment_notice .z__acknotice_go_away a {
     color: #888;
+}
+
+/* std:ui:request */
+
+.z__user_action_request {
+    background: #fffdd0;
+    border-radius: 4px;
+    border: 1px solid #eee;
+    padding: 8px 20px;
+    margin: 20px 0 24px 0;
+    box-shadow: 1px 1px 5px rgba(0,0,0,0.05);
+}
+.z__user_action_request p {
+    margin: 4px 0;
 }
 
 /* std:ui:tabs:links */

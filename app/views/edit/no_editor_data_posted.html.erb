@@ -1,3 +1,3 @@
-<% @page_title = "Error" %>
-<div class="z__general_alert">Changes not saved.</div>
-<p>Your browser didn't send anything to the server. Please make sure you have JavaScript enabled and wait for the editor to load.</p>
+<% @page_title = T(:Edit_Title_Error) %>
+<div class="z__general_alert"><%= @locale.text(:Edit_View_Changes_not_saved_) %></div>
+<p><%= @locale.text(:Edit_View_Your_browser_didn_t_send_anything_to___) %></p>

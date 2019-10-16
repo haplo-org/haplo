@@ -99,6 +99,15 @@ module JSUserSupport
     user.policy.is_anonymous?
   end
 
+  def self.getLocaleId(user)
+    user.get_user_data(UserData::NAME_LOCALE) || KLocale::DEFAULT_LOCALE.locale_id
+  end
+
+  def self.setLocaleId(user, locale_id)
+    raise JavaScriptAPIError, "Unknown locale: #{locale_id}" unless KLocale::ID_TO_LOCALE[locale_id]
+    user.set_user_data(UserData::NAME_LOCALE, locale_id)
+  end
+
   def self.getUserDataJSON(user)
     user.get_user_data(UserData::NAME_JAVASCRIPT_JSON)
   end

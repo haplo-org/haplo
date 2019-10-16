@@ -27,13 +27,6 @@ var KEdType;
 /*CONST*/ VL_QUALIFIER    = 1;
 /*CONST*/ VL__START       = 2;    // index of first type specific bit of data
 
-// Text constants
-/*CONST*/ EDITOR_TOOLBAR_ADD_ATTRIBUTE = 'Add field';
-/*CONST*/ SUBJECT_CLICK_TO_SET = '<i>click to set</i>';
-/*CONST*/ OBJREF_LOOKUP_NO_ITEMS = '<div class="z__editor_objref_lookup_results_not_found_message"><i>No items found.</div>';
-/*CONST*/ OBJREF_LOOKUP_UNCONTROLLED = 'Enter as free text (if not found)';
-/*CONST*/ OBJREF_LOOKUP_CREATE_NEW = 'Create new ';
-
 // Root type info in schema
 /*CONST*/ SCHEMATYPE_ROOT_SUBTYPES            = 0;
 /*CONST*/ SCHEMATYPE_ROOT_ROOT_REF            = 1;
@@ -626,7 +619,7 @@ _.extend(KEdObjRef.prototype, {
         // If there's some text in the field which hasn't been looked up and selected, it's an error
         var v = $('#'+this.q__domId+'_i').val();
         if(!this.p__objref && v && v !== '') {
-            return "A choice must be selected: choose from the list.";
+            return KApp.j__text('EditorErrSelectChoice');
         }
         return null;
     },
@@ -877,7 +870,7 @@ _.extend(KEdObjRef.prototype, {
         // Make the html for display
         var h = '<div class="z__editor_objref_lookup_results_container">';// close /div on innerHTML property setting
         if(items.length === 0) {
-            h += OBJREF_LOOKUP_NO_ITEMS;
+            h += '<div class="z__editor_objref_lookup_results_not_found_message"><i>'+KApp.j__text('EditorLookupNoItems')+'</i></div>';
         } else {
             _.each(items, function(i) {
                 // 0 objref, 1 title of object, 2 optional alternative title for autocomplete list
@@ -890,13 +883,15 @@ _.extend(KEdObjRef.prototype, {
         if(!this.p__keditorValueControl.p__parentContainer.p__keditor.q__noCreateNewObjects) {
             h += '<div class="z__editor_objref_lookup_commands_container">';
             if(this.p__keditorValueControl.q__defn.p__controlRelaxed) {
-                h += '<div><a href="#" id="'+i+'_u" class="z__editor_objref_cmd_uncontrolled">'+OBJREF_LOOKUP_UNCONTROLLED+'</a></div>';
+                h += '<div><a href="#" id="'+i+'_u" class="z__editor_objref_cmd_uncontrolled">'+KApp.j__text('EditorLookupCreateUnctl')+'</a></div>';
             }
             // Check create new is generally allowed, then that the attribute is in the list of objref attributes that the user
             // has permission to create at least one of the types. List calculated by schema controller.
             if(!this.p__disablePopUpsToCreateNewObjects &&
                 (-1 !== _.indexOf(KEditorSchema.p__schema.p__userAttrCreateNewAllowed, this.p__keditorValueControl.q__defn.p__desc))) {
-                h += '<div><a href="#" id="'+i+'_c" class="z__editor_objref_cmd_new">'+escapeHTML(OBJREF_LOOKUP_CREATE_NEW+this.p__keditorValueControl.q__defn.p__name)+'</a></div>';
+                h += '<div><a href="#" id="'+i+'_c" class="z__editor_objref_cmd_new">'+
+                        KApp.j__text('EditorLookupCreateNew', {TYPE:escapeHTML(this.p__keditorValueControl.q__defn.p__name)})+
+                    '</a></div>';
             }
             h += '</div>';
         }
@@ -1011,7 +1006,7 @@ _.extend(KEdObjRefDropDown.prototype, {
         // Write HTML output
         var h = [
             '<div class="z__editor_objref_ctrl_container" id="', i, '">',
-            '<div class="z__editor_objref_list_ui_styles"><select id="', i, '_d" tabindex="1"><option value="">  -- choose -- </option>'
+            '<div class="z__editor_objref_list_ui_styles"><select id="', i, '_d" tabindex="1"><option value="">  '+KApp.j__text('EditorDropdownChoose')+' </option>'
         ];
         _.each(options, function(o) {
             // o is [objref, title, selected]
@@ -1318,7 +1313,7 @@ _.extend(KEdSubject.prototype, {
         var h = '<div class="z__editor_link_control" id="'+i+'"><div class="z__editor_link_control_container"><a href="#" id="'+i+'_t">';
         var t = this.p__objectTitle;
         if(!t) {
-            h += SUBJECT_CLICK_TO_SET;
+            h += '<i>'+KApp.j__text('EditorClickToSet')+'</i>';
         } else {
             h += escapeHTML(t);
         }
@@ -1422,7 +1417,7 @@ var FILE_COMPONENT_EDIT = {
     'filename': {
         j__prompt: function(value) {
             var f = splitFilename(value.p__fileInfo.filename);
-            return ["Edit filename (will be automatically given a ."+f.e+" extension)", f.f];
+            return [KApp.j__text('EditorFileEditName', {EXT:f.e}), f.f];
         },
         j__adjustText: function(value, text) {
             return text.replace(/[\s+]/g,' ') + '.' +splitFilename(value.p__fileInfo.filename).e;
@@ -1430,7 +1425,7 @@ var FILE_COMPONENT_EDIT = {
     },
     'version': {
         j__prompt: function(value) {
-            return ["Edit version number", value.p__fileInfo.version];
+            return [KApp.j__text('EditorFileEditVer'), value.p__fileInfo.version];
         },
         j__adjustText: function(value, text) {
             return text.replace(/[^A-Za-z0-9\.]/g,'.');
@@ -1458,7 +1453,7 @@ _.extend(KEdFile.prototype, {
         var html = ['<div id="'+i+'" class="z__editor_attached_file'];
         if(!this.p__encodedFileJson) { html.push(" z__editor_attached_file_uploading"); }
         html.push('">',
-            (this.q__uploadingFile ? '' : '<div class="z__editor_attached_file_version_holder"><input type="file">New version...</div>'),
+            (this.q__uploadingFile ? '' : '<div class="z__editor_attached_file_version_holder"><input type="file">'+KApp.j__text('EditorFileNewVer')+'</div>'),
             this.p__iconHTML, '<span><a href="#" data-edit="filename">',
                 escapeHTML(this.q__uploadingFile ? this.q__uploadingFile.name : this.p__fileInfo.filename),
             '</a></span> &nbsp; <span class="z__editor_attached_file_version">(<a href="#" data-edit="version">',
@@ -1555,7 +1550,7 @@ _.extend(KEdFile.prototype, {
     },
     j__getBusyMessage: function() {
         // If there's no JSON, a file is being uploaded
-        return this.p__encodedFileJson ? null : 'A file is currently being uploaded. Please wait until it has finished, and try again.';
+        return this.p__encodedFileJson ? null : KApp.j__text('EditorErrFileUploading');
     }
 });
 
@@ -1661,14 +1656,8 @@ var KEdPersonName = function(encoded_name) {
     this.q__encodedName = encoded_name;
 };
 _.extend(KEdPersonName.prototype, KControl.prototype);
-// Names of the cultures
-var q__PERSON_NAME_CULTURE_NAME = {w:'Western',L:'Western list',e:'Eastern'};
 // Order of fields for the cultures
 var q__PERSON_NAME_CULTURE_ORDER = {w:['t','f','m','l','s'],L:['l','f','m','t','s'],e:['t','l','m','f','s']};
-// Display names for the fields for each culture
-var q__WESTERN_FIELD_NAMES = {t:'Title',f:'First',m:'Middle',l:'Last',s:'Suffix'};
-var q__PERSON_NAME_CULTURE_FIELD_NAMES = {w:q__WESTERN_FIELD_NAMES,L:q__WESTERN_FIELD_NAMES,
-    e:{t:'Title',f:'Given',m:'Middle',l:'Family',s:'Suffix'}};
 // For working out the widths
 var q__PERSON_NAME_FIELD_SIZES = {t:1,f:4,m:3,l:4,s:2};
 // Implementation
@@ -1750,7 +1739,8 @@ _.extend(KEdPersonName.prototype, {
             var v = t.q__fields[field_name];
             if(v || t.q__cultureFields[t.q__culture][field_name]) {
                 // Create a control for this field
-                var c = new KCtrlTextWithInnerLabel(v || '', q__PERSON_NAME_CULTURE_FIELD_NAMES[t.q__culture][field_name], 15);
+                var fieldNameKey = 'PNameField_'+((t.q__culture === 'L') ? 'w' : t.q__culture)+'_'+field_name; // L uses w keys
+                var c = new KCtrlTextWithInnerLabel(v || '', KApp.j__text(fieldNameKey), 15);
                 controls.push(c);
                 fields.push(field_name);
                 size_total += q__PERSON_NAME_FIELD_SIZES[field_name];
@@ -1781,7 +1771,7 @@ _.extend(KEdPersonName.prototype, {
     j__cultureMenuContents: function() {
         var h = '';
         _.each(this.q__offerCultures, function(c) {
-            h += '<a href="#C'+c+'">'+q__PERSON_NAME_CULTURE_NAME[c]+'</a>';
+            h += '<a href="#C'+c+'">'+KApp.j__text('PNameCulture_'+c)+'</a>';
         });
         return h;
     },
@@ -1877,16 +1867,16 @@ _.extend(KEdPhone.prototype, {
         var number = stripString($('#'+this.q__domId+'_n').val());
         var extension = stripString(this.q__extControl.j__value());
         if(number === '' && extension !== '') {
-            return "A number must be entered, not just an extension.";
+            return KApp.j__text('EditorErrPhoneNum');
         }
         if(number.match(/\+/)) {
-            return "Numbers should not contain + symbols. Use the drop down box to select the country.";
+            return KApp.j__text('EditorErrPhoneNoPlus');
         }
         if(number.match(/[^0-9.,:\(\) \-]/)) {
-            return "Phone numbers should only contain numbers and spaces."; // not strictly true
+            return KApp.j__text('EditorErrPhoneChars');  // not strictly true
         }
         if(extension.match(/[^0-9a-zA-Z_ \-]/)) {
-            return "Extensions must only letters and digits.";
+            return KApp.j__text('EditorErrPhoneInvalidExt');
         }
         return null;
     },
@@ -1989,7 +1979,7 @@ var KEdAddress = function(encoded) {
 _.extend(KEdAddress.prototype, KControl.prototype);
 _.extend(KEdAddress.prototype, {
     // p__keditorValueControl -- should be set to KEdValue object containing this (done by default)
-    q__MAIN_FIELDS: ['Number / building name, Street','','City','County / State / Province','Postcode / Zip'],
+    q__MAIN_FIELDS: KApp.j__text('EditorAddressFields').split('|'),
     j__generateHtml2: function(i) {
         var html = '<div id="'+i+'" class="z__editor_address_field">';
         // Make the controls
@@ -2076,7 +2066,7 @@ j__makeValidatedKctrltext(T_IDENTIFIER_EMAIL_ADDRESS, {
         // Very simple regex should do the job well enough, don't want to be too strict
         var v = this.j__value();
         if(!(v.match(/\w/))) { return null; }   // don't complain about empty strings
-        return (v.match(/^[^\@\s]+\@[^\.\@\s]+\.[^\s\@]+$/)) ? null : "This is not a valid email address";
+        return (v.match(/^[^\@\s]+\@[^\.\@\s]+\.[^\s\@]+$/)) ? null : KApp.j__text('EditorErrPhoneInvalidEmail');
     }
 });
 
@@ -2118,7 +2108,7 @@ j__makeValidatedKctrltext(T_IDENTIFIER_CONFIGURATION_NAME, {
     },
     j__validate: function() {
         var v = this.j__value();
-        return (!(v) || (v.match(/^[a-zA-Z0-9_-]+\:[:a-zA-Z0-9_-]+$/))) ? null : "This is not a valid configuration name";
+        return (!(v) || (v.match(/^[a-zA-Z0-9_-]+\:[:a-zA-Z0-9_-]+$/))) ? null : KApp.j__text('EditorErrPhoneInvalidConfigName');
     }
 });
 
@@ -2133,7 +2123,22 @@ j__makeValidatedKctrltext(T_INTEGER,{
     j__validate: function() {
         var v = this.j__valueSuper();
         if(!v || v.match(/^\s*\d*\s*$/)) {return null;}    // empty string, all whitespace, or valid number
-        return 'This is not a whole number. Do not use symbols or decimal points.';
+        return KApp.j__text('EditorErrPhoneInvalidNumber');
+    }
+});
+
+// ----------------------------------------------------------------------------------------------------
+
+j__makeValidatedKctrltext(T_NUMBER,{
+    j__processValue: function(value) {
+        var v = value.replace(/[^\d\.]+/g,'');
+        if(v === '') {return null;}
+        return v;
+    },
+    j__validate: function() {
+        var v = this.j__valueSuper();
+        if(!v || v.match(/^\s*\d*(\.\d+)?\s*$/)) {return null;}    // empty string, all whitespace, or valid number
+        return 'This is not a number. Do not use symbols.';
     }
 });
 
@@ -2528,7 +2533,7 @@ var j__keditorCheckNavigateAway = function(event) {
     }
     // Ask for confirmation if unsaved data
     if(q__editorToCheckOnNavigateAway && q__editorToCheckOnNavigateAway.j__shouldConfirmNavigateAway()) {
-        if(!confirm("Your changes have not been saved.\n\nDo you want to discard your changes?")) {
+        if(!confirm(KApp.j__text('EditorChangesNotSaved')+"\n\n"+KApp.j__text('EditorDiscardChanges'))) {
             KApp.p__disableScripedNavigateAway = true;
             event.preventDefault();
             return false;
@@ -2709,7 +2714,7 @@ _.extend(KEditor.prototype, {
             h += '</select> <input type="submit" value="Add" id="'+i+'_a">&nbsp; &nbsp; &nbsp;';
         }
 
-        return h+'</div></div><div id="'+i+'_p" class="z__editor_preview_container" style="display:none"></div><div id="'+i+'_w" style="display:none;padding:32px 32px">'+KApp.p__spinnerHtml+' Loading preview...</div></div>';
+        return h+'</div></div><div id="'+i+'_p" class="z__editor_preview_container" style="display:none"></div><div id="'+i+'_w" style="display:none;padding:32px 32px">'+KApp.p__spinnerHtml+' '+KApp.j__text('EditorLoadingPreview')+'</div></div>';
     },
     j__attach2: function(i) {
         // Attach controls
@@ -2821,7 +2826,7 @@ _.extend(KEditor.prototype, {
                         // A warning message is displayed to tell the user what just happened.
                         $('#'+i+'_p a').each(function() { this.target = '_blank'; this.rel = "noopener"; }).
                             click(function(event) {
-                                if(!confirm("This is a preview of a new item which has not yet been saved.\n\nClick OK to open this link in a new window or tab, then return to this window to save the new item.")) { event.preventDefault(); }
+                                if(!confirm(KApp.j__text('EditorPreviewOfItemNotSaved')+"\n\n"+KApp.j__text('EditorPreviewOpenLink'))) { event.preventDefault(); }
                             });
                         // Show it?
                         if(t.j__currentlyShowingPreview) {
@@ -2844,7 +2849,7 @@ _.extend(KEditor.prototype, {
         // Store flag
         this.j__currentlyShowingPreview = showPreview;
         // Show button accordingly
-        $('.z__editor_buttons_preview').val(this.j__currentlyShowingPreview ? '< Edit' : 'Preview');
+        $('.z__editor_buttons_preview').val(KApp.j__text(this.j__currentlyShowingPreview ? 'EditorButtonEdit' : 'EditorButtonPreview'));
     },
 
     // --------------------------------------------------------------------------------------
@@ -2938,7 +2943,7 @@ _.extend(KEditor.prototype, {
         }
         // Validate
         if(!(this.j__allValidate())) {
-            alert("Some of the fields have not been filled in correctly.\n\nPlease check the fields marked with error messages.");
+            alert(KApp.j__text('EditorErrFieldsNotFilled')+"\n\n"+KApp.j__text('EditorErrCheckFieldsWithErrs'));
             this.j__setForPreview(false);
             return false;
         }
@@ -2949,7 +2954,7 @@ _.extend(KEditor.prototype, {
             // then an error message should not be displayed.
             if(container) {
                 // Tell user, using the name of the title/alias of title container.
-                alert("You must enter a " + (container.q__defn.p__name.toLowerCase()) + '.');
+                alert(KApp.j__text('EditorErrTitleReq', {TITLE:container.q__defn.p__name.toLowerCase()}));
                 this.j__setForPreview(false);
                 return false;
             }

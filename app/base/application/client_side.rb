@@ -173,6 +173,7 @@ JAVASCRIPTS_IN_ORDER = [
     :impersonate_ui,
     # Plugin adaptor (possibly temporary)
     :plugin_adaptor,
+    :plugin_document_edit_control_support,
     # oForms client side support
     :oforms_jquery,
     :oforms_changes
@@ -304,6 +305,10 @@ CLIENT_SIDE_RESOURCES = {
   # Plugin adaptor (possibly temporary)
   :plugin_adaptor => {
     :javascript => [:plugin_adaptor]
+  },
+  :plugin_document_edit_control_support => {
+    :javascript => [:plugin_document_edit_control_support],
+    :resource => [:document_editor]
   },
 
   # oForms client side resources

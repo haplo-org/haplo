@@ -9,6 +9,7 @@ package org.haplo.jsinterface.app;
 import org.haplo.appserver.FileUploads;
 import org.haplo.jsinterface.template.TemplatePlatformFunctions;
 import org.haplo.jsinterface.KBinaryDataStaticFile;
+import org.haplo.i18n.RuntimeStrings;
 import java.sql.Connection;
 import org.eclipse.jetty.continuation.Continuation;
 
@@ -48,6 +49,14 @@ public interface AppRoot {
     public FileUploads fetchRequestUploads();
 
     public Continuation fetchRequestContinuation();
+
+    public static class RequestBodyBinaryDataInfo {
+        public byte[] bytes;
+        public String spillFilePathname;
+        public String mimeType;
+        public String filename;
+    }
+    public void fetchRequestBodyBinaryData(RequestBodyBinaryDataInfo info);
 
     public String getSessionJSON();
 
@@ -97,4 +106,12 @@ public interface AppRoot {
     public void reloadJavaScriptRuntimes();
 
     public void reloadUserSchema();
+
+    public void reloadPlatformDynamicFiles();
+
+    // i18n
+    public String i18n_getCurrentLocaleId();
+    public String i18n_setSessionLocaleId(String localeId);
+
+    public RuntimeStrings i18n_getRuntimeStringsForLocale(String localeId);
 }

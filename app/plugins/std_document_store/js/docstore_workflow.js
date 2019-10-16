@@ -20,6 +20,7 @@ P.use("std:workflow");
 //    showFormTitlesWhenEditing: show form titles in viewer (TODO consider making this the default)
 //    sortDisplay: The priority for displaying in list of forms, defaulting to
 //          priority if it's a number, or 100 otherwise.
+//    mustCreateNewVersion: selector to specify where a user MUST create a new version before transitioning
 //    ----------
 //          history/view/edit have the concept of "allowing for roles at selectors"
 //                  it is a list of these definition objects, which have properties:
@@ -43,11 +44,6 @@ P.use("std:workflow");
 //    viewCommentsOtherUsers: [{roles:[],selector:{}}, ...] - OPTIONAL, when a user can view the 
 //              comments of other users. Defaults to same value as viewComments.
 //    hideCommentsWhen: selector - OPTIONAL, defaults to {closed:true}
-//    ----------
-//    actionableUserMustReview: (selector) - a selector which specifies when the
-//              current actionable user should be shown the completed document and
-//              prompts the user to review/confirm before progressing use selector
-//              like {pendingTransitions:[...]} to narrow down to individual transitions
 
 // ----------------------------------------------------------------------------
 
@@ -159,6 +155,21 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
 
     // ------------------------------------------------------------------------
 
+    // Is there a version of the document which allows the transition to happen?
+    var docstoreHasExpectedVersion = function(M, instance) {
+        if(!instance.currentDocumentIsComplete) {
+            return false;
+        }
+        if(spec.mustCreateNewVersion && M.selected(spec.mustCreateNewVersion)) {
+            if(!instance.currentDocumentIsEdited) {
+                return false;
+            }
+        }
+        return true;
+    };
+
+    // ------------------------------------------------------------------------
+
     // If a document has been edited when a transition occurs, commit that new version
     workflow.observeExit({}, function(M, transition) {
         var instance = docstore.instance(M);
@@ -174,7 +185,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         if(t.optional) { return; }
         workflow.filterTransition(t.selector || {}, function(M, name) {
             var instance = docstore.instance(M);
-            if(!instance.currentDocumentIsComplete) {
+            if(!docstoreHasExpectedVersion(M, instance)) {
                 if(!t.transitionsFiltered || t.transitionsFiltered.indexOf(name) !== -1) {
                     return false;
                 }
@@ -184,7 +195,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
 
     // ------------------------------------------------------------------------
 
-    // If the user has to review the form before submission, redirect to a review page
+    // DEPRECATED FEATURE -- DO NOT USE IN NEW CODE
     if(spec.actionableUserMustReview) {
         workflow.transitionUI(spec.actionableUserMustReview, function(M, E, ui) {
             // if we've reviewed the forms then don't redirect:
@@ -202,7 +213,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                 M.pendingTransition;
             ui.redirect(spec.path+"/submit/"+M.workUnit.id);
         });
-    }
+    } // END DEPRECATED FEATURE -- DO NOT USE IN NEW CODE
 
     // ------------------------------------------------------------------------
 
@@ -212,7 +223,8 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             var instance = docstore.instance(M);
             var haveDocument = instance.hasCommittedDocument;
             if(instance.currentDocumentIsEdited && can(M, O.currentUser, spec, 'viewDraft')) {
-                var draftTitle = M.getTextMaybe("docstore-panel-draft-link:"+spec.name) || "Draft "+spec.title.toLowerCase();
+                let i = P.locale().text("template");
+                var draftTitle = M.getTextMaybe("docstore-panel-draft-link:"+spec.name) || i["Draft"]+" "+spec.title.toLowerCase();
                 builder.panel(spec.panel).
                     link(spec.priority || "default", spec.path+'/draft/'+M.workUnit.id, draftTitle);
             } else if(haveDocument && can(M, O.currentUser, spec, 'view')) {
@@ -225,13 +237,17 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
 
     workflow.actionPanelTransitionUI({}, function(M, builder) {
         if(can(M, O.currentUser, spec, 'edit')) {
+            let i = P.locale().text("template");
             var searchPath = "docstore-panel-edit-link:"+spec.name;
             var instance = docstore.instance(M);
-            var label = M.getTextMaybe(searchPath+":"+M.state, searchPath) || "Edit "+spec.title.toLowerCase();
-            var isDone = isOptional(M, O.currentUser, spec.edit) || instance.currentDocumentIsComplete;
+            var label = M.getTextMaybe(searchPath+":"+M.state, searchPath) || i["Edit"]+" "+spec.title.toLowerCase();
+            var isDone = isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
+            var editUrl = spec.path+'/form/'+M.workUnit.id;
+            // Allow other plugins to modify the URL needs to start the edit process
+            editUrl = M.workflowServiceMaybe("std:workflow:modify-edit-url-for-transition-ui", editUrl, docstore, spec) || editUrl;
             builder.
                 link(spec.editPriority || "default",
-                        spec.path+'/form/'+M.workUnit.id,
+                        editUrl,
                         label,
                         isDone ? "standard" : "primary");
         }
@@ -248,14 +264,21 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
 
     var editor = {
         finishEditing: function(instance, E, complete) {
+            var M = instance.key;
             if(complete && spec.onFinishPage) {
-                var redirectUrl = spec.onFinishPage(instance.key);
+                var redirectUrl = spec.onFinishPage(M);
                 if(redirectUrl) { return E.response.redirect(redirectUrl); }
             }
-            if(complete && !(instance.key.transitions.empty) && instance.key.workUnit.isActionableBy(O.currentUser)) {
-                E.response.redirect("/do/workflow/transition/"+instance.key.workUnit.id);
+            if(complete && !(M.transitions.empty) && M.workUnit.isActionableBy(O.currentUser)) {
+                var transitionUrl = {
+                    transition: spec.onFinishTransition,    // may be undefined
+                    extraParameters: {}
+                };
+                // Allow other plugins to set a transition or add things to the URL
+                M.workflowServiceMaybe("std:workflow:transition-url-properties-after-edit", transitionUrl, docstore, spec);
+                E.response.redirect(M.transitionUrl(transitionUrl.transition, transitionUrl.extraParameters));
             } else {
-                E.response.redirect(instance.key.url);
+                E.response.redirect(M.url);
             }
         },
         gotoPage: function(instance, E, formId) {
@@ -264,8 +287,8 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         render: function(instance, E, deferredForm) {
             var M = workflow.instance(O.work.load(E.request.extraPathElements[0]));
             E.render({
-                pageTitle: "Edit "+spec.title+": "+instance.key.title,
-                backLink: instance.key.url,
+                spec: spec,
+                instance: instance,
                 deferredForm: deferredForm,
                 deferredPreForm: spec.deferredPreForm ? spec.deferredPreForm(M) : null
             }, "workflow/form");
@@ -345,12 +368,13 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined
         });
         // std:ui:choose
+        let i = P.locale().text("template");
         var text = M.getTextMaybe("docstore-review-prompt:"+spec.name) ||
-            "Please review the form below.";
+            i["Please review the form below."];
         var options = [
             {
                 action: "",
-                label: M.getTextMaybe("docstore-review-continue:"+spec.name) || "Continue",
+                label: M.getTextMaybe("docstore-review-continue:"+spec.name) || i["Continue"],
                 parameters:{reviewed:true}
             }
         ];
@@ -358,15 +382,15 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             options.push({
                 action: "",
                 label: M.getTextMaybe("docstore-review-return-to-edit:"+spec.name) ||
-                    "Return to edit", parameters:{edit:true}
+                    i["Return to edit"], parameters:{edit:true}
             });
             text = text + "\n" + (M.getTextMaybe("docstore-review-editable:"+spec.name) ||
-                "Once submitted, the form is no longer editable.");
+                i["Once submitted, the form is no longer editable."]);
         }
         E.render({
             pageTitle: M.title+': '+(spec.title || '????'),
             backLink: M.url,
-            backLinkText: M.getTextMaybe("docstore-review-cancel:"+spec.name) || "Cancel",
+            backLinkText: M.getTextMaybe("docstore-review-cancel:"+spec.name) || i["Cancel"],
             text: text,
             options: options,
             ui: ui
@@ -384,13 +408,14 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             O.stop("Not permitted.");
         }
         var instance = docstore.instance(M);
+        let i = P.locale().text("template");
         var ui = instance.makeViewerUI(E, {
             showVersions: spec.history ? can(M, O.currentUser, spec, 'history') : true,
             showCurrent: true,
             viewComments: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'viewComments'),
             commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined,
             uncommittedChangesWarningText: M.getTextMaybe("docstore-draft-warning-text:"+
-                spec.name) || "This is a draft version"
+                spec.name) || i["This is a draft version"]
         });
         E.appendSidebarHTML(ui.sidebarHTML);
         E.render({
@@ -410,10 +435,11 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         if(!can(M, O.currentUser, spec, 'view')) {
             O.stop("Not permitted.");
         }
+        let i = P.locale().text("template");
         var instance = docstore.instance(M);
         var canEdit = can(M, O.currentUser, spec, 'edit');
         if(!(canEdit || instance.hasCommittedDocument)) {
-            O.stop("Form hasn't been completed yet.");
+            O.stop(i["Form hasn't been completed yet."]);
         }
         var ui = instance.makeViewerUI(E, {
             showVersions: spec.history ? can(M, O.currentUser, spec, 'history') : true,
@@ -421,8 +447,8 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             addComment: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'addComment'),
             privateCommentsEnabled: !!spec.viewPrivateComments, // if someone can see private comments, others can leave private comments
             addPrivateCommentOnly: can(M, O.currentUser, spec, 'addPrivateCommentOnly'),
-            privateCommentMessage: spec.privateCommentMessage || NAME("hres:document_store:private_comment_message", "This comment is private."),
-            addPrivateCommentLabel: spec.addPrivateCommentLabel || NAME("hres:document_store:add_private_comment_label", "Private comment"),
+            privateCommentMessage: spec.privateCommentMessage || NAME("hres:document_store:private_comment_message", i["This comment is private."]),
+            addPrivateCommentLabel: spec.addPrivateCommentLabel || NAME("hres:document_store:add_private_comment_label", i["Private comment"]),
             // TODO: review the inclusion of separate viewComments and viewCommentsOtherUsers. The below may need to be changed following this.
             viewComments: delegate.enablePerElementComments && (can(M, O.currentUser, spec, 'viewCommentsOtherUsers') || can(M, O.currentUser, spec, 'addComment')),
             commentsUrl: delegate.enablePerElementComments ? spec.path+"/comments/"+M.workUnit.id : undefined,

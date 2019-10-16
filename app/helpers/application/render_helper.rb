@@ -82,6 +82,7 @@ module Application_RenderHelper
 
     # Find template, searching for specifc styles, in plugins, and then the generic template for this style
     templates = OBJECT_TEMPLATES[style]
+    raise "Unknown object rendering style: #{style}" unless templates
     template = templates[render_type] || templates[:generic]
     raise 'could not find template' unless template != nil
 
@@ -548,7 +549,7 @@ module Application_RenderHelper
   # Useful helper functions for object rendering templates
 
   def obj_display_standard_table_rows(obj, schema, render_options = nil, allow_aliasing = true) # with a block for filtering attributes
-    # Transforming, delegating inclusion to caller, but not allowing flags in any case
+    # Transforming, delegating inclusion to caller
     transformed = KAttrAlias.attr_aliasing_transform(obj, schema, allow_aliasing) do |value,desc,qualifier,is_alias|
       yield(value,desc,qualifier)
     end
@@ -596,6 +597,48 @@ module Application_RenderHelper
       end
     end
     html << '<div class="z__keyvalue_divider"></div></div>'
+    html
+  end
+
+  def obj_display_standard_table(obj, schema, render_options = nil, allow_aliasing = true) # with a block for filtering attributes
+    # Transforming, delegating inclusion to caller
+    transformed = KAttrAlias.attr_aliasing_transform(obj, schema, allow_aliasing) do |value,desc,qualifier,is_alias|
+      yield(value,desc,qualifier)
+    end
+    transformed.delete_if { |toa| toa.attributes.empty? }
+    return '' if transformed.empty?
+
+    html = '<table class="z__keyvalue_table">'
+    transformed.each do |toa|
+      # If displaying with aliasing, don't display plain un-aliased type attributes where it would give no extra information
+      if allow_aliasing &&
+          (toa.descriptor.desc == A_TYPE) &&  # not an alias
+          (toa.attributes.length == 1)        # only a single Type attribute (when more than one, attr is relevant info)
+        next
+      end
+
+      html << '<tr class="z__keyvalue_row">'
+      last_index = toa.attributes.length - 1
+      toa.attributes.each_with_index do |vdq,index|
+        value,desc,qualifier = vdq
+        # Descriptor name?
+        html << %Q!<td class="z__keyvalue_col1">#{h(toa.descriptor.printable_name.to_s)}</td>! if index == 0
+        if qualifier != nil
+          qual_descriptor = schema.qualifier_descriptor(qualifier)
+          if qual_descriptor != nil
+            if index == 0
+              # Start a new row for qualifiers, with special spacer.
+              html << '</tr>'
+            end
+            html << %Q!<tr class="z__keyvalue_row"><td class="z__keyvalue_col1_qualifer">#{h(qual_descriptor.printable_name)}</td>!
+          end
+        end
+        # Value and finish row
+        html << '<td class="z__keyvalue_col2'
+        html << %Q!">#{render_value(value, obj, render_options, desc)}</td></tr>\n!
+      end
+    end
+    html << '</table>'
     html
   end
 

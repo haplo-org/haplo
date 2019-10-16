@@ -1,5 +1,5 @@
 <%
-  @page_title = 'Choose '+KApp.global(:name_latest_requests)
+  @page_title = @locale.text_format(:Latest_Title_Choose, KApp.global(:name_latest_requests))
   @breadcrumbs = [:account, ['/do/latest', KApp.global(:name_latest).capitalize]]
   client_side_resources :latest_user
 -%>
@@ -10,7 +10,7 @@
   <%
     is_user_requests = (:user_requests == tobjref)
     if is_user_requests
-      %><div class="z__latest_edit_type_heading">Your extra choices</div>
+      %><div class="z__latest_edit_type_heading"><%= @locale.text(:Latest_View_Your_extra_choices) %></div>
       <div class="z__latest_edit_checkbox_container" id="z__latest_edit_user_choices"><%
     else
       %><div class="z__latest_edit_type_heading"><%= h(@type_names[tobjref]) %></div>
@@ -44,6 +44,6 @@
 <% end -%>
 
 <div class="z__latest_edit_button">
-  <input type="submit" value="Save choices">
+  <input type="submit" value="<%= @locale.text(:Latest_View_Save_choices) %>">
 </div>
 </form>

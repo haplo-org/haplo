@@ -1,11 +1,11 @@
 <%
-  @page_title = 'Export tray contents'
-  @breadcrumbs = [:tray, ['/do/tray', 'Tray']]
+  @page_title = T(:Tray_Title_Export_tray_contents)
+  @breadcrumbs = [:tray, ['/do/tray', T(:Tray_Tray)]]
 %>
 
 <p>Export <%= tray_contents.length %> items in your tray.</p>
 
 <%= render :partial => 'shared/export_objects', :data_for_template => {
   :action => '/do/tray/export',
-  :button => 'Download tray contents'
+  :button => T(:Tray_Download_tray_contents)
 } %>

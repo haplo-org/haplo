@@ -250,6 +250,7 @@ final public class Parser {
 
     protected NodeFunction functionNodeFromName(String functionName) throws ParseException {
         switch(functionName) {
+            case "i":           return new NodeFunctionTranslatedString(null);
             case "within":      return new NodeFunctionWithin();
             case "if":          return new NodeFunctionConditional(false);
             case "unless":      return new NodeFunctionConditional(true);
@@ -265,9 +266,12 @@ final public class Parser {
             case "unsafeHTML":  return new NodeFunctionUnsafeHTML();
             case "unsafeAttributeValue": return new NodeFunctionUnsafeAttributeValue();
             case "yield":       return new NodeFunctionYield(Node.BLOCK_ANONYMOUS);
+            case "ifHasBlock":  return new NodeFunctionConditionalHasBlock(Node.BLOCK_ANONYMOUS);
             default: break;
         }
-        if(functionName.startsWith("template")) {
+        if(functionName.startsWith("i:")) {
+            return new NodeFunctionTranslatedString(functionName.substring(2));
+        } else if(functionName.startsWith("template")) {
             if((functionName.length() <= 9) || (functionName.charAt(8) != ':')) {
                 error("Bad included template function name, must start 'template:'");
             }
@@ -277,6 +281,11 @@ final public class Parser {
                 error("Bad named yield function name, must start 'yield:'");
             }
             return new NodeFunctionYield(functionName.substring(6));
+        } else if(functionName.startsWith("ifHasBlock")) {
+            if((functionName.length() <= 11) || (functionName.charAt(10) != ':')) {
+                error("Bad named ifHasBlock function name, must start 'ifHasBlock:'");
+            }
+            return new NodeFunctionConditionalHasBlock(functionName.substring(11));
         }
         return new NodeFunctionGeneric(functionName);
     }

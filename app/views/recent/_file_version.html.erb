@@ -8,6 +8,6 @@
 %>
   <%= img_tag_for_mime_type(file_identifier.mime_type) %> <a href="<%= object_urlpath(object) %>"><%= h(file_identifier.presentation_filename) %></a>
   <% if preview_url != nil %>
-    <a href="<%= preview_url %>" class="z__file_preview_link">Preview</a>
+    <a href="<%= preview_url %>" class="z__file_preview_link"><%= @locale.text(:Recent_View_Preview) %></a>
   <% end %><br>
 <i><%= h(file_identifier.log_message) %></i>

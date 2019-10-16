@@ -40,6 +40,31 @@
     color: #fff;
 }
 
+/* Transition page */
+
+.z__workflow_choosen_transition_container {
+    margin-bottom: 16px;
+}
+.z__workflow_confirm_container {
+    text-align: right;
+}
+.z__workflow_confirm_container a,
+.z__workflow_confirm_container a:visited {
+    color: #555;
+    margin-right: 24px;
+}
+.z__workflow_confirm_container input[type=submit] {
+    font-size: 1.05em;
+}
+
+.z__workflow_confirm_deferred_holder {
+    padding: 20px 0 16px 0;
+}
+.z__workflow_confirm_deferred_holder + .z__workflow_confirm_deferred_holder {
+    border-top: 1px solid #ddd;
+}
+
+
 /* Notes for workflow */
 
 .z__workflow_note_header {
@@ -52,6 +77,9 @@
     border-left: 5px solid #fff;
     line-height: 10px;
     margin: 0 0 12px 0;
+}
+.z__workflow_note_container textarea {
+    width: 98%;
 }
 .z__workflow_note_container.z__workflow_note_container_private {
     border-color: #f00;

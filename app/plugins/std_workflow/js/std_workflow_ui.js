@@ -5,6 +5,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
+const NEW_TRANSITION_UI = !!O.application.config["std_workflow:new_transition_ui"];
+
 _.extend(P.Workflow.prototype, {
 
     objectElementActionPanelName: function(name) {
@@ -57,12 +59,17 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
 
     $actionPanelStatusUI: {selector:{}, handler:function(M, builder) {
         var state = this.state;
-        builder.status("top", this._getText(['status'], [state]));
+        let i = P.locale().text("template");
+        builder.element("top", {
+            title: i["Status"],
+            label: this._getText(['status'], [state])
+        });
         if(!this.workUnit.closed) {
             var displayedName = this._callHandler('$currentlyWithDisplayName');
             if(displayedName) {
+                let i = P.locale().text("template");
                 builder.element("top", {
-                    title: this._getTextMaybe(['status-ui-currently-with'], [state]) || 'Currently with',
+                    title: this._getTextMaybe(['status-ui-currently-with'], [state]) || i['Currently with'],
                     label: displayedName
                 });
             }
@@ -112,7 +119,8 @@ _.extend(P.WorkflowInstanceBase.prototype, {
     },
 
     getWorkflowProcessName: function() {
-        return this._getTextMaybe(["workflow-process-name"], [this.state]) || 'Workflow';
+        let i = P.locale().text("template");
+        return this._getTextMaybe(["workflow-process-name"], [this.state]) || i['Workflow'];
     },
 
     getDisplayableStatus: function() {
@@ -213,7 +221,8 @@ _.extend(P.WorkflowInstanceBase.prototype, {
 P.implementService("std:workflow:deferred_render_combined_timeline", function(instances) {
     var entries = [];
     _.each(instances, function(M) {
-        var processName = M.getWorkflowProcessName();
+        var instanceProcessName = M.workflowServiceMaybe("std:workflow:combined_timeline:title_for_instance");
+        var processName = instanceProcessName || M.getWorkflowProcessName();
         var renderedEntries = M._renderTimelineEntries(M.timelineSelect());
         renderedEntries.forEach(function(e) { e.processName = processName; });
         entries = entries.concat(renderedEntries);
@@ -332,7 +341,7 @@ var TransitionUI = function(M, transition, target) {
     }
 };
 TransitionUI.prototype = {
-    backLinkText: "Cancel",
+    NEW_TRANSITION_UI: NEW_TRANSITION_UI,
     addFormDeferred: function(position, deferred) {
         if(!this.$formDeferred) { this.$formDeferred = []; }
         this.$formDeferred.push({position:position, deferred:deferred});
@@ -356,6 +365,10 @@ TransitionUI.prototype = {
         return this._transitionData;
     }
 };
+TransitionUI.prototype.__defineGetter__('backLinkText', function() {
+    let i = P.locale().text("template");
+    return i["Cancel"];
+});
 TransitionUI.prototype.__defineGetter__('pageTitle', function() {
     var taskTitle = this.M._call("$taskTitle");
     var pageTitle = this.M._getText(['transition-page-title', 'action-label'], [this.M.state]);
@@ -368,5 +381,6 @@ TransitionUI.prototype.__defineGetter__('transitionData', function() {
     return data;
 });
 TransitionUI.prototype.__defineGetter__("backLink",             function() { return this.M._call('$taskUrl'); });
+TransitionUI.prototype.__defineGetter__("aboveConfirmFormDeferreds", function() { return this._getFormDeferreds("aboveConfirm"); });
 TransitionUI.prototype.__defineGetter__("bottomFormDeferreds",  function() { return this._getFormDeferreds("bottom"); });
 TransitionUI.prototype.__defineGetter__("topFormDeferreds",     function() { return this._getFormDeferreds("top"); });

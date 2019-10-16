@@ -25,5 +25,5 @@
 <% end -%>
 
 <% if @results.length >= LatestController::MAX_LATEST_RESULTS -%>
-  <p>Too many results, showing first <%= LatestController::MAX_LATEST_RESULTS %>.</p>
+  <p><%= @locale.text_format(:Latest_Too_many_results, LatestController::MAX_LATEST_RESULTS) %></p>
 <% end -%>

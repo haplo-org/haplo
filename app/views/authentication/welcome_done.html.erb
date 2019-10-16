@@ -1,16 +1,16 @@
 <%
-  @page_title = 'Password set'
+  @page_title = T(:Authentication_Title_Password_set)
   @breadcrumbs = [:login]
 -%>
 
-<p><b>Your password has been set.</b></p>
+<p><b><%= @locale.text(:Authentication_View_Your_password_has_been_set_) %></b></p>
 
-<p>To log in, use the password with your registered email address, <b><%= h(@email) %></b>.</p>
+<p><%= @locale.text_format(:Authencation_Welcome_Log_in_with_email, @email) %></p>
 
 <p>&nbsp;</p>
 
 <form method="POST" action="/do/authentication/login"><%= form_csrf_token %>
   <input type="hidden" name="email" value="<%= h(@email) %>">
   <input type="hidden" name="no_login" value="1">
-  <input type="submit" value="Log in">
+  <input type="submit" value="<%= @locale.text(:Authentication_View_Log_in) %>">
 </form>

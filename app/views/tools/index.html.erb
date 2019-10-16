@@ -1,14 +1,14 @@
 <%
   @breadcrumbs = [:menu]
-  @page_title = 'Tools'
+  @page_title = T(:Tools_Title_Tools)
   
   section_names = {
-    :today => 'Today',
-    :account => 'Account',
-    :content => 'Content',
-    :reports => 'Utilities',
-    :system => 'System',
-    :developer => 'Development Support',
+    :today => T(:Tools_Today),
+    :account => T(:Tools_Account),
+    :content => T(:Tools_Content),
+    :reports => T(:Tools_Utilities),
+    :system => T(:Tools_System),
+    :developer => 'Development Support', # Plugin development isn't translated
   }
   sections = {}
   section_names.each { |n,d| sections[n] = [] }
@@ -17,17 +17,17 @@
 
   section = sections[:account]
   # TODO: Replace :_temp_hide_account_details_menu_entry with a proper way of letting plugins manage the account info page
-  section.push(['/do/account/info', 'Account details']) unless KApp.global_bool(:_temp_hide_account_details_menu_entry)
-  section.push(['/do/authentication/change-password', 'Change password'])
+  section.push(['/do/account/info', T(:Tools_Account_details)]) unless KApp.global_bool(:_temp_hide_account_details_menu_entry)
+  section.push(['/do/authentication/change-password', T(:Tools_Change_password)])
   if @request_user.policy.can_use_latest?
     section.push(['/do/latest/choose', h(KApp.global(:name_latest_requests).capitalize)])
   end
-  section.push(['/do/authentication/logout', 'Log out'])
+  section.push(['/do/authentication/logout', T(:Tools_Log_out)])
 
   # ----------------------------------------------------------------------------------
 
   section = sections[:today]
-  section.push(['/do/tasks', 'Tasks'])
+  section.push(['/do/tasks', T(:Tools_Tasks)])
   if @request_user.policy.can_use_latest?
     section.push(['/do/latest', 'View '+h(KApp.global(:name_latest))])
   end
@@ -46,7 +46,7 @@
   if @request_user.permissions.something_allowed?(:create)
     section = sections[:content]
     if @request_user.policy.can_edit_at_least_one_taxonomy?
-      section.push(['/do/taxonomy', 'Edit taxonomies'])
+      section.push(['/do/taxonomy', T(:Tools_Edit_taxonomies)])
     end
   end
 
@@ -60,16 +60,16 @@
 
   section = sections[:system]
   if @request_user.policy.can_control_trust?
-    section.push(['/do/admin/otp', 'Manage tokens'])
+    section.push(['/do/admin/otp', T(:Tools_Manage_tokens)])
   end
   if @request_user.policy.can_impersonate_user?
-    section.push(['/do/authentication/impersonate', 'Impersonate user'])
+    section.push(['/do/authentication/impersonate', T(:Tools_Impersonate_user)])
   end
   if session[:impersonate_uid]
-    section.push(['/do/authentication/end_impersonation', 'Finish impersonation'])
+    section.push(['/do/authentication/end_impersonation', T(:Tools_Finish_impersonation)])
   end
   if @request_user.policy.can_manage_users? || @request_user.policy.can_view_audit? || @request_user.policy.can_setup_system?
-    section.push(['/do/system/management', 'System management'])
+    section.push(['/do/system/management', T(:Tools_System_management)])
   end
 
   # ----------------------------------------------------------------------------------

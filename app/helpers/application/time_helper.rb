@@ -7,13 +7,11 @@
 
 module Application_TimeHelper
 
-  # All the timezone names, info embedded in the TZInfo gem: http://tzinfo.rubyforge.org/
-  TIMEZONE_NAMES = TZInfo::Timezone.all.map { |tz| tz.name } .sort.uniq.freeze
+  TIMEZONE_NAMES = TZInfo::TIMEZONE_NAMES
 
   # Formatting time for the current user
   def time_format_local(time, format)
-    tz = TZInfo::Timezone.get(time_user_timezone)
-    (tz == nil) ? time.to_s(format) : tz.utc_to_local(time).to_s(format)
+    TZInfo::Timezone.get(time_user_timezone).utc_to_local(time).to_s(format)
   end
 
   def time_user_timezone

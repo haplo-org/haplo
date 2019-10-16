@@ -225,7 +225,8 @@ module KEditor
 
     # Transform object using aliases, ignoring non-editable fields
     # This also puts things in the right order according to the type description
-    obj_values = KAttrAlias.attr_aliasing_transform(obj, schema) do |v,desc,q,is_alias|
+    # Alias using root attributes so all attributes are included when a sub-type with hidden attributes is the default subtype.
+    obj_values = KAttrAlias.attr_aliasing_transform(obj, schema, true, true) do |v,desc,q,is_alias|
       attr_inclusion.include_with_lookup?(schema, desc, is_alias)
     end
 
@@ -354,6 +355,9 @@ module KEditor
   end
   WriteValue = {
     T_INTEGER => proc do |a|
+      [a.to_s] # send it as a string to simplify the editor js
+    end,
+    T_NUMBER => proc do |a|
       [a.to_s] # send it as a string to simplify the editor js
     end,
     T_DATETIME => proc do |a|
@@ -576,6 +580,10 @@ module KEditor
     T_INTEGER => proc do |tokens, i, unedited_object|
       return nil unless /\A-?\d+/.match(tokens[i])
       [1, tokens[i].to_i]
+    end,
+    T_NUMBER => proc do |tokens, i, unedited_object|
+      return nil unless /\A-?\d+(\.\d+)?/.match(tokens[i])
+      [1, tokens[i].to_f]
     end,
     T_DATETIME => proc do |tokens, i, unedited_object|
       return nil unless tokens[i] =~ /\A([\d ]+)\~([\d ]*)\~(\w)\~([A-Za-z0-9_\/\+-]*)\z/

@@ -1,9 +1,9 @@
 <%
-  @page_title = "Access denied"
+  @page_title = T(:Authentication_Title_Access_denied)
 %>
 
-<div class="z__general_alert">You don't have permission to view the linked item.</div>
+<div class="z__general_alert"><%= @locale.text(:Authentication_View_You_don_t_have_permission_to_view_the___) %></div>
 
-<p>The 'access denied' placeholder is shown to alert you to the existence of information, without revealing what it is. Contact someone with permission to view this item if you need to know this information.</p>
+<p><%= @locale.text(:Authentication_View_The__access_denied__placeholder_is___) %></p>
 
-<p>Click your browser's Back button to return to the previous page.</p>
+<p><%= @locale.text(:Authentication_View_Click_your_browser_s_Back_button_to___) %></p>

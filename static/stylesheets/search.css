@@ -168,7 +168,7 @@
 #z__search_form_advanced_toggle {
     display: block;
     padding: 0px 8px;
-    width: 105px;
+    width: 140px;
     height: 21px;
     font-size: 12px;
     background: #e8e8e8;
@@ -178,7 +178,7 @@
 #z__search_form_advanced_toggle_holder:after {
     display: block;
     position: relative; /* needs to be relative, so in document flow, and pushes items below it downwards correctly */
-    left: 111px;
+    left: 146px;
     content: '';
     width: 10px; /* makes sure there's some overlap to avoid thin lines on iOS */
     height: 0px;

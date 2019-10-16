@@ -6,20 +6,6 @@
 
 module DisplayHelper
 
-  def display_linked_search_sort_choices(search_spec, choices)
-    html = ''
-    base_params = search_url_params(search_spec, :w, :sort)
-    sort = search_spec[:sort]
-    choices.each do |choice|
-      if sort == choice
-        html << " <span>#{choice}</span>"
-      else
-        html << %Q! <a href="?sort=#{choice}&#{base_params}">#{choice}</a>!
-      end
-    end
-    html
-  end
-
   # Work unit rendering
   def render_work_unit(work_unit, context)
     html = nil

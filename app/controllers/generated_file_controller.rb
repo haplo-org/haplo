@@ -149,6 +149,15 @@ class GeneratedFileController < ApplicationController
 
   # -------------------------------------------------------------------------
 
+  # When using waiting views, allow selection of minimal layout
+  def render_layout
+    if @info && @info['view'] && @info['view']['layout'] === 'std:minimal'
+      'minimal'
+    else
+      super
+    end
+  end
+
   def setup_for_waiting_view
     identifier = params[:id]
     info_pathname = GeneratedFileController.pathname_for_identifier(identifier, :info)

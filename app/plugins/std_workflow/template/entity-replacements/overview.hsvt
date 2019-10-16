@@ -4,7 +4,7 @@ std:plugin:resources("replacements-overview.js")
 <form method="POST"> std:form:token()
   <table>
     <tr>
-      unless(neverSelectable) { <th> </th> } <th> "Role" </th> <th> "Original" </th> <th> "Replacement" </th>
+      unless(neverSelectable) { <th> </th> } <th> i("Role") </th> <th> i("Original") </th> <th> i("Replacement") </th>
     </tr>
     each(data) {
       <tr>
@@ -29,9 +29,9 @@ std:plugin:resources("replacements-overview.js")
           }
           if(assignable) {
             if(replacement) {
-              " &nbsp; " <a class="z__workflow_replace" href=editPath> "change..." </a>
+              " &nbsp; " <a class="z__workflow_replace" href=editPath> i("change...") </a>
             } else {
-              <a class="z__workflow_replace" href=editPath> "set..." </a>
+              <a class="z__workflow_replace" href=editPath> i("set...") </a>
             }
           }
         </td>
@@ -39,7 +39,7 @@ std:plugin:resources("replacements-overview.js")
     }
   </table>
 
-  <input type="submit" value="Save changes" id="z__workflow_apply_selection">
+  <input type="submit" value=i("Save changes") id="z__workflow_apply_selection">
 </form>
 
 each(deferredRenders) {

@@ -21,7 +21,7 @@ class KFramework
     require "#{KFRAMEWORK_ROOT}/config/template_sets.rb"
     # Find all the ruby files within the app folder, in the right order for inclusion
     files = Array.new
-    ['models','policy','helpers','base','hooks','controllers','auditing','plugins'].each do |dirname|
+    ['models','policy','helpers','base','hooks','controllers','auditing','plugins','locale'].each do |dirname|
       path = "app/#{dirname}"
       files << Dir.glob("#{path}/**/*.rb").sort
     end
@@ -139,6 +139,10 @@ class KFramework
   # Installation properties
   def get_install_property(name, default_value)
     KInstallProperties.get(name.to_sym, default_value)
+  end
+
+  def runtimeSharedJavaScriptInitialiser
+    KLocale._js_text_lookup_for_javascript(KLocale::DEFAULT_LOCALE, KLocale::LOCALES)
   end
 
   def plugin_debugging_enabled

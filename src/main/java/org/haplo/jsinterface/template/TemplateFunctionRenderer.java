@@ -88,7 +88,9 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
             case "std:form":
             case "std:document":
             case "std:ui:notice":
+            case "std:ui:request":
             case "std:ui:navigation:arrow":
+            case "std:resource:_plugin_document_edit_control_support":
                 implementedInJavaScript(builder, b, Context.TEXT);
                 break;
 

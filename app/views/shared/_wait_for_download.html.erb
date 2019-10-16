@@ -7,7 +7,7 @@
       if data_for_template[:message]
         %><b><%= h(data_for_template[:message]) %></b><%
       else
-        %><b>Preparing <span><%= h(data_for_template[:filename]) %></span> &mdash; </b> download will start automatically.<%
+        %><%= @locale.text_format(:GenFile_Preparing_download_of, data_for_template[:filename]) %><%
       end
     %>
   </div>

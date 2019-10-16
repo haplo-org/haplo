@@ -1,0 +1,12 @@
+{
+  "pluginName": "session_locale_test_plugin",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Session locale API test",
+  "displayDescription": "For testing",
+  "installSecret": "ABC123",
+  "apiVersion": 4,
+  "load": ["js/session_locale_test_plugin.js"],
+  "respond": ["/do/session-local-test"],
+  "allowAnonymousRequests": true
+}

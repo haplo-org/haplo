@@ -22,4 +22,11 @@ class DevCtrlJSController < ApplicationController
     render :text => File.open("app/views/#{path}/~#{file}.js") { |f| f.read }, :kind => :javascript
   end
 
+  def handle_browser_text
+    set_response_validity_time(3600*12)
+    render :text => KLocale.browser_text_lookup_to_js(
+      (KLocale::ID_TO_LOCALE[params[:id]] || KLocale::DEFAULT_LOCALE).text_lookup_for_browser(KLocale::DEFAULT_LOCALE)
+    ), :kind => :javascript
+  end
+
 end

@@ -1,4 +1,5 @@
 <%
+  @minimal_layout_no_cancel = true
   unless @info
     @page_title = 'File not available'
     %><div class="z__general_alert">This file is no longer available.</div><%
@@ -8,5 +9,10 @@
       :identifier => @info['identifier'],
       :filename => @info['filename']
     } %><%
+    if @info['view'] && @info['view']['closeCoveringButton']
+      %><div id="z__generated_download_close_covering_on_finish" style="display:none;text-align:right;margin-top:32px">
+        <p><a href="#" class="z__button_link">Close</a></p>
+      </div><%
+    end
   end
 %>

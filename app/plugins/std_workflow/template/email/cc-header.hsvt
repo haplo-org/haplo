@@ -1,7 +1,7 @@
 
-<p> "Dear " toUser.nameFirst </p>
+unless(toUser.isGroup) { <p> i("Dear {}") { toUser.nameFirst } </p> }
 
-<p> "The following notification has been sent to " <b> $std_workflow.sentUser.name </b> " and is copied below for your information." </p>
+<p> i("The following notification has been sent to {} and is copied below for your information.") { <b> $std_workflow.sentUser.name </b> } </p>
 
 <hr>
 

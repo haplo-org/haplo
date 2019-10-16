@@ -16,6 +16,7 @@ import org.mozilla.javascript.json.JsonParser;
 import org.apache.commons.io.IOUtils;
 
 import org.haplo.jsinterface.*;
+import org.haplo.jsinterface.i18n.KPluginStrings;
 import org.haplo.jsinterface.app.*;
 import org.haplo.jsinterface.db.*;
 import org.haplo.jsinterface.generate.*;
@@ -25,6 +26,7 @@ import org.haplo.jsinterface.stdplugin.*;
 import org.haplo.jsinterface.template.TemplateParserConfiguration;
 import org.haplo.jsinterface.template.TemplateIncludedRenderer;
 import org.haplo.jsinterface.template.TemplateFunctionRenderer;
+import org.haplo.jsinterface.template.TemplateTextTranslatorFactory;
 import org.haplo.jsinterface.template.GenericDeferredRender;
 import org.haplo.jsinterface.xml.*;
 import org.haplo.template.driver.rhinojs.*;
@@ -312,7 +314,7 @@ public class Runtime {
      * Initialize the shared JavaScript environment. Loads libraries and removes
      * methods of escaping the sandbox.
      */
-    public static void initializeSharedEnvironment(String frameworkRoot, boolean pluginDebuggingEnabled) throws java.io.IOException {
+    public static void initializeSharedEnvironment(String frameworkRoot, String sharedJavaScript, boolean pluginDebuggingEnabled) throws java.io.IOException {
         // Don't allow this to be called twice
         if(sharedScope != null) {
             return;
@@ -336,6 +338,9 @@ public class Runtime {
             // Define the HaploTemplate host object now, so the JS code can use it to parse templates
             // TODO: Convert all standard templates from Handlebars, move HaploTemplate host object declaraction back with the others, remove $HaploTemplate from whitelist
             defineSealedHostClass(scope, HaploTemplate.class);
+
+            // Load shared initialiser code dynamically generated on startup
+            cx.evaluateString(scope, sharedJavaScript, "<shared-init>", 1, null /* no security domain */);
 
             // Load the library code
             FileReader bootScriptsFile = new FileReader(frameworkRoot + "/lib/javascript/bootscripts.txt");
@@ -445,6 +450,7 @@ public class Runtime {
             defineSealedHostClass(scope, KFilePipelineResult.class);
             defineSealedHostClass(scope, KSessionStore.class);
             defineSealedHostClass(scope, KKeychainCredential.class);
+            defineSealedHostClass(scope, KPluginStrings.class);
 
             // HaploTemplate created earlier as required by some of the setup
             defineSealedHostClass(scope, HaploTemplateDeferredRender.class);
@@ -508,6 +514,7 @@ public class Runtime {
             JSPlatformIntegration.parserConfiguration = new TemplateParserConfiguration();
             JSPlatformIntegration.includedTemplateRenderer = new TemplateIncludedRenderer();
             JSPlatformIntegration.platformFunctionRenderer = new TemplateFunctionRenderer();
+            JSPlatformIntegration.textTranslatorFactory = new TemplateTextTranslatorFactory();
 
             sharedScope = scope;
         } finally {
@@ -678,4 +685,13 @@ public class Runtime {
         }
         return null;
     }
+
+    // NAME() for Java
+    public String interpolateNAMEinString(String string) {
+        Scriptable o = (Scriptable)ScriptableObject.getProperty(this.sharedScope, "O");
+        Function interpolate = (Function)ScriptableObject.getProperty(o, "interpolateNAMEinString");
+        Object r = interpolate.call(this.currentContext, this.runtimeScope, this.runtimeScope, new Object[]{string}); // ConsString is checked
+        return (r instanceof CharSequence) ? r.toString() : null;
+    }
+
 }

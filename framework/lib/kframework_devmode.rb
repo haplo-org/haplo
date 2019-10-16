@@ -20,6 +20,9 @@ if KFRAMEWORK_ENV == 'development'
       @dev_mode_js_plugin_files = Dir.glob("app/plugins/**/*.{json,js,html}").map do |filename|
         [filename, File.mtime(filename).to_i]
       end
+      @dev_mode_locale_files = Dir.glob("app/locale/**/*.strings").map do |filename|
+        [filename, File.mtime(filename).to_i]
+      end
     end
 
     def devmode_check_reload
@@ -31,6 +34,15 @@ if KFRAMEWORK_ENV == 'development'
       @_devmode_static_files_to_reload = @_devmode_static_files.select do |e|
         mtime,details = e
         mtime != File.mtime(e.last[1])
+      end
+      # Locale files
+      @_devmode_reload_locale = false
+      @dev_mode_locale_files.each do |e|
+        t = File.mtime(e.first)
+        if t != e.last
+          @_devmode_reload_locale = true
+          e[1] = t
+        end
       end
       # JS plugin files
       @_devmode_invalidate_js_runtimes = nil
@@ -46,7 +58,7 @@ if KFRAMEWORK_ENV == 'development'
       # Dynamic files
       @_devmode_dynamic_files_to_reload = KDynamicFiles.devmode_check
       # Got anything?
-      (! @_devmode_to_reload.empty?) || (! @_devmode_templates_to_reload.empty?) || (! @_devmode_static_files_to_reload.empty?) || @_devmode_dynamic_files_to_reload || @_devmode_invalidate_js_runtimes
+      (! @_devmode_to_reload.empty?) || (! @_devmode_templates_to_reload.empty?) || (! @_devmode_static_files_to_reload.empty?) || @_devmode_dynamic_files_to_reload || @_devmode_reload_locale || @_devmode_invalidate_js_runtimes
     end
 
     def devmode_do_reload
@@ -65,6 +77,12 @@ if KFRAMEWORK_ENV == 'development'
           # NOTE: This isn't actually thread safe as the underlying Java Map isn't protected. But should be OK for dev mode.
           Java::OrgHaploAppserver::GlobalStaticFiles.__send__(:addStaticFile, *e.last)
           e[0] = File.mtime(e.last[1])
+        end
+        # Locales
+        if @_devmode_reload_locale
+          puts "Reloading locale strings..."
+          load "app/locale/locales.rb"
+          @_devmode_reload_locale = nil
         end
         # Templates
         Ingredient::Templates.devmode_do_reload(@_devmode_templates_to_reload)

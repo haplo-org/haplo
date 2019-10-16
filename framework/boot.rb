@@ -42,8 +42,6 @@ require 'arjdbc'
 require 'lib/common/activerecord_jdbc_adapter_fix' # for thread safety
 gem 'builder', '= 2.1.2'
 require 'builder'
-gem 'tzinfo-data'
-require 'tzinfo'
 
 # TODO: Work out why $" doesn't include the fully qualified name of the postgresql adaptor on recent JRubys, and fix it.
 # Avoid loading the pg adaptor file again when making the database connection, which breaks because the JDBC adaptor has messed with the internal at this point.
@@ -104,7 +102,7 @@ KFRAMEWORK_COMPONENT_INFO.each do |cinfo|
 end
 
 # Setup logging
-KApp.logger_configure(KFRAMEWORK_LOG_FILE, 40, 4*1024*1024)
+KApp.logger_configure(KFRAMEWORK_LOG_FILE, 40, 8*1024*1024)
 # Load a patch to turn off colorization from the built in logger
 require 'framework/lib/activerecord_3_colorized_logging_off'
 

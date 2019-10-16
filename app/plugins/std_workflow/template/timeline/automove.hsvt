@@ -1,1 +1,2 @@
-<i>"System"</i> " automatically sent workflow to updated user"
+i("{} automatically sent workflow to updated user")
+  { <i> i("user-name:system") </i> }

@@ -1,0 +1,9 @@
+{
+  "This dashboard does not include all data. Some rows are omitted.": "Nid yw'r dangosfwrdd hwn yn cynnwys yr holl ddata. Mae rhai rhesi wedi eu hepgor.",
+  "This dashboard is being updated. Some data may be out of date.": "Mae'r dangosfwrdd hwn yn cael ei diweddaru. Gall rhywfaint o'r data fod yn hen.",
+  "Invalid time requested, showing current data.": "Gofynnwyd am amser annilys, yn dangos data cyfredol.",
+  "Export": "Allgludo",
+  "Search": "Chwilio",
+  "This dashboard cannot be displayed because the data which determines the rows and columns is missing.": "Ni ellir arddangos y dangosfwrdd hwn gan fod y data sy'n pennu'r rhesi a'r colofnau ar goll.",
+  "Cannot display dashboard": "Ni ellir arddangos y dangosfwrdd"
+}

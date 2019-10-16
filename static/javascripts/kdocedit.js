@@ -183,7 +183,7 @@ _.extend(KDocEditWidgetObject.prototype, {
     // no defaults in p__defaults
     j__generateHtml3: function(i) {
         // TODO: Don't require title: attr in OBJ doc edit widget -- but would require code server side to make sure titles are always available
-        return '<div class="z__widget_checkbox"><input id="'+i+'_l" type="checkbox"'+((this.p__spec.style=='linkedheading')?' checked':'')+'> Link only</div><span id="'+i+'_r" class="z__widget_reference">'+this.p__spec.ref+'</span><p id="'+i+'_t" class="z__widget_linked"></p>';
+        return '<div class="z__widget_checkbox"><input id="'+i+'_l" type="checkbox"'+((this.p__spec.style=='linkedheading')?' checked':'')+'> '+KApp.j__text('Control_LinkOnly')+'</div><span id="'+i+'_r" class="z__widget_reference">'+this.p__spec.ref+'</span><p id="'+i+'_t" class="z__widget_linked"></p>';
     },
     j__attach3: function(i) {
         $('#'+i+'_t').text(this.p__spec.title); // HTML escaping

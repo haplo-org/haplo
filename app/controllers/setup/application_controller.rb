@@ -190,8 +190,8 @@ class Setup_ApplicationController < ApplicationController
         if upload != nil && upload.wasUploaded()
           pathname = upload.getSavedPathname()
           file_size = File.size(pathname)
-          if file_size > (64*1024)
-            @notice = 'File too large. There is a 64k limit on these static files.'
+          if file_size > (192*1024)
+            @notice = 'File too large. There is a 192k limit on these static files.'
           elsif file_size <= 0
             @notice = 'File has no data.'
           else

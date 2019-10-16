@@ -33,7 +33,7 @@
 
         // File upload logic
         var delegate = {
-            p__targetTitle: "to upload a new version",
+            p__targetTitle: KApp.j__text("VersionTarget"),
             p__singleFileOnly: true,
             j__onStart: function(id, file, icon) {
                 $('.z__file_target').hide();
@@ -46,7 +46,7 @@
                 $('.file_extension').text(fileNameParts.e);
             },
             j__onFinish: function(id, file, json) {
-                $('#z__file_upload_form input[type=submit]').prop('disabled', false).val("Create new version");
+                $('#z__file_upload_form input[type=submit]').prop('disabled', false).val(KApp.j__text("VersionCreate"));
                 $('#z__file_upload_form input[name=file]').val(json);
                 formEnabled = true;
             },

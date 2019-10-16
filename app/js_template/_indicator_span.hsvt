@@ -1,0 +1,16 @@
+if(indicator) {
+  <span class=[
+    "z__ui_indicator"
+    switch(indicator)
+      {} // (standard) default option is unstyled, any other key will use this too
+      primary           {"z__ui_indicate_primary"}
+      secondary         {"z__ui_indicate_secondary"}
+      terminal          {"z__ui_indicate_terminal"}
+      primary-forward   {"z__ui_indicate_primary z__ui_indicate_arrow_forward"}
+      secondary-forward {"z__ui_indicate_secondary z__ui_indicate_arrow_forward"}
+      primary-back      {"z__ui_indicate_primary z__ui_indicate_arrow_back"}
+      secondary-back    {"z__ui_indicate_secondary z__ui_indicate_arrow_back"}
+      forward           {"z__ui_indicate_arrow_forward"}
+      back              {"z__ui_indicate_arrow_back"}
+  ]> </span>
+}

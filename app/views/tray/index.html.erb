@@ -1,10 +1,10 @@
 <%
-  @page_title = 'Tray'
+  @page_title = T(:Tray_Title_Tray)
   @breadcrumbs = [:tray]
 -%>
 
 <% if @objs.empty? -%>
-  <p>There are no items in the tray.</p>
+  <p><%= @locale.text(:Tray_View_There_are_no_items_in_the_tray_) %></p>
 <% else -%>
 
 <% @objs.each do |obj| -%>
@@ -15,7 +15,7 @@
 <% end -%>
 <div class="z__tray_entry_footer"></div>
 
-<%= workflow_buttons([['Empty tray', '?clear=all']]) %>
+<%= workflow_buttons([[T(:Tray_Empty_tray), '?clear=all']]) %>
 
 <% end -%>
 

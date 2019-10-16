@@ -6,6 +6,7 @@
 
 package org.haplo.template.html;
 
+import java.util.List;
 import java.util.ArrayList;
 
 
@@ -96,5 +97,11 @@ final public class Template {
 
     public void disableDebugComments() {
         this.debugComments = DEBUG_COMMENTS_DISABLED;
+    }
+
+    public List<String> extractTranslatedStrings() {
+        ArrayList<String> strings = new ArrayList<String>();
+        TranslatedStringExtraction.extract(nodes, strings);
+        return strings;
     }
 }

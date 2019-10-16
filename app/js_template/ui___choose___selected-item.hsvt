@@ -1,0 +1,14 @@
+<div class="z__ui_choose_container z__ui_choose_container_selected_item">
+  template:std:_indicator_span()
+  <span class=["z__ui_choose_option_entry" if(highlight){"z__ui_choose_option_entry_highlight"} "z__selected"]>
+    <span class="z__ui_choose_option_entry_name"> label </span>
+    if(notes) {
+      <span> notes </span>
+    }
+    ifHasBlock() {
+      <div class="z__ui_choose_option_entry_extra_ui_container">
+        yield()
+      </div>
+    }
+  </span>
+</div>

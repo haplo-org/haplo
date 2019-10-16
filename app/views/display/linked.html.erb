@@ -1,5 +1,5 @@
 <%
-  @page_title = h(@obj.first_attr(KConstants::A_TITLE).to_s) + ' &nbsp; (linked items)'
+  @page_title = h(@obj.first_attr(KConstants::A_TITLE).to_s) + ' &nbsp; ' + @locale.text(:Display_Title_linked_items_suffix)
 %>
 
 <%= render :partial => 'linked_types_ui' %>
@@ -43,9 +43,9 @@
 <div class="z__search_results_sort_by">
   <%
     if @display_search[:relevance_possible]
-      %>ordered by<%= display_linked_search_sort_choices(@display_search, [:relevance, :title, :date]) %><%
+      %><%= @locale.text(:Search_Results_ordered_by) %><%= search_sort_choices(@display_search, [:relevance, :title, :date], :w) %><%
     else
-      %>ordered by <span class="z__search_results_sort_by_not_selectable">relevance</span><%= display_linked_search_sort_choices(@display_search, [:title, :date]) %><%
+      %><%= @locale.text(:Search_Results_ordered_by) %> <span class="z__search_results_sort_by_not_selectable"><%= @locale.text(:SearchSortChoice_relevance) %></span><%= search_sort_choices(@display_search, [:title, :date], :w) %><%
     end
   %>
 </div>
@@ -54,6 +54,6 @@
 
 <% else %>
 
-<p>&nbsp;</p><p><i>No results found</i></p>
+<p>&nbsp;</p><p><i><%= @locale.text(:Display_View_No_results_found) %></i></p>
 
 <% end %>

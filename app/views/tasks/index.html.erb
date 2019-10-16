@@ -1,11 +1,11 @@
 <%
-  @page_title = @showing_future_tasks ? 'Future tasks' : 'Tasks'
+  @page_title = @showing_future_tasks ? T(:Tasks_Future_tasks) : T(:Tasks_Tasks)
   if @showing_future_tasks
-    @breadcrumbs = [:work_units, ['/do/tasks', 'Current']]
-    @title_bar_buttons['*TASKS'] = [['/do/tasks', 'Show current tasks']]
+    @breadcrumbs = [:work_units, ['/do/tasks', T(:Tasks_Current)]]
+    @title_bar_buttons['*TASKS'] = [['/do/tasks', T(:Tasks_Show_current_tasks)]]
   else
     @breadcrumbs = [:work_units]
-    @title_bar_buttons['*TASKS'] = [['/do/tasks/future', 'Show future tasks']]
+    @title_bar_buttons['*TASKS'] = [['/do/tasks/future', T(:Tasks_Show_future_tasks)]]
   end
 
   heading_needed = (@workunits_deadline_passed.length > 0 || 

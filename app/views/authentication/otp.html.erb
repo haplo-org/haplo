@@ -1,8 +1,8 @@
 <% @breadcrumbs = [:login] -%>
-<% @page_title = 'Authenticate with token' -%>
+<% @page_title = T(:Authentication_Title_Authenticate_with_token) -%>
 
 <% if @login_attempted %>
-  <p class="z__general_alert"><% if @otp_result != nil && @otp_result.message != nil %><%= h(@otp_result.message) %><% else %>Incorrect code, please try again.<% end %></p>
+  <p class="z__general_alert"><% if @otp_result != nil && @otp_result.message != nil %><%= h(@otp_result.message) %><% else %><%= @locale.text(:Authentication_View_Incorrect_code__please_try_again_) %><% end %></p>
   <p><%= h(otp_admin_contact_text) %></p>
   <p>&nbsp;</p>
 <% end %>
@@ -15,15 +15,15 @@
 
 <p><img src="/images/hardware-otp.png" width="113" height="30"></p>
 <ul>
-  <li>Press the button on your token</li>
-  <li>Type the code into the box below</li>
+  <li><%= @locale.text(:Authentication_View_Press_the_button_on_your_token) %></li>
+  <li><%= @locale.text(:Authentication_View_Type_the_code_into_the_box_below) %></li>
 </ul>
 
-<p><input id="password" name="password" size="30" type="password" autocomplete="one-time-code" class="z__login_input_field z__focus_candidate"> <input type="submit" value="Log in" class="z__login_button"></p>
+<p><input id="password" name="password" size="30" type="password" autocomplete="one-time-code" class="z__login_input_field z__focus_candidate"> <input type="submit" value="<%= @locale.text(:Authentication_View_Log_in) %>" class="z__login_button"></p>
 
 </form>
 
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p><b>WARNING</b> &nbsp; Never let anyone else use your token, and keep the codes confidential.</p>
+<p><%= @locale.text(:Authentication_View__WARNING____Never_let_anyone_else_use___) %></p>

@@ -43,7 +43,8 @@ P.hook('hEditorSymbolKeyboard', function(response) {
 
 P.hook('hGetReportsList', function(response) {
     if(O.currentUser.allowed(CanEditKeyboards)) {
-        response.reports.push(["/do/std-editor-symbol-keyboard/keyboards", "Editor symbol keyboards"]);
+        let i = P.locale().text("template");
+        response.reports.push(["/do/std-editor-symbol-keyboard/keyboards", i["Editor symbol keyboards"]]);
     }
 });
 

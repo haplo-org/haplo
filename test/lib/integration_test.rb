@@ -166,8 +166,8 @@ class IntegrationTest < Test::Unit::TestCase
         Net::HTTP::Get.new(params.empty? ? path : %Q!#{path}?#{URI.encode_www_form(params)}!)
       when :options
         Net::HTTP::Options.new(params.empty? ? path : %Q!#{path}?#{URI.encode_www_form(params)}!)
-      when :post
-        r = Net::HTTP::Post.new(path)
+      when :post, :put
+        r = (method == :post) ? Net::HTTP::Post.new(path) : Net::HTTP::Put.new(path)
         if params.kind_of? Hash
           # CSRF handling?
           unless @_csrf_token == nil || opts[:no_automatic_csrf_token] || params.has_key?(:__)

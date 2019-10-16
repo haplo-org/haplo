@@ -22,11 +22,18 @@ P.respond("GET", "/do/test-generated-file/convert-to-pdf-redirect-to-built-in-ui
     var pipeline = O.fileTransformPipeline();
     pipeline.file("input", O.file(digest));
     pipeline.transform("std:convert", {mimeType:"application/pdf"});
-    var url = pipeline.urlForOutputWaitThenDownload("output", "converted", { // no extension
+    var view = {
         pageTitle: "TEST TITLE>",
         backLink: "/do/test-back-link",
         backLinkText: "TEST BACK>"
-    });
+    };
+    if(E.request.parameters.minimal) {
+        view.layout = "std:minimal";
+    }
+    if(E.request.parameters.closeButton) {
+        view.closeCoveringButton = true;
+    }
+    var url = pipeline.urlForOutputWaitThenDownload("output", "converted" /* no extension */, view);
     pipeline.execute();
     E.response.redirect(url);
 });

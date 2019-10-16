@@ -1,29 +1,29 @@
 <%
-  @page_title = 'Delete item?'
+  @page_title = T(:Edit_Title_Delete_item_)
   obj_link = object_urlpath(@obj)
-  @breadcrumbs = [[obj_link, 'Cancel']]
+  @breadcrumbs = [[obj_link, T(:Edit_Cancel)]]
 -%>
 <%= render_obj(@obj, :linkedheading) %>
 
 <div class="z__plugin_ui_confirm">
   <div class="z__plugin_ui_confirm_message">
     <% unless @warnings.empty? %>
-      <p>You can delete this item, but it will affect other items because:</p>
+      <p><%= @locale.text(:Edit_View_You_can_delete_this_item__but_it_will___) %></p>
       <ul>
         <% @warnings.each do |warning| %>
           <li><%= h(warning) %></li>
         <% end %>
       </ul>
     <% end %>
-    <p>Really delete this item?<p>
+    <p><%= @locale.text(:Edit_View_Really_delete_this_item_) %><p>
   </div>
   <div class="z__plugin_ui_confirm_action">
     <form method="POST"><%= form_csrf_token %>
-      <input type="submit" value="Delete item">
+      <input type="submit" value="<%= @locale.text(:Edit_View_Delete_item) %>">
     </form>
   </div>
   <div class="z__plugin_ui_confirm_action">
-    <a href="<%= obj_link %>">Cancel</a>
+    <a href="<%= obj_link %>"><%= @locale.text(:Edit_View_Cancel) %></a>
   </div>
   <div class="z__plugin_ui_confirm_end"></div>
 </div>

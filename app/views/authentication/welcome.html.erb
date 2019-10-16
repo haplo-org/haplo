@@ -1,24 +1,24 @@
 <%
-  @page_title = 'Welcome to '+h(KApp.global(:system_name))
+  @page_title = @locale.text_format(:Authentication_Title_Welcome_to, KApp.global(:system_name))
   @breadcrumbs = [:login]
 -%>
 
-<p><b>Hello <%= h(@user_first_name) %></b></p>
+<p><b><%= @locale.text_format(:Authentication_Hello_user, @user_first_name) %></b></p>
 
-<p>Please choose a password. Your password <%= User::SECURITY_REQUIREMENTS_TEXT %>.</p>
+<p><%= @locale.text(:Authentication_View_Please_choose_a_password_) %> <%= @locale.text(:Authentication_Password_Requirement_Statement) %></p>
 
-<%= render :partial => 'bad_password', :data_for_template => { :message => 'Password not set.' } %>
+<%= render :partial => 'bad_password', :data_for_template => { :message => @locale.text(:Authencation_Welcome_Password_not_set) } %>
 
 <form method="POST"><%= form_csrf_token %>
 <input type="hidden" name="t" value="<%= h(params[:t]) %>">
 
-<p>Password<br>
+<p><%= @locale.text(:Authentication_View_Password) %><br>
 <input type="password" name="pw1" value="" class="z__focus_candidate"></p>
 
-<p>Confirm password<br>
+<p><%= @locale.text(:Authentication_View_Confirm_password) %><br>
 <input type="password" name="pw2" value=""></p>
 
-<p><input type="submit" value="Set password"></p>
+<p><input type="submit" value="<%= @locale.text(:Authentication_View_Set_password) %>"></p>
 
 </form>
 

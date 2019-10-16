@@ -1,13 +1,13 @@
 <%
-  @page_title = 'Forgotten password'
+  @page_title = T(:Authentication_Title_Forgotten_password)
   @breadcrumbs = [:login]
 
   if @forgotten_msg == nil || @forgotten_msg.length == 0
-    @forgotten_msg = 'Please contact your administrator for assistance in changing your password.'
+    @forgotten_msg = T(:Authentication_Please_contact_your_administrator_for___)
   end
 -%>
 
 <p><%= h(@forgotten_msg) %></p>
 
 <p>&nbsp;</p>
-<p><a href="login">Log in</a></p>
+<p><a href="login"><%= @locale.text(:Authentication_View_Log_in) %></a></p>

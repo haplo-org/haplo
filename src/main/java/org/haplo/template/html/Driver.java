@@ -6,8 +6,12 @@
 
 package org.haplo.template.html;
 
+import com.ibm.icu.util.ULocale;
+
+
 abstract public class Driver {
     public static final int MAX_DRIVER_NESTING = 256;
+    public static final String DEFAULT_LOCALE_ID = "en";
 
     abstract public Object getRootView();
     abstract public Driver driverWithNewRoot(Object rootView);
@@ -96,6 +100,11 @@ abstract public class Driver {
         this.bindingForYield.renderBlock(blockName, builder, view, context);
     }
 
+    final public boolean canYieldToBlock(String blockName) {
+        if(this.bindingForYield == null) { return false; }
+        return this.bindingForYield.hasBlock(blockName);
+    }
+
     // ----------------------------------------------------------------------
 
     public interface FunctionRenderer {
@@ -127,6 +136,32 @@ abstract public class Driver {
 
     // ----------------------------------------------------------------------
 
+    public static interface TextTranslator {
+        String getLocaleId();
+        String translate(String category, String text);
+    }
+
+    private TextTranslator textTranslator;
+    private ULocale locale;
+
+    final public void setTextTranslator(TextTranslator textTranslator) {
+        this.textTranslator = textTranslator;
+    }
+
+    final public String translateText(String category, String text) {
+        return (this.textTranslator != null) ? this.textTranslator.translate(category, text) : text;
+    }
+
+    public ULocale getULocale() {
+        if(this.locale == null) {
+            String localeId = (this.textTranslator != null) ? this.textTranslator.getLocaleId() : DEFAULT_LOCALE_ID;
+            this.locale = new ULocale(localeId);
+        }
+        return this.locale;
+    }
+
+    // ----------------------------------------------------------------------
+
     final public Driver newNestedDriverWithView(Object rootView) throws RenderException {
         int newNestingDepth = this.nestingDepth + 1;
         if(newNestingDepth > MAX_DRIVER_NESTING) {
@@ -138,6 +173,8 @@ abstract public class Driver {
         driver.rememberedViews = this.rememberedViews;
         driver.includedTemplateRenderer = this.includedTemplateRenderer;
         driver.functionRenderer = this.functionRenderer;
+        driver.textTranslator = this.textTranslator;
+        driver.locale = this.locale;
         return driver;
     }
 

@@ -1,12 +1,12 @@
 <%
-  @page_title = 'Logging out...'
+  @page_title = T(:Authentication_Title_Logging_out___)
   client_side_controller_js("logout")
 -%>
 
-<p>Please wait...</p>
+<p><%= @locale.text(:Authentication_View_Please_wait___) %></p>
 
 <p>&nbsp;</p>
 
 <form method="POST" id="logout_form"><%= form_csrf_token %>
-  <input type="submit" value="Log out">
+  <input type="submit" value="<%= @locale.text(:Authentication_View_Log_out) %>">
 </form>
