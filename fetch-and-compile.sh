@@ -195,8 +195,8 @@ fi
 # https://dev.maxmind.com/geoip/geoip2/geolite2/
 # NOTE: this is a continually moving target
 
-MAXMIND_DB_VERSION=20190924
-MAXMIND_DB_DIGEST=0ac34bd63f8667c2f739dbf6571b97ff262c85ca
+MAXMIND_DB_VERSION=20191015
+MAXMIND_DB_DIGEST=fedb49848bad604fd0a91cb6156336d781334abe
 MAXMIND_DB_FILENAME=GeoLite2-Country_${MAXMIND_DB_VERSION}.tar.gz
 MAXMIND_DB_URL=http://geolite.maxmind.com/download/geoip/database/$MAXMIND_DB_FILENAME
 
