@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2018    http://www.haplo-services.com
+# (c) Haplo Services Ltd 2006 - 2019    http://www.haplo-services.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -19,7 +19,6 @@
 # The following assumptions are made:
 #
 # that we're running Ubuntu 16.04LTS or later
-#   (16.04LTS is the only tested configuration at this time)
 # that the system architecture is 64-bit
 # that the system is dedicated to Haplo
 # that the current user can use sudo to manage the system
@@ -74,18 +73,24 @@ if [ -f /etc/os-release ]; then
 	    XAPIAN_PKG=libxapian30
 	    # headless jdk on bionic isn't
 	    OPENJDK_PKG=openjdk-8-jdk
-	    echo "WARN: Ubuntu $UVER is not yet fully supported."
-	    sleep 5
 	    ;;
 	'19.04')
 	    PG_VERSION=11
 	    XAPIAN_PKG=libxapian30
 	    # headless jdk on bionic isn't
 	    OPENJDK_PKG=openjdk-8-jdk
-	    echo "WARN: Ubuntu $UVER is not yet fully supported."
+	    echo "WARN: Ubuntu $UVER is deprecated."
 	    sleep 5
 	    ;;
-	'*')
+	'19.10')
+	    PG_VERSION=11
+	    XAPIAN_PKG=libxapian30
+	    # headless jdk on bionic isn't
+	    OPENJDK_PKG=openjdk-8-jdk
+	    echo "WARN: Ubuntu $UVER is not fully supported."
+	    sleep 5
+	    ;;
+	*)
 	    echo "Unsupported OS version $UVER"
 	    exit 1
 	    ;;
