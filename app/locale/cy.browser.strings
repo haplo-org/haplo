@@ -52,3 +52,5 @@ GenFileErr=Gwall wrth baratoi'r ffeil.
 GenFileDownStart=Lawrlwytho wedi cychwyn: $FILE
 GenFileFail=Methodd creu'r ffeil.
 Control_LinkOnly=Dolen yn unig
+Control_Tree_Find=Canfod...
+Control_Tree_Find_Label=Teipio i ganfod yr eitem

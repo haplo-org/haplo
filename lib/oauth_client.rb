@@ -135,7 +135,7 @@ class OAuthClient
   end
 
   # TODO: Suspend the user's HTTP request while performing HTTP requests (probably in a new authentication scheme)
-  def perform_https_request(method, url, data = nil)
+  def perform_https_request(method, url, data = nil, accept_header = nil)
     if method == :POST
       uri = URI(url)
       request = Net::HTTP::Post.new(uri.to_s)
@@ -144,6 +144,9 @@ class OAuthClient
       uri = URI(url)
       uri.query = URI.encode_www_form(data) if data
       request = Net::HTTP::Get.new(uri.to_s)
+    end
+    if accept_header
+      request['Accept'] = accept_header
     end
     http = Net::HTTP.new(uri.host, uri.port)
     if @config['ssl_ciphers']
@@ -166,7 +169,7 @@ class OAuthClient
       response.body
     when Net::HTTPRedirection
       location = response['location']
-      perform_https_request method, location, data
+      perform_https_request method, location, data, accept_header
     else
       raise OAuthError.new('unexpected_status_code', { 'code' => response.code })
     end
@@ -227,7 +230,7 @@ class OAuthClient
       'redirect_uri' => @config['return_url'],
       'grant_type' => 'authorization_code'
     }
-    response = perform_https_request(:POST, @config['token_url'], params)
+    response = perform_https_request(:POST, @config['token_url'], params, 'application/json')
     body = JSON.parse(response)
     raise OAuthError.new('invalid_response') unless (body.has_key? 'token_type') && (body['token_type'].downcase == 'bearer')
     raise OAuthError.new('invalid_response') unless body.has_key? 'access_token'

@@ -142,9 +142,10 @@ public class ThumbnailFinder extends Operation {
             File poiFilesystem = new File(inFilename);
 
             // Open the POI filesystem.
-            InputStream is = new FileInputStream(poiFilesystem);
-            POIFSFileSystem poifs = new POIFSFileSystem(is);
-            is.close();
+            POIFSFileSystem poifs;
+            try(InputStream is = new FileInputStream(poiFilesystem)) {
+                poifs = new POIFSFileSystem(is);
+            }
 
             // Read the summary information.
             DirectoryEntry dir = poifs.getRoot();

@@ -64,8 +64,10 @@ class WebPublisherTest < IntegrationTest
     # Exact with POST
     get "/post-test-exact"
     assert_equal "test exact GET", response.body
+    assert_equal 'text/html; charset=utf-8', response['content-type']
     post "/post-test-exact"
     assert_equal "test exact POST", response.body
+    assert_equal 'application/x-random-html', response['content-type'] # has special content type on POST only
 
     # Directory with POST
     get_404 "/post-test-directory"

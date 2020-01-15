@@ -21,7 +21,7 @@ unless(transition) {
           }
         } confirm-ui {
           <div class="z__workflow_confirm_container">
-            <a href=backLink> i("Cancel") </a> " " <input type="submit" value=[i("Confirm:") " " transitionProperties.label]>
+            <a href=backLink role="button"> i("Cancel") </a> " " <input type="submit" value=[i("Confirm:") " " transitionProperties.label]>
           </div>
         }
       </div>
@@ -48,7 +48,7 @@ unless(transition) {
       if(transitionProperties.confirmText) {
         std:text:paragraph(transitionProperties.confirmText)
       }
-      <p> <input type="submit" value=[i("Confirm:") " " transitionProperties.label]> " &nbsp; &nbsp; " <a href=backLink> i("Cancel") </a> </p>
+      <p> <input type="submit" value=[i("Confirm:") " " transitionProperties.label]> " &nbsp; &nbsp; " <a href=backLink role="button"> i("Cancel") </a> </p>
 
       each(bottomFormDeferreds) { render(.) }
     }

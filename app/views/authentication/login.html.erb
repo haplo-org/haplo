@@ -27,7 +27,7 @@
 <a href="/do/authentication/recovery" class="z__login_get_password_reminder"<% if @login_attempted %> id="z__login_get_password_reminder_login_attempt"<% end %>><span id="z__login_get_password_reminder_disp"><%= @locale.text(:Authentication_View_Forgotten_your_password_) %></span></a>
 
 <% if @autologin_allowed -%>
-<p class="z__login_autologin_ui">&nbsp;<br><input id="autologin" name="autologin" type="checkbox" value="yes"> <%= @locale.text(:Authentication_View_Remember_me_on_this_computer) %><br>
+<p class="z__login_autologin_ui">&nbsp;<br><input id="autologin" name="autologin" type="checkbox" value="yes"> <label for="autologin"><%= @locale.text(:Authentication_View_Remember_me_on_this_computer) %></label><br>
 <%= @locale.text(:Authentication_View__WARNING___Do_not_check_this_box_on___) %></p>
 <% end -%>
 

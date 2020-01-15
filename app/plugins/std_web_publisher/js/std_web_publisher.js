@@ -264,6 +264,7 @@ Publication.prototype.respondWithObject = function(path, types, handlerFunction)
             }
             var object = null;
             try { object = ref.load(); } catch(e) { /* ignore, object won't be set on permissions error */}
+            if(object && object.deleted) { object = null; }
             if(!object) {
                 renderingContext.$overrideStatusCode = HTTP.NOT_FOUND;
                 O.stop("The requested item was not found", "Not found");

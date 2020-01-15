@@ -160,46 +160,21 @@ var escapeHTML;
     _.extend(KCtrlTextWithInnerLabel.prototype, {
         j__generateHtml2: function(i) {
             var have_contents = !!(this.q__initialContents);
-            var html = '<input type="text" autocomplete="off" tabindex="1" id="'+i+'"';
-            if(KApp.p__inputPlaceholderSupported) {
-                html += ' value="' +escapeHTML((have_contents) ? this.q__initialContents : '') + '" placeholder="' +
-                    escapeHTML(this.q__label) + '"';
-            } else {
-                html += (have_contents?'':' class="z__ctrltext_label_state"')+
-                    ' value="' +escapeHTML((have_contents) ? this.q__initialContents : this.q__label) + '"';
-            }
+            var html = '<input type="text" autocomplete="off" tabindex="1" id="'+i+'"'+
+                ' value="' +escapeHTML((have_contents) ? this.q__initialContents : '') + '" placeholder="' +
+                escapeHTML(this.q__label) + '" aria-label="'+
+                escapeHTML(this.q__label) + '"';
             if(this.p__width) { html += ' style="width:'+this.p__width+'%"'; }
             return html + '>';
         },
         j__attach2: function(i) {
-            // Don't do anything if the browser can do placeholders itself
-            if(KApp.p__inputPlaceholderSupported) { return; }
-            // Attach handler to rid it off the text when it's focused, and put it back if it blured but was empty
-            $('#'+i).focus(_.bind(this.j__handleFocus, this));
-            $('#'+i).blur(_.bind(this.j__handleBlur, this));
         },
         j__value: function() {
-            return changeWhitespaceOnlyStringsIntoEmptyString((this.q__domObj.className == 'z__ctrltext_label_state') ? '' : (this.q__domObj.value));
+            return changeWhitespaceOnlyStringsIntoEmptyString(this.q__domObj.value);
         },
         j__setValue: function(value) {
             this.q__domObj.value = value;
             this.j__handleBlur();
-        },
-
-        // Handlers (only attached if the browser can't do placeholders itself)
-        j__handleFocus: function() {
-            if(this.q__domObj.className == 'z__ctrltext_label_state') {
-                this.q__domObj.className = '';
-                this.q__domObj.value = '';
-                // Workaround for IE: Make sure the caret displays when tabbing into the field
-                this.q__domObj.select();
-            }
-        },
-        j__handleBlur: function() { // also called after j__setValue()
-            if(this.q__domObj.value === '') {
-                this.q__domObj.className = 'z__ctrltext_label_state';
-                this.q__domObj.value = this.q__label;
-            }
         }
     });
 

@@ -52,8 +52,6 @@ var KTree;
 
 (function($) {
 
-    var SEARCH_PLACEHOLDER_TEXT = 'Find...';
-
     var allTrees = [];
 
     // KTreeSource is very tightly bound to KTree, essentially little more than a data structure with
@@ -374,27 +372,6 @@ var KTree;
                     keydown: function(e) { if(e.keyCode == 13 /* KEY_RETURN */) { e.preventDefault(); }}, // don't submit forms unintentially.
                     keyup:   _.bind(this.j__onSearchKeyUp, this)
                 }, "input");
-
-                // Use JavaScript to implement the placeholder for rubbish browsers which don't do it themselves
-                if(!KApp.p__inputPlaceholderSupported) {
-                    $('#'+element_id).on({
-                        focus: function() {
-                            if($(this).hasClass('z__ctrltext_label_state')) {
-                                $(this).removeClass('z__ctrltext_label_state');
-                                this.value = '';
-                                // Workaround for IE: Make sure the caret displays when tabbing into the field
-                                this.select();
-                            }
-                        },
-                        blur: function() {
-                            if(this.value === '') {
-                                $(this).addClass('z__ctrltext_label_state');
-                                this.value = SEARCH_PLACEHOLDER_TEXT;
-                            }
-                        }
-                    }, "input");
-                    $('#'+element_id+' input').val(SEARCH_PLACEHOLDER_TEXT).addClass('z__ctrltext_label_state');
-                }
             }
         },
         j__renderLevel: function(nodes) {
@@ -439,7 +416,7 @@ var KTree;
                     // Search?
                     if(level === 0 && this.q__searchEnabled) {
                         // class="z__no_default_focus" prevents auto-focus of field when new attributes are added in keditor
-                        h = '<input type="text" placeholder="'+SEARCH_PLACEHOLDER_TEXT+'" class="z__no_default_focus" tabindex="1" style="width:'+(this.q__elementWidth-16)+'px">' + h;
+                        h = '<input type="text" placeholder="'+KApp.j__text('Control_Tree_Find')+'" aria-label="'+KApp.j__text('Control_Tree_Find_Label')+'" class="z__no_default_focus" tabindex="1" style="width:'+(this.q__elementWidth-16)+'px">' + h;
                     } else {
                         // Filler to make sure all the +1 calculations work
                         h = '<span class="z__tree_level_input_alternative"></span>' + h;

@@ -617,11 +617,12 @@ class KObjectStore
       @end_time = end_time
     end
     def constrain_to_updated_time_interval(start_time, end_time=nil) # updated time
-      if (start_time != nil && start_time.class != Time) || (end_time != nil && end_time.class != Time)
-        raise "constrain_to_time_interval() must be passed Time objects"
+      if (start_time != nil && start_time.class != DateTime) || (end_time != nil && end_time.class != DateTime)
+        raise "constrain_to_updated_time_interval() must be passed DateTime objects"
       end
       @start_time_updated = start_time
       @end_time_updated = end_time
+      self
     end
 
     # Limit the number of results returned

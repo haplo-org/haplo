@@ -65,3 +65,5 @@ GenFileFail=File generation failed.
 
 # Control
 Control_LinkOnly=Link only
+Control_Tree_Find=Find...
+Control_Tree_Find_Label=Type to find item

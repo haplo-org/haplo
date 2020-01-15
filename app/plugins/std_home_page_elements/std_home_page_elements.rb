@@ -198,7 +198,7 @@ __E
   def render_banners(controller, result, path, object, style, options)
     opts = decode_options(options)
     return unless opts["captions"].kind_of?(Array)
-    html = '<div id="z__home_page_banners">'
+    html = '<div id="z__home_page_banners" role="presentation">'
     choosers = ''
     opts["captions"].each_with_index do |caption, index|
       html << %Q!<div class="z__home_page_banner_container bbg#{index % NUM_BANNER_BACKGROUNDS}"!
@@ -208,12 +208,14 @@ __E
       else
         html << ' style="display:none"'
       end
-      choosers << '></a>'
+      choosers << ' aria-label="'
+      choosers << h(caption)
+      choosers << '"></a>'
       html << '><div>'
       html << h(caption)
       html << '</div></div>'
     end
-    html << '<div class="z__home_page_banner_chooser">'
+    html << '<div class="z__home_page_banner_chooser" role="presentation">'
     html << choosers
     html << '</div></div>'
     controller.client_side_plugin_resource(self, :javascript, 'banner.js')

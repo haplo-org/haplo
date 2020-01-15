@@ -90,17 +90,25 @@ public class XmlDocument extends KScriptable {
 
         } else if(something instanceof KStoredFile) {
             KStoredFile file = (KStoredFile)something;
-            document = builder.parse(new InputSource(new FileInputStream(new File(file.getDiskPathname()))));
+            try(FileInputStream in = new FileInputStream(new File(file.getDiskPathname()))) {
+                document = builder.parse(new InputSource(in));
+            }
 
         } else if(something instanceof KBinaryData) {
             KBinaryData data = (KBinaryData)something;
             InputStream stream = null;
-            if(data.isAvailableInMemoryForResponse()) {
-                stream = new ByteArrayInputStream(data.getInMemoryByteArray());
-            } else {
-                stream = new FileInputStream(new File(data.getDiskPathname()));
+            try {
+                if(data.isAvailableInMemoryForResponse()) {
+                    stream = new ByteArrayInputStream(data.getInMemoryByteArray());
+                } else {
+                    stream = new FileInputStream(new File(data.getDiskPathname()));
+                }
+                document = builder.parse(new InputSource(stream));
+            } finally {
+                if(stream != null) {
+                    stream.close();
+                }
             }
-            document = builder.parse(new InputSource(stream));
 
         } else {
             throw new OAPIException("Can't parse object passed to O.xml.parse()");

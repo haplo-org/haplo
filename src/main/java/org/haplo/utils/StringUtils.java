@@ -43,6 +43,27 @@ public class StringUtils {
 
     // -------------------------------------------------------------------------------------------------------------
 
+    public static String escapeForLogging(String input) {
+        // Only do escaping when determined that the string contains chars that need escaping
+        // Compare against input.length() in loop to allow JVM to inline.
+        for(int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            if((c == '\\') || (c == ' ') || (c == '\n') || (c == '\r') || (c == '"')) {
+                // Return escaped string
+                return input.
+                    replace("\\", "\\\\").  // must be first
+                    replace(" ", "\\ ").
+                    replace("\n", "\\n").
+                    replace("\r", "\\r").
+                    replace("\"", "\\\"");
+            }
+        }
+        // fastpath return input, as loop terminated showing string doesn't need any escaping
+        return input;
+    }
+
+    // -------------------------------------------------------------------------------------------------------------
+
     public static Charset charsetFromStringWithJSChecking(String charsetName) {
         if(charsetName == null || "undefined".equals(charsetName)) {
             charsetName = "UTF-8";

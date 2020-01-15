@@ -14,7 +14,7 @@ class AuthenticationController < ApplicationController
 
   CSRF_NOT_REQUIRED_FOR_URLS = ['/do/authentication/support_login']
 
-  SAFE_REDIRECT_URL_PATH = /\A\/[^\/]\S*\z/ # match regexp in framework.js
+  SAFE_REDIRECT_URL_PATH = /\A\/[a-zA-Z0-9]\S*\z/ # match regexp in framework.js
 
   # Don't do CSRF checks for some special URLs.
   def csrf_check(exchange)

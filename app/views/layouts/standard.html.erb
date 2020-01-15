@@ -47,6 +47,7 @@
 <%= render(:partial => 'shared/client_side_resources') -%>
 </head>
 <body<% if webfonts_enabled? %> class="z__webfonts_enabled"<% end %><%= body_tag_data_attributes %>>
+<a id="z__skip_link" href="#z__ws_content"><%= @locale.text(:Skip_Link) %></a>
 <%
   if params.has_key?(:_sx)
     # Show spawned task header
@@ -67,7 +68,7 @@
       %><%= header%><%
     else
       # Surround the text in a reasonably interesting header
-      %><div id="z__header_haplo" class="z__with_haplo_logo"><a href="/"><%= header %></a></div><%
+      %><div id="z__header_haplo" class="z__with_haplo_logo" role="banner"><a href="/"><%= header %></a></div><%
     end
   end
 
@@ -78,11 +79,12 @@
 
 <%= impersonate_ui_html %>
 
-<div id="z__action_entry_points">
+<div id="z__action_entry_points" role="navigation" aria-label="<%= @locale.text(:Layout_Navigation_Action_Entry) %>">
     <div id="z__aep_left">
       <% if @request_user.permissions.something_allowed?(:read) -%>
+        <% quick_search_label = layout_options[:quick_search_label] || @locale.text(:Quick_search) %>
         <div id="z__aep_search_form">
-        <form method="GET" action="/search"><input type="text" accesskey="f" placeholder="<%= layout_options[:quick_search_label] || @locale.text(:Quick_search) %>" name="q" autocomplete="off"></form>
+        <form method="GET" action="/search" role="search"><input type="text" placeholder="<%= quick_search_label %>" aria-label="<%= quick_search_label %>" name="q" autocomplete="off"></form>
         </div>
         <div<% if first_crumb == :search %> class="z__selected"<% end %>><a id="z__aep_search_link" href="/search"><%= @locale.text(:Search) %></a></div>
         <div<% if first_crumb == :browse %> class="z__selected"<% end %>><a href="/search/browse"><%= @locale.text(:Browse) %></a></div>
@@ -98,7 +100,7 @@
       <div id="z__aep_right">
         <div <% if first_crumb == :tray %> class="z__selected"<% elsif tray_contents.length == 0 %> class="z__aep_entry_point_hidden"<% end %>><a href="/do/tray"><%= @locale.text_format_with_count(:Indicator_Tray, tray_contents.length) %></a></div>
         <div <% if first_crumb == :work_units %> class="z__selected"<% elsif num_active_work_units == 0 %> class="z__aep_entry_point_hidden"<% end %>><a href="/do/tasks"><%= @locale.text(:Tasks) %> <span><%= num_active_work_units %></span></a></div>
-        <div id="z__aep_tools_tab"><a href="/do/tools"><%= h(@request_user.name) %></a></div>
+        <div id="z__aep_tools_tab"><a href="/do/tools" aria-label="<%= h(@locale.text_format(:Layout_Main_Menu_Action, @request_user.name)) %>" aria-haspopup="true" aria-expanded="false"><%= h(@request_user.name) %></a></div>
         <div id="z__help_tab"<% if first_crumb == :help %> class="z__selected"<% end %>><a href="/do/help"><%= @locale.text(:Help) %></a></div>
       </div>
     <% else %>
@@ -115,7 +117,7 @@
       last_crumb = @breadcrumbs.last
       if last_crumb.class == Array
         href, text = last_crumb
-        %><a href="<%= href %>"><%= h(text) %></a><%
+        %><a role="button" href="<%= href %>"><%= h(text) %></a><%
       end
     end
   %>
@@ -136,7 +138,7 @@
           %><a class="z__button_link <% if edit_link_drop_down_menu_index != nil %>z__button_edit_left<% else %>z__button_edit_wide<% end %>" href="<%= @edit_link %>"><%= @locale.text(:Layouts_View_Edit) %></a><%
           if edit_link_drop_down_menu_index != nil
             # Space in drop down link required for it to display in IE6 and IE7
-            %><a class="z__button_link z__button_edit_right" id="z__button_bar_button_<%= edit_link_drop_down_menu_index %>" href="#" title="<%= @locale.text(:Layouts_View_Edit_menu) %>"> </a><%
+            %><a class="z__button_link z__button_edit_right" id="z__button_bar_button_<%= edit_link_drop_down_menu_index %>" href="#" aria-label="<%= @locale.text(:Layouts_View_Edit_menu) %>" title="<%= @locale.text(:Layouts_View_Edit_menu) %>"> </a><%
           end
         end
         # Add/remove tray button
@@ -148,7 +150,7 @@
           if tray_contents.include?(@represented_objref.to_presentation)
             %><a id="z__tray_addremove" class="z__button_link z__tray_addremove_is_remove" href="?tray=r" title="<%= @locale.text(:Layouts_View_Remove_from_tray) %>">&nbsp;</a><%
           else
-            %><a id="z__tray_addremove" class="z__button_link" href="?tray=a" title="<%= @locale.text(:Layouts_View_Add_to_tray) %>">&nbsp;</a><%
+            %><a id="z__tray_addremove" class="z__button_link" href="?tray=a" aria-label="<%= @locale.text(:Layouts_View_Add_to_tray) %>" title="<%= @locale.text(:Layouts_View_Add_to_tray) %>">&nbsp;</a><%
           end
         end
         %></div><%
@@ -159,7 +161,7 @@
 <!-- left column -->
   <div id="z__left_column">
     
-      <div id="z__navigation_container">
+      <div id="z__navigation_container" role="navigation" aria-label="<%= @locale.text(:Layout_Navigation_Left) %>">
         <!-- left hand navigation is rendered by JavaScript on the client side - see navigation.js -->
         <% if @request_user.policy.is_not_anonymous? %>
           <script src="/api/navigation/left/<%= h(@locale.locale_id || 'en') %>/<%= KApp.global(:navigation_version) %>/<%= @request_user.id %>"></script>
@@ -177,17 +179,17 @@
     button_bar_buttons.each do |button_n, name, entries, is_special, is_button|
       unless is_special
         if is_button
-          %><a href="<%= h(entries.first.first) %>"><%= h(entries.first.last) %></a><%
+          %><a role="button" href="<%= h(entries.first.first) %>"><%= h(entries.first.last) %></a><%
         else
           # note careful use of z__ names with suffixes to work after compressing
-          %><a href="#" id="z__button_bar_button_<%= button_n %>" class="z__button_bar_menu"><%= h(name) %></a><%
+          %><a role="button" aria-haspopup="true" href="#" id="z__button_bar_button_<%= button_n %>" class="z__button_bar_menu"><%= h(name) %></a><%
         end
       end
     end
     %></div></div><%
   %>
 
-  <div id="z__ws_content">
+  <div id="z__ws_content" role="main">
     <%= @content_for_layout %>
   </div>
   
@@ -203,7 +205,7 @@
   if footer_html && footer_html.length > 0
     %><%= footer_html %><%
   else
-    %><div id="z__logo_display">
+    %><div id="z__logo_display" role="contentinfo">
       <a href="/do/c"><%= @locale.text(:Layouts_View_Copyright_Notice) %></a>
     </div><%
   end
@@ -213,9 +215,9 @@
     button_n = 0
     button_bar_buttons.each do |button_n, name, entries, is_special, is_button|
       unless is_button
-        %><div id="z__button_bar_button_<%= button_n %>m" class="z__title_bar_button_menu" style="display:none"><%
+        %><div role="menu" id="z__button_bar_button_<%= button_n %>m" class="z__title_bar_button_menu" style="display:none"><%
         entries.each do |url_path, menu_text, options|
-          %><a class="z__title_bar_button_action_menu_entry" href="<%= url_path %>"<% if options != nil && options[:new_window] %> target="_blank" rel="noopener"<% end %>><%= h(menu_text) %></a><%
+          %><a role="menuitem" class="z__title_bar_button_action_menu_entry" href="<%= url_path %>"<% if options != nil && options[:new_window] %> target="_blank" rel="noopener"<% end %>><%= h(menu_text) %></a><%
         end
         %></div><%
       end

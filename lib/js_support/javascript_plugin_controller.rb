@@ -19,6 +19,7 @@ class JavaScriptPluginController < ApplicationController
 
   CONTENT_TYPES = Hash.new
   Ingredient::Rendering::RENDER_KIND_CONTENT_TYPES.each_key { |k| CONTENT_TYPES[k.to_s] = k}
+  HEADER_CONTENT_TYPE = KFramework::Headers::CONTENT_TYPE
 
   ALLOWED_LAYOUTS = {
     "std:standard"  => true,
@@ -78,11 +79,17 @@ class JavaScriptPluginController < ApplicationController
     if body == nil
       raise KFramework::RequestPathNotFound.new("Plugin #{@factory.plugin_name} returned a null response body")
     end
+    render_opts = Hash.new
     # Send headers (decoding them from the JSON value)
     if headersJSON != nil
       headers = JSON.parse(headersJSON)
       headers.each do |name, value|
-        response.headers[name] = value
+        if name == HEADER_CONTENT_TYPE
+          # Content-Type header needs to be moved to avoid getting overwritten or ignored
+          render_opts[:content_type] = value
+        else
+          response.headers[name] = value
+        end
       end
     end
     # If E.response.body was set to a stored or generated file, respond without any further response processing.
@@ -91,7 +98,6 @@ class JavaScriptPluginController < ApplicationController
     return respond_with_zip_file(body) if body.kind_of?(KZipFile)
     return respond_with_xml(body) if body.kind_of?(XmlDocument)
     # Handle response
-    render_opts = Hash.new
     render_opts[:status] = status_code if status_code != nil
     if layout_name == nil
       render_opts[:text] = body

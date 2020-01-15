@@ -239,8 +239,14 @@ var repeatingSectionAddRow = function(referenceElement) {
     var suffix = elementNameSuffix(indiciesFormElement.name) + '.' + newIndex;
     // Use the blank HTML from the bundle to create the new DOM elements, rewriting the name attributes to include the generated suffix.
     var newRow = $(bundled.blank);
-    $('input,textarea,select', newRow).each(function() {
-        this.name = this.name.replace('_!_', suffix);
+    $('input,textarea,select,label', newRow).each(function() {
+        var element = this;
+        _.each(['name','for','id'], function(prop) {
+            var value = element.getAttribute(prop);
+            if(value) {
+                element.setAttribute(prop, value.replace('_!_', suffix));
+            }
+        });
     });
     // Custom initialisation for any other elements
     _.each(onCreateNewRepeatingSectionRow, function(f) { f.call(this, newRow, rowsParent); });
@@ -352,7 +358,7 @@ var lookupResultPickerHide = function() {
 // When the element is clicked, store the value if it's useful
 oform.on('focus', '.oforms-lookup-input', function() {
     var info = findLookupElementInfo(this);
-    if($(this).hasClass('oforms-lookup-valid')) {
+    if($(this).hasClass('oforms-lookup-valid alert-success')) {
         // Has valid data, make sure it's cached
         if(undefined === info._queryCache._idToDisplay[info._valueInput.value]) {
             info._queryCache._idToDisplay[info._valueInput.value] = this.value;
@@ -418,7 +424,7 @@ oform.on('keyup input', '.oforms-lookup-input', function(event) {
     }
     // Clear the value input so invalid data isn't sent to the server
     info._valueInput.value = '';
-    lookupElement.removeClass('oforms-lookup-valid');
+    lookupElement.removeClass('oforms-lookup-valid alert-success');
     // Convert query to lower case and trim leading and trailing whitespace
     var query = originalValue.toLowerCase().replace(/(^\s+|\s+$)/g,'');
     if(query === '') {
@@ -443,7 +449,7 @@ oform.on('keyup input', '.oforms-lookup-input', function(event) {
                 lookupElement.val(newValue);
                 lookupElement.data("lastQuery", query);
             }
-            lookupElement.addClass('oforms-lookup-valid');
+            lookupElement.addClass('oforms-lookup-valid alert-success');
             lookupResultPickerHide();
         } else {
             // No exact match - build HTML for the lookup
@@ -510,7 +516,7 @@ oform.on('keyup input', '.oforms-lookup-input', function(event) {
                 }
                 info._valueInput.value = id;
                 info._queryCache._idToDisplay[id] = display;
-                lookupElement.val(display).addClass('oforms-lookup-valid');
+                lookupElement.val(display).addClass('oforms-lookup-valid alert-success');
                 lookupElement.data("pickedDisplayValue", display);
             };
         }

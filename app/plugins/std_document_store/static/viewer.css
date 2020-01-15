@@ -18,7 +18,7 @@ div.z__docstore_nav_title {
     font-size: 10px;
     text-transform: uppercase;
     font-weight: bold;
-    color: #888;
+    color: #757575;
     padding: 0;
 }
 
@@ -29,7 +29,7 @@ div.z__docstore_nav_title {
 
 .z__docstore_form_title {
     font-size: 20px;
-    color: #777;
+    color: #585858;
     border-bottom: 1px solid #ccc;
     margin-bottom: 4px;
 }

@@ -45,6 +45,8 @@ Handlebars
 moment
 XDate
 console
+$i18n_defaults
+$i18n_locale_info
 $i18n_platform_text
 $haplo_framework_initialiser
 O

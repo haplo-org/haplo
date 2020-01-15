@@ -7,6 +7,7 @@
 package org.haplo.appserver;
 
 import java.io.*;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Response object which writes data held in memory.
@@ -52,5 +53,20 @@ public class DataResponse extends Response {
 
     public void writeToOutputStream(OutputStream stream) throws IOException {
         stream.write(data);
+    }
+
+    public String getAbbreviatedResponseBodyForLogging() {
+        if(data.length > 8192) {
+            return "(too long to decode)";
+        }
+        try {
+            String s = IOUtils.toString(data, "UTF-8");
+            if(s.length() > 1536) {
+                s = s.substring(0, 1536);
+            }
+            return s;
+        } catch(Exception e) {
+            return "(couldn't decode response body as UTF-8)";
+        }
     }
 }

@@ -1,0 +1,11 @@
+{
+  "pluginName": "std_i18n_locales",
+  "pluginAuthor": "Haplo Services",
+  "pluginVersion": 1,
+  "displayName": "Locales",
+  "displayDescription": "Additional APIs for supporting locales",
+  "apiVersion": 4,
+  "load": [
+      "js/std_i18n_locales.js"
+    ]
+}

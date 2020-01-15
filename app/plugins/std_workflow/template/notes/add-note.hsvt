@@ -21,7 +21,7 @@ std:plugin:resources("w.css")
   }
 
   <div class=["z__workflow_note_container" if(isPrivate){"z__workflow_note_container_private"}]>
-    <textarea class="z__focus_candidate" rows="6" cols="80" name="note"> note </textarea>
+    <textarea class="z__focus_candidate" rows="6" cols="80" name="note" aria-label=i("Notes")> note </textarea>
   </div>
 
   <p> <input type="submit" value=i("Save note")> </p>

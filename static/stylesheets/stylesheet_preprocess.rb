@@ -17,7 +17,7 @@ module StylesheetPreprocess
   PAGE_CONTENT_WIDTH = '520px'
   AEP_HEIGHT = '40px'
 
-  ANCHOR_COLOUR = '#1278db'
+  ANCHOR_COLOUR = '#1175d5'
 
   PAGE_BORDER_COLOUR = '#ddd'
 
@@ -35,7 +35,7 @@ module StylesheetPreprocess
 
   C_PAGE_BACKGROUND = '#fff'
   C_TEXT = '#000'
-  C_TEXT_GREY_LIGHT = '#999'
+  C_TEXT_GREY_LIGHT = '#757575'
   C_TEXT_GREY_DARK = '#555'
   C_AEP_BACKGROUND = '#eee'
   C_AEP_MENU_BACKGROUND = '#f5f5f5'

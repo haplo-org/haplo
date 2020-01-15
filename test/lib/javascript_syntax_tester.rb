@@ -77,7 +77,7 @@ class JavaScriptSyntaxTester
   end
 
   def all_javascript_files
-    j = Dir.glob("**/*/**/*.js").sort # **/*/** so that the components symlink is followed
+    j = Dir.glob("**/*/**/*.js").sort.uniq # **/*/** so that the components symlink is followed
     Dir.entries('.').select { |f| File.symlink?(f) && f !~ /\A\./ }.sort.each do |dirname|
       # Any symlinks in the current directory will need a glob too
       j.concat(Dir.glob("#{dirname}/**/*.js").sort)

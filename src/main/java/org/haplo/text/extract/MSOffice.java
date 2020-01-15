@@ -28,6 +28,7 @@ public class MSOffice extends TextExtractOp {
         POITextExtractor extractor = null;
         try {
             extractor = ExtractorFactory.createExtractor(new File(getInputPathname()));
+            if(extractor == null) { return ""; }
             String text = null;
             try {
                 text = extractor.getText();

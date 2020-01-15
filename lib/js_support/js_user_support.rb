@@ -42,8 +42,16 @@ module JSUserSupport
     user
   end
 
-  def self.getUserByEmail(email)
-    User.find_all_by_email_of_any_kind(email).first
+  def self.getUserByEmail(email, enforceKind, group)
+    q = User.where("lower(email) = lower(?)", email).order(:id)
+    if enforceKind
+      if group
+        q = q.where("kind IN (#{User::KIND_GROUP},#{User::KIND_GROUP_DISABLED})")
+      else
+        q = q.where("kind IN (#{User::KIND_USER},#{User::KIND_USER_BLOCKED},#{User::KIND_USER_DELETED})")
+      end
+    end
+    q.first
   end
 
   def self.getAllUsersByEmail(email)

@@ -1994,10 +1994,11 @@ __E
 
     # Test constrained by update time query
     [
-      [nil, Time.now + 1, true],
-      [Time.now + 1, nil, false],
-      [Time.now - 4, Time.now + 4, true],
-      [Time.now + 4, Time.now + 8, false]
+      [nil, DateTime.now + 1, true],
+      [DateTime.now + 1, nil, false],
+      [DateTime.now - 4, DateTime.now + 4, true],
+      [DateTime.now + 4, DateTime.now + 8, false],
+      [nil, nil, true]
     ].each do |start, endtime, haveresults|
       update_time_query = KObjectStore.query_and.free_text('FINDTHIS')
       update_time_query.constrain_to_updated_time_interval(start, endtime)

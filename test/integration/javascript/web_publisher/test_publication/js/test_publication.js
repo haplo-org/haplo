@@ -45,6 +45,9 @@ Publication.respondToExactPath("/test-publication/all-exchange",
 
 Publication.respondToExactPathAllowingPOST("/post-test-exact",
     function(E, context) {
+        if(E.request.method === "POST") {
+            E.response.headers["Content-Type"] = "application/x-random-html";
+        }
         E.response.kind = "html";
         E.response.body = "test exact "+E.request.method;
     }

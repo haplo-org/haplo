@@ -50,11 +50,13 @@ public class KBase64 extends KScriptable {
             default:     encoder = Base64.getEncoder();     break;
         }
 
-        InputStream in = inputToInputStream(input, "O.base64.encode()");
-
         ByteArrayOutputStream encoded = new ByteArrayOutputStream();
         OutputStream encoding = encoder.wrap(encoded);
-        IOUtils.copy(in, encoding);
+
+        try(InputStream in = inputToInputStream(input, "O.base64.encode()")) {
+            IOUtils.copy(in, encoding);
+        }
+
         encoding.close();
         String r = null;
         try {
@@ -73,12 +75,13 @@ public class KBase64 extends KScriptable {
             default:     decoder = Base64.getDecoder();     break;
         }
 
-        InputStream in = inputToInputStream(input, "O.base64.decode()");
-
         ByteArrayOutputStream decoded = new ByteArrayOutputStream();
-        InputStream decoding = decoder.wrap(in);
-        IOUtils.copy(decoding, decoded);
-        decoding.close();
+        try(
+            InputStream in = inputToInputStream(input, "O.base64.decode()");
+            InputStream decoding = decoder.wrap(in);
+        ) {
+            IOUtils.copy(decoding, decoded);
+        }
 
         String filename = JsGet.stringMaybeWithDefault("filename", binaryDataOptions, "data.bin");
         String mimeType = JsGet.stringMaybeWithDefault("mimeType", binaryDataOptions, "application/octet-stream");

@@ -163,18 +163,32 @@ _.extend(P.WorkflowInstanceBase.prototype, {
     timelineEntryDeferredRender: function(entry) {
         var textSearch = [entry.action];
         if(entry.previousState) { textSearch.push(entry.previousState); }
-        var special, text = this._getTextMaybe(['timeline-entry'], textSearch);
-        // If this can't be fulfilled by the text system, try the render handler instead
-        if(!text) {
-            special = this._call('$renderTimelineEntryDeferred', entry) ||
+        var view, text = this._getTextMaybe(['timeline-entry'], textSearch);
+        if(text) {
+            // Slightly nasty backwards compatibility code:
+            // Before i18n, timeline entry text was written as just the phrase
+            // after the username. However, this doesn't work for some languages.
+            // If the text contains the insertation marker {}, the username is
+            // inserted there, otherwise, an insertation point is assumed to be
+            // at the beginning of the string.
+            var text0, text1;
+            if(-1 !== text.indexOf('{}')) {
+                var t = text.split('{}');
+                text0 = t[0]; text1 = t[1];
+            } else {
+                text1 = text;
+            }
+            view = {entry:entry, text0:text0, text1:text1};
+        } else {
+            // Text system cannot find the text, try the render handler instead
+            var special = this._call('$renderTimelineEntryDeferred', entry) ||
                 this._renderTimelineEntryDeferredBuiltIn(entry);
+            if(special) {
+                view = {entry:entry, special:special};
+            }
         }
-        if(text || special) {
-            return P.template('timeline/entry-layout').deferredRender({
-                entry: entry,
-                text: text,
-                special: special
-            });
+        if(view) {
+            return P.template('timeline/entry-layout').deferredRender(view);
         }
     },
 

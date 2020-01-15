@@ -33,7 +33,7 @@ else
 end
 
 -%>
-<div class="z__search_results_container" id="z__search_container_<%= res_idx %>"><%
+<div class="z__search_results_container" id="z__search_container_<%= res_idx %>" role="region" aria-label="<%= @locale.text(:Search_Results) %>"><%
 
   if search_results != nil
     # How to display them?

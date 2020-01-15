@@ -34,17 +34,18 @@ public class HTMLToText extends Operation {
     protected void performOperation() {
         File output = new File(outputPathname);
 
-        try {
-            FileInputStream html = new FileInputStream(new File(inputPathname));
+        try(FileInputStream html = new FileInputStream(new File(inputPathname))) {
 
             Source source = new Source(html);
             source.fullSequentialParse();
             Renderer renderer = new Renderer(source);
             renderer.setIncludeHyperlinkURLs(false);    // URLs look nasty in the output
-            OutputStreamWriter writer = new OutputStreamWriter(new FileOutputStream(output), "UTF-8");
-            renderer.writeTo(writer);
-            writer.close();
-            html.close();
+            try(
+                FileOutputStream fileStream = new FileOutputStream(output);
+                OutputStreamWriter writer = new OutputStreamWriter(fileStream, "UTF-8")
+            ) {
+                renderer.writeTo(writer);
+            }
         } catch(Exception e) {
             // Delete the output but otherwise ignore the error
             output.delete();

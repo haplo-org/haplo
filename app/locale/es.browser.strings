@@ -52,3 +52,5 @@ GenFileErr=Error al preparar el archivo.
 GenFileDownStart=Comenzó la descarga: $FILE
 GenFileFail=Error al generar archivo.
 Control_LinkOnly=Solo enlace
+Control_Tree_Find=Buscar...
+Control_Tree_Find_Label=Escriba para buscar un elemento

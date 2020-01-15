@@ -12,5 +12,5 @@ if(indicator) {
       secondary-back    {"z__ui_indicate_secondary z__ui_indicate_arrow_back"}
       forward           {"z__ui_indicate_arrow_forward"}
       back              {"z__ui_indicate_arrow_back"}
-  ]> </span>
+  ] role="presentation"> </span>
 }

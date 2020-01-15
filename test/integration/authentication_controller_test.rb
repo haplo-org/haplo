@@ -44,6 +44,8 @@ class AuthenticationControllerTest < IntegrationTest
     assert "/do/something?a=b&c=e" =~ AuthenticationController::SAFE_REDIRECT_URL_PATH
     # Allowing paths starting with // would allow the login to be used as an open redirect
     assert "//example.org/hello" !~ AuthenticationController::SAFE_REDIRECT_URL_PATH
+    assert "/\\example.org/hello" !~ AuthenticationController::SAFE_REDIRECT_URL_PATH
+    assert "\\\\example.org/hello" !~ AuthenticationController::SAFE_REDIRECT_URL_PATH
   end
 
   # ===================================================================================================================

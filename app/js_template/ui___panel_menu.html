@@ -1,4 +1,4 @@
-<div class="z__plugin_ui_action_panel_menu_block">
+<div role="menu" class="z__plugin_ui_action_panel_menu_block">
   {{#if title}}<h2>{{title}}</h2>{{/if}}
   <div class="z__plugin_ui_action_panel_menu_block_entries">
     <div class="z__plugin_ui_action_panel_menu_block_column">
@@ -6,7 +6,7 @@
         {{#if $colbreak}}
           </div><div class="z__plugin_ui_action_panel_menu_block_column">
         {{/if}}
-        <p><a href="{{href}}">{{label}}</a></p>
+        <p><a role="menuitem" href="{{href}}">{{label}}</a></p>
       {{/each}}
     </div>
   </div>

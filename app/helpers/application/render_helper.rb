@@ -579,7 +579,7 @@ module Application_RenderHelper
         value,desc,qualifier = vdq
         html << '<div class="z__keyvalue_row">'
         # Descriptor name?
-        html << %Q!<div class="z__keyvalue_col1">#{h(toa.descriptor.printable_name.to_s)}</div>! if index == 0
+        html << %Q!<div class="z__keyvalue_col1" id="z__obj_table_row_desc_#{desc.to_i}">#{h(toa.descriptor.printable_name.to_s)}</div>! if index == 0
         if qualifier != nil
           qual_descriptor = schema.qualifier_descriptor(qualifier)
           if qual_descriptor != nil
@@ -593,7 +593,7 @@ module Application_RenderHelper
         # Value and finish row div
         html << '<div class="z__keyvalue_col2'
         html << ' z__object_last_attribute_value' if index == last_index
-        html << %Q!">#{render_value(value, obj, render_options, desc)}</div></div>\n!
+        html << %Q!" aria-labelledby="z__obj_table_row_desc_#{desc.to_i}">#{render_value(value, obj, render_options, desc)}</div></div>\n!
       end
     end
     html << '<div class="z__keyvalue_divider"></div></div>'

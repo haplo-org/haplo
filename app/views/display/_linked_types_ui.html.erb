@@ -6,7 +6,7 @@
   render_icon = @type_desc ? @type_desc.render_icon : :generic
   if (render_type != :intranetpage) && (render_type != :blank)
     # @show_linked_objects is true if rendering a list of linked objects
-    %><div id="z__object_linked_types_banner">
+    %><div id="z__object_linked_types_banner" role="navigation" aria-label="<%= @locale.text(:Display_Linked_items_navigation_section_label) %>">
     <div id="z__object_linked_types_banner_main_object">
       <%= @show_linked_objects ? %Q!<a href="#{@obj_urlpath}">! : '<div>' %>
         <%= html_for_icon(render_icon, :medium) %><br><%= h(@type_desc ? @type_desc.printable_name : "Object") %>

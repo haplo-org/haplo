@@ -7,7 +7,7 @@
 
 class LocaleTest < Test::Unit::TestCase
 
-  TEST_LOCALE = KLocale.new("Test", "test", "test/fixtures/i18n/locale/test.strings", "test/fixtures/i18n/locale/test.browser.strings")
+  TEST_LOCALE = KLocale.new("Test", "TEST", "test", "test/fixtures/i18n/locale/test.strings", "test/fixtures/i18n/locale/test.browser.strings")
 
   def test_safety
     en = KLocale::ID_TO_LOCALE['en']

@@ -387,16 +387,19 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         }
     }
     // Render the form
-    var navigation = null;
+    var navigationTop = null, navigationBottom = null;
     if(!isSinglePage || (delegate.alwaysShowNavigation && delegate.alwaysShowNavigation(this.key, this, cdocument))) {
-        navigation = P.template("navigation").deferredRender({pages:pages});
+        var navigationTemplate = P.template("navigation");
+        navigationTop = navigationTemplate.deferredRender({pages:pages});
+        navigationBottom = navigationTemplate.deferredRender({pages:pages, isRepeat:true});
     }
     if(renderingFormIncompletePage) {
         // slightly abuse form render action to show a list of 'incomplete' forms
         // when the user tries to submit the last page with incomplete prior pages
         actions.render(this, E, P.template("incomplete").deferredRender({
             isSinglePage: isSinglePage,
-            navigation: navigation,
+            navigationTop: navigationTop,
+            navigationBottom: navigationBottom,
             pages: pages
         }));
     } else {
@@ -418,7 +421,8 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
             commentsUrl: actions.commentsUrl,
             versionForComments: actions.viewComments ? this.committedVersionNumber : undefined,
             saveButtonStyle: saveButtonStyle,
-            navigation: navigation,
+            navigationTop: navigationTop,
+            navigationBottom: navigationBottom,
             showFormTitles: actions.showFormTitlesWhenEditing,
             pages: pages,
             showFormError: showFormError,

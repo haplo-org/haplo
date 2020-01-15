@@ -17,7 +17,8 @@
     margin-bottom: 9px;
 }
 
-.oform label {
+.oform label,
+.oform .oforms-cluster-label {
     display: block;
     margin-bottom: 5px;
 }
@@ -70,6 +71,10 @@
 
 .oform input[type=text].oforms-number {
     width: 80px;
+}
+
+.oforms-unit {
+    display: inline-block;
 }
 
 .oforms-delete-btn,
@@ -228,7 +233,7 @@
 
 .oform h2 {
     font-weight: normal;
-    color: #999;
+    color: #757575;
     font-size: 18px;
     line-height: 27px;
     margin: 18px 0 9px 0;
@@ -347,76 +352,6 @@
     background-color: #fdd;
 }
 
-#oforms-calendar-popup {
-    width: 196px;
-    height: 176px;
-    background: #eee;
-    border: 2px solid #aaa;
-    border-radius: 4px;
-    box-shadow: -3px 3px 4px rgba(0,0,0,0.15);
-    z-index: 9000;
-}
-#oforms-calendar-popup:after, #oforms-calendar-popup:before {
-    top: 100%;
-    border: solid transparent;
-    content: " ";
-    height: 0;
-    width: 0;
-    position: absolute;
-    pointer-events: none;
-}
-#oforms-calendar-popup:after {
-    border-color: rgba(238, 238, 238, 0);
-    border-top-color: #eee;
-    border-width: 10px;
-    left: 20%;
-    margin-left: -10px;
-}
-#oforms-calendar-popup:before {
-    border-color: rgba(170, 170, 170, 0);
-    border-top-color: #aaa;
-    border-width: 13px;
-    left: 20%;
-    margin-left: -13px;
-}
-
-#oforms-calendar-popup a, #oforms-calendar-popup span {
-    display: block;
-    width: 28px;
-    height: 22px;
-    float: left;
-    text-align: center;
-    font-size: 12px;
-}
-
-#oforms-calendar-popup span.oforms-calendar-popup-monthyear {
-    width: 140px;
-    font-weight: bold;
-}
-
-#oforms-calendar-popup span.oforms-calendar-popup-selected {
-    background: #555;
-    color: #fff;
-}
-
-#oforms-calendar-popup span.oforms-calendar-popup-invalid {
-    color: #999;
-}
-
-#oforms-calendar-popup :nth-child(7n+4), #oforms-calendar-popup :nth-child(7n+10) {
-    background: #fff; /* saturdays and sundays */
-}
-
-#oforms-calendar-popup a, #oforms-calendar-popup a:visited, #oforms-calendar-popup a:hover {
-    color: #333;
-    text-decoration: none;
-}
-
-#oforms-calendar-popup a:hover {
-    background: #e00;
-    color: #eee;
-}
-
 /* FILES */
 
 .oforms-file {
@@ -479,6 +414,75 @@
     content: "\2212";
     color: #500;
     background: #fdd;
+}
+#oforms-calendar-popup {
+    width: 196px;
+    height: 176px;
+    background: #eee;
+    border: 2px solid #aaa;
+    border-radius: 4px;
+    box-shadow: -3px 3px 4px rgba(0,0,0,0.15);
+    z-index: 9000;
+}
+#oforms-calendar-popup:after, #oforms-calendar-popup:before {
+    top: 100%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+}
+#oforms-calendar-popup:after {
+    border-color: rgba(238, 238, 238, 0);
+    border-top-color: #eee;
+    border-width: 10px;
+    left: 20%;
+    margin-left: -10px;
+}
+#oforms-calendar-popup:before {
+    border-color: rgba(170, 170, 170, 0);
+    border-top-color: #aaa;
+    border-width: 13px;
+    left: 20%;
+    margin-left: -13px;
+}
+
+#oforms-calendar-popup a, #oforms-calendar-popup span {
+    display: block;
+    width: 26px;
+    height: 22px;
+    float: left;
+    text-align: center;
+    font-size: 12px;
+}
+
+#oforms-calendar-popup span.oforms-calendar-popup-monthyear {
+    width: 140px;
+    font-weight: bold;
+}
+
+#oforms-calendar-popup span.oforms-calendar-popup-selected {
+    background: #555;
+    color: #fff;
+}
+
+#oforms-calendar-popup span.oforms-calendar-popup-invalid {
+    color: #999;
+}
+
+#oforms-calendar-popup :nth-child(7n+4), #oforms-calendar-popup :nth-child(7n+10) {
+    background: #fff; /* saturdays and sundays */
+}
+
+#oforms-calendar-popup a, #oforms-calendar-popup a:visited, #oforms-calendar-popup a:hover {
+    color: #333;
+    text-decoration: none;
+}
+
+#oforms-calendar-popup a:hover {
+    background: #e00;
+    color: #eee;
 }
 
 /* END-STANDARD */

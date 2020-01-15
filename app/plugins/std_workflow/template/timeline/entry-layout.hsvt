@@ -2,8 +2,9 @@ std:plugin:resources("w.css")
 
 <div class="z__workflow_timeline_entry">
   <div class="z__workflow_timeline_entry_date"> std:date:time(entry.datetime) </div>
-  if(text) {
-    <i> entry.user.name </i> " " text
+  ifAny(text0 text1) {
+    if(text0) { text0 " " }
+    <i> entry.user.name </i> " " text1
   } else {
     if(special) { render(special) }
   }

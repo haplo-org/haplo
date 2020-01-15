@@ -9,7 +9,7 @@
 
 <% @objs.each do |obj| -%>
   <div class="z__tray_entry">
-    <div class="z__tray_remove"><a class="z__button_link" href="?clear=<%= obj.objref.to_presentation %>">&nbsp;</a></div>
+    <div class="z__tray_remove"><a class="z__button_link" role="button" title="<%= @locale.text(:Layouts_View_Remove_from_tray) %>" href="?clear=<%= obj.objref.to_presentation %>">&nbsp;</a></div>
     <%= render_obj(obj, :linkedheading) %>
   </div>
 <% end -%>

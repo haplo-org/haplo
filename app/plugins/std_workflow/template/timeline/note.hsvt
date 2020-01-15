@@ -7,7 +7,7 @@ i("{} added a {kind}note:")
     if(entry.data.private){"z__workflow_timeline_entry_note_private"}
   ]>
   if(showEditLink) {
-    <div class="z__workflow_timeline_entry_note_edit"> <a href=["/do/workflow/note/" M.workUnit.id ? e=entry.id]> i("EDIT") </a> </div>
+    <div class="z__workflow_timeline_entry_note_edit"> <a href=["/do/workflow/note/" M.workUnit.id ? e=entry.id] role="button"> i("EDIT") </a> </div>
   }
   std:text:paragraph(entry.data.text)
 </div>

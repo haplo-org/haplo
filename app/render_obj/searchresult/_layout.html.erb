@@ -20,7 +20,7 @@
   </div>
 <% else %>
   <div class="z__searchresult_tray_ui">
-  <input name="<%= obj.objref.to_presentation %>" type="checkbox">
+  <input name="<%= obj.objref.to_presentation %>" type="checkbox" title="<%= @locale.text(:Layouts_View_Add_to_tray) %>">
   </div>
 <% end %>
 

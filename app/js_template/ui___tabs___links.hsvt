@@ -1,9 +1,9 @@
-<div class="z__plugin_ui_tabs">
+<div role="tablist" class="z__plugin_ui_tabs">
     each(tabs) {
         if(selected) {
-            <span> label </span>
+            <span role="tab" aria-selected="true"> label </span>
         } else {
-            <a href=[href ? *parameters]> label </a>
+            <a role="tab" href=[href ? *parameters]> label </a>
         }
     }
 </div>

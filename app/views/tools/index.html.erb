@@ -78,14 +78,14 @@
   sections.each { |n,e| sections_with_entries << [n,e] unless e.empty? }
   
   # Display menus
-  %><table id="z__tools_menu_table"><tr><td class="z__tools_menu_group_cell"><%
+  %><table id="z__tools_menu_table" role="menu"><tr><td class="z__tools_menu_group_cell"><%
   sections_with_entries.each_with_index do |s,index|
     name,entries = s
     %><div class="z__tools_menu_group_header"><%= section_names[name] %></div><%
     %><ul class="z__tools_menu_group"><%
     entries.each do |path,text|
       # text may come from untrusted source, so need to be escaped
-      %><li><a href="<%= path %>"><%= h(text) %></a></li><%
+      %><li><a role="menuitem" href="<%= path %>"><%= h(text) %></a></li><%
     end
     %></ul><%
     if index != (sections_with_entries.length - 1)

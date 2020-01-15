@@ -204,13 +204,13 @@ TEST(function() {
 
     // std:ui:button-link (with auto-urling)
     template = new $HaploTemplate('<div> std:ui:button-link("/abc" ? def="345" x=y) { "Hello " <span> "world" </span> } </div>');
-    TEST.assert_equal(template.render({y:"ping"}), '<div><a class="z__button_link" href="/abc?def=345&x=ping">Hello <span>world</span></a></div>');
+    TEST.assert_equal(template.render({y:"ping"}), '<div><a role="button" class="z__button_link" href="/abc?def=345&x=ping">Hello <span>world</span></a></div>');
     template = new $HaploTemplate('<div> std:ui:button-link("/abc" ? def="345" x=y z="x") </div>');
-    TEST.assert_equal(template.render({y:"ping"}), '<div><a class="z__button_link" href="/abc?def=345&x=ping&z=x"></a></div>');
+    TEST.assert_equal(template.render({y:"ping"}), '<div><a role="button" class="z__button_link" href="/abc?def=345&x=ping&z=x"></a></div>');
     template = new $HaploTemplate('<div> std:ui:button-link:active("/abc" ? def="xyz" x=y z="x") { "Active" } </div>');
-    TEST.assert_equal(template.render({y:"ping"}), '<div><a class="z__button_link z__button_link_active" href="/abc?def=xyz&x=ping&z=x">Active</a></div>');
+    TEST.assert_equal(template.render({y:"ping"}), '<div><a role="button" aria-pressed="true" class="z__button_link z__button_link_active" href="/abc?def=xyz&x=ping&z=x">Active</a></div>');
     template = new $HaploTemplate('<div> std:ui:button-link:disabled() { "Disabled text" } </div>');
-    TEST.assert_equal(template.render({}), '<div><span class="z__button_link_disabled">Disabled text</span></div>');
+    TEST.assert_equal(template.render({}), '<div><span role="button" aria-disabled="true" class="z__button_link_disabled">Disabled text</span></div>');
 
     // std:icon:*
     template = new $HaploTemplate('<div> std:icon:type(type "large") " ! " std:icon:object(ref "medium") " ! " std:icon:object(obj "small") " ! " std:icon:description(desc "medium") </div>');

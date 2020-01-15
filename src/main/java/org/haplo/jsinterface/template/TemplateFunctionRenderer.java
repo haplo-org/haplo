@@ -307,13 +307,13 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
             throw new RenderException(b.getDriver(), "Can't render std:ui:button-link outside TEXT context");
         }
         if(disabled) {
-            builder.append("<span class=\"z__button_link_disabled\">");
+            builder.append("<span role=\"button\" aria-disabled=\"true\" class=\"z__button_link_disabled\">");
             b.renderBlock(Node.BLOCK_ANONYMOUS, builder, b.getView(), Context.TEXT);
             builder.append("</span>");
         } else {
             builder.append(active
-                ? "<a class=\"z__button_link z__button_link_active\" href=\""
-                : "<a class=\"z__button_link\" href=\""
+                ? "<a role=\"button\" aria-pressed=\"true\" class=\"z__button_link z__button_link_active\" href=\""
+                : "<a role=\"button\" class=\"z__button_link\" href=\""
             );
             b.getNextArgument(ArgumentRequirement.REQUIRED).
               render(builder, b.getDriver(), b.getView(), Context.URL);

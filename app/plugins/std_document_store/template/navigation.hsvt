@@ -2,6 +2,8 @@ each(pages) {
   <button
     name="__goto"
     value=form.formId
+    role="tab"
+    tabindex=if(^{isRepeat}){"-1"}
     class=[if(complete){"z__docstore_nav_complete"}else{"z__docstore_nav_todo"} if(active){"z__docstore_nav_selected"} if(hasComments){"z__docstore_nav_comments"}]
   >
     form.formTitleShort

@@ -11,6 +11,11 @@ Log_in=Log in
 ImpersonateUI_Impersonating=Impersonating
 ImpersonateUI_Finish=Finish
 ImpersonateUI_Finish_User=Finish impersonating %1$s?
+Skip_Link=Skip to content
+Layout_Main_Menu_Action=Show main menu (logged in as %1$s)
+Layout_Navigation_Action_Entry=Menu
+Layout_Navigation_Left=Go to
+Layout_Navigation_Right_Column=Information and actions
 
 # Authentication
 Authentication_Title_Welcome_to=Welcome to %1$s
@@ -31,6 +36,7 @@ Indicator_Tray=Tray <span>%1$d</span>
 
 # Object display
 Display_Title_linked_items_suffix=(linked items)
+Display_Linked_items_navigation_section_label=Linked items
 Display_Linked_items_icon_title=Linked items
 Display_Title_History_of=History of %1$s
 Display_Modification_Info_Dates=Created %1$s, last modified %2$s.
@@ -41,6 +47,9 @@ Display_History_Current_Time=%1$s (current)
 # Files
 FileVersion_Title_Versions_of=Versions of %1$s
 FileVersion_Log_Reverted_To_Version=Reverted to version %1$s
+
+# Search
+Search_Search_Query=Search query
 
 # Search results
 Search_Results_Count=<b>%1$d</b> [plural one{result} other{results}]
@@ -474,6 +483,9 @@ JS_ACTION_PANEL_STATUS=Status
 
 # oForms
 OFORMSMSG_REQUIRED_FIELD=Required field
+OFORMSMSG_SHOW_GUIDANCE=Show guidance
+OFORMSMSG_ADD_ANOTHER=Add another
+OFORMSMSG_REMOVE=Remove
 OFORMSMSG_REPSEC_ERR_MIN=Not enough entries, {} required
 OFORMSMSG_REPSEC_ERR_MAX=Too many entries, {} maximum
 OFORMSMSG_CHOICES_ERR_MIN=Not enough options chosen, {} required

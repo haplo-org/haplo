@@ -1,4 +1,4 @@
-<div class="z__plugin_ui_confirm">
+<div role="dialog" class="z__plugin_ui_confirm">
   <div class="z__plugin_ui_confirm_message">
     {{std:text:paragraph text}}
   </div>
@@ -12,7 +12,7 @@
   {{/each}}
   {{#if backLink}}
     <div class="z__plugin_ui_confirm_action">
-      <a href="{{backLink}}">{{#if backLinkText}}{{backLinkText}}{{else}}Cancel{{/if}}</a>
+      <a role="button" href="{{backLink}}">{{#if backLinkText}}{{backLinkText}}{{else}}Cancel{{/if}}</a>
     </div>
   {{/if}}
   <div class="z__plugin_ui_confirm_end"></div>

@@ -2367,7 +2367,7 @@ _.extend(KAttrContainer.prototype, {
         }
         h += '<div class="z__keyvalue_row">';
         if(!this.p__omitAttributeName) {
-            h += '<div class="z__keyvalue_col1">'+n+'</div>';
+            h += '<div class="z__keyvalue_col1" id="desc-label-'+this.q__desc+'">'+n+'</div>';
         }
         h += '</div>' + this.p__top_html; // include HTML from plugins
 
@@ -2404,6 +2404,7 @@ _.extend(KAttrContainer.prototype, {
             handle: '.z__editor_value_order_drag_handle',
             axis: 'y'
         });
+        this.j__applyAriaAttributesToControls();
     },
     j__value: function() {
         // Copy values, will set elements to undefined as they're picked
@@ -2466,6 +2467,16 @@ _.extend(KAttrContainer.prototype, {
     },
 
     // Utility methods
+    j__applyAriaAttributesToControls: function() {
+        var labelId = 'desc-label-'+this.q__desc;
+        if($('#'+labelId).length) {
+            $('input[type=text], input[type=file], textarea, .z__editor_link_control', this.q__domObj).each(function() {
+                if(!(this.title || this.getAttribute('aria-labelledby') || this.getAttribute('aria-label'))) {
+                    this.setAttribute('aria-labelledby', labelId);
+                }
+            });
+        }
+    },
 
     // Called by plugin_adaptor.js -- in addAttributes() and addLink()
     j__addNewValue: function(data_type,create_data) {
@@ -2485,6 +2496,8 @@ _.extend(KAttrContainer.prototype, {
 
         // Attach control
         v.j__attach();
+
+        this.j__applyAriaAttributesToControls();
 
         // Tell the control it just got added
         v.j__wasAdded();

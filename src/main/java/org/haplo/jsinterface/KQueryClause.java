@@ -154,6 +154,13 @@ public class KQueryClause extends KScriptable {
         this.clause.created_by_user_id(userId);
     }
 
+    public void jsFunction_lastUpdatedWithinDateRange(Object beginDate, Object endDate) {
+        this.clause.constrain_to_updated_time_interval(
+                JsConvert.convertJavaDateToRuby(JsConvert.tryConvertJsDate(beginDate)),
+                JsConvert.convertJavaDateToRuby(JsConvert.tryConvertJsDate(endDate))
+        );
+    }
+
     public void jsFunction_dateRange(Object beginDate, Object endDate, int desc, boolean hasDesc, int qual, boolean hasQual) {
         this.clause.date_range(
                 JsConvert.convertJavaDateToRuby(JsConvert.tryConvertJsDate(beginDate)),

@@ -7,9 +7,14 @@
 
 TEST(function() {
 
+    // Platform default
+    TEST.assert_equal("en", $i18n_defaults.locale_id); // std_i18n_locales uses this
+
     // Default locale
     TEST.assert_equal("en", test_i18n_text1.defaultLocaleId);
     var locale1 = test_i18n_text1.locale();
+    TEST.assert_equal("English", locale1.name);
+    TEST.assert_equal("English", locale1.nameInLanguage);
     TEST.assert_equal(true, locale1.defaultForPlugin);
     var text_one_en1 = locale1.text("category-one");
 
@@ -26,6 +31,8 @@ TEST(function() {
     // Get non-default locale
     var locale2 = test_i18n_text2.locale("es");
     TEST.assert_equal("es", locale2.id);
+    TEST.assert_equal("Spanish", locale2.name);
+    TEST.assert_equal("Español", locale2.nameInLanguage);
     TEST.assert_equal(false, locale2.defaultForPlugin);
     var text_one_es2 = locale2.text("category-one");
     TEST.assert_equal("cat 1, text 2, local, ES", text_one_es2['string-1']);

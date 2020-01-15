@@ -245,4 +245,11 @@ public class Response {
             servletResponse.addHeader(h[0], h[1]);
         }
     }
+
+    /**
+     * Get something to log
+     */
+    public String getAbbreviatedResponseBodyForLogging() {
+        return "RESPONSE: "+this.getClass().getName();
+    }
 }

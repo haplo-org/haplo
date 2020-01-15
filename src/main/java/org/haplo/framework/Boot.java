@@ -36,6 +36,14 @@ import org.apache.log4j.Level;
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.log4j.varia.LevelRangeFilter;
 
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.server.handler.StatisticsHandler;
+import io.prometheus.client.exporter.MetricsServlet;
+import io.prometheus.client.hotspot.DefaultExports;
+import io.prometheus.client.jetty.JettyStatisticsCollector;
+import io.prometheus.client.jetty.QueuedThreadPoolStatisticsCollector;
+
 import org.haplo.common.utils.SSLCertificates;
 import org.haplo.common.utils.SSLCipherSuites;
 
@@ -99,7 +107,7 @@ public class Boot {
         }
 
         System.out.println("===============================================================================");
-        System.out.println("               Haplo Platform (c) Haplo Services Ltd 2006 - 2019");
+        System.out.println("               Haplo Platform (c) Haplo Services Ltd 2006 - 2020");
         System.out.println("             Licensed under the Mozilla Public License Version 2.0");
         System.out.println("===============================================================================");
         System.out.println("Starting framework in " + rootDir + " with environment " + envName);
@@ -198,9 +206,37 @@ public class Boot {
         );
         https.setPort(ports[PORT_INTERNAL_ENCRYPTED]);
 
-        // Set the connectors, request handler, and start the server
+        // Set the connectors and request handler
         httpSrv.setConnectors(new Connector[]{http, https});
         httpSrv.setHandler(new RequestHandler(framework, inDevelopmentMode));
+
+	// If a valid port is configured, enable prometheus metrics
+	try {
+	    int metricport = Integer.valueOf(framework.getInstallProperty("prometheus_port", "0"));
+	    if(metricport > 0) {
+		// Expose prometheus metrics
+		Server metricServer = new Server(metricport);
+		ServletContextHandler context = new ServletContextHandler();
+		context.setContextPath("/");
+		metricServer.setHandler(context);
+		StatisticsHandler stats = new StatisticsHandler();
+		stats.setHandler(httpSrv.getHandler());
+		httpSrv.setHandler(stats);
+		// Standard JVM metrics
+		DefaultExports.initialize();
+		// Register collector
+		new JettyStatisticsCollector(stats).register();
+		// Monitor the haplo thread pool
+		new QueuedThreadPoolStatisticsCollector(jettyThreadPool, "haplo").register();
+		metricServer.start();
+		context.addServlet(new ServletHolder(new MetricsServlet()), "/metrics");
+		logger.info("Enabled prometheus monitoring on port " + metricport);
+	    }
+	} catch (Exception e) {
+	    logger.error("Invalid prometheus_port setting.");
+	}
+
+	// Start the http server now, in case prometheus modified it
         httpSrv.start();
 
         // Test mode?

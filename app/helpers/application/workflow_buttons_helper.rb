@@ -12,7 +12,7 @@ module Application_WorkflowButtonsHelper
     return '' if buttons.empty?
     r = []
     buttons.each do |name,url| # TODO: Make workflow_buttons use the url,name ordering, like everything else
-      r << %Q!<a href="#{url}">#{h(name)}</a>!
+      r << %Q!<a role="button" href="#{url}">#{h(name)}</a>!
     end
     %Q!<div class="z__menu_section">#{r.join(' ')}</div>!
   end

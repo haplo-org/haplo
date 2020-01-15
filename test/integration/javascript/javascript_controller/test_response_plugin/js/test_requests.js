@@ -275,6 +275,13 @@
         E.response.body = "Something";
     });
 
+    P.respond("GET", "/do/plugin_test/content-type-header", [
+    ], function(E) {
+        E.response.headers["Content-Type"] = 'application/x-random-type; charset="utf-8"';
+        E.response.body = "Hello";
+        E.response.kind = "json"; // ignored
+    });
+
     P.respond("GET", "/do/plugin_test/client_side_resources", [
     ], function(E) {
         E.response.useStaticResource("teststyle.css");

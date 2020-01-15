@@ -5,13 +5,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
 
-/* --- KCtrlTextWithInnerLabel ----------------------------------------------------- */
-
-/* also used by KTree */
-.z__ctrltext_label_state {
-    color: #bbb;
-}
-
 /* --- Calendar popup ------------------------------------------------------------- */
 
 #z__ctrl_date_popup {

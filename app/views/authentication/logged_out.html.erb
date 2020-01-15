@@ -6,4 +6,4 @@
 <p><%= @locale.text_format(:Authentication_You_have_logged_out_of, KApp.global(:product_name)) %></p>
 
 <p>&nbsp;</p>
-<p><a href="login"><%= @locale.text(:Authentication_View_Log_in) %></a></p>
+<%= workflow_buttons([[@locale.text(:Authentication_View_Log_in), 'login']]) %>

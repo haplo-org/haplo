@@ -14,7 +14,6 @@
 //      p__runningMsie6    - true if it's Internet Explorer 6 (p__runningMsie == true as well)
 //      p__runningMsie8plus - true if it's Internet Explorer 8 or later (p__runningMsie == true as well)
 //      p__runningMsie9plus - true if it's Internet Explorer 9 or later (p__runningMsie == true as well)
-//      p__inputPlaceholderSupported - true if input fields support the placeholder attribute
 //      p__disableScripedNavigateAway - set to true to disable scripted page pages (quick search form, cancel in spawned windows)
 //
 // KApp methods:
@@ -814,9 +813,6 @@ var KApp = (function($) {
         }
     }
 
-    // Feature detection
-    app.p__inputPlaceholderSupported = 'placeholder' in document.createElement('input');
-
     // ----------------------------------------------------------------------------------------------------
     //             Prevent double submission of forms
     // ----------------------------------------------------------------------------------------------------
@@ -932,6 +928,7 @@ var KApp = (function($) {
             var title = this.title;
             if(title && title !== '') {
                 this.title = ''; // remove title attribute so it doesn't appear as well as our Javascript title
+                this.setAttribute("aria-label", title); // for screenreaders
                 $(this).mouseover(_.bind(j__buttonMouseover, this, this, true, title)).
                     mouseout(_.bind(j__buttonMouseover, this, this, false, title));
             }
@@ -974,15 +971,18 @@ var KApp = (function($) {
             }
             // Pre-drop checks, passing in a function to call to reenable the hover highlight on the tools menu entry
             if(pre_drop('z__aep_tools_popup_menu', function() {
-                $('#z__aep_tools_tab a').removeClass('z__aep_tools_menu_popped_up');
+                var tt = $('#z__aep_tools_tab a');
+                tt.removeClass('z__aep_tools_menu_popped_up');
+                tt[0].setAttribute('aria-expanded', 'false');
             })) { return; }
             // Position it using the position of the AEP bar as the reference - using the tools tab gives inconsistent results in differnet browsers
             var aep = $('#z__action_entry_points');
             var aepPos = aep.offset();
             var toolsTab = $('#z__aep_tools_tab a');
             var toolsTabPos = toolsTab.offset();
-            // Disable the hover highlight state.
-            $('#z__aep_tools_tab a').addClass('z__aep_tools_menu_popped_up');
+            // Disable the hover highlight state & set ARIA property
+            toolsTab.addClass('z__aep_tools_menu_popped_up');
+            toolsTab[0].setAttribute('aria-expanded', 'true');
             // Position the pop up menu so the right hand edge lines up with the separator line
             var css = { left:0, top:0 };
             $('#z__aep_tools_popup_menu').css(css).show().offset({
@@ -992,32 +992,6 @@ var KApp = (function($) {
 
         // Setup quick search
         $('#z__aep_search_form').each(function() {
-            // Does this browser requires JavaScript support for the search text placeholder?
-            if(!app.p__inputPlaceholderSupported) {
-                $('input', this).each(function() {
-                    // Set the placeholder text
-                    if(this.value === '') {
-                        this.value = app.q__quickSearchLabel;
-                        this.className = 'z__aep_quick_search_as_label';
-                    }
-                    // If the user entered something before the onload event fired, ungrey the text
-                    if(this.value !== app.q__quickSearchLabel) {
-                        // Set the input's style to NOT greyed out
-                        this.className = '';
-                    }
-                }).focus(function() {
-                    if(this.className === 'z__aep_quick_search_as_label') {
-                        this.className = '';  // remove grey
-                        this.value = '';
-                        this.focus();     // IE fix
-                    }
-                }).blur(function() {
-                    if(this.value === '') {
-                        this.className = 'z__aep_quick_search_as_label';
-                        this.value = app.q__quickSearchLabel;
-                    }
-                });
-            }
             // Make sure the search tab acts as a submission button so users don't accidently lose their search phrase.
             $('#z__aep_search_link').click(function(event) {
                 var search_tab_link = this;

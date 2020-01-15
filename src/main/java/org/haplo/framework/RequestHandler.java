@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 
 import org.haplo.appserver.*;
 import org.haplo.utils.LimitedFilterOutputStream;
+import org.haplo.utils.StringUtils;
 
 /**
  * Request handler for the HTTP server.
@@ -158,7 +159,7 @@ public class RequestHandler extends AbstractHandler {
             if(fileUploads != null) {
                 // Get details of what to do with the file uploads from the framework
                 long frameworkStartTime = System.currentTimeMillis();
-                Response r = readRequestBodyAndreadRequestBodyAndHandleWithFramework(baseRequest, request, app, fileUploads);
+                Response r = readRequestBodyAndHandleWithFramework(baseRequest, request, app, fileUploads);
                 frameworkHandleTime += System.currentTimeMillis() - frameworkStartTime;
 
                 // Check the handler didn't return any content
@@ -169,6 +170,8 @@ public class RequestHandler extends AbstractHandler {
                         // If it is, use the response to inform the developer.
                         response = r;
                     } else {
+                        String abbrBody = r.getAbbreviatedResponseBodyForLogging();
+                        Logger.getLogger("org.haplo.app").error("While handling " + target + ", got unexpected content when asked for file upload instructions: " + abbrBody);
                         throw new RuntimeException("Framework handler returned content when asked for file upload instructions");
                     }
                 } else {
@@ -202,7 +205,7 @@ public class RequestHandler extends AbstractHandler {
         // Get the Ruby framework to handle the request if nothing else handled it
         if(response == null) {
             long frameworkStartTime = System.currentTimeMillis();
-            response = readRequestBodyAndreadRequestBodyAndHandleWithFramework(baseRequest, request, app, fileUploads);
+            response = readRequestBodyAndHandleWithFramework(baseRequest, request, app, fileUploads);
             frameworkHandleTime += System.currentTimeMillis() - frameworkStartTime;
         }
 
@@ -378,9 +381,9 @@ public class RequestHandler extends AbstractHandler {
 
         String logMessage = String.format("%s %s %s %s %d %d %d %s %d %d %s \"%s\" \"%s\"",
                 baseRequest.getHttpChannel().getRemoteAddress().getAddress().getHostAddress(), // Remote address (convoluted to avoid reverse DNS lookup)
-                hostname, // Hostname
-                request.getMethod(), // Method
-                requestURI, // Request path + GET query
+                StringUtils.escapeForLogging(hostname), // Hostname
+                StringUtils.escapeForLogging(request.getMethod()), // Method
+                StringUtils.escapeForLogging(requestURI), // Request path + GET query
                 responseCode, // Response code
                 sentContentLength, // Content-Length sent
                 uncompressedContentLength, // Compressed content-length
@@ -388,8 +391,8 @@ public class RequestHandler extends AbstractHandler {
                 timeTakenForRequest, // Time in milliseconds (includes network transfer etc)
                 frameworkHandleTime, // Time in milliseconds (may be 0 if framework not used)
                 cipher, // Which SSL cipher suite?
-                referer.replace("\"", "\\\""), // Referer URL
-                userAgent.replace("\"", "\\\"") // User agent
+                StringUtils.escapeForLogging(referer), // Referer URL
+                StringUtils.escapeForLogging(userAgent) // User agent
         );
         logger.info(logMessage);
         return logMessage;
@@ -533,7 +536,7 @@ public class RequestHandler extends AbstractHandler {
     /**
      * Use the Ruby framework to handle the request
      */
-    private Response readRequestBodyAndreadRequestBodyAndHandleWithFramework(Request baseRequest, HttpServletRequest request, Application app, FileUploads fileUploads) throws IOException {
+    private Response readRequestBodyAndHandleWithFramework(Request baseRequest, HttpServletRequest request, Application app, FileUploads fileUploads) throws IOException {
         byte[] body = null;
         String bodySpillPathname = null;
 
@@ -604,7 +607,12 @@ public class RequestHandler extends AbstractHandler {
                                 body = memoryOut.toByteArray();
                             }
                         } finally {
-                            out.close();
+                            if(out != null) {
+                                out.close();
+                            }
+                            if(memoryOut != null) {
+                                memoryOut.close();
+                            }
                         }
                     }
                 }

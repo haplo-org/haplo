@@ -343,15 +343,15 @@ public class Runtime {
             cx.evaluateString(scope, sharedJavaScript, "<shared-init>", 1, null /* no security domain */);
 
             // Load the library code
-            FileReader bootScriptsFile = new FileReader(frameworkRoot + "/lib/javascript/bootscripts.txt");
-            LineNumberReader bootScripts = new LineNumberReader(bootScriptsFile);
-            String scriptFilename = null;
-            while((scriptFilename = bootScripts.readLine()) != null) {
-                FileReader script = new FileReader(frameworkRoot + "/" + scriptFilename);
-                cx.evaluateReader(scope, script, scriptFilename, 1, null /* no security domain */);
-                script.close();
+            try(FileReader bootScriptsFile = new FileReader(frameworkRoot + "/lib/javascript/bootscripts.txt")) {
+                LineNumberReader bootScripts = new LineNumberReader(bootScriptsFile);
+                String scriptFilename = null;
+                while((scriptFilename = bootScripts.readLine()) != null) {
+                    try(FileReader script = new FileReader(frameworkRoot + "/" + scriptFilename)) {
+                        cx.evaluateReader(scope, script, scriptFilename, 1, null /* no security domain */);
+                    }
+                }
             }
-            bootScriptsFile.close();
 
             // Insert plugin debugging flag
             if(pluginDebuggingEnabled) {
@@ -360,17 +360,17 @@ public class Runtime {
             }
 
             // Load the list of allowed globals
-            FileReader globalsWhitelistFile = new FileReader(frameworkRoot + "/lib/javascript/globalswhitelist.txt");
             HashSet<String> globalsWhitelist = new HashSet<String>();
-            LineNumberReader whitelist = new LineNumberReader(globalsWhitelistFile);
-            String globalName = null;
-            while((globalName = whitelist.readLine()) != null) {
-                String g = globalName.trim();
-                if(g.length() > 0) {
-                    globalsWhitelist.add(g);
+            try(FileReader globalsWhitelistFile = new FileReader(frameworkRoot + "/lib/javascript/globalswhitelist.txt")) {
+                LineNumberReader whitelist = new LineNumberReader(globalsWhitelistFile);
+                String globalName = null;
+                while((globalName = whitelist.readLine()) != null) {
+                    String g = globalName.trim();
+                    if(g.length() > 0) {
+                        globalsWhitelist.add(g);
+                    }
                 }
             }
-            globalsWhitelistFile.close();
 
             // Remove all the globals which aren't allowed, using a whitelist            
             for(Object propertyName : scope.getAllIds()) // the form which includes the DONTENUM hidden properties

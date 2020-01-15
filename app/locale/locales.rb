@@ -1,3 +1,5 @@
+# coding: utf-8
+
 # Haplo Platform                                    https://haplo.org
 # (c) Haplo Services Ltd 2006 - 2019            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
@@ -18,9 +20,9 @@ class KLocale
   LOCALE_DIR = File.dirname(__FILE__)
 
   LOCALES = [
-    KLocaleEN.new("English", "en", "#{LOCALE_DIR}/en.strings", "#{LOCALE_DIR}/en.browser.strings"),
-    KLocale.new("Welsh", "cy", "#{LOCALE_DIR}/cy.strings", "#{LOCALE_DIR}/cy.browser.strings"),
-    KLocale.new("Spanish", "es", "#{LOCALE_DIR}/es.strings", "#{LOCALE_DIR}/es.browser.strings")
+    KLocaleEN.new("English", "English", "en", "#{LOCALE_DIR}/en.strings", "#{LOCALE_DIR}/en.browser.strings"),
+    KLocale.new("Welsh", "Cymraeg", "cy", "#{LOCALE_DIR}/cy.strings", "#{LOCALE_DIR}/cy.browser.strings"),
+    KLocale.new("Spanish", "Español", "es", "#{LOCALE_DIR}/es.strings", "#{LOCALE_DIR}/es.browser.strings")
   ]
 
   DEFAULT_LOCALE = LOCALES.first

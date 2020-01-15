@@ -418,7 +418,7 @@ a#z__search_tips_button:focus {
 .z__search_results_sort_by .z__search_results_sort_by_not_selectable {
     /* unselectable sort option */
     background: none;
-    color: #ddd;
+    color: #757575;
     padding: 0 3px;
 }
 
@@ -613,7 +613,7 @@ a#z__search_tips_button:focus {
 .z__searchresult_item h4.z__second_title_right,
 .z__searchresult_item h4.z__second_title_right a,
 .z__searchresult_item h4.z__second_title_right a:visited {
-    color: #999;
+    color: #757575;
     /* Tempting to use italic, but the font won't be available. And bold is too heavy. */
     /* But maybe this is too much? */
     text-transform: uppercase;
@@ -657,7 +657,7 @@ a#z__search_tips_button:focus {
 .z__searchresult_information_container a.z__url_value span,
 .z__searchresult_information_container a.z__url_value:visited span,
 .z__searchresult_information_container a:visited {
-    color: #666;
+    color: #555;
     font-weight: normal;    /* for turning off boldness in z__url_value spans for domain highlighting */
 }
 .z__searchresult_information_3,
@@ -677,7 +677,7 @@ a#z__search_tips_button:focus {
 }
 .z__searchresult_information_line.z__searchresult_value_caption {
     font-style: italic;
-    color: #999;
+    color: #757575;
 }
 .z__searchresult_information_truncated {
     position: absolute;

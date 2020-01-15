@@ -24,8 +24,12 @@ public class UTF8Utils {
         File inputFile = new File(inputPathname);
         File outputFile = new File(outputPathname);
         try(
-                BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(inputFile));
-                BufferedOutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outputFile));) {
+                // Although the buffered streams will call close on the file streams when close() is called,
+                // because they all implement Closeable, their close() methods are all idempotent.
+                FileInputStream fileInputStream = new FileInputStream(inputFile);
+                BufferedInputStream inputStream = new BufferedInputStream(fileInputStream);
+                FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
+                BufferedOutputStream outputStream = new BufferedOutputStream(fileOutputStream);) {
             // Got a BOM?
             inputStream.mark(16);
             byte[] fileStarts = new byte[UTF8_BOM.length];

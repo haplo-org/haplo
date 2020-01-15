@@ -65,6 +65,7 @@ CSS_FILE = "static/stylesheets/oforms.css"
 
 initial = File.open(CSS_FILE) { |f| f.read }
 standard_css = File.open("#{OFORMS_DIR}/src/appearance/oforms.css") { |f| f.read }
+standard_css << File.open("#{OFORMS_DIR}/src/appearance/oforms-calendar-popup.css") { |f| f.read }
 css_update = <<__E
 /* BEGIN-STANDARD */
 /* ----- DO NOT MODIFY CONTENTS OF THE STANDARD BLOCK, update with lib/tasks/update_oforms.sh ----- */

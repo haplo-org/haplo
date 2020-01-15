@@ -3,8 +3,8 @@ std:plugin:resources("incomplete.css")
 
 if(additionalUI.top) { render(additionalUI.top) }
 
-if(navigation) {
-  <div class="z__docstore_nav_top"> render(navigation) </div>
+if(navigationTop) {
+  <div class="z__docstore_nav_top" role="tablist"> render(navigationTop) </div>
 }
 
 if(additionalUI.formTop) { render(additionalUI.formTop) }
@@ -38,9 +38,9 @@ if(additionalUI.formBottom) { render(additionalUI.formBottom) }
   </button>
 </div>
 
-if(navigation) {
-  <div class="z__docstore_nav_bottom">
-    render(navigation)
+if(navigationBottom) {
+  <div class="z__docstore_nav_bottom" role="tablist" aria-hidden="true">
+    render(navigationBottom)
   </div>
 }
 

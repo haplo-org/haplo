@@ -22,8 +22,8 @@
   end
 %>
 <!-- cellspacing="0" required for it to look OK in IE6 and IE7 -->
-<table class="z__search_box_container" cellspacing="0"><tr class="z__search_form_query_row"><td class="z__search_form_query_input">
-<input type="text" name="q" id="z__search_query_id" class="z__focus_candidate" autocomplete="off" value="<%=h(spec[:q])%>">
+<table class="z__search_box_container" cellspacing="0" role="search"><tr class="z__search_form_query_row"><td class="z__search_form_query_input">
+<input type="text" name="q" id="z__search_query_id" class="z__focus_candidate" autocomplete="off" value="<%=h(spec[:q])%>" aria-label="<%= @locale.text(:Search_Search_Query) %>">
 <% if spec.has_key?(:f) %><input type="hidden" id="z__search_encoded_form_fields_id" name="f" value="<%= h(spec[:f]) %>"><% end %>
 </td><td class="z__search_form_submit_button">
 <input type="submit" value="<%= @locale.text(:Search_View_Search) %>">

@@ -352,6 +352,12 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     tqg_query(queries, KObjectStore.query_and.date_range(nil, DateTime.new(2015,8,23)))
     tqg_query(queries, KObjectStore.query_and.date_range(DateTime.new(2015,2,23), nil, 36))
 
+    # Updated date ranges
+    tqg_query(queries, KObjectStore.query_and.free_text("a").constrain_to_updated_time_interval(DateTime.new(2011,10,2), DateTime.new(2012,12,4)))
+    tqg_query(queries, KObjectStore.query_and.free_text("a").constrain_to_updated_time_interval(nil, DateTime.new(2015,8,23)))
+    tqg_query(queries, KObjectStore.query_and.free_text("a").constrain_to_updated_time_interval(DateTime.new(2015,2,23), nil))
+    tqg_query(queries, KObjectStore.query_and.free_text("a").constrain_to_updated_time_interval(nil, nil))
+
     # Link to any
     tqg_query(queries, KObjectStore.query_and.link_to_any(A_WORKS_FOR))
     tqg_query(queries, KObjectStore.query_and.link_to_any(A_CLIENT, Q_ALTERNATIVE))
@@ -443,7 +449,7 @@ __E
     disabled_group.save!
     # Set a notification address on a group
     group21 = User.find(21)
-    group21.email = 'notification@example.com'
+    group21.email = 'user3@example.com' # duplicates one of the users
     group21.save!
     # Create an object which is then set as the representative object for a user
     obj = KObject.new()
@@ -813,6 +819,12 @@ __E
 
   def test_name_function
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_name_function.js')
+  end
+
+  # ===============================================================================================
+
+  def test_interpolate_string
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_interpolate_string.js')
   end
 
   # ===============================================================================================
@@ -1268,7 +1280,8 @@ __E
       'Math'=>true, 'StopIteration'=>true, 'JSON'=>true, 'Handlebars'=>true, 'console'=>true, 'HTTP'=>true,
       'oForms'=>true, 'decodeURI'=>true, 'decodeURIComponent'=>true, 'encodeURI'=>true, 'encodeURIComponent'=>true,
       'escape'=>true, 'eval'=>true, 'isFinite'=>true, 'isNaN'=>true, 'parseFloat'=>true, 'parseInt'=>true,
-      'unescape'=>true, 'uneval'=>true, '$i18n_platform_text'=>true
+      'unescape'=>true, 'uneval'=>true, '$i18n_defaults'=>true, '$i18n_locale_info'=>true,
+      '$i18n_platform_text'=>true
     }
     symbols.each do |symbol|
       checks += 1

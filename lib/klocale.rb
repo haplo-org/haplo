@@ -11,15 +11,16 @@ class KLocale
   ULocale = com.ibm.icu.util.ULocale
   PluralFormat = com.ibm.icu.text.PluralFormat
 
-  def initialize(name, locale_id, text_pathname, text_browser_pathname)
+  def initialize(name, name_in_language, locale_id, text_pathname, text_browser_pathname)
     @name = name.dup.freeze
+    @name_in_language = name_in_language.dup.freeze
     @locale_id = locale_id.dup.freeze
     @text_lookup, @text_lookup_count_variant = KLocale.load_text(text_pathname)
     @browser_text_lookup, no_variants_for_browser = KLocale.load_text(text_browser_pathname)
     @ulocale = ULocale.new(@locale_id)
   end
 
-  attr_reader :name, :locale_id
+  attr_reader :name, :name_in_language, :locale_id
 
   # -------------------------------------------------------------------------
 
@@ -112,12 +113,18 @@ class KLocale
   # -------------------------------------------------------------------------
 
   # Provide to JavaScript
-  def self._js_text_lookup_for_javascript(default_locale, locales)
-    text = {"DEFAULT" => default_locale.locale_id}
+  def self._locale_initialiser_for_javascript(default_locale, locales)
+    info = {}
+    text = {}
     locales.each do |locale|
       text[locale.locale_id] = locale.__text_lookup
+      info[locale.locale_id] = {
+        "id" => locale.locale_id,
+        "name" => locale.name,
+        "nameInLanguage" => locale.name_in_language
+      }
     end
-    "$i18n_platform_text = #{JSON.generate(text)};"
+    "$i18n_locale_info = #{JSON.generate(info)};\n$i18n_platform_text = #{JSON.generate(text)};$i18n_defaults={'locale_id':'#{default_locale.locale_id}'};"
   end
   def __text_lookup
     @text_lookup

@@ -1,10 +1,10 @@
-<div class="z__ui_choose_container">
+<div role=if(options.length){"menu"} class="z__ui_choose_container">
   each(options) {
     template:std:_indicator_span()
-    <a class=["z__ui_choose_option_entry" if(highlight){"z__ui_choose_option_entry_highlight"}] href=action>
+    <a role="menuitem" class=["z__ui_choose_option_entry" if(highlight){"z__ui_choose_option_entry_highlight"}] href=action>
       <span class="z__ui_choose_option_entry_name"> label </span>
       if(notes) {
-        <span> notes </span>
+        <span role="note"> notes </span>
       }
     </a>
   }

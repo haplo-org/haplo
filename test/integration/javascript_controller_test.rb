@@ -446,6 +446,8 @@ class JavaScriptControllerTest < IntegrationTest
     get "/do/plugin_test/headers"
     assert_equal "Carrots", response['x-ping']
     assert_equal "Hello", response['x-pong']
+    get "/do/plugin_test/content-type-header"
+    assert_equal 'application/x-random-type; charset="utf-8"', response['content-type']
 
     # Returning generated files
     ['no_finish','finish'].each do |finish_opt|

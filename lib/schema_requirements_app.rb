@@ -85,6 +85,7 @@ module SchemaRequirements
     "person-name" => T_TEXT_PERSON_NAME,
     "postal-address" => T_IDENTIFIER_POSTAL_ADDRESS,
     "configuration-name" => T_IDENTIFIER_CONFIGURATION_NAME
+    # Update lib/javascript/lib/constants.js using thewhen adding names
   }
 
   ATTRIBUTE_RULES = {

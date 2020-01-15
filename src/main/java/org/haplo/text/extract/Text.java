@@ -23,7 +23,6 @@ public class Text extends TextExtractOp {
     }
 
     protected String extract() throws IOException {
-        InputStream originalStream = null;
         InputStream fileStream = getInputStream();
 
         CharsetMatch match = null;
@@ -44,9 +43,6 @@ public class Text extends TextExtractOp {
             text = match.getString();
         } finally {
             fileStream.close();
-            if(originalStream != null) {
-                originalStream.close();
-            }
         }
 
         return text;

@@ -213,6 +213,21 @@ input[type=text], input[type=password], input[type=email], textarea {
 /* -------------------------------------------------------------------------------------------------------------- */
 /* Page top */
 
+#z__skip_link {
+    display: block;
+    position: absolute;
+    left: -1000px;
+}
+
+#z__skip_link:active, #z__skip_link:focus {
+    left: 20px;
+    top: 20px;
+    border: 3px solid #000;
+    padding: 2px 8px;
+    background: #fffdd0;
+    z-index: 9999999;
+}
+
 /* Used ONLY when there's only text in the 'header HTML' setting */
 #z__header_haplo {
     position: relative;
@@ -245,7 +260,11 @@ input[type=text], input[type=password], input[type=email], textarea {
     padding: 48px 0 4px 180px;
     font-style: italic;
     font-size: 9px;
-    color: #888;
+    color: #757575;
+}
+
+#z__page_creation_label .z__label {
+    color: #686868; /* slightly darker labels in this context for a11y */
 }
 
 #z__logo_display {
@@ -257,7 +276,7 @@ input[type=text], input[type=password], input[type=email], textarea {
 #z__logo_display a {
     font-size: 9px;
     margin: 4px 0 0 16px;
-    color: #888;
+    color: #757575;
 }
 
 /* ---------------------------------------------------------------------------- */
@@ -626,13 +645,14 @@ span.z__button_link_disabled {
     padding: 3px 6px;
     margin: 0 0 0 8px;
     border: 1px solid #ccc;
-    color: #888;
+    color: #666;
     background: #fff;
     box-shadow: $BUTTON_BAR_SHADOW_OUTER, inset 0 1px 1px #fff;
 }
 
 #z__button_bar a:hover, #z__button_bar a.z__button_bar_menu:hover {
-    background-color: #ddd;
+    background-color: #eee;
+    color: #333;
 }
 
 #z__button_bar a.z__button_bar_menu:after {
@@ -1871,7 +1891,7 @@ body.z__minimal_layout {
 
 /* links style titles need a bit of tweaking */
 h3.z__plugin_ui_action_panel_links_title {
-    color: #888;
+    color: #757575;
     padding-bottom: 3px;
     border-bottom: 1px solid COLOUR[:main];
     margin-bottom: 6px;

@@ -1,5 +1,5 @@
 <% if @__right_column_chunks != nil %>
-  <div id="z__right_column">
+  <div id="z__right_column" role="navigation" aria-label="<%= @locale.text(:Layout_Navigation_Right_Column) %>">
     <% @__right_column_chunks.each { |chunk_html| %><%= chunk_html %><% } %>
   </div>
 <% end %>

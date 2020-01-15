@@ -7,6 +7,8 @@
 
 TEST(function() {
 
+    var GROUP_NOTIFICATION_EMAIL_ADDRESS = 'user3@example.com'; // same as one of the users
+
     // User info
     var u1 = O.user(41);
     TEST.assert(u1 !== null);
@@ -111,11 +113,25 @@ TEST(function() {
     TEST.assert_exceptions(function() { O.user(21); }, "The user requested does not exist.");
     var group21 = O.group(21);
     TEST.assert_equal("Group1", group21.name);
-    TEST.assert_equal("notification@example.com", group21.email);
+    TEST.assert_equal(GROUP_NOTIFICATION_EMAIL_ADDRESS, group21.email);
     TEST.assert_equal(true, group21.isGroup);
     TEST.assert_equal(true, group21.isActive);
     // And you can't load a user as a group
     TEST.assert_exceptions(function() { O.group(41); }, "The group requested does not exist.");
+
+    // Find group by email address
+    var group21byAddr = O.group(GROUP_NOTIFICATION_EMAIL_ADDRESS);
+    TEST.assert(group21byAddr.isGroup);
+    TEST.assert_equal("Group1", group21byAddr.name);
+    // Find the user with the same email address as the group notification
+    var userWithNotification = O.user(GROUP_NOTIFICATION_EMAIL_ADDRESS);
+    TEST.assert_equal(43, userWithNotification.id);
+    TEST.assert(!userWithNotification.isGroup);
+    TEST.assert_equal("User 3", userWithNotification.name);
+    // Generic security principal API finds the group, because it has the lowest id
+    var secWithNotification = O.securityPrincipal(GROUP_NOTIFICATION_EMAIL_ADDRESS);
+    TEST.assert(secWithNotification.id === group21byAddr.id);
+    TEST.assert(secWithNotification.isGroup);
 
     // Test generic security principal loading
     var principal21 = O.securityPrincipal(21);

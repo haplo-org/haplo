@@ -142,7 +142,7 @@ class KFramework
   end
 
   def runtimeSharedJavaScriptInitialiser
-    KLocale._js_text_lookup_for_javascript(KLocale::DEFAULT_LOCALE, KLocale::LOCALES)
+    KLocale._locale_initialiser_for_javascript(KLocale::DEFAULT_LOCALE, KLocale::LOCALES)
   end
 
   def plugin_debugging_enabled

@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.haplo</groupId>
   <artifactId>haplo</artifactId>
-  <version>3.20191016.1025.22f13f55f3</version>
+  <version>3.20200115.1645.1719f9d084</version>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -57,17 +57,17 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.4.18.v20190429</version>
+      <version>9.4.22.v20191022</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-continuation</artifactId>
-      <version>9.4.18.v20190429</version>
+      <version>9.4.22.v20191022</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-client</artifactId>
-      <version>9.4.18.v20190429</version>
+      <version>9.4.22.v20191022</version>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
@@ -143,6 +143,43 @@
       <groupId>com.maxmind.geoip2</groupId>
       <artifactId>geoip2</artifactId>
       <version>2.12.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.prometheus</groupId>
+      <artifactId>simpleclient</artifactId>
+      <version>0.8.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.prometheus</groupId>
+      <artifactId>simpleclient_hotspot</artifactId>
+      <version>0.8.0</version>
+    </dependency>
+    <dependency>
+      <groupId>io.prometheus</groupId>
+      <artifactId>simpleclient_jetty</artifactId>
+      <version>0.8.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.eclipse.jetty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>io.prometheus</groupId>
+      <artifactId>simpleclient_jetty_jdk8</artifactId>
+      <version>0.8.0</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.eclipse.jetty</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>io.prometheus</groupId>
+      <artifactId>simpleclient_servlet</artifactId>
+      <version>0.8.0</version>
     </dependency>
   </dependencies>
   <properties>

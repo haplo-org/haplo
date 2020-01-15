@@ -83,5 +83,22 @@ var HTTP = {
   GATEWAY_TIMEOUT: 504,
   HTTP_VERSION_NOT_SUPPORTED: 505
 };
+O.NAME_TO_TYPECODE = {
+__E
+  # Typecode names matching schema requirements
+  data_types_without_typo = SchemaRequirements::ATTR_DATA_TYPE.dup
+  data_types_without_typo.delete("idsn")
+  data_types_without_typo.each do |name,typecode|
+    file.write %Q!  "#{name}": #{typecode},\n!
+  end
+file.write <<__E
+};
+O.TYPECODE_TO_NAME = {
+__E
+  data_types_without_typo.each do |name,typecode|
+    file.write %Q!  #{typecode}: "#{name}",\n!
+  end
+file.write <<__E
+};
 __E
 end

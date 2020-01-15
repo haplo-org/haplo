@@ -34,6 +34,8 @@ public interface AppQueryClause {
 
     public void created_by_user_id(int userId);
 
+    public void constrain_to_updated_time_interval(Object beginDate, Object endDate);
+
     public void date_range(Object beginDate, Object endDate, Integer desc, Integer qual);
 
     public void any_label(int[] labels);

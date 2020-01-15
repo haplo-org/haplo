@@ -93,6 +93,12 @@ TEST(function() {
     qpush( O.query().dateRange(null, new Date(2015,8 - 1,23)) );
     qpush( O.query().dateRange(new Date(2015,2 - 1,23), null, 36) );
 
+    // Updated dates
+    qpush( O.query().freeText("a").lastUpdatedWithinDateRange(new Date(2011,10 - 1,2), new Date(2012,12 - 1,4)) );
+    qpush( O.query().freeText("a").lastUpdatedWithinDateRange(null, new Date(2015,8 - 1,23)) );
+    qpush( O.query().freeText("a").lastUpdatedWithinDateRange(new Date(2015,2 - 1,23), null) );
+    qpush( O.query().freeText("a").lastUpdatedWithinDateRange(null, null) );
+
     // Link to any
     qpush( O.query().linkToAny(ATTR["std:attribute:works-for"]) );
     qpush( O.query().linkToAny(ATTR["std:attribute:client"], QUAL["dc:qualifier:alternative"]) );
@@ -229,5 +235,8 @@ TEST(function() {
     TEST.assert_exceptions(function() {
         O.query().and().includeArchivedObjects();
     }, "includeArchivedObjects() can only be called on the top level query");
+    TEST.assert_exceptions(function() {
+        O.query().and().lastUpdatedWithinDateRange(new Date(), new Date());
+    }, "lastUpdatedWithinDateRange() can only be called on the top level query");
 
 });
