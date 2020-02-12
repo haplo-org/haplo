@@ -1,12 +1,19 @@
 #!/bin/sh
 
 # Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2019    http://www.haplo-services.com
+# (c) Haplo Services Ltd 2006 - 2020    http://www.haplo-services.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 set -e
+
+REQUIRE_MAXMIND="yes"
+case $1 in
+-n)
+    REQUIRE_MAXMIND="no"
+    ;;
+esac
 
 DEV_SUPPORT_DIR=~/haplo-dev-support
 
@@ -202,14 +209,40 @@ MAXMIND_DB_URL=http://geolite.maxmind.com/download/geoip/database/$MAXMIND_DB_FI
 
 mkdir -p ${INFORMATION_DIR}/maxmind-geolite2
 if ! [ -f ${INFORMATION_DIR}/maxmind-geolite2/GeoLite2-Country.mmdb ]; then
-    echo "Fetching IP information database..."
-    get_file "MaxMind GeoLite2 DB" $MAXMIND_DB_URL ${INFORMATION_DIR}/${MAXMIND_DB_FILENAME} $MAXMIND_DB_DIGEST
-    cd $INFORMATION_DIR
-    tar xvzf $MAXMIND_DB_FILENAME
-    mv GeoLite2-Country_${MAXMIND_DB_VERSION}/* maxmind-geolite2/
-    rm -fr GeoLite2-Country_${MAXMIND_DB_VERSION}
-    rm -f $MAXMIND_DB_FILENAME
-    cd $CODE_DIR
+    #
+    # As a result of the CCPA, there are no more anonymous downloads
+    # of the maxmind databases. Anyone needing this functionality
+    # will need to obtain a copy separately.
+    #
+    # https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases/
+    #
+    # Workaround of a special flag to allow the build to continue.
+    #
+    echo "WARN: Unable to find MaxMind GeoLite2 database."
+    echo "Expect a test failure in HaploInfoGeoipTest."
+    echo "If you need IP lookup functionality, please register and download"
+    echo "your own copy of the GeoLite2 Country database, and place the"
+    echo "database in this file:"
+    echo "${INFORMATION_DIR}/maxmind-geolite2/GeoLite2-Country.mmdb"
+    if [ "X${REQUIRE_MAXMIND}" != "Xyes" ]; then
+	echo "WARN: Continuing without MaxMind support"
+    else
+	echo ""
+	echo "If you wish to continue without MaxMind support, please"
+	echo "rerun this script with the -n option, like so:"
+	echo ""
+	echo "$0 -n"
+	exit 1
+    fi
+    #
+    #echo "Fetching IP information database..."
+    #get_file "MaxMind GeoLite2 DB" $MAXMIND_DB_URL ${INFORMATION_DIR}/${MAXMIND_DB_FILENAME} $MAXMIND_DB_DIGEST
+    #cd $INFORMATION_DIR
+    #tar xvzf $MAXMIND_DB_FILENAME
+    #mv GeoLite2-Country_${MAXMIND_DB_VERSION}/* maxmind-geolite2/
+    #rm -fr GeoLite2-Country_${MAXMIND_DB_VERSION}
+    #rm -f $MAXMIND_DB_FILENAME
+    #cd $CODE_DIR
 fi
 
 # ----------------------------------------------------------------------------------
