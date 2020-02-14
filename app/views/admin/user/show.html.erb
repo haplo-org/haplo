@@ -71,7 +71,19 @@
     <% else %>
       <i>no object</i> &nbsp; <a href="/do/admin/user/set-representative-object/<%= @user.id %>">Set...</a>
     <% end %>
-  </td>
+  </td></tr>
+
+  <tr><th>Tags</th><td>
+    <%
+      unless @user.tags.nil? || @user.tags.empty?
+        PgHstore.parse_hstore(@user.tags).each do |key,value|
+          %><tt><%= h(key) %></tt>: <tt><%= h(value) %></tt><br><%
+        end
+      else
+        %><i>no tags</i><%
+      end
+    %>
+  </td></tr>
 
   <% if is_normal_user %>
   <tr><th>Last authenticated</th><td>

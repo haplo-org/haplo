@@ -136,6 +136,7 @@ _.extend(P.WorkflowInstanceBase.prototype, {
         this._callHandler('$actionPanelTransitionUI', builder);
         this._callHandler('$actionPanel', builder);
         this._addAdminActionPanelElements(builder);
+        O.serviceMaybe("__std:workflow:add-support-actions-to-panel__", this, builder);
         // Add any configured headings to the panels in the action panel, if they have something in them
         var headings = this.$panelHeadings;
         if(headings) {
@@ -220,6 +221,7 @@ _.extend(P.WorkflowInstanceBase.prototype, {
             case "UNHIDE":
                 return P.template("timeline/hide").deferredRender({entry:entry,hide:false});
         }
+        return O.serviceMaybe("__std:workflow:fallback-timeline-entry-deferrred__", this, entry);
     },
 
     _workUnitRender: function(W) {

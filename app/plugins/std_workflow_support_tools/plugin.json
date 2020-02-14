@@ -1,0 +1,15 @@
+{
+  "pluginName": "std_workflow_support_tools",
+  "pluginAuthor": "Haplo Services",
+  "pluginVersion": 1,
+  "displayName": "Workflow: Support Tools",
+  "displayDescription": "Tools to assist privileged users to support their colleagues' use of workflows.",
+  "apiVersion": 4,
+  "depend": [
+      "std_workflow"
+    ],
+  "load": [
+      "js/std_workflow_support_tools.js"
+    ],
+  "respond": ["/do/workflow-support-tools"]
+}

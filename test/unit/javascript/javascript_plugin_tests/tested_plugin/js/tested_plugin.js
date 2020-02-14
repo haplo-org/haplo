@@ -27,6 +27,13 @@ P.respond("POST", "/do/tested_plugin/posting", [
     E.render({pageTitle: "Post"}, "posting_template");
 });
 
+P.respond("POST", "/do/tested_plugin/posting2", [
+], function(E) {
+    tested_plugin.requestAsSeenByPlugin = E.request;
+    E.response.kind = 'json';
+    E.response.body = E.request.body;
+});
+
 P.willThrowException = function(msg) {
     throw new Error(msg || "Error message");
 };

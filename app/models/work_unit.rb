@@ -15,9 +15,6 @@ class WorkUnit < ActiveRecord::Base
 
   MAX_OPENED_AT_IN_FUTURE_FOR_NOTIFICATION = (12*60*60)
 
-  WHERE_TAG = '(tags -> ?) = ?'.freeze
-  WHERE_TAG_IS_EMPTY_STRING_OR_NULL = "COALESCE((tags -> ?),'') = ''".freeze
-
   # Hide work units when the object becomes unreadable or deleted, if they're set for
   # automatic visibilty changes.
   KNotificationCentre.when_each([

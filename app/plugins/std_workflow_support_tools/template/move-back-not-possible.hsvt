@@ -1,0 +1,9 @@
+pageTitle(i("Move back: {}") { M.title })
+backLink(M.url)
+
+switch(why)       { std:ui:notice(i("This workflow cannot be moved back")) }
+  no-previous     { std:ui:notice(i("This workflow cannot be moved back because there isn't a previous state.")) }
+  already         { std:ui:notice(i("This workflow cannot be moved back because it has been recently moved. Contact support for assistance.")) }
+  prevented       { std:ui:notice(i("This workflow cannot be moved back because it's not safe to do so.")) }
+
+std:ui:button-link(M.url) { "Back" }

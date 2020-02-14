@@ -68,6 +68,13 @@ public class KQueryResults extends KScriptable {
         return objects[index];
     }
 
+    public KObjRef jsFunction_refAtIndex(int index) {
+        if(index < 0 || index >= this.length) {
+            throw OAPIException.wrappedForScriptableGetMethod("Index out of range for StoreQueryResults (requested index " + index + " for results of length " + this.length + ")");
+        }
+        return KObjRef.fromAppObjRef(this.results.objref(index));
+    }
+
     // Calls iterator with (obj, index). Stops if iterator returns true.
     public void jsFunction_each(Function iterator) {
         if(iterator == null) {
@@ -84,7 +91,7 @@ public class KQueryResults extends KScriptable {
     }
 
     public void jsFunction_ensureRangeLoaded(int startIndex, int endIndex) {
-        this.results.ensureRangeLoaded(startIndex, endIndex);
+        this.results.ensure_range_loaded(startIndex, endIndex);
     }
 
     // --------------------------------------------------------------------------------------------------------------

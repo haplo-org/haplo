@@ -21,6 +21,11 @@ TEST(function() {
        O.user(41).setIsActive(false);
     }, "Cannot call setIsActive() without the pUserActivation privilege. Add it to privilegesRequired in plugin.json");
 
+    // Test saving tags
+    TEST.assert_exceptions(function() {
+       O.user(41).saveTags();
+    }, "Cannot call saveTags() without the pUserModifyTags privilege. Add it to privilegesRequired in plugin.json");
+
     // Password recovery URLs
     TEST.assert_exceptions(function() {
        O.user(41).generatePasswordRecoveryURL();

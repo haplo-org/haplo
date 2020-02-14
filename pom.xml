@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.haplo</groupId>
   <artifactId>haplo</artifactId>
-  <version>3.20200115.1645.1719f9d084</version>
+  <version>3.20200214.1018.5e8e927908</version>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -117,7 +117,12 @@
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>amazon-kinesis-client</artifactId>
-      <version>1.9.1</version>
+      <version>1.13.2</version>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-sqs</artifactId>
+      <version>1.11.714</version>
     </dependency>
     <dependency>
       <groupId>com.onelogin</groupId>

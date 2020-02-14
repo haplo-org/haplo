@@ -1,0 +1,10 @@
+{
+  "pluginName": "messagebus_test_sqs",
+  "pluginAuthor": "Test",
+  "pluginVersion": 1,
+  "displayName": "Message Bus Test SQS",
+  "displayDescription": "Testing",
+  "privilegesRequired": ["pMessageBusRemote", "pDatabase"],
+  "apiVersion": 4,
+  "load": ["js/messagebus_test_sqs.js"]
+}

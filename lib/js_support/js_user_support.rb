@@ -58,6 +58,20 @@ module JSUserSupport
     User.find_all_by_email(email).to_a
   end
 
+  def self.getAllUsersByTags(tags)
+    tag_values = JSON.parse(tags);
+    raise JavaScriptAPIError, "Argument to O.usersByTags() must be a JavaScript object mapping tag names to values." unless tag_values.kind_of? Hash
+    query = User.where("kind IN (#{User::KIND_USER},#{User::KIND_USER_BLOCKED},#{User::KIND_USER_DELETED})")
+    tag_values.each do |k, v|
+      if v.nil?
+        query = query.where(PgHstore::WHERE_TAG_IS_EMPTY_STRING_OR_NULL, k)
+      else
+        query = query.where(PgHstore::WHERE_TAG, k, v)
+      end
+    end
+    query.to_a
+  end
+
   def self.getUserByRef(ref)
     User.find_by_objref(ref)
   end
@@ -245,11 +259,22 @@ module JSUserSupport
     # ref needs to be converted from an integer
     objref_i = details['ref'].to_i;
     objref = (objref_i > 0) ? KObjRef.new(objref_i) : nil
+    # Tags need to be checked and converted to hstore representation
+    tags_hstore = nil
+    if details.has_key?('tags')
+      tags = details['tags']
+      raise JavaScriptAPIError, "tags attribute must be a dictionary of string to string" unless tags.kind_of? Hash
+      tags.each do |key,value|
+        raise JavaScriptAPIError, "tags attribute must be a dictionary of string to string" unless key.kind_of?(String) && value.kind_of?(String)
+      end
+      tags_hstore = PgHstore.generate_hstore(tags)
+    end
     # Creation
     user = User.new
     user.kind = User::KIND_USER
     USER_DETAILS.each { |js,ruby| user.send(ruby, details[js].strip) }
     user.objref = objref if objref
+    user.tags = tags_hstore if tags_hstore
     user.set_invalid_password
     User.transaction do
       user.save!

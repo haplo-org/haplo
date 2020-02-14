@@ -60,10 +60,10 @@ class WorkUnitTest < Test::Unit::TestCase
       wu
     end
     # Check where clause generation
-    query1 = WorkUnit.where(WorkUnit::WHERE_TAG, 'a', 'b')
+    query1 = WorkUnit.where(PgHstore::WHERE_TAG, 'a', 'b')
     assert_equal 1, query1.length
     assert_equal wus[0].id, query1[0].id
-    query2 = WorkUnit.where(WorkUnit::WHERE_TAG, 'x', 'y').order('id')
+    query2 = WorkUnit.where(PgHstore::WHERE_TAG, 'x', 'y').order('id')
     assert_equal 2, query2.length
     assert_equal wus[1].id, query2[0].id
     assert_equal wus[2].id, query2[1].id

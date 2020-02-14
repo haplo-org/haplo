@@ -1,0 +1,25 @@
+{
+    "specificationVersion": 0,
+    "formId": "move-back",
+    "formTitle": "Move back",
+    "elements": [
+        {
+            "type": "paragraph",
+            "label": "Reason for moving workflow back",
+            "path": "reason",
+            "name": "IE0zKKP1R7CY",
+            "explanation": "This explanation will be recorded in the audit trail for this workflow, and included in any notifications to users.\nIt will be visible to everyone who can view the workflow.",
+            "required": true,
+            "placeholder": "Include requesting user and reason. Do not include private information."
+        },
+        {
+            "type": "boolean",
+            "label": "I understand this may prevent the correct operation of this workflow.",
+            "path": "confirm",
+            "name": "CP-6MfZ04dcn",
+            "style": "confirm",
+            "notConfirmedMessage": "Please confirm you are aware of the implications of using this tool.",
+            "trueLabel": "I understand this may prevent the correct operation of this workflow."
+        }
+    ]
+}

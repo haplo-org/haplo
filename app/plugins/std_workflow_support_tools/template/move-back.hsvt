@@ -1,0 +1,37 @@
+pageTitle(i("Move back: {}") { M.title })
+backLink(M.url) { i("Cancel") }
+
+if(isError) {
+  std:ui:notice(i("Please provide a reason for moving this workflow back, and confirm you understand the implications of using this tool."))
+} else {
+  std:ui:request(i("Use this support tool with caution. Moving a workflow back may repeat actions or prevent the correct operation of this workflow."))
+}
+
+<table>
+  <tr>
+    <td> i("Workflow") </td>
+    <td> <a href=M.url> M.title </a> </td>
+  </tr>
+  <tr>
+    <td> i("Currently") </td>
+    <td>
+      currentStateText <br>
+      <i> "(" M.workUnit.actionableBy.name ")" </i>
+    </td>
+  </tr>
+  <tr>
+    <td></td> <td> "&darr;" </td>
+  </tr>
+  <tr>
+    <td> i("Move back to") </td>
+    <td>
+      previousStateText <br>
+      <i> "(" previousUser.name ")" </i>
+    </td>
+  </tr>
+</table>
+
+<form method="POST"> std:form:token()
+  std:form(form)
+  <p> <input type="submit" value=i("Move workflow back")> </p>
+</form>

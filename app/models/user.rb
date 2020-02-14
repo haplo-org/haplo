@@ -585,4 +585,19 @@ class User < ActiveRecord::Base
     UserData.delete(self,name)
   end
 
+  # ----------------------------------------------------------------------------
+  #  Tags support
+  # ----------------------------------------------------------------------------
+
+  # JavaScript tags API
+  def jsGetTagsAsJson()
+    hstore = read_attribute('tags')
+    hstore ? JSON.generate(PgHstore.parse_hstore(hstore)) : nil
+  end
+
+  def jsSetTagsAsJson(tags)
+    write_attribute('tags', PgHstore.generate_hstore(JSON.parse(tags)))
+    self.save!
+  end
+
 end

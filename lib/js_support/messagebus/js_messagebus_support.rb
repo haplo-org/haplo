@@ -47,6 +47,8 @@ module JSMessageBus
         InterApplication.send_message(busName, busSecret, reliability, body)
       when "$AmazonKinesis"
         AmazonKinesis.send_message(busId, reliability, body)
+      when "$AmazonSQS"
+        AmazonSQS.send_message(busId, reliability, body)
       else
         throw new JavaScriptAPIError, "bad message bus kind"
       end

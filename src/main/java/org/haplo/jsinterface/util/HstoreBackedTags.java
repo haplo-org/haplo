@@ -1,0 +1,84 @@
+/* Haplo Platform                                     http://haplo.org
+ * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
+
+package org.haplo.jsinterface.util;
+
+import org.haplo.jsinterface.KScriptable;
+import org.haplo.jsinterface.KObjRef;
+import org.haplo.javascript.Runtime;
+import org.haplo.javascript.OAPIException;
+import org.haplo.javascript.JsJavaInterface;
+
+import org.mozilla.javascript.*;
+
+public class HstoreBackedTags extends KScriptable {
+    private boolean hasTags; // not the prototype
+
+    public HstoreBackedTags() {
+    }
+
+    public void jsConstructor() {
+    }
+
+    public String getClassName() {
+        return "$HstoreBackedTags";
+    }
+
+    @Override
+    public String getConsoleClassName() {
+        return "$Tags";
+    }
+
+    protected String getConsoleData() {
+        return Runtime.getCurrentRuntime().jsonStringify(this);
+    }
+
+    public static HstoreBackedTags fromScriptable(Scriptable scriptable) {
+        Runtime runtime = Runtime.getCurrentRuntime();
+        HstoreBackedTags tags = (HstoreBackedTags)runtime.createHostObjectInCurrentRuntime("$HstoreBackedTags");
+        tags.copyDataFrom(scriptable);
+        return tags;
+    }
+
+    public void copyDataFrom(Scriptable scriptable) {
+        if(scriptable != null) {
+            for(Object id : scriptable.getIds()) {
+                if(id instanceof CharSequence) {
+                    String stringValue = valueToTagString(scriptable.get(id.toString(), scriptable)); // ConsString is checked
+                    if(stringValue != null) {
+                        this.put(id.toString(), this, stringValue);
+                    }
+                }
+            }
+        }
+        this.hasTags = true;
+    }
+
+    @Override
+    public void put(int index, Scriptable start, Object value) {
+        if(this.hasTags) {
+            throw new OAPIException("Tags must have string keys.");
+        } else {
+            super.put(index, start, value);
+        }
+    }
+
+    @Override
+    public void put(String name, Scriptable start, Object value) {
+        if(this.hasTags) {
+            value = valueToTagString(value);
+            if(value == null) {
+                this.delete(name);
+                return;
+            }
+        }
+        super.put(name, start, value);
+    }
+
+    static public String valueToTagString(Object value) {
+        return JsJavaInterface.jsValueToString(value);
+    }
+}

@@ -130,6 +130,28 @@ var isOptional = function(M, user, list) {
 
 // ----------------------------------------------------------------------------
 
+// Serialiser source is only available if std_workflow is also installed
+P.implementService("std:serialiser:discover-sources", function(source) {
+    source({
+        name: "std:workflow:documents",
+        depend: "std:workflow",
+        sort: 1200,
+        setup(serialiser) {
+            serialiser.listen("std:workflow:extend", function(workflowDefinition, M, work) {
+                work.documents = {};
+                _.each(workflowDefinition.documentStore, (store, name) => {
+                    work.documents[name] = store.instance(M).lastCommittedDocument;
+                });
+            });
+        },
+        apply(serialiser, object, serialised) {
+            // Implemented as listener
+        }
+    });
+});
+
+// ----------------------------------------------------------------------------
+
 P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec) {
 
     var plugin = workflow.plugin;

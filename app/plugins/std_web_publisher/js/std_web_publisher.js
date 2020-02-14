@@ -370,7 +370,9 @@ Publication.prototype._handleRequest = function(method, path) {
         } else {
             try {
                 response = publication._handleRequest2(method, path);
+/* jshint -W118 */
             } catch(e if "$haploStopError" in e) {
+/* jshint +W118 */
                 // O.stop() called
                 if(O.PLUGIN_DEBUGGING_ENABLED) {
                     console.log("Web publisher: O.stop() rendered as production. To see error details, set std_web_publisher:show_debug_error_responses to true in configuration data.");
@@ -383,7 +385,9 @@ Publication.prototype._handleRequest = function(method, path) {
                 if("$overrideStatusCode" in renderingContext) {
                     statusCode = renderingContext.$overrideStatusCode;
                 }
+/* jshint -W118 */
             } catch(e) {
+/* jshint +W118 */
                 // Exception thrown in handling
                 if(O.PLUGIN_DEBUGGING_ENABLED) {
                     console.log("Web publisher: Exception rendered as production. To see error details, set std_web_publisher:show_debug_error_responses to true in configuration data.");

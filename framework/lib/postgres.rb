@@ -150,6 +150,9 @@ module PgHstore
   SEPARATE_KEY_VALUE = /"\s*=>\s*"/
   NEXT_KEY_VALUE = /"(\s*,\s*")?/
 
+  WHERE_TAG = '(tags -> ?) = ?'.freeze
+  WHERE_TAG_IS_EMPTY_STRING_OR_NULL = "COALESCE((tags -> ?),'') = ''".freeze
+
   def self.parse_hstore(string)
     result = Hash.new
     return result if string.nil? || (string !~ /\S/)

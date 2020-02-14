@@ -69,7 +69,10 @@ Publication.respondToDirectory("/publication/response-kinds", function(E, contex
     } else if(kind === "binary-data-in-memory") {
         E.response.body = O.binaryData("ABC,DEF", {mimeType:"text/csv", filename:"hello.csv"})
     } else if(kind === "binary-data-on-disk") {
+        E.response.setExpiry(200);
+        E.response.headers["X-Test-1"] = "A";
         E.response.body = P.loadFile("bin.txt");
+        E.response.headers["X-Test-2"] = "Z";
     } else if(kind === "zip") {
         var zip = O.zip.create("pub");
         zip.add(O.binaryData("DATA", {mimeType:"text/plain", filename:"test1.txt"}));

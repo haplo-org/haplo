@@ -13,7 +13,7 @@ TEST(function() {
         createdBy: 21,
         actionableBy: 21
     });
-    TEST.assert(unit1.tags instanceof $WorkUnitTags);
+    TEST.assert(unit1.tags instanceof $HstoreBackedTags);
     unit1.tags["tag1"] = "value1";
     TEST.assert_equal("value1", unit1.tags["tag1"]);
     unit1.tags["tag2"] = O.ref('8800z');
@@ -87,7 +87,7 @@ TEST(function() {
             data: {n:x[0]},
             tags: {"t0":x[1], "t1":x[2]}
         });
-        TEST.assert(wu.tags instanceof $WorkUnitTags);
+        TEST.assert(wu.tags instanceof $HstoreBackedTags);
         if(x[3]) {
             wu.tags.t2 = x[3];
         }
@@ -183,11 +183,11 @@ TEST(function() {
     unitNoTags.save();
     unitNoTags.tags['t0'] = '1';
     unitNoTags.save();
-    TEST.assert_equal('[WorkUnitTags {"t0":"1"}]', $KScriptable.forConsole(unitNoTags.tags));
+    TEST.assert_equal('[Tags {"t0":"1"}]', $KScriptable.forConsole(unitNoTags.tags));
     delete unitNoTags.tags['t0'];
     unitNoTags.save();
     var unitNoTagsReload = O.work.load(unitNoTags.id);
-    TEST.assert_equal('[WorkUnitTags {}]', $KScriptable.forConsole(unitNoTagsReload.tags));
+    TEST.assert_equal('[Tags {}]', $KScriptable.forConsole(unitNoTagsReload.tags));
     TEST.assert_equal(undefined, unitNoTagsReload.tags['t0']);
 
 });

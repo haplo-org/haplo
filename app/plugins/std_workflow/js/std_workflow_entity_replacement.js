@@ -284,6 +284,7 @@ P.respond("GET,POST", "/do/workflow/entity-replacement", [
         backLink: M.entities.object.url(),
         data: data,
         neverSelectable: neverSelectable,
+        showUnchangeable: !specification.hideUnchangeable, //we want to default to true for showUnchangable, without ignoring the spec
         deferredRenders: deferredRenders
     }, "entity-replacements/overview");
 });

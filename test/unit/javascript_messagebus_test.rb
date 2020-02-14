@@ -9,7 +9,8 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
   include JavaScriptTestHelper
 
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_messagebus/messagebus_test1")
-  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_messagebus/messagebus_test2")
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_messagebus/messagebus_test_kinesis")
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_messagebus/messagebus_test_sqs")
 
   def test_messagebus_loopback
     db_reset_test_data
@@ -71,6 +72,8 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     end
   end
 
+  # -------------------------------------------------------------------------
+
   # To run this test, a file .haplo-test-kinesis-credentials.json must exist in the home directory, like this:
   <<_
       {
@@ -110,7 +113,7 @@ _
       :kind => 'Message Bus', :instance_kind => 'Amazon Kinesis Stream', :name => 'test-kinesis',
       :account_json => ks_account.to_json, :secret_json => ks_secret.to_json
     }).save!
-    assert KPlugin.install_plugin('messagebus_test2')
+    assert KPlugin.install_plugin('messagebus_test_kinesis')
     install_grant_privileges_plugin_with_privileges('pMessageBusRemote')
     begin
       run_javascript_test(:file, 'unit/javascript/javascript_messagebus/test_messagebus_amazonkinesis.js', nil, "grant_privileges_plugin") do |runtime|
@@ -125,10 +128,71 @@ _
       end
     ensure
       uninstall_grant_privileges_plugin
-      KPlugin.uninstall_plugin('messagebus_test2')
+      KPlugin.uninstall_plugin('messagebus_test_kinesis')
       KeychainCredential.delete_all
     end
   end
+
+  # -------------------------------------------------------------------------
+
+  # To run this test, a file .haplo-test-sqs-credentials.json must exist in the home directory, like this:
+  <<_
+      {
+        "sqs": {
+          "queue": "queue-name",
+          "region": "eu-west-2"
+        },
+        "aws": {
+          "id": "AWS ACCESS ID",
+          "secret": "AWS ACCESS SECRET KEY"
+        }
+      }
+_
+  # -----
+
+  SQS_CREDENTIALS_FILE = "#{ENV['HOME']}/.haplo-test-sqs-credentials.json"
+  if File.exist?(SQS_CREDENTIALS_FILE)
+    SQS_CREDENTIALS = File.open(SQS_CREDENTIALS_FILE) { |f| JSON.parse(f.read) }
+  else
+    puts
+    puts "*** Not testing Amazon SQS functionality because #{SQS_CREDENTIALS_FILE} does not exist."
+    puts
+    SQS_CREDENTIALS = nil
+  end
+
+  def test_messagebus_amazonsqs
+    return unless SQS_CREDENTIALS
+    KeychainCredential.delete_all
+    ks_account = {
+      "SQS Queue Name" => SQS_CREDENTIALS['sqs']['queue'],
+      "AWS Region" => SQS_CREDENTIALS['sqs']['region'],
+      "AWS Access Key ID" => SQS_CREDENTIALS['aws']['id']
+    }
+    ks_secret = { "AWS Access Key Secret" => SQS_CREDENTIALS['aws']['secret'] }
+    KeychainCredential.new({
+      :kind => 'Message Bus', :instance_kind => 'Amazon SQS Queue', :name => 'test-sqs',
+      :account_json => ks_account.to_json, :secret_json => ks_secret.to_json
+    }).save!
+    assert KPlugin.install_plugin('messagebus_test_sqs')
+    install_grant_privileges_plugin_with_privileges('pMessageBusRemote')
+    begin
+      run_javascript_test(:file, 'unit/javascript/javascript_messagebus/test_messagebus_amazonsqs.js', nil, "grant_privileges_plugin") do |runtime|
+        support_root = runtime.host.getSupportRoot
+        runtime.host.setTestCallback(proc { |string|
+          if string == 'deliverAmazonSQSMessages'
+            deliver = JSMessageBus::DeliverMessages.new(_TEST_APP_ID)
+            deliver.deliver_from_queue
+          end
+          ''
+        })
+      end
+    ensure
+      uninstall_grant_privileges_plugin
+      KPlugin.uninstall_plugin('messagebus_test_sqs')
+      KeychainCredential.delete_all
+    end
+  end
+
 
   # -------------------------------------------------------------------------
 

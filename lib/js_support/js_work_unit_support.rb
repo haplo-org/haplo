@@ -118,13 +118,12 @@ module JSWorkUnitSupport
     if tagValues != nil
       tagValues.each do |kv|
         if kv.value.nil?
-          units = units.where(WorkUnit::WHERE_TAG_IS_EMPTY_STRING_OR_NULL, kv.key)
+          units = units.where(PgHstore::WHERE_TAG_IS_EMPTY_STRING_OR_NULL, kv.key)
         else
-          units = units.where(WorkUnit::WHERE_TAG, kv.key, kv.value)
+          units = units.where(PgHstore::WHERE_TAG, kv.key, kv.value)
         end
       end
     end
-
     units
   end
 

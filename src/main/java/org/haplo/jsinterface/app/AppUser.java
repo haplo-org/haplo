@@ -32,4 +32,8 @@ public interface AppUser {
     public AppObject kobject_dup_restricted(AppObject object);
 
     public AppObjectRestrictedAttributesFactory kobject_restricted_attributes_factory();
+
+    public String jsGetTagsAsJson();
+
+    public void jsSetTagsAsJson(String tags);
 }

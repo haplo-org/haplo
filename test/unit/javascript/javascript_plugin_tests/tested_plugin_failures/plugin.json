@@ -1,0 +1,14 @@
+{
+  "pluginName": "tested_plugin_failures",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 1000,
+  "displayName": "Tested Plugin",
+  "displayDescription": "Has embedded failing tests",
+  "installSecret": "ABC123",
+  "apiVersion": 4,
+  "respond": ["/do/tested_plugin_failures"],
+  "locals": {
+      "Special": "SPECIAL"
+    },
+  "load": ["js/tested_plugin_failures.js"]
+}

@@ -12,7 +12,6 @@
     // ******************** Update the documentation if this is altered ********************
     var makeOptions = function() {
         return {
-            moz: true,
             asi: false,
             bitwise: false,
             boss: false,
@@ -42,11 +41,14 @@
     // Server side options
     var serverOption = makeOptions();
     serverOption.newcap = false; // because $ is not a capital letter and it's used as a prefix on all hidden class names
+    serverOption.moz = true;
+    serverOption.esnext = true;
 
     // Browser options
     var browserOption = makeOptions();
     browserOption.browser = true;
     browserOption.newcap = false;
+    browserOption.moz = false;
 
     // Rhino likes properties to be checked its own sweet way
     var rhinoPropertyCheck1 = /\.\$?[a-zA-Z0-9]+\s*(!=|==)\s*undefined/;

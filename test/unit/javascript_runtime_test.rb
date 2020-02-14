@@ -459,7 +459,11 @@ __E
     user41 = User.find(41)
     user41.objref = obj.objref
     user41.otp_identifier = '200012345678X'
+    user41.jsSetTagsAsJson('{"ping": "hello", "other":"23"}')
     user41.save!
+    user43 = User.find(43)
+    user43.jsSetTagsAsJson('{"other": "23"}')
+    user43.save!
     run_outstanding_text_indexing
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_user.js', {
       'USER1_REF_OBJID' => obj.objref.obj_id, 'DISABLED_GROUP_ID' => disabled_group.id
@@ -938,7 +942,7 @@ __E
     u43 = User.find(43);
     u43.objref = KObjRef.new(876543);
     u43.save!
-    install_grant_privileges_plugin_with_privileges('pCreateUser', 'pUserActivation', 'pUserPasswordRecovery', 'pUserSetRef', 'pUserSetDetails')
+    install_grant_privileges_plugin_with_privileges('pCreateUser', 'pUserActivation', 'pUserPasswordRecovery', 'pUserSetRef', 'pUserSetDetails', 'pUserModifyTags')
     begin
       assert_equal nil, User.find_first_by_email('js@example.com')
       assert User.find(43).objref

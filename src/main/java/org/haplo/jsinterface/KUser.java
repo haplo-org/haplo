@@ -9,6 +9,7 @@ package org.haplo.jsinterface;
 import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
 import org.haplo.javascript.JsConvert;
+import org.haplo.jsinterface.util.HstoreBackedTags;
 import org.mozilla.javascript.*;
 
 import org.haplo.jsinterface.app.*;
@@ -16,6 +17,7 @@ import org.haplo.jsinterface.app.*;
 public class KUser extends KScriptable {
     private AppUser user;
     private KUserData data;         // data property
+    private HstoreBackedTags tags;
 
     private final static int KIND_GROUP = 1;    // same as app/models/user.rb
 
@@ -66,6 +68,15 @@ public class KUser extends KScriptable {
 
     public static Scriptable jsStaticFunction_getAllUsersByEmail(String email) {
         AppUser users[] = rubyInterface.getAllUsersByEmail(email.toLowerCase().trim());
+        Scriptable jsUsers = Runtime.getCurrentRuntime().createHostObject("Array", users.length);
+        for(int i = 0; i < users.length; ++i) {
+            jsUsers.put(i, jsUsers, fromAppUser(users[i]));
+        }
+        return jsUsers;
+    }
+
+    public static Scriptable jsStaticFunction_getAllUsersByTags(String tags) {
+        AppUser users[] = rubyInterface.getAllUsersByTags(tags);
         Scriptable jsUsers = Runtime.getCurrentRuntime().createHostObject("Array", users.length);
         for(int i = 0; i < users.length; ++i) {
             jsUsers.put(i, jsUsers, fromAppUser(users[i]));
@@ -153,6 +164,32 @@ public class KUser extends KScriptable {
 
     public boolean jsGet_isAnonymous() {
         return rubyInterface.isAnonymous(this.user);
+    }
+
+    // ---- tags
+    public Object jsGet_tags() {
+        if(this.tags == null) {
+            Runtime runtime = Runtime.getCurrentRuntime();
+            Object decodedTags = runtime.jsonEncodedValueToObject(this.user.jsGetTagsAsJson(), "User tags");
+            this.tags = HstoreBackedTags.fromScriptable((Scriptable)decodedTags);
+        }
+        return this.tags;
+    }
+
+    public void jsSet_tags(Scriptable scriptable) {
+        if(!(scriptable instanceof Scriptable)) {
+            throw new OAPIException("Invalid value assigned to SecurityPrincipal tags property");
+        }
+        this.tags = HstoreBackedTags.fromScriptable(scriptable);
+    }
+
+    public KUser jsFunction_saveTags() {
+        Runtime.privilegeRequired("pUserModifyTags", "call saveTags()");
+        if(this.tags != null) {
+            Runtime runtime = Runtime.getCurrentRuntime();
+            this.user.jsSetTagsAsJson(runtime.jsonStringify(this.tags));
+        }
+        return this;
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -378,6 +415,8 @@ public class KUser extends KScriptable {
         public AppUser getUserByEmail(String email, boolean enforceKind, boolean group);
 
         public AppUser[] getAllUsersByEmail(String email);
+
+        public AppUser[] getAllUsersByTags(String tags);
 
         public AppUser getUserByRef(AppObjRef ref);
 

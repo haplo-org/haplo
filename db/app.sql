@@ -41,12 +41,14 @@ CREATE TABLE users (
     email TEXT,                         -- optional for groups
     password TEXT,                      -- NULL for groups
     recovery_token TEXT,                -- For recreating passwords
-    otp_identifier TEXT                 -- Identifier of the user's OTP token, or NULL if the user doesn't have one
+    otp_identifier TEXT,                -- Identifier of the user's OTP token, or NULL if the user doesn't have one
+    tags HSTORE                         -- string to string encoding
 );
 CREATE INDEX idx_users_kind ON users(kind);
 CREATE INDEX idx_users_name ON users(lower(name));      -- lower index
 CREATE INDEX idx_users_email ON users(lower(email));    -- lower index
 CREATE INDEX idx_users_obj_id ON users(obj_id);
+CREATE INDEX idx_users_tags ON users USING gin (tags);
 
 CREATE TABLE user_memberships (
     user_id INT NOT NULL REFERENCES users(id),

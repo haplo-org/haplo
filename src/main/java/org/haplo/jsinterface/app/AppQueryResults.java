@@ -9,7 +9,9 @@ package org.haplo.jsinterface.app;
 public interface AppQueryResults {
     public int length();
 
+    public AppObjRef objref(int index);
+
     public AppObject jsGet(int index);
 
-    public void ensureRangeLoaded(int startIndex, int endIndex);
+    public void ensure_range_loaded(int startIndex, int endIndex);
 }

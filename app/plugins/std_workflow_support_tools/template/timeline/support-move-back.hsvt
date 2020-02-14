@@ -1,0 +1,4 @@
+i("{} moved the workflow back") { <i> entry.user.name </i> }
+<div class="z__workflow_timeline_entry_note">
+  std:text:paragraph(entry.data.reason)
+</div>

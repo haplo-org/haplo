@@ -284,6 +284,18 @@ public class Runtime {
         return ((CharSequence)result).toString();
     }
 
+    public Object jsonEncodedValueToObject(String jsonEncoded, String kind) {
+        if(jsonEncoded != null && jsonEncoded.length() > 0) {
+            try {
+                return makeJsonParser().parseValue(jsonEncoded);
+            } catch(org.mozilla.javascript.json.JsonParser.ParseException e) {
+                throw new OAPIException("Couldn't JSON decode "+kind, e);
+            }
+        } else {
+            return getCurrentRuntime().createHostObject("Object");
+        }
+    }
+
     /**
      * A subsitute for the Rhino Context.enter() which sets up options for the
      * context.
@@ -476,7 +488,7 @@ public class Runtime {
             defineSealedHostClass(scope, KRefKeyDictionaryHierarchical.class, true /* map inheritance */);
             defineSealedHostClass(scope, KRefSet.class);
             defineSealedHostClass(scope, KCheckingLookupObject.class);
-            defineSealedHostClass(scope, WorkUnitTags.class);
+            defineSealedHostClass(scope, HstoreBackedTags.class);
             defineSealedHostClass(scope, GetterDictionaryBase.class);
             defineSealedHostClass(scope, InterRuntimeSignal.class);
             defineSealedHostClass(scope, KRequestContinuation.class);

@@ -15,6 +15,7 @@ class WebPublisherController < ApplicationController
 
   CONTENT_TYPES = Hash.new
   Ingredient::Rendering::RENDER_KIND_CONTENT_TYPES.each { |k,v| CONTENT_TYPES[k.to_s] = v}
+  HEADER_CONTENT_TYPE = KFramework::Headers::CONTENT_TYPE
 
   def self.hostname_has_publication_at_root?(host)
     r = false
@@ -52,6 +53,20 @@ class WebPublisherController < ApplicationController
     # Split out response infomation (shares Java response decoding with JavaScriptPluginController)
     status_code, headersJSON, body, kind = r.to_a
     raise KFramework::RequestPathNotFound.new("Web publisher didn't render a body") if body.nil?
+
+    # Set headers first, so anything is copied into one of the special responses
+    content_type = CONTENT_TYPES[kind] || 'text/plain; charset=utf-8'
+    if headersJSON != nil
+      headers = JSON.parse(headersJSON)
+      headers.each do |name, value|
+        if name == HEADER_CONTENT_TYPE
+          # Content-Type header needs to be moved to avoid getting overwritten or ignored
+          content_type = value
+        else
+          response.headers[name] = value
+        end
+      end
+    end
 
     # Support a limited set of binary data types as body
     # TODO: Refactor this to use the implemetation in JavascriptPluginController
@@ -106,14 +121,8 @@ class WebPublisherController < ApplicationController
 
     # Build & return response
     response = KFramework::DataResponse.new(body,
-      CONTENT_TYPES[kind] || 'text/plain; charset=utf-8',
+      content_type,
       (status_code || 200).to_i)
-    if headersJSON != nil
-      headers = JSON.parse(headersJSON)
-      headers.each do |name, value|
-        response.headers[name] = value
-      end
-    end
     exchange.response = response
   end
 

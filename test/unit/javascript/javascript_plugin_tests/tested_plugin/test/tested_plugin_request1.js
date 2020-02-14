@@ -37,4 +37,10 @@ t.test(function() {
     t.assertEqual(postLast.body, "POSTED");
     t.assertEqual(postLast.view.pageTitle, "Post");
 
+    var postLast2 = t.post("/do/tested_plugin/posting2", {}, {body:{h1:"value1", h2:"value2"}, kind:"json"});
+    var requestAsSeenByPlugin = tested_plugin.requestAsSeenByPlugin;
+    t.assertObject(JSON.parse(requestAsSeenByPlugin.body), {h1:"value1", h2:"value2"});
+    t.assertObject(JSON.parse(requestAsSeenByPlugin.body), {h2:"value2", h1:"value1"});
+    t.assertEqual(requestAsSeenByPlugin.kind, "json");
+    t.assertJSONBody(postLast2, {h1:"value1", h2:"value2"});
 });

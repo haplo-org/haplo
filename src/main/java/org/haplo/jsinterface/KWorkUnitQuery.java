@@ -6,7 +6,7 @@
 
 package org.haplo.jsinterface;
 
-import org.haplo.jsinterface.util.WorkUnitTags;
+import org.haplo.jsinterface.util.HstoreBackedTags;
 import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
 import org.mozilla.javascript.*;
@@ -142,7 +142,7 @@ public class KWorkUnitQuery extends KScriptable {
         if(value instanceof org.mozilla.javascript.Undefined) {
             throw new OAPIException("undefined cannot be used with WorkUnitQuery tag()");
         }
-        String stringValue = WorkUnitTags.valueToTagString(value);
+        String stringValue = HstoreBackedTags.valueToTagString(value);
         if((stringValue != null) && (stringValue.length() == 0)) {
             stringValue = null; // empty strings and null handled the same
         }

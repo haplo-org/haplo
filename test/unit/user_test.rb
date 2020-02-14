@@ -155,6 +155,16 @@ class UserTest < Test::Unit::TestCase
     user0.objref = nil
     user0.save!
     assert_audit_entry(:kind => 'USER-REF', :entity_id => user0.id, :data => {"ref" => nil})
+    # Change the tags
+    user0.tags = PgHstore.generate_hstore({"xyz" => "ping"})
+    user0.save!
+    assert_audit_entry(:kind => 'USER-TAGS', :entity_id => user0.id, :data => {"tags" => {"xyz" => "ping"}})
+    user0.tags = PgHstore.generate_hstore({"pong" => "hello", "a" => "b"})
+    user0.save!
+    assert_audit_entry(:kind => 'USER-TAGS', :entity_id => user0.id, :data => {"tags" => {"pong" => "hello", "a" => "b"}})
+    user0.tags = nil
+    user0.save!
+    assert_audit_entry(:kind => 'USER-TAGS', :entity_id => user0.id, :data => {"tags" => {}})
     # Set OTP token
     user0.otp_identifier = "0123456789"
     user0.save!

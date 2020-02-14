@@ -89,6 +89,9 @@ class WebPublisherTest < IntegrationTest
 
     get "/publication/response-kinds/binary-data-on-disk"
     assert_equal "text/plain; charset=utf-8", response.header["Content-Type"]
+    assert_equal "private, max-age=200", response.header["Cache-Control"]
+    assert_equal "A", response.header["X-Test-1"]
+    assert_equal "Z", response.header["X-Test-2"]
     assert_equal 'On disk', response.body
 
     get "/publication/response-kinds/zip"

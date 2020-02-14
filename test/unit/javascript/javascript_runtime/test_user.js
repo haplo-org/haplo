@@ -109,6 +109,20 @@ TEST(function() {
     var u1c = O.user(41);
     TEST.assert_equal(undefined, u1c.data["something:else"]);
 
+    // Tag search
+
+    var pingTagSearch = O.usersByTags({"ping": "hello"});
+    TEST.assert_equal(1, pingTagSearch.length);
+    TEST.assert_equal(41, pingTagSearch[0].id);
+
+    var otherTagSearch = O.usersByTags({other: "23"});
+    TEST.assert_equal(2, otherTagSearch.length);
+
+    var noTagSearch = O.usersByTags({other: "hello"});
+    TEST.assert_equal(0, noTagSearch.length);
+
+    TEST.assert_exceptions(function() { O.usersByTags([{other: "hello"}]); }, "Argument to O.usersByTags() must be a JavaScript object mapping tag names to values.");
+
     // Check loading a group as a user exceptions, but loading it as group works
     TEST.assert_exceptions(function() { O.user(21); }, "The user requested does not exist.");
     var group21 = O.group(21);

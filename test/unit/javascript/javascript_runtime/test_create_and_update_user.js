@@ -18,9 +18,18 @@ TEST(function() {
     TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y",email:"z"}); }, "User must have a valid email address");
     TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y",email:"ping@example.com", groups:"a"}); }, "groups attribute must be an Array");
     TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y",email:"ping@example.com", groups:[1,"two"]}); }, "groups attribute must be an Array of integer group IDs");
+    TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y",email:"ping@example.com", tags:"a"}); }, "tags attribute must be a dictionary of string to string");
+    TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y",email:"ping@example.com", tags:{"a":"b","d":1}}); }, "tags attribute must be a dictionary of string to string");
 
     // Create user!
-    var user = O.setup.createUser({nameFirst:" Java ", nameLast:" Script ", email:"js@example.com", groups:[21,22], ref:O.ref(6543)});
+    var user = O.setup.createUser({
+        nameFirst: " Java ",
+        nameLast: " Script ",
+        email: "js@example.com",
+        groups: [21,22],
+        ref: O.ref(6543),
+        tags: {"a":"b", "c":"DEF", "Xyz":"x=>y"}
+    });
     TEST.assert(user instanceof $User);
     TEST.assert(user.id > 128);
     TEST.assert(!user.isGroup);
@@ -28,6 +37,9 @@ TEST(function() {
     TEST.assert_equal("Java", user.nameFirst);
     TEST.assert_equal("Script", user.nameLast);
     TEST.assert_equal("Java Script", user.name);
+    TEST.assert_equal("b", user.tags.a);
+    TEST.assert_equal("DEF", user.tags.c);
+    TEST.assert_equal("x=>y", user.tags.Xyz);   // hstore syntax checks escaping
 
     var user1 = O.user('js@example.com');
     TEST.assert_equal(user.id, user1.id);
@@ -53,6 +65,45 @@ TEST(function() {
     group.setIsActive(true);
     TEST.assert_equal(true, group.isActive);
     TEST.assert_equal(true, group.isGroup);
+
+    // User tags
+    TEST.assert(null !== user1.tags);
+    TEST.assert(user1.tags instanceof $HstoreBackedTags);
+
+    user1.tags["ping"] = "hello";
+    TEST.assert_equal("hello", user1.tags["ping"]);
+
+    // Retrieve it again
+    var user1d = O.user('js@example.com');
+    TEST.assert_equal(undefined, user1d.tags["ping"]);
+
+    user1.saveTags();
+    user1d = O.user('js@example.com');
+    TEST.assert_equal("hello", user1d.tags["ping"]);
+    TEST.assert_equal(undefined, user1d.tags["pong"]);
+
+    // Check it doesn't leak to other users
+    var u3c = O.user(43);
+    TEST.assert_equal(undefined, u3c.tags["ping"]);
+    u3c.tags["other"] = 23;
+    u3c.saveTags();
+
+    var user1e = O.user('js@example.com');
+    TEST.assert_equal(undefined, user1e.tags["other"]);
+
+    //Check values get turned into strings when saved
+    user1e.tags.other = 23;
+    user1e.tags.ref = O.ref(6543);
+    user1e.saveTags();
+    TEST.assert_equal("23", user1e.tags["other"]);
+    TEST.assert_equal(O.ref(6543).toString(), user1e.tags["ref"]);
+
+    var user1f = O.user('js@example.com');
+    TEST.assert_equal("23", user1f.tags["other"]);
+
+    var user1g = O.user('js@example.com');
+    user1g.saveTags();
+    TEST.assert_equal("23", user1g.tags["other"]);
 
     // Set up stuff for Ruby test
     O.user(44).setIsActive(false);

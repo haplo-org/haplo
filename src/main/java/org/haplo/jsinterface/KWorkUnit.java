@@ -9,7 +9,7 @@ package org.haplo.jsinterface;
 import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
 import org.haplo.javascript.JsJavaInterface;
-import org.haplo.jsinterface.util.WorkUnitTags;
+import org.haplo.jsinterface.util.HstoreBackedTags;
 import org.mozilla.javascript.*;
 
 import org.haplo.jsinterface.app.*;
@@ -21,7 +21,7 @@ public class KWorkUnit extends KScriptable {
     private boolean gotData;    // whether this.data is valid (either by setting, or by loading it from the Ruby side)
     private Object data;        // JSON-encodable data
     private boolean gotTags;
-    private WorkUnitTags tags;
+    private HstoreBackedTags tags;
 
     public KWorkUnit() {
         this.gotData = false;
@@ -214,7 +214,8 @@ public class KWorkUnit extends KScriptable {
     // ---- data
     public Object jsGet_data() {
         if(!this.gotData) {
-            this.data = jsonEncodedValueToObject(this.workUnit.jsGetDataRaw(), "data");
+            Runtime runtime = Runtime.getCurrentRuntime();
+            this.data = runtime.jsonEncodedValueToObject(this.workUnit.jsGetDataRaw(), "work unit data");
             this.gotData = true;
         }
         return this.data;
@@ -229,15 +230,16 @@ public class KWorkUnit extends KScriptable {
     // ---- tags
     public Object jsGet_tags() {
         if(!this.gotTags) {
-            Object decodedTags = jsonEncodedValueToObject(this.workUnit.jsGetTagsAsJson(), "tags");
-            this.tags = WorkUnitTags.fromScriptable((Scriptable)decodedTags);
+            Runtime runtime = Runtime.getCurrentRuntime();
+            Object decodedTags = runtime.jsonEncodedValueToObject(this.workUnit.jsGetTagsAsJson(), "work unit tags");
+            this.tags = HstoreBackedTags.fromScriptable((Scriptable)decodedTags);
             this.gotTags = true;
         }
         return this.tags;
     }
 
     public void jsSet_tags(Scriptable scriptable) {
-        this.tags = WorkUnitTags.fromScriptable(scriptable);
+        this.tags = HstoreBackedTags.fromScriptable(scriptable);
         this.gotTags = true;
     }
 
@@ -305,18 +307,6 @@ public class KWorkUnit extends KScriptable {
             throw new OAPIException(property + " must be set to a Date");
         }
         return (date == null) ? null : (Date)date;
-    }
-
-    private Object jsonEncodedValueToObject(String jsonEncoded, String kind) {
-        if(jsonEncoded != null && jsonEncoded.length() > 0) {
-            try {
-                return Runtime.getCurrentRuntime().makeJsonParser().parseValue(jsonEncoded);
-            } catch(org.mozilla.javascript.json.JsonParser.ParseException e) {
-                throw new OAPIException("Couldn't JSON decode work unit "+kind, e);
-            }
-        } else {
-            return Runtime.getCurrentRuntime().createHostObject("Object");
-        }
     }
 
     // --------------------------------------------------------------------------------------------------------------

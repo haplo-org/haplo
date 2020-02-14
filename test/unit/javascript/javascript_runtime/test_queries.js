@@ -145,10 +145,13 @@ TEST(function() {
     var results1 = O.query().freeText('Carrots').execute();
     TEST.assert_equal(1, results1.length);
     TEST.assert_equal("Carrots", results1[0].firstTitle().toString());
+    TEST.assert(results1.refAtIndex(0) instanceof $Ref);
+    TEST.assert(results1[0].ref == results1.refAtIndex(0));
 
     // Out of bounds
     TEST.assert_exceptions(function() { var x = results1[-1]; }, "Index out of range for StoreQueryResults (requested index -1 for results of length 1)");
     TEST.assert_exceptions(function() { var x = results1[1]; }, "Index out of range for StoreQueryResults (requested index 1 for results of length 1)");
+    TEST.assert_exceptions(function() { results1.refAtIndex(1); }, "Index out of range for StoreQueryResults (requested index 1 for results of length 1)");
 
     // Iterating over results
     var results2 = O.query().link(TYPE["std:type:book"], ATTR.Type).sortByTitle().execute();
@@ -190,6 +193,9 @@ TEST(function() {
             r3titles += ":"+obj.firstTitle().toString();
         });
         TEST.assert_equal(":Ping:Flutes:Carrots:ABC", r3titles);
+        for(var i = 0; i < 4; ++i) {
+            TEST.assert(results3.refAtIndex(i) == results3[i].ref);
+        }
     };
     test_sparse_queries(false);
     test_sparse_queries(true);

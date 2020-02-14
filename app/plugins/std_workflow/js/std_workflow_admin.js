@@ -146,6 +146,11 @@ P.respond("GET,POST", "/do/workflow/administration/move-state", [
 ], function(E, workUnit, timelineId, calculatedTarget) {
     var M = getCheckedInstanceForAdmin(workUnit);
     if(E.request.method === "POST" && timelineId) {
+        // Does the support tools plugin want to take this over?
+        if(!O.currentUser.isSuperUser) {
+            var redirectAway = O.serviceMaybe("__std:workflow:alternative-move-state-interface__", M);
+            if(redirectAway) { return E.response.redirect(redirectAway); }
+        }
         var entry = M.$timeline.load(timelineId);
         if(entry.workUnitId !== M.workUnit.id) { O.stop("Wrong workflow"); }
         M._forceMoveToStateFromTimelineEntry(entry, calculatedTarget || null);

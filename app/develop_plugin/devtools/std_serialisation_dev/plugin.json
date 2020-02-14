@@ -1,0 +1,15 @@
+{
+  "pluginName": "std_serialisation_dev",
+  "pluginAuthor": "Haplo Services",
+  "pluginVersion": 1,
+  "displayName": "Serialisation Development",
+  "displayDescription": "Development tools for serialisation",
+  "apiVersion": 4,
+  "depend": [
+      "std_serialisation"
+    ],
+  "load": [
+      "js/std_serialisation_dev.js"
+    ],
+  "respond": ["/do/std-serialisation-dev"]
+}

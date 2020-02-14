@@ -112,6 +112,7 @@ class JavaScriptSyntaxTester
 
     # Set up an intepreter and load JSHint
     cx = Context.enter();
+    cx.setLanguageVersion(Context::VERSION_ES6);
     unless @javascript_scope
       @javascript_scope = cx.initStandardObjects();
       jshint = File.open("lib/javascript/thirdparty/jshint.js") { |f| f.read }

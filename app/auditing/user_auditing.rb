@@ -120,6 +120,10 @@ module KAuditing
       if changes.has_key?('obj_id')
         write_user_modify_audit(user, 'USER-REF', {"ref" => user.objref ? user.objref.to_presentation : nil})
       end
+      # Tags change
+      if changes.has_key?('tags')
+        write_user_modify_audit(user, 'USER-TAGS', {"tags" => PgHstore.parse_hstore(user.tags)})
+      end
       # OTP token change
       if changes.has_key?('otp_identifier')
         write_user_modify_audit(user, 'USER-OTP-TOKEN', {"identifier" => user.otp_identifier})

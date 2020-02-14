@@ -1,0 +1,14 @@
+#option:no-tag-attribute-quote-minimisation
+emailSubject(i("Moved back: {}") { M.title })
+
+<h1> <a href=fullUrl> M.title </a> </h1>
+
+<p> i("This workflow has been moved back by {}.") { movedBy.name } </p>
+
+<div class="box">
+  std:text:paragraph(reason)
+</div>
+
+<p class="button">
+    <a href=fullUrl> i("Full details...") </a>
+</p>
