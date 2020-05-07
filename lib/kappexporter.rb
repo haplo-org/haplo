@@ -34,6 +34,8 @@ class KAppExporter
     # Basic details of the app are stored in a JSON file
     data = Hash.new
 
+    data["haploExportedApplication"] = 0
+
     app_id = KApp.current_application
     data["applicationId"] = app_id
 
@@ -46,6 +48,9 @@ class KAppExporter
       end
       s.clear
     end
+
+    data["serverClassificationTags"] = KInstallProperties.server_classification_tags
+    data["configurationData"] = JSON.parse(KApp.global(:javascript_config_data) || '{}')
 
     File.open("#{filename_base}.json",'w') do |file|
       file.write JSON.pretty_generate(data)

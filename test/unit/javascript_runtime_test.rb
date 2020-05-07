@@ -46,6 +46,12 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
 
   # ===============================================================================================
 
+  def test_server_classification_tags
+    run_javascript_test(:inline, "TEST(function() { TEST.assert(_.isEqual(O.SERVER_CLASSIFICATION_TAGS, ['test-tag','tag-two'])) });")
+  end
+
+  # ===============================================================================================
+
   def test_permissions
     restore_store_snapshot("basic")
     db_reset_test_data

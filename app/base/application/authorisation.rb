@@ -95,19 +95,19 @@ class ApplicationController
             outcome.was_success = !!(device)
           end
         rescue KLoginAttemptThrottle::LoginThrottled => e
-          render :text => 'Too many failed API authentication attempts, API usage suspended. Pause requests to wait until restriction lifted.', :status => 403
+          respond_with_api_error(403, 'THROTTLE', 'Too many failed API authentication attempts, API usage suspended. Pause requests to wait until restriction lifted.')
           return false
         end
       end
       # bad API keys stop all processing -- the key must exist, no auto-anonymous access with APIs
       if device == nil || !(device.valid_for_request_path?(request.request_uri))
-        render :text => 'Bad API Key', :status => 403
+        respond_with_api_error(403, 'INVALID-API-KEY', 'Invalid API Key')
         return false
       end
       # Get the user record from the cache, and check it's a non-blocked user or the special support user
       user_object = User.cache[device.user_id]
       unless user_valid_for_request(user_object)
-        render :text => 'Not authorised', :status => 403
+        respond_with_api_error(403, 'UNAUTHORISED', 'Not authorised')
         return false
       end
       @request_uses_api_key = true
@@ -172,8 +172,7 @@ private
 
   def respond_to_unauthorised_request
     if !(@request_user) || @request_uses_api_key || exchange.annotations[:api_url]
-      # Non-interactive request -- use mini-response without all the usual chrome
-      render :template => "authentication/unauthorised_api", :layout => false, :status => 403
+      respond_with_api_error(403, 'UNAUTHORISED', 'Unauthorised: You are not permitted to perform that action')
     elsif @request_user.policy.is_anonymous?
       # Anonymous users are asked to log in and will be redirected
       # request.request_uri includes the full URI including parameters -- although the docs say it's
@@ -185,6 +184,15 @@ private
       render :template => "authentication/unauthorised", :status => 403
     end
     true
+  end
+
+  def respond_with_api_error(status, kind, message)
+    api_response = {
+      'success' => false,
+      'kind' => kind,
+      'error' => {'message' => message}
+    }
+    render :text => JSON.generate(api_response), :kind => :json, :status => status
   end
 
 end

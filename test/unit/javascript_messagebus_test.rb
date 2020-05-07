@@ -11,6 +11,7 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_messagebus/messagebus_test1")
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_messagebus/messagebus_test_kinesis")
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_messagebus/messagebus_test_sqs")
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_messagebus/messagebus_test_sns")
 
   def test_messagebus_loopback
     db_reset_test_data
@@ -144,6 +145,7 @@ _
         },
         "aws": {
           "id": "AWS ACCESS ID",
+          "assumeRole": "ARN OF ROLE", # optional
           "secret": "AWS ACCESS SECRET KEY"
         }
       }
@@ -166,7 +168,8 @@ _
     ks_account = {
       "SQS Queue Name" => SQS_CREDENTIALS['sqs']['queue'],
       "AWS Region" => SQS_CREDENTIALS['sqs']['region'],
-      "AWS Access Key ID" => SQS_CREDENTIALS['aws']['id']
+      "AWS Access Key ID" => SQS_CREDENTIALS['aws']['id'],
+      "AWS Assume Role" => SQS_CREDENTIALS['aws']['assumeRole'] || ''
     }
     ks_secret = { "AWS Access Key Secret" => SQS_CREDENTIALS['aws']['secret'] }
     KeychainCredential.new({
@@ -192,6 +195,69 @@ _
       KeychainCredential.delete_all
     end
   end
+
+  # -------------------------------------------------------------------------
+
+  # To run this test, a file .haplo-test-sns-credentials.json must exist in the home directory, like this:
+  <<_
+      {
+        "sns": {
+          "topic": "topic-name",
+          "region": "eu-west-2"
+        },
+        "aws": {
+          "id": "AWS ACCESS ID",
+          "assumeRole": "ARN OF ROLE", # optional
+          "secret": "AWS ACCESS SECRET KEY"
+        }
+      }
+_
+  # -----
+
+  SNS_CREDENTIALS_FILE = "#{ENV['HOME']}/.haplo-test-sns-credentials.json"
+  if File.exist?(SNS_CREDENTIALS_FILE)
+    SNS_CREDENTIALS = File.open(SNS_CREDENTIALS_FILE) { |f| JSON.parse(f.read) }
+  else
+    puts
+    puts "*** Not testing Amazon SNS functionality because #{SNS_CREDENTIALS_FILE} does not exist."
+    puts
+    SNS_CREDENTIALS = nil
+  end
+
+  def test_messagebus_amazonsns
+    return unless SNS_CREDENTIALS
+    KeychainCredential.delete_all
+    ks_account = {
+      "SNS Topic ARN" => SNS_CREDENTIALS['sns']['topic'],
+      "AWS Region" => SNS_CREDENTIALS['sns']['region'],
+      "AWS Access Key ID" => SNS_CREDENTIALS['aws']['id'],
+      "AWS Assume Role" => SNS_CREDENTIALS['aws']['assumeRole'] || ''
+    }
+    ks_secret = { "AWS Access Key Secret" => SNS_CREDENTIALS['aws']['secret'] }
+    KeychainCredential.new({
+      :kind => 'Message Bus', :instance_kind => 'Amazon SNS Topic', :name => 'test-sns',
+      :account_json => ks_account.to_json, :secret_json => ks_secret.to_json
+    }).save!
+    assert KPlugin.install_plugin('messagebus_test_sns')
+    install_grant_privileges_plugin_with_privileges('pMessageBusRemote')
+    begin
+      run_javascript_test(:file, 'unit/javascript/javascript_messagebus/test_messagebus_amazonsns.js', nil, "grant_privileges_plugin") do |runtime|
+        support_root = runtime.host.getSupportRoot
+        runtime.host.setTestCallback(proc { |string|
+          if string == 'deliverAmazonSNSMessages'
+            deliver = JSMessageBus::DeliverMessages.new(_TEST_APP_ID)
+            deliver.deliver_from_queue
+          end
+          ''
+        })
+      end
+    ensure
+      uninstall_grant_privileges_plugin
+      KPlugin.uninstall_plugin('messagebus_test_sns')
+      KeychainCredential.delete_all
+    end
+  end
+
 
 
   # -------------------------------------------------------------------------

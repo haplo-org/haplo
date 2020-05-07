@@ -25,4 +25,12 @@ module KInstallProperties
     value
   end
 
+  # -------------------------------------------------------------------------
+
+  DEFAULT_SERVER_CLASSIFICATION_TAG = 'not-set'
+
+  def self.server_classification_tags
+    get(:server_classification_tags, DEFAULT_SERVER_CLASSIFICATION_TAG).strip.split(/\s+/)
+  end
+
 end

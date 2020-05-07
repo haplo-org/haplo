@@ -65,7 +65,7 @@ class EditController < ApplicationController
         render(:action => 'finish_pop', :layout => 'minimal')
       else
         # redirect to display the object
-        if params.has_key?(:success_redirect) && params[:success_redirect] =~ /\A\/[a-zA-z0-9\/\.\%\?\&=\-]+\z/
+        if params.has_key?(:success_redirect) && KSafeRedirect.is_safe?(params[:success_redirect])
           # Form specifies the redirect URL, to which the object ref should be appended
           rdr_url = params[:success_redirect]
           rdr_url = "#{rdr_url}#{((rdr_url =~ /\?/) ? '&' : '?')}ref=#{@object_to_edit.objref.to_presentation}"
@@ -110,21 +110,6 @@ class EditController < ApplicationController
     else
       render :text => JSON.generate([@editor_js_type, @editor_js_attrs]), :kind => :json
     end
-  end
-
-  # Limits
-  def handle_limits_api
-    builder = Builder::XmlMarkup.new
-    builder.instruct!
-    builder.response(:status => 'success') do |r|
-      r.limits do |limits|
-        # NOTE - need to cope with KAccounting returning nil
-        obj_usage = KAccounting.get(:objects) || 0
-        limits.objects(:usage => obj_usage, :limit => 0)
-        limits.storage(:usage => (KAccounting.get(:storage) || 0), :limit => 0)
-      end
-    end
-    render :text => builder.target!, :content_type => "text/xml; charset=utf-8"
   end
 
   # -----------------------------------------------------------------------------------------------------------

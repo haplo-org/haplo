@@ -149,8 +149,8 @@
         // Adding comments
         if(canAddComment) {
             $('#z__docstore_body div[data-uname]').each(function() {
-                // Ignore if this contains other elements with unames
-                if($('[data-uname]',this).length) { return; }
+                // Ignore if this contains other elements with unames, unless all of those elements are in one table
+                if($('[data-uname]:not(td)',this).length) { return; }
                 if(!/\S/.test(this.innerText||'')) { return; }  // no text/labels to comment on
                 $(this).prepend('<div class="z__docstore_add_comment"><a class="z__docstore_add_comment_button" href="#" title="Add comment">Add comment<span></span></a></div>');
             });

@@ -544,67 +544,6 @@ public
     end
   end
 
-  # ==========================================================================================================
-  #   XML API access
-  # ==========================================================================================================
-
-  _PostOnly
-  _PoliciesRequired nil # NOTE: requirement to have :not_anonymous tested below
-  def handle_upload_new_file_api
-    # Can only be used by an API key. While this isn't going to help right now, it's a useful restriction
-    # in case uploads are ever tightened up.
-    unless @request_user.policy.is_not_anonymous? && @request_uses_api_key
-      response.headers['X-Haplo-Reportable-Error'] = 'yes'
-      render :text => 'Must be authenticated with an API key', :status => 403
-      return
-    end
-
-    uploads = exchange.annotations[:uploads]
-    unless request.post? && uploads != nil
-      render :text => 'Upload required', :status => 400
-      return
-    end
-
-    if uploads.getInstructionsRequired()
-      # Use the URL to determine whether or not this is compressed
-      inflate_file = (params[:id] == 'with_deflate') || (params[:id] == 'with-deflate')
-      uploads.addFileInstruction('file', FILE_UPLOADS_TEMPORARY_DIR, StoredFile::FILE_DIGEST_ALGORITHM, inflate_file ? 'inflate' : nil)
-      render :text => ''
-      return
-    end
-
-    # TODO: Refactor to use XML API functions in object_controller?
-    builder = Builder::XmlMarkup.new
-    builder.instruct!
-    error_message = nil
-    # Check basics
-    if !(@request_user.permissions.something_allowed?(:create) || @request_user.permissions.something_allowed?(:update))
-      error_message = 'No permission'
-    elsif ! request.post?
-      error_message = 'Must POST file'
-    else
-      # Handle the uploaded file
-      upload = uploads.getFile('file')
-      opts = Hash.new
-      opts[:expected_hash] = params[:digest] if params.has_key?(:digest)
-      opts[:expected_size] = params[:file_size].to_i if params.has_key?(:file_size)
-      file = StoredFile.from_upload(upload, opts)
-      if file == nil
-        error_message = 'Bad upload'
-      else
-        builder.response(:status => 'success') do |r|
-          KIdentifierFile.new(file).build_xml(r)
-        end
-      end
-    end
-    if error_message != nil
-      builder.response(:status => 'error') do |r|
-        r.message error_message
-      end
-    end
-    render :text => builder.target!, :kind => :xml
-  end
-
   # -------------------------------------------------------------------------------------------------------------------
 
 private

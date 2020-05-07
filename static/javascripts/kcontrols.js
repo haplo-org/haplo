@@ -149,7 +149,6 @@ var escapeHTML;
 
 
     // Control with grey text label
-    // Implemented with browser placeholder support, if available, CSS and JavaScript as fallback.
     /* global */ KCtrlTextWithInnerLabel = function(initial_contents, label, width_as_percent) {
         this.q__initialContents = initial_contents || '';
         this.q__label = label;
@@ -174,7 +173,7 @@ var escapeHTML;
         },
         j__setValue: function(value) {
             this.q__domObj.value = value;
-            this.j__handleBlur();
+            if(this.j__handleBlur) { this.j__handleBlur(); }
         }
     });
 

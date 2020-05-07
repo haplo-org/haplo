@@ -232,6 +232,30 @@ public class JdSelect extends JdSelectClause {
     }};
 
     // --------------------------------------------------------------------------------------------------------------
+    // Updating rows
+    public int jsFunction_update(Scriptable values) {
+        try {
+            // Run the values through the JS row constructor, so values checked and are the correct type for the column
+            Scriptable row = this.table.jsFunction_create(values);
+            Scriptable rowValues = (Scriptable)Runtime.createHostObjectInCurrentRuntime("Object");
+            Scriptable transformedValues = (Scriptable)row.get("$values", row);
+            for(Object fieldId : values.getIds()) {
+                if(fieldId instanceof String) { // ConsString is checked
+                    String fieldName = (String)fieldId; // ConsString is checked
+                    JdTable.Field field = this.table.getField(fieldName);
+                    if(field == null) {
+                        throw new OAPIException("Bad field '" + fieldName + "' for table '" + this.table.jsGet_name() + "'");
+                    }
+                    rowValues.put(fieldName, rowValues, transformedValues.get(fieldName, transformedValues));
+                }
+            }
+            return this.table.executeUpdate(this, rowValues);
+        } catch(java.sql.SQLException e) {
+            throw new OAPIException(GENERIC_SQL_ERROR + e.getMessage(), e);
+        }
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
     // Deleting rows
     public int jsFunction_deleteAll() {
         try {

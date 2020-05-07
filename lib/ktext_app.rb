@@ -44,23 +44,6 @@ class KText
     self.class.new(KTextUtils.truncate(@text, max_length)).to_html
   end
 
-  # XML export
-  def build_xml(builder)
-    builder.text(self.to_s, :lang => 'en', :default => 'true')
-  end
-
-  # XML import
-  def self.new_from_xml(typecode, xml_container)
-    info = @@typecode_info[typecode.to_i]
-    raise "No KText derived class for #{typecode}" if info == nil
-    info.type_class.read_from_xml(xml_container)
-  end
-
-  def self.read_from_xml(xml_container)
-    e = xml_container.elements["text"]
-    raise "No text node" if e == nil
-    new(e.text || '')
-  end
 end
 
 # ------------------------------------------------------------
@@ -560,31 +543,6 @@ class KTextPersonName < KText
     [self.to_s, f[:first] || '', f[:last] || '']
   end
 
-  # XML export
-  def build_xml(builder)
-    f = to_fields
-    builder.person_name(:culture => f[:culture].to_s) do |pn|
-      f.each do |k,v|
-        pn.tag!(k, v) unless k == :culture
-      end
-    end
-  end
-  # XML import
-  def self.read_from_xml(xml_container)
-    f = Hash.new
-    # Start with the culture
-    culture_attr = xml_container.elements["person_name"].attributes['culture']
-    raise "No culture" if culture_attr == nil
-    raise "Bad culture" unless XML_ATTR_TO_CULTURE.has_key?(culture_attr)
-    f[:culture] = culture_attr
-    # Bring in the fields
-    SYMBOL_TO_FIELD.each_key do |field|
-      e = xml_container.elements["person_name/#{field}"]
-      f[field] = e.text if e != nil
-    end
-    new(f || '')
-  end
-
   # -- Culture information -- also used by some of the UI
 
   CULTURES_IN_UI_ORDER = [:western,:western_list,:eastern]
@@ -752,18 +710,6 @@ class KTextPluginDefined < KText
       end
     end
     nil
-  end
-
-  # XML export
-  def build_xml(builder)
-    builder.plugin(@text, :type => @type)
-  end
-  # XML import
-  def self.read_from_xml(xml_container)
-    element = xml_container.elements["plugin"]
-    type = element.attributes['type']
-    raise "Bad type" unless type && type =~ ALLOWED_TYPE_REGEX
-    new({:type => type, :value => element.text})
   end
 
 end

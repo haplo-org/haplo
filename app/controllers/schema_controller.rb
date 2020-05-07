@@ -209,15 +209,6 @@ class SchemaController < ApplicationController
 
   # ===================================================================================================
 
-  # XML API
-
-  _GetAndPost
-  def handle_data_model_api
-    render :text => KObjectStore.schema.to_xml, :kind => :xml
-  end
-
-  # ===================================================================================================
-
 private
   def descriptor_to_schema_entry(schema, descriptor, is_alias = false)
     # Get data type (may be modified to psuedo data type)

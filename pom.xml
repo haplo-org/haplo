@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.haplo</groupId>
   <artifactId>haplo</artifactId>
-  <version>3.20200214.1018.5e8e927908</version>
+  <version>3.20200505.2018.d487fb8334</version>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -57,17 +57,17 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.4.22.v20191022</version>
+      <version>9.4.28.v20200408</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-continuation</artifactId>
-      <version>9.4.22.v20191022</version>
+      <version>9.4.28.v20200408</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-client</artifactId>
-      <version>9.4.22.v20191022</version>
+      <version>9.4.28.v20200408</version>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
@@ -116,13 +116,23 @@
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-sts</artifactId>
+      <version>1.11.759</version>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
       <artifactId>amazon-kinesis-client</artifactId>
-      <version>1.13.2</version>
+      <version>1.13.3</version>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk-sqs</artifactId>
-      <version>1.11.714</version>
+      <version>1.11.759</version>
+    </dependency>
+    <dependency>
+      <groupId>com.amazonaws</groupId>
+      <artifactId>aws-java-sdk-sns</artifactId>
+      <version>1.11.759</version>
     </dependency>
     <dependency>
       <groupId>com.onelogin</groupId>

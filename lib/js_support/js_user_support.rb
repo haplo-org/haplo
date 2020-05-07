@@ -269,6 +269,10 @@ module JSUserSupport
       end
       tags_hstore = PgHstore.generate_hstore(tags)
     end
+    locale_id = details["localeId"]
+    unless locale_id.nil?
+      raise JavaScriptAPIError, "Unknown locale: #{locale_id}" unless KLocale::ID_TO_LOCALE[locale_id]
+    end
     # Creation
     user = User.new
     user.kind = User::KIND_USER
@@ -279,6 +283,7 @@ module JSUserSupport
     User.transaction do
       user.save!
       user.set_groups_from_ids(group_membership) if group_membership
+      user.set_user_data(UserData::NAME_LOCALE, locale_id) if locale_id
     end
     user
   end

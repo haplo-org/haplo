@@ -49,6 +49,8 @@ module JSMessageBus
         AmazonKinesis.send_message(busId, reliability, body)
       when "$AmazonSQS"
         AmazonSQS.send_message(busId, reliability, body)
+      when "$AmazonSNS"
+        AmazonSNS.send_message(busId, reliability, body)
       else
         throw new JavaScriptAPIError, "bad message bus kind"
       end

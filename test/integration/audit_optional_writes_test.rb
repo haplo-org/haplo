@@ -81,34 +81,6 @@ class AuditOptionalWritesTest < IntegrationTest
     assert response.body.include?("HTML Book")
     assert_audit_entry(:kind => 'DISPLAY', :objref => html_book.objref, :user_id => TEST_USER_ID, :data => nil)
 
-    # Via XML API - individual
-    get "/api/object/ref/#{xml_book.objref.to_presentation}"
-    assert_equal "text/xml; charset=utf-8", response['Content-Type']
-    assert_audit_entry(:kind => 'DISPLAY', :objref => xml_book.objref, :user_id => TEST_USER_ID, :data => {"source"=>'xml-api'})
-    # Via XML API - batch
-    builder = Builder::XmlMarkup.new
-    builder.instruct!
-    builder.request(:identifier => 'TEST') do |req|
-      req.operations do |ops|
-        ops.read(:ref => book0.objref.to_presentation)
-        ops.read(:ref => book1.objref.to_presentation)
-      end
-    end
-    api_key = ApiKey.new(:user_id => TEST_USER_ID, :path => '/api/', :name => 'test')
-    api_key_secret = api_key.set_random_api_key
-    api_key.save! # need an API key to be able to POST XML without triggering CSRF
-    assert_audit_entry(:kind => 'USER-API-KEY-NEW')
-    begin
-      post '/api/object/batch', builder.target!, {'X-ONEIS-Key' => api_key_secret}
-    ensure
-      api_key.destroy
-    end
-    assert_audit_entry(
-      {:kind => 'DISPLAY', :objref => book0.objref, :user_id => TEST_USER_ID, :data => {"source"=>'xml-api'}},
-      {:kind => 'DISPLAY', :objref => book1.objref, :user_id => TEST_USER_ID, :data => {"source"=>'xml-api'}},
-      {:kind => 'USER-API-KEY-DELETE'}
-    )
-
     # SEARCHES -----------------------------------------------------------------------------------
 
     # But also check that export results are always audited
@@ -130,11 +102,6 @@ class AuditOptionalWritesTest < IntegrationTest
     assert_audit_entry(:kind => 'SEARCH', :data => {"q" => "hello2"})
     post "/search/export", {:q => "hello2", :output_form => '', :output_format => 'xlsx'}
     assert_audit_entry(:kind => 'EXPORT', :data => {"q" => "hello2"}, :user_id => TEST_USER_ID) # exports aren't deduped
-
-    # XML API
-    get '/api/search/q', {:q => 'type:book'}
-    assert_equal "text/xml; charset=utf-8", response['Content-Type']
-    assert_audit_entry(:kind => 'SEARCH', :data => {"q" => "type:book", "source" => "xml-api"})
 
     # FILE DOWNLOADS -----------------------------------------------------------------------------
 

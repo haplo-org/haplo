@@ -30,4 +30,10 @@ class TestController < ApplicationController
     render :text => @request_user.id.to_s
   end
 
+  _PostOnly
+  _PoliciesRequired nil
+  def handle_post_only_api
+    render :text => 'POSTed'
+  end
+
 end

@@ -122,46 +122,6 @@ class KDateTime
   end
 
   # --------------------------------------------------------------------------------------------------------------
-  # XML encoding and decoding support
-
-  def build_xml(builder)
-    builder.datetime do |datetime|
-      _build_xml_value(datetime, :start, @s)
-      _build_xml_value(datetime, :end, @e)
-      datetime.precision(@p)
-      datetime.timezone(@z) if @z != nil
-    end
-  end
-
-  def self.new_from_xml(xml_container)
-    # It's proper KDateTime XML serialisation
-    start_element = xml_container.elements["datetime/start"]
-    if start_element == nil
-      # Quick check to see if it's parsable text string
-      text = xml_container.text
-      if text != nil && text =~ /\S/
-        return KDateTime.new(DateTime.parse(text))
-      end
-      # Failed, so obviously bad serialisation
-      raise "XML serialised KDateTime doesn't have a start element"
-    end
-    start_internal = _decode_xml_value(start_element)
-    end_element = xml_container.elements["datetime/end"]
-    end_internal = (end_element == nil) ? nil : _decode_xml_value(end_element)
-    precision_element = xml_container.elements["datetime/precision"]
-    raise "XML serialised KDateTime doesn't have a precision element" if precision_element == nil
-    precision = precision_element.text
-    raise "Bad precision" if precision == nil
-    timezone = nil
-    timezone_element = xml_container.elements["datetime/timezone"]
-    if timezone_element != nil
-      timezone = timezone_element.text
-    end
-    # The constructor will do the rest of the checking
-    KDateTime.new(start_internal, end_internal, precision, timezone)
-  end
-
-  # --------------------------------------------------------------------------------------------------------------
 private
   # --------------------------------------------------------------------------------------------------------------
 
@@ -217,9 +177,6 @@ private
     'h' => true,
     'm' => true
   }
-
-  XML_FIELD_NAMES = ["year", "month", "day", "hour", "minute"]
-  XML_TIMESTAMP_FORMAT = "%Y-%m-%dT%H:%M:00"
 
   # --------------------------------------------------------------------------------------------------------------
 
@@ -358,28 +315,6 @@ private
     range = [r0, r1]
     # Apply timezone?
     (@z == nil) ? range : range.map { |t| _to_gmt(t) }
-  end
-
-  # --------------------------------------------------------------------------------------------------------------
-
-  def _build_xml_value(builder, sym, internal)
-    return if internal == nil
-    attrs = {}
-    internal.each_with_index { |v,i| attrs[XML_FIELD_NAMES[i]] = v }
-    datetime = _internal_to_datetime(internal)
-    builder.tag!(sym, datetime.strftime(XML_TIMESTAMP_FORMAT), attrs)
-  end
-
-  def self._decode_xml_value(element)
-    values = []
-    attrs = element.attributes
-    XML_FIELD_NAMES.each_with_index do |name, index|
-      v = attrs[name]
-      if v != nil
-        values[index] = v.to_i
-      end
-    end
-    values
   end
 
   # --------------------------------------------------------------------------------------------------------------

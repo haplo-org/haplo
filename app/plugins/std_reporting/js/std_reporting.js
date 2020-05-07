@@ -814,7 +814,11 @@ var rebuildAllToCheckFactsHaveBeenKeptUpToDate = function() {
 };
 
 P.hook('hScheduleDailyMidnight', function(response, year, month, dayOfMonth, hour, dayOfWeek) {
-    rebuildAllToCheckFactsHaveBeenKeptUpToDate();
+    // In production applications, rebuild every collection each night so that incorrect
+    // invalidation doesn't cause reporting to be out of date for more than a day.
+    if(!O.PLUGIN_DEBUGGING_ENABLED) {
+        rebuildAllToCheckFactsHaveBeenKeptUpToDate();
+    }
 });
 
 // --------------------------------------------------------------------------

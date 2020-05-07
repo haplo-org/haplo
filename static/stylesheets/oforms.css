@@ -155,7 +155,7 @@
     margin-left: -18px;
 }
 
-.oform .oforms-radio-horizontal label,
+.oform .oforms-radio-horizontal div,
 .oform .oforms-boolean label {
     padding-left: 0;
     margin-right: 8px;
@@ -233,7 +233,7 @@
 
 .oform h2 {
     font-weight: normal;
-    color: #757575;
+    color: #999;
     font-size: 18px;
     line-height: 27px;
     margin: 18px 0 9px 0;
@@ -510,6 +510,12 @@
 .oform .oforms-add-btn {
     display: inline-block;
     margin-bottom: 24px;    /* add a bit of spacing before the next section */
+}
+
+/* adjust position of remove button when not in a repeating section with multiple elements */
+.oform div.oforms-repetition:not(.oforms-has-multiple) div.oforms-row + .oforms-delete-btn {
+    position: relative;
+    top: -12px;
 }
 
 #z__ws_content .oform table {

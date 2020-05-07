@@ -41,6 +41,7 @@ TEST(function() {
     var unit1b = O.work.load(unit1.id);
     TEST.assert_equal(undefined, unit1.tags[42]);   // can retrieve integer keys and get undefined
     TEST.assert_equal(undefined, unit1.tags["x"]);  // deleted key
+    TEST.assert_equal(undefined, unit1.tags.neverExisted);  // never assigned a value1
     TEST.assert_equal("value1", unit1b.tags.tag1);
     TEST.assert_equal("8800z", unit1b.tags.tag2);   // ref got converted to String
 

@@ -50,7 +50,7 @@ class SecurityResponsesTest < IntegrationTest
 
   def test_http_method_checking
     # Make an API key to use
-    k = ApiKey.new(:user_id => 42, :path => '/api/object/', :name => 'test');
+    k = ApiKey.new(:user_id => 42, :path => '/api/test/', :name => 'test');
     k_secret = k.set_random_api_key
     k.save!
 
@@ -76,15 +76,15 @@ class SecurityResponsesTest < IntegrationTest
     end
 
     # GET to a POST only request
-    get '/api/object/batch', nil, {'X-ONEIS-Key' => k_secret}.merge(NO_AUTO_METHOD_CHECK)
+    get '/api/test/post-only', nil, {'X-ONEIS-Key' => k_secret}.merge(NO_AUTO_METHOD_CHECK)
     assert_equal "403", response.code
     assert response.body =~ /Request denied for security reasons/
     assert response.body =~ /Wrong HTTP method used, POST expected/
 
     # POST to a POST only request (doesn't require CSRF tokens)
-    post '/api/object/batch', builder.target!, {'X-ONEIS-Key' => k_secret}.merge(NO_AUTO_ANYTHING)
+    post '/api/test/post-only', builder.target!, {'X-ONEIS-Key' => k_secret}.merge(NO_AUTO_ANYTHING)
     assert_equal "200", response.code
-    assert response.body =~ /\A\<\?xml/
+    assert_equal "POSTed", response.body
   end
 
 end

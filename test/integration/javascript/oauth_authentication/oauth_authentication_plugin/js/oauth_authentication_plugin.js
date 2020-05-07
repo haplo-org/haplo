@@ -11,5 +11,10 @@
     });
 
     P.hook("hOAuthSuccess", function(response, verifiedUser) {
-        response.redirectPath = "/"+JSON.parse(verifiedUser).token.email;
+        var v = JSON.parse(verifiedUser);
+        if(v.data === 'bad') {
+            response.redirectPath = "bad/path";
+        } else {
+            response.redirectPath = "/user="+v.token.email+',data='+v.data;
+        }
     });

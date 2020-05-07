@@ -21,13 +21,16 @@
 var CanUseSupportToolsForAllWorkflows = O.action("std:workflow:support-tools:allow-for-all-workflows").
     title("Workflow: Use support tools for all workflows").
     allow("group", Group.Administrators).
-    allow("group", Group.WorkflowOverride);
+    allow("group", Group.WorkflowMoveBack);
 
 var canUseWhenLabelled; // array of {groupId:..., label:...}
 
 var canUseSupportToolsFor = function(user, M) {
     if(user.allowed(CanUseSupportToolsForAllWorkflows)) {
         return true;
+    }
+    if(O.application.config["std:workflow:support-tools:ignore-application-configuration"]) {
+        return false;
     }
     // Discover additional permissions
     if(undefined === canUseWhenLabelled) {

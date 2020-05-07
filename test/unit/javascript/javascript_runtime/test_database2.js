@@ -103,6 +103,118 @@ TEST(function() {
     TEST.assert_equal(1, nq2.length);
 
     // =====================================================================================
+    // Update
+    db.numbers.select().deleteAll();
+    var requiredState = {};
+    _.each([
+        {name:"a1", medium:348, small:32, bools:false },
+        {name:"a2", medium:2, small:32, bools:true },
+        {name:"a3", medium:9888, small:37, pingTime:new DBTime(12,45), bools:true },
+        {name:"a4", medium:10, small:12 },
+        {name:"a5", medium:349, small:100, big:239349, pingTime:new DBTime(12,45,56) },
+        {name:"a6", medium:2837, small:23, big:3498, pingTime:new DBTime(8,3), bools:true },
+    ], function(o) {
+        let row = db.numbers.create(o).save();
+        o.id = row.id;
+        requiredState[row.id] = o;
+    });
+
+    var updateRequiredState = function(rows, fn) {
+        _.each(requiredState, function(rs) {
+            if(-1 !== rows.indexOf(rs.name)) { fn(rs); }
+        });
+    };
+
+    var testRequiredStateAgainstDB = function() {
+        let allRows = db.numbers.select();
+        TEST.assert_equal(_.keys(requiredState).length, allRows.length);
+        allRows.each((row) => {
+            var required = requiredState[row.id];
+            _.each(["id", "big", "small", "medium", "bools"], function(column) {
+                let testValue = required[column];
+                if(testValue === undefined) {
+                    testValue = null;
+                };
+                TEST.assert_equal(testValue, row[column]);
+            });
+            _.each(["pingTime", "pingDate"], function(col) {
+                if(required[col]) {
+                    TEST.assert_equal(required[col].toString(), row[col].toString());
+                } else {
+                    TEST.assert(!row[col]);
+                }
+            });
+        });
+    };
+
+    TEST.assert_equal(2, db.numbers.select().where("small","=",32).update({small:33,big:null}));
+    updateRequiredState(["a1", "a2"], function(rs) {
+        rs.small = 33;
+    });
+    testRequiredStateAgainstDB();
+
+    TEST.assert_equal(4, db.numbers.select().where("small",">",1).or(function(sq) {
+        sq.where("bools", "=", true).where("pingTime","<", new DBTime(13,45));
+    }).update({big:5}));
+    updateRequiredState(["a2", "a3", "a5", "a6"], function(rs) {
+        rs.big = 5;
+    });
+    testRequiredStateAgainstDB();
+
+    TEST.assert_equal(2, db.numbers.select().where("small","=",33).update({pingTime:new DBTime(13,10)}));
+    updateRequiredState(["a1", "a2"], function(rs) {
+        rs.pingTime = new DBTime(13,10);
+    });
+    testRequiredStateAgainstDB();
+
+    TEST.assert_equal(2, db.numbers.select().where("small","=",33).update({pingDate:new XDate(2013,10,10)}));
+    updateRequiredState(["a1", "a2"], function(rs) {
+        rs.pingDate = new XDate(2013,10,10);
+    });
+    testRequiredStateAgainstDB();
+
+    TEST.assert_equal(0, db.numbers.select().where("bools", "=", false).where("small",">",1000).update({small:1001}));
+    testRequiredStateAgainstDB();
+
+    TEST.assert_exceptions(function() {
+        db.numbers.select().update({id:1});
+    }, "Bad field 'id' for table 'numbers'");
+    testRequiredStateAgainstDB();
+
+    TEST.assert_exceptions(function() {
+        db.numbers.select().update({notARealColumn:1});
+    }, "Bad field 'notARealColumn' for table 'numbers'");
+    testRequiredStateAgainstDB();
+
+    TEST.assert_exceptions(function() {
+        db.numbers.select().update({small:2, notARealColumn:1});
+    }, "Bad field 'notARealColumn' for table 'numbers'");
+    testRequiredStateAgainstDB();
+
+    TEST.assert_equal(0, db.numbers.select().update({3:1001}));
+    testRequiredStateAgainstDB();
+
+    TEST.assert_equal(0, db.numbers.select().update({}));
+    testRequiredStateAgainstDB();
+
+    TEST.assert_equal(3, db.numbers.select().where("small",">",1).where("bools", "=", true).update({big:150, small: 25}));
+    updateRequiredState(["a2", "a3", "a6"], function(rs) {
+        rs.big = 150;
+        rs.small = 25;
+    });
+    testRequiredStateAgainstDB();
+
+    TEST.assert_equal(3, db.numbers.select().where("small",">",1).where("bools", "=", true).update({big:150, small: 25}));
+    testRequiredStateAgainstDB();
+
+    TEST.assert_equal(6, db.numbers.select().update({bools:true}));
+    updateRequiredState(["a1", "a2", "a3", "a4", "a5", "a6"], function(rs) {
+        rs.bools = true;
+    });
+    testRequiredStateAgainstDB();
+
+
+    // =====================================================================================
     // Very simple migration test
     db.forMigration.create({number1:2}).save();
     db.forMigration.create({number1:4}).save();

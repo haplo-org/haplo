@@ -114,6 +114,8 @@ TEST(function() {
     var pingTagSearch = O.usersByTags({"ping": "hello"});
     TEST.assert_equal(1, pingTagSearch.length);
     TEST.assert_equal(41, pingTagSearch[0].id);
+    TEST.assert_equal("hello", pingTagSearch[0].tags.ping);
+    TEST.assert_equal(undefined, pingTagSearch[0].tags.notSet);
 
     var otherTagSearch = O.usersByTags({other: "23"});
     TEST.assert_equal(2, otherTagSearch.length);

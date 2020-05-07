@@ -169,49 +169,4 @@ class UserDataTest < Test::Unit::TestCase
     end
   end
 
-  # ----------------------------------------------------------------------------------------------------
-
-  def test_kdatetime_xml
-    # TODO: Check errors from bad XML
-
-    dx1 = KDateTime.new("2010 10 23 12 24", nil, 'd')
-    dx1_x = tkx_to_xml(dx1)
-    assert dx1_x !~ /<timezone>/  # doesn't include timezone information
-    dx1_d = tkx_from_xml(dx1_x)
-    assert_equal dx1.keditor_values, dx1_d.keditor_values
-    assert_equal 'd', dx1_d.precision
-
-    dx2 = KDateTime.new("2009 8 2 1 4", "2010 1 1 12 0")
-    dx2_x = tkx_to_xml(dx2)
-    dx2_d = tkx_from_xml(dx2_x)
-    assert_equal dx2.keditor_values, dx2_d.keditor_values
-
-    # Timezones in XML
-    dx3 = KDateTime.new("2008 1 2 3 4", "2008 4 5 6 7", 'm', 'Europe/London')
-    dx3_x = tkx_to_xml(dx3)
-    assert dx3_x =~ /<timezone>/
-    dx3_d = tkx_from_xml(dx3_x)
-    assert_equal dx3.keditor_values, dx3_d.keditor_values
-    assert_equal 'Europe/London', dx3_d.timezone
-
-    # Check parsing of simple encoded dates
-    date_parse = tkx_from_xml(%Q!<?xml version="1.0" encoding="UTF-8"?><container>2069-05-01T02:24:00</container>!)
-    assert_equal "m", date_parse.precision
-    assert_equal ["2069 5 1 2 24", '', 'm', ''], date_parse.keditor_values
-  end
-
-  def tkx_to_xml(dt)
-    builder = Builder::XmlMarkup.new(:indent => 2) # so there's whitespace in the XML for testing
-    builder.instruct!
-    builder.container do |container|
-      dt.build_xml(container)
-    end
-    builder.target!
-  end
-
-  def tkx_from_xml(xml)
-    doc = REXML::Document.new(xml)
-    KDateTime.new_from_xml(doc.elements["container"])
-  end
-
 end

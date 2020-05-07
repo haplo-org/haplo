@@ -194,7 +194,7 @@ class Saml2ServiceProviderController
         controller.session # load session so it can be modified
         KFramework.with_request_context(controller, exchange) do
           call_hook(:hOAuthSuccess) do |hooks|
-            redirect_path = hooks.run(json).redirectPath
+            redirect_path = KSafeRedirect.from_hook(hooks.run(json))
           end
         end
         # Commit any session changes and apply Set-cookie headers
@@ -206,10 +206,7 @@ class Saml2ServiceProviderController
       end
       # TODO: The code to allow a plugin to set users repeats a lot of functionality. It would be better to use the normal controller functionality, but this requires a lot of changes to allow access to Java request and response and the framework to leave them alone.
 
-      if redirect_path
-        response.sendRedirect redirect_path
-        return
-      end
+      response.sendRedirect(redirect_path || '/')
 
     else
       error_details = [errors.to_a, auth.getLastErrorReason()]

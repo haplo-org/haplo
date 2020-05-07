@@ -16,12 +16,17 @@ then
     export KFRAMEWORK_ENV
 fi
 
-# Make sure a plugin debugging choice is set -- allows it to be changed without accidently getting committed, and defaults to yes
 if [ X$KFRAMEWORK_ENV = Xdevelopment ]
 then
+	# Make sure a plugin debugging choice is set -- allows it to be set without accidently getting committed, and defaults to no
 	if [ ! -f tmp/properties/plugin_debugging_support ]
 	then
 		echo yes > tmp/properties/plugin_debugging_support
+	fi
+	# Default server classification tags in development
+	if [ ! -f tmp/properties/server_classification_tags ]
+	then
+		echo platform-development-environment > tmp/properties/server_classification_tags
 	fi
 fi
 

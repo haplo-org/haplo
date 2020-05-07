@@ -120,7 +120,7 @@ class KJSPluginRuntime
             end
             @plugins_loaded = true
           end
-          KApp.logger.info("Initialised application JavaScript runtime, took #{ms.to_i}ms\n")
+          KApp.logger.info("Initialised application JavaScript runtime, took #{ms.to_i}ms for application #{KApp.current_application}\n")
         end
         finalise_runtime_checkout()
       rescue

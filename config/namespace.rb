@@ -63,7 +63,6 @@ class ApplicationNamespace
       }],
     "api" => [:sub, {:api_url => true}, {
         "authentication" => [:controller, {}, AuthenticationController],
-        "object"         => [:controller, {}, ObjectController],
         "display"        => [:controller, {}, DisplayController],
         "search"         => [:controller, {}, SearchController],
         "edit"           => [:controller, {}, EditController],

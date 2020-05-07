@@ -1,3 +1,5 @@
 
 group std:group:administrators as Administrators
-group std:group:workflow-override as WorkflowOverride
+
+group std:group:workflow-move-back as WorkflowMoveBack
+    title: Workflow move back

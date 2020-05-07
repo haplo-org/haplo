@@ -20,6 +20,7 @@ TEST(function() {
     TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y",email:"ping@example.com", groups:[1,"two"]}); }, "groups attribute must be an Array of integer group IDs");
     TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y",email:"ping@example.com", tags:"a"}); }, "tags attribute must be a dictionary of string to string");
     TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y",email:"ping@example.com", tags:{"a":"b","d":1}}); }, "tags attribute must be a dictionary of string to string");
+    TEST.assert_exceptions(function() { O.setup.createUser({nameFirst:"x",nameLast:"y",email:"ping@example.com", localeId:"xx"}); }, "Unknown locale: xx");
 
     // Create user!
     var user = O.setup.createUser({
@@ -28,6 +29,7 @@ TEST(function() {
         email: "js@example.com",
         groups: [21,22],
         ref: O.ref(6543),
+        localeId: "es",
         tags: {"a":"b", "c":"DEF", "Xyz":"x=>y"}
     });
     TEST.assert(user instanceof $User);
@@ -37,6 +39,7 @@ TEST(function() {
     TEST.assert_equal("Java", user.nameFirst);
     TEST.assert_equal("Script", user.nameLast);
     TEST.assert_equal("Java Script", user.name);
+    TEST.assert_equal("es", user.localeId);
     TEST.assert_equal("b", user.tags.a);
     TEST.assert_equal("DEF", user.tags.c);
     TEST.assert_equal("x=>y", user.tags.Xyz);   // hstore syntax checks escaping

@@ -38,6 +38,7 @@ require 'js_support/messagebus/js_messagebus_support'
 require 'js_support/messagebus/js_messagebus_inter_application'
 require 'js_support/messagebus/js_messagebus_amazon_kinesis'
 require 'js_support/messagebus/js_messagebus_amazon_sqs'
+require 'js_support/messagebus/js_messagebus_amazon_sns'
 # Special platform support for standard plugins
 require 'js_support/js_std_reporting_support'
 require 'js_support/js_std_web_publisher_support'

@@ -38,18 +38,6 @@ class AuthenticationControllerTest < IntegrationTest
 
   # ===================================================================================================================
 
-  def test_safe_redirect_url_path_regexp
-    assert "/do/something" =~ AuthenticationController::SAFE_REDIRECT_URL_PATH
-    assert "do/something" !~ AuthenticationController::SAFE_REDIRECT_URL_PATH
-    assert "/do/something?a=b&c=e" =~ AuthenticationController::SAFE_REDIRECT_URL_PATH
-    # Allowing paths starting with // would allow the login to be used as an open redirect
-    assert "//example.org/hello" !~ AuthenticationController::SAFE_REDIRECT_URL_PATH
-    assert "/\\example.org/hello" !~ AuthenticationController::SAFE_REDIRECT_URL_PATH
-    assert "\\\\example.org/hello" !~ AuthenticationController::SAFE_REDIRECT_URL_PATH
-  end
-
-  # ===================================================================================================================
-
   def test_login_failure_throttle
     AUTHENTICATION_LOGIN_TEST_FAILURE_LOCK.synchronize { do_test_login_failure_throttle }
   end
@@ -877,8 +865,11 @@ class AuthenticationControllerTest < IntegrationTest
           assert_equal user_obj.id.to_s, anon_session.response.body
           assert_equal "200", anon_session.response.code
         else
-          assert_equal "Not authorised", anon_session.response.body
           assert_equal "403", anon_session.response.code
+          assert_equal("application/json; charset=utf-8", anon_session.response['Content-Type'])
+          api_response = JSON.parse(anon_session.response.body)
+          assert_equal('UNAUTHORISED', api_response['kind'])
+          assert_equal('Not authorised', api_response['error']['message'])
         end
         
       end

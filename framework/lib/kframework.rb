@@ -142,7 +142,10 @@ class KFramework
   end
 
   def runtimeSharedJavaScriptInitialiser
-    KLocale._locale_initialiser_for_javascript(KLocale::DEFAULT_LOCALE, KLocale::LOCALES)
+    %Q!
+      $server_classification_tags = #{JSON.generate(KInstallProperties.server_classification_tags())};
+      #{KLocale._locale_initialiser_for_javascript(KLocale::DEFAULT_LOCALE, KLocale::LOCALES)}
+    !
   end
 
   def plugin_debugging_enabled

@@ -249,8 +249,19 @@ Publication.prototype.respondToDirectoryAllowingPOST = function(path, handlerFun
 };
 
 Publication.prototype.respondWithObject = function(path, types, handlerFunction) {
+    var selectorFunction = function() { return true; };  // Responds to all objects of the correct type
+    // While it looks like we're calling a temporary API, actually that is the stable underlying implementation. 
+    // It has been exposed with this "TEMP" name so it can be exposed without suggesting consumers should rely on it.
+    this.TEMP_respondWithSelectedObject(path, types, selectorFunction, handlerFunction);
+};
+
+// TODO: Replace this API with a better method of managing object handlers with more granularity than object type
+Publication.prototype.TEMP_respondWithSelectedObject = function(path, types, selectorFunction, handlerFunction) {
     checkHandlerArgs(path, handlerFunction);
     var allowedTypes = O.refdictHierarchical();
+    var checkAllowedType = function(object) {
+        return _.any(object.everyType(), function(type) { return allowedTypes.get(type); });
+    };
     var pathPrefix = path+"/";
     var urlPolicy = this._urlPolicy;
     var handler = {
@@ -269,9 +280,9 @@ Publication.prototype.respondWithObject = function(path, types, handlerFunction)
                 renderingContext.$overrideStatusCode = HTTP.NOT_FOUND;
                 O.stop("The requested item was not found", "Not found");
             }
-            // Check object has any correct type, and 404 if not
-            if(!_.any(object.everyType(), function(type) { return allowedTypes.get(type); })) {
-                console.log("Web publisher: object has wrong type for this path", object);
+            // Check object has any correct type and is selected for this handler, and 404 if not
+            if(!(checkAllowedType(object) && selectorFunction(object))) {
+                console.log("Web publisher: object has wrong type for this path, or is not selected for response", object);
                 return null;
             }
             renderingContext.object = object;    // allow Page Parts to get the object we're rendering
@@ -293,7 +304,8 @@ Publication.prototype.respondWithObject = function(path, types, handlerFunction)
                 url += "/"+slug;
             }
             return url;
-        }
+        },
+        TEMP_objectSelectedForResponse: selectorFunction
     };
     var objectTypeHandler = this._objectTypeHandler;
     types.forEach(function(type) {
@@ -471,7 +483,7 @@ Publication.prototype._urlPathForObject = function(object) {
     var types = object.everyType();
     for(var i = 0; i < types.length; ++i) {
         var handler = this._objectTypeHandler.get(types[i]);
-        if(handler) {
+        if(handler && handler.TEMP_objectSelectedForResponse(object)) {
             return handler.urlForObject(object);
         }
     }

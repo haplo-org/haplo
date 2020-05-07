@@ -14,8 +14,6 @@ class AuthenticationController < ApplicationController
 
   CSRF_NOT_REQUIRED_FOR_URLS = ['/do/authentication/support_login']
 
-  SAFE_REDIRECT_URL_PATH = /\A\/[a-zA-Z0-9]\S*\z/ # match regexp in framework.js
-
   # Don't do CSRF checks for some special URLs.
   def csrf_check(exchange)
     if CSRF_NOT_REQUIRED_FOR_URLS.include?(exchange.request.path)
@@ -49,7 +47,7 @@ class AuthenticationController < ApplicationController
     # a little confusing for the user).
     if @request_user.policy.is_not_anonymous? && !(request.post?)
       rdr = params[:rdr]
-      redirect_to((rdr != nil && rdr =~ SAFE_REDIRECT_URL_PATH) ? rdr : '/')
+      redirect_to(KSafeRedirect.checked(rdr, '/'))
       return
     end
 
@@ -58,7 +56,7 @@ class AuthenticationController < ApplicationController
       redirect_path = nil
       call_hook(:hLoginUserInterface) do |hooks|
         rdr = params[:rdr]
-        redirect_path = hooks.run((rdr != nil && rdr =~ SAFE_REDIRECT_URL_PATH) ? rdr : nil, params[:auth]).redirectPath
+        redirect_path = hooks.run(KSafeRedirect.checked(rdr), params[:auth]).redirectPath
       end
       if redirect_path
         redirect_to redirect_path
@@ -86,7 +84,7 @@ class AuthenticationController < ApplicationController
         # Redirect to request an OTP, storing the ID of the user for the pending login
         session[:pending_uid] = @logged_in_user.id
         session[:pending_was_autologin] = @was_autologin
-        redirect_to(if params[:rdr] != nil && params[:rdr] =~ SAFE_REDIRECT_URL_PATH
+        redirect_to(if KSafeRedirect.is_safe?(params[:rdr])
           "/do/authentication/otp?rdr=#{ERB::Util.url_encode(params[:rdr])}"
         else
           '/do/authentication/otp'
@@ -148,7 +146,7 @@ class AuthenticationController < ApplicationController
         redirect_path = nil
         if auth_info
           call_hook(:hOAuthSuccess) do |hooks|
-            redirect_path = hooks.run(JSON.generate(auth_info)).redirectPath
+            redirect_path = KSafeRedirect.from_hook(hooks.run(JSON.generate(auth_info)))
           end
         end
         if redirect_path
@@ -253,7 +251,7 @@ class AuthenticationController < ApplicationController
     # Called before actual logout, so the plugin has access to session and authenticated user.
     call_hook(:hLogoutUserInterface) do |hooks|
       plugin_rdr = hooks.run().redirectURL
-      rdr = plugin_rdr if plugin_rdr && (plugin_rdr =~ SAFE_REDIRECT_URL_PATH || plugin_rdr.start_with?('https://'))
+      rdr = plugin_rdr if KSafeRedirect.is_safe_or_explicit_external?(plugin_rdr)
     end
 
     session[:uid] = nil
@@ -289,7 +287,7 @@ class AuthenticationController < ApplicationController
         history.push(impersonate_uid) unless history.include?(impersonate_uid)
         session[:locale] = nil
         rdr = params[:rdr]
-        redirect_to((rdr != nil && rdr =~ SAFE_REDIRECT_URL_PATH) ? rdr : '/')
+        redirect_to(KSafeRedirect.checked(rdr, '/'))
       end
     else
       @users = User.find_all_by_kind(User::KIND_USER)
@@ -448,13 +446,6 @@ class AuthenticationController < ApplicationController
 
 private
   def do_redirect_to_destination
-    rdr = params[:rdr]
-    destination_url = if rdr != nil && rdr =~ SAFE_REDIRECT_URL_PATH   # must begin with a / to avoid being able to trick people
-      rdr
-    else
-      # Redirect to the home page by default
-      '/'
-    end
-    redirect_to destination_url
+    redirect_to KSafeRedirect.checked(params[:rdr], '/')
   end
 end

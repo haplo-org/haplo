@@ -7,6 +7,8 @@
 
 module JSMessageBus
 
+  # TODO: Extend Kinesis support to allow AssumeRole credentials -- it's not quite as simple as it needs credentials to be refreshed and the lifetime of the credential provider needs to be managed
+
   KNotificationCentre.when(:server, :starting) do
     KeychainCredential::MODELS.push({
       :kind => 'Message Bus',

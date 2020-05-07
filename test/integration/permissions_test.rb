@@ -109,13 +109,10 @@ class PermissionsTest < IntegrationTest
     api_key_secret = api_key.set_random_api_key
     api_key.save()
     get_403 obj_path(:p2), nil, {'X-ONEIS-Key' => api_key_secret}
-    assert response.body.include?("Unauthorised")
-    if File.exist?("app/views/authentication/unauthorised_api.html.erb")
-      assert_equal File.open("app/views/authentication/unauthorised_api.html.erb") {|f| f.read}, response.body
-    else
-      # for when test run after deployment packing
-      assert response.body.include?("<body><h1>Unauthorised</h1>") # HTML minimised
-    end
+    assert_equal("application/json; charset=utf-8", response['Content-Type'])
+    api_response = JSON.parse(response.body)
+    assert_equal('UNAUTHORISED', api_response['kind'])
+    assert_equal('Unauthorised: You are not permitted to perform that action', api_response['error']['message'])
     get obj_path(:p1), nil, {'X-ONEIS-Key' => api_key_secret}
     assert_select '#z__page_name h1', obj_title(:p1)
     api_key.destroy

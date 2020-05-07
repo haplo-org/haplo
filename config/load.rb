@@ -84,6 +84,7 @@ require 'hmac'
 require 'tzinfo_java'
 require 'k_hostname'        # from lib/common
 require 'kapp_common'       # from lib/common
+require 'ksafe_redirect'
 require 'klocale'
 require 'kapp'
 require 'kaccounting'

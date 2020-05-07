@@ -16,11 +16,6 @@ class KIdentifier < KText
   def to_summary
     nil
   end
-  # XML export
-  def build_xml(builder)
-    # Just output the value in a text node
-    builder.text self.to_s
-  end
   #
   # Identifiers are stored as text in the text index; the identifier object can adjust the value.
   # This allows case insensitive lookups when required, eg for email addresses.
@@ -94,16 +89,6 @@ class KIdentifierURL < KIdentifier
   end
   # Don't implement to_summary so that these identifiers are not shown in, for example, search results
 
-  # XML export
-  def build_xml(builder)
-    builder.url self.to_s
-  end
-  # XML import
-  def self.read_from_xml(xml_container)
-    e = xml_container.elements["url"]
-    raise "No url node" if e == nil
-    new(e.text || '')
-  end
   # Render as a simple link
   def to_html
     url = ERB::Util.h(self.text)
@@ -183,7 +168,6 @@ class KIdentifierPostalAddress < KIdentifier
   # Keep FIELDNAMES synced with keditor.js
   FIELDNAMES = ['Number / building name, Street','','City','County / State / Province','Postcode / Zip','Country']
   FIELDNAMES_SHORT = ['Street','Street 2','City','County','Postcode','Country']
-  XML_TAG_NAMES = [:street1,:street2,:city,:county,:postcode,:country]
   STREET1   = 0
   STREET2   = 1
   CITY      = 2
@@ -241,25 +225,6 @@ class KIdentifierPostalAddress < KIdentifier
   # Export
   def to_export_cells
     decode
-  end
-
-  # XML export
-  def build_xml(builder)
-    f = decode
-    builder.postal_address do |addr|
-      0.upto(XML_TAG_NAMES.length - 1) do |i|
-        addr.tag!(XML_TAG_NAMES[i], f[i]) if f[i] != nil
-      end
-    end
-  end
-  # XML import
-  def self.read_from_xml(xml_container)
-    f = Array.new
-    0.upto(XML_TAG_NAMES.length - 1) do |i|
-      e = xml_container.elements["postal_address/#{XML_TAG_NAMES[i]}"]
-      f << ((e != nil) ? e.text : nil)
-    end
-    new(f)
   end
 
   # -----
@@ -380,40 +345,6 @@ class KIdentifierTelephoneNumber < KIdentifier
 
   def to_export_cells
     to_s(nil, :export)
-  end
-
-  # XML export
-  def build_xml(builder)
-    f = to_fields
-    builder.telephone_number do |num|
-      [:country,:number,:extension].each do |field|
-        num.tag!(field, f[field]) if f.has_key?(field)
-      end
-      num.intl_form self.to_s(nil, :export)
-    end
-  end
-  # XML import
-  def self.read_from_xml(xml_container)
-    f = Hash.new
-    # Is the sender asking for the number to be guessed?
-    guess_from = xml_container.elements["telephone_number/guess_from"]
-    if guess_from != nil
-      guess_country = xml_container.elements["telephone_number/guess_country"]
-      raise "Need guess_country" if guess_country == nil
-      country, number, extension = KTelephone.best_guess_from_user_input(guess_from.text, guess_country.text)
-      ext_in = xml_container.elements["telephone_number/extension"]
-      extension = ext_in.text if ext_in != nil
-      f[:country] = country
-      f[:number] = number
-      f[:extension] = extension if extension != nil
-    else
-      # All info as provided
-      [:country,:number,:extension].each do |field|
-        e = xml_container.elements["telephone_number/#{field}"]
-        f[field] = e.text if e != nil
-      end
-    end
-    new(f)
   end
 
   # -------------------------------

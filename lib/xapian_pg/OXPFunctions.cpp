@@ -219,7 +219,7 @@ Datum oxp_spelling(PG_FUNCTION_ARGS) {
         spelled = OXPController::GetController().PgSpelling(slot, word);
     OXP_WRAP_CPP_END
 
-    PG_RETURN_CSTRING(spelled.c_str());
+    PG_RETURN_CSTRING(pstrdup(spelled.c_str()));
 }
 
 

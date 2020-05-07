@@ -137,43 +137,4 @@ class KIdentifierFile < KIdentifier
     identifier
   end
 
-  # ---------------------------------------------------------------------------------------------------------------
-
-  # XML export
-  def build_xml(builder)
-    builder.file_reference do |ref|
-      ref.digest self.digest
-      ref.file_size self.size
-      ref.secret self.generate_secret
-      ref.filename self.presentation_filename
-      ref.mime_type self.mime_type
-      ref.tracking_id self.tracking_id
-      ref.log_message self.log_message if self.log_message
-      ref.version self.version_string
-    end
-  end
-  # XML import (including secret verification for security)
-  XML_FIELDS = [
-      ['digest', :digest=],
-      ['file_size', :size=],
-      ['filename', :presentation_filename=],
-      ['mime_type', :mime_type=],
-      ['tracking_id', :tracking_id=],
-      ['version', :version_string=]
-    ]
-  def self.read_from_xml(xml_container)
-    identifier = KIdentifierFile.new(nil)
-    e = xml_container.elements["file_reference"]
-    XML_FIELDS.each do |name, method|
-      x = e.elements[name]
-      raise "Bad XML file reference" if x == nil
-      identifier.__send__(method, x.text)
-    end
-    log_element = e.elements['log_message']
-    identifier.log_message = log_element.text if log_element
-    secret_element = e.elements['secret']
-    raise "No secret in XML" unless secret_element
-    identifier.verify_secret!(secret_element.text) # security check
-    identifier
-  end
 end

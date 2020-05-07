@@ -78,11 +78,11 @@ class AuthApiKeyTest < IntegrationTest
     assert key1.b_matchs?(KEY1_RIGHT)
     assert ! key1.b_matchs?(KEY1_RIGHT_MOD)
     check_api_key(KEY1, 42)
-    check_api_key(KEY1_MOD_LEFT, nil, "Bad API Key") # different in first half (lookup)
-    check_api_key(KEY1_MOD_RIGHT, nil, "Bad API Key") # different in second half (bcrypted)
+    check_api_key(KEY1_MOD_LEFT, nil) # different in first half (lookup)
+    check_api_key(KEY1_MOD_RIGHT, nil) # different in second half (bcrypted)
 
     # Check key isn't able to use a path which doesn't begin with the prefix
-    check_api_key(KEY1, nil, "Bad API Key", "/api/object/batch")
+    check_api_key(KEY1, nil, nil, nil, "/api/generated/availability/0123456789")
 
     # Check API key cache has expected lookup of the left key side only
     assert ApiKey.cache.instance_variable_get(:@storage).has_key?(KEY1_LEFT)
@@ -102,8 +102,8 @@ class AuthApiKeyTest < IntegrationTest
     check_api_key(key2_secret, 44)
 
     # Other keys
-    check_api_key(KEY2, nil, 'Bad API Key')
-    check_api_key(KRandom.random_api_key, nil, 'Bad API Key')
+    check_api_key(KEY2, nil)
+    check_api_key(KRandom.random_api_key, nil)
 
     # Check API keys and multipart file uploads
     begin
@@ -155,10 +155,10 @@ class AuthApiKeyTest < IntegrationTest
     u42 = User.find(42)
     u42.kind = User::KIND_USER_BLOCKED
     u42.save!
-    check_api_key(KEY1, nil, 'Not authorised')
+    check_api_key(KEY1, nil, 'UNAUTHORISED', 'Not authorised')
 
     # Check API key's path validity method
-    assert_equal false, key1.valid_for_request_path?('/api/object/batch')
+    assert_equal false, key1.valid_for_request_path?('/api/generated/availability/0123456789')
     assert_equal false, key1.valid_for_request_path?('/api/test') # no final /
     assert_equal true,  key1.valid_for_request_path?('/api/test/something')
     # Check strict equality path validity
@@ -168,7 +168,7 @@ class AuthApiKeyTest < IntegrationTest
     key_strict.name = "Strict path test"
     key_strict.set_random_api_key
     key_strict.save
-    assert_equal false, key_strict.valid_for_request_path?('/api/object/batch')
+    assert_equal false, key_strict.valid_for_request_path?('/api/generated/availability/0123456789')
     assert_equal false, key_strict.valid_for_request_path?('/api/test/something')
     assert_equal false, key_strict.valid_for_request_path?('/api/test2/something')
     assert_equal false, key_strict.valid_for_request_path?('/api/test2/')
@@ -183,7 +183,7 @@ private
     assert_equal id, session.response.body.to_i
   end
 
-  def check_api_key(api_key, user_id, expected_body = nil, path = nil)
+  def check_api_key(api_key, user_id, expected_kind = nil, expected_message = nil, path = nil)
     [:param,:basic,:header].each do |type|
       session = open_session
       url_path = path || '/api/test/uid'
@@ -204,7 +204,10 @@ private
           # Will get a CSRF security thing from the POST
           assert session.response.body =~ /security/
         else
-          assert_equal((expected_body || 'Bad API Key'), session.response.body)
+          assert_equal("application/json; charset=utf-8", session.response['Content-Type'])
+          api_response = JSON.parse(session.response.body)
+          assert_equal((expected_kind || 'INVALID-API-KEY'), api_response['kind'])
+          assert_equal((expected_message || 'Invalid API Key'), api_response['error']['message'])
         end
       end
     end

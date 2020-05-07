@@ -72,6 +72,7 @@ TEST(function() {
     db.table("numbers", {
         name: { type:"text" },
         pingTime: { type:"time", nullable:true },
+        pingDate: { type:"datetime", nullable:true },
         bools: { type:"boolean", nullable:true },
         small: { type:"smallint", indexed:true },
         medium: { type:"int" },

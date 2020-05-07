@@ -1597,12 +1597,15 @@ body.z__minimal_layout {
     width: 100%;
     position: relative;
     border-bottom: 1px solid $C_AEP_MENU_BORDER;
+    height: inherit; min-height: 40px; /* when borrowing styling of #z__action_entry_points, allow expansion downwards when title is long */
 }
 .z__minimal_layout #z__page_name h1 {
     font-size: 16px;
     line-height: $AEP_HEIGHT;
     margin: 2px 0 0 16px;
     color: $C_AEP_LINKS;
+    max-width: inherit;
+    margin-right: 100px; /* so text isn't under #z__spawn_close */
 }
 
 .z__minimal_layout #z__page {

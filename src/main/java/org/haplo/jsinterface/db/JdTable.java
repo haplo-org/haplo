@@ -621,11 +621,53 @@ public class JdTable extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+    public int executeUpdate(JdSelect query, Scriptable rowValues) throws java.sql.SQLException {
+        StringBuilder update = new StringBuilder("UPDATE ");
+        String tableName = this.getDatabaseTableName();
+        update.append(tableName);
+        update.append(" SET ");
+        boolean needsComma = false;
+        int parameterIndex = 1;
+        ParameterIndicies indicies = makeParameterIndicies();
+        int lengthBeforeFields = update.length();
+        for(Field field : this.fields) {
+            int nextParameterIndex = field.appendUpdateSQL(update, needsComma, rowValues, parameterIndex, indicies);
+            if(nextParameterIndex != parameterIndex) {
+                parameterIndex = nextParameterIndex;
+                needsComma = true;
+            }
+        }
+        if(update.length() == lengthBeforeFields) {
+            return 0;   // nothing to do (and invalid SQL)
+        }
+        String where = query.generateWhereSql(tableName);
+        if(where != null) {
+            update.append(" WHERE ");
+            update.append(where);
+        }
+
+        int numberUpdated = 0;
+        Connection db = Runtime.currentRuntimeHost().getSupportRoot().getJdbcConnection();
+        PreparedStatement statement = db.prepareStatement(update.toString());
+        try {
+            for(Field field : this.fields) {
+                field.setUpdateField(statement, rowValues, indicies);
+            }
+            if(where != null) {
+                query.setWhereValues2(parameterIndex, statement);
+            }
+            numberUpdated = statement.executeUpdate();
+        } finally {
+            statement.close();
+        }
+        return numberUpdated;
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
     public int executeDelete(JdSelect query) throws java.sql.SQLException {
         if(null != query.getIncludes()) {
             throw new OAPIException("deleteAll() cannot use selects which include other tables, or where clauses which refer to a field in another table via a link field. Remove include() statements and check your where() clauses.");
         }
-        ParameterIndicies indicies = makeParameterIndicies();
         Connection db = Runtime.currentRuntimeHost().getSupportRoot().getJdbcConnection();
         int numberDeleted = 0;
         // Build DELETE statement

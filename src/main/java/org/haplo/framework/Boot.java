@@ -194,7 +194,7 @@ public class Boot {
 
         // Set up HTTPS
         SslContextFactory publicSSLContextFactory = new SslContextFactory();
-        SSLCipherSuites.configureCipherSuites(publicSSLContextFactory);
+        SSLCipherSuites.configureCipherSuites(publicSSLContextFactory, "yes".equals(framework.getInstallProperty("legacy_tls", "no")));
         publicSSLContextFactory.setSslContext(publicSSLContext);
         HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
         httpsConfig.addCustomizer(new SecureRequestCustomizer());

@@ -14,7 +14,7 @@
  *
  * ********************************************* */
 
-/*! oForms | (c) Haplo Services Ltd 2012 - 2019 | MPLv2 License */
+/*! oForms | (c) Haplo Services Ltd 2012 - 2020 | MPLv2 License */
 
 /////////////////////////////// jquery_preamble.js ///////////////////////////////
 

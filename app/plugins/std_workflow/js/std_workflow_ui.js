@@ -78,18 +78,20 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
 
     $currentlyWithDisplayName: {selector:{}, handler:function(M) {
         var state = this.state,
-            user = M.workUnit.actionableBy;
-        if(user && user.name) {
-            var stateDefn = M.$states[state],
-                displayedName = user.name;
-            if(stateDefn && stateDefn.actionableBy) {
-                var currentlyWithNameAnnotation = M._getTextMaybe(["status-ui-currently-with-annotation"], [stateDefn.actionableBy, state]);
+            user = M.workUnit.actionableBy,
+            stateDefn = M.$states[state],
+            actionableBy = stateDefn && stateDefn.actionableBy,
+            displayedName = M._getTextMaybe(["status-ui-actionable-by"], [actionableBy, state]);
+        if(!displayedName && user && user.name) {
+            displayedName = user.name;
+            if(actionableBy) {
+                var currentlyWithNameAnnotation = M._getTextMaybe(["status-ui-currently-with-annotation"], [actionableBy, state]);
                 if(currentlyWithNameAnnotation) {
                     displayedName = displayedName+" ("+currentlyWithNameAnnotation+")";
                 }
             }
-            return displayedName;
         }
+        return displayedName;
     }},
 
     $actionPanelTransitionUI: {selector:{}, handler:function(M, builder) {

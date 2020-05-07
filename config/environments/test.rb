@@ -45,6 +45,7 @@ KFRAMEWORK_TEST_DOMAIN_NAME = ENV['KFRAMEWORK_TEST_DOMAIN_NAME'] || 'local'
 
 # Installation properties
 KInstallProperties.load_from("#{KFRAMEWORK_ROOT}/tmp/properties-test", {
+  :server_classification_tags => ' test-tag   tag-two ',
   :register_mdns_hostnames => 'no',
   :domainname => KFRAMEWORK_TEST_DOMAIN_NAME,
   :management_server_url => "https://#{ENV['KSERVER_HOSTNAME'].chomp}."+KFRAMEWORK_TEST_DOMAIN_NAME,

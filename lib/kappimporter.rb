@@ -38,6 +38,20 @@ class KAppImporter
     data = File.open("#{filename_base}.json",'r') { |f| JSON.parse(f.read) }
     raise "Bad data file" unless data && data.has_key?("applicationId") && data.has_key?("hostnames")
 
+    hostnames = data["hostnames"]
+    hostnames = [new_hostname] unless new_hostname.nil?
+
+    # Check policy
+    import_policy_class = POLICIES[KInstallProperties.get(:server_import_policy, 'allow-all')]
+    raise "Bad import policy configured" unless import_policy_class
+    import_policy = import_policy_class.new(data, hostnames)
+    unless import_policy.import_allowed?
+      puts "\nImport not allowed on this server:\n"
+      import_policy.violations.each { |v| puts "  * #{v}" }
+      puts "\nIMPORTANT: Delete the application export files from this server immediately.\n\n"
+      return false
+    end
+
     source_app_id = data["applicationId"].to_i
     app_id = new_application_id || source_app_id
 
@@ -53,9 +67,6 @@ class KAppImporter
       File.read("#{filename_base}.sql", sql_check_length)
     end
     raise "Bad schema create in SQL file" unless sql_start =~ /CREATE SCHEMA a#{source_app_id};/
-
-    hostnames = data["hostnames"]
-    hostnames = [new_hostname] unless new_hostname.nil?
 
     KApp.in_application(:no_app) do
       db = KApp.get_pg_database
@@ -129,5 +140,42 @@ class KAppImporter
 
     KNotificationCentre.notify(:applications, :changed)
   end
+
+  # -------------------------------------------------------------------------
+
+  class ImportPolicy
+    def initialize(export_data, hostnames)
+      @export_data = export_data
+      @hostnames = hostnames
+      @violations = []
+    end
+    attr_reader :export_data, :hostnames, :violations
+    def import_allowed?
+      policy()
+      @violations.empty?
+    end
+    def policy
+      violation("Policy not implemented")
+    end
+    def violation(violation)
+      @violations << violation
+    end
+    def violation_if_server_classification_tag(tag)
+      tags = @export_data["serverClassificationTags"] || [KInstallProperties::DEFAULT_SERVER_CLASSIFICATION_TAG]
+      if tags.include?(tag)
+        violation("Source server classification tag '#{tag}' is not permitted.")
+      end
+    end
+  end
+
+  class ImportPolicyAllowAll < ImportPolicy
+    def policy
+      # no checks
+    end
+  end
+
+  POLICIES = {
+    "allow-all" => ImportPolicyAllowAll
+  }
 
 end
