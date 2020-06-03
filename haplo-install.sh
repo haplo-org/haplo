@@ -87,8 +87,14 @@ if [ -f /etc/os-release ]; then
 	    XAPIAN_PKG=libxapian30
 	    # headless jdk on bionic isn't
 	    OPENJDK_PKG=openjdk-8-jdk
-	    echo "WARN: Ubuntu $UVER is not fully supported."
+	    echo "WARN: Ubuntu $UVER is deprecated."
 	    sleep 5
+	    ;;
+	'20.04')
+	    PG_VERSION=12
+	    XAPIAN_PKG=libxapian30
+	    # headless jdk on bionic isn't
+	    OPENJDK_PKG=openjdk-8-jdk
 	    ;;
 	*)
 	    echo "Unsupported OS version $UVER"
