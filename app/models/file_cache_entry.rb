@@ -1,18 +1,29 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-class FileCacheEntry < ActiveRecord::Base
-  after_destroy :delete_files_on_disk
+
+class FileCacheEntry < MiniORM::Record
+  table :file_cache_entries do |t|
+    t.column :timestamp, :created_at
+    t.column :timestamp, :last_access
+    t.column :int, :access_count
+    t.column :int, :stored_file_id
+    t.column :text, :output_mime_type
+    t.column :text, :output_options
+  end
 
   def self.for(stored_file, output_mime_type = nil, output_options = nil)
-    e = find(:first,
-      :conditions => ['stored_file_id=? AND output_mime_type=? AND output_options=?',
-        stored_file.id, output_mime_type || '', output_options || '']
-      )
+    e = where({
+      :stored_file_id => stored_file.id,
+      :output_mime_type => output_mime_type || '',
+      :output_options => output_options || ''
+    }).first
     # Check the file exists -- might be in the process of being created
     return nil unless e != nil && File.exists?(e.disk_pathname)
     e
@@ -20,7 +31,9 @@ class FileCacheEntry < ActiveRecord::Base
 
   def update_usage_info!
     raise "Not saved" if self.id == nil
-    KApp.get_pg_database.perform("BEGIN; SET LOCAL synchronous_commit TO OFF; UPDATE file_cache_entries SET last_access=NOW(), access_count=access_count+1 WHERE id=#{self.id.to_i}; COMMIT")
+    KApp.with_pg_database do |db|
+      db.perform("BEGIN; SET LOCAL synchronous_commit TO OFF; UPDATE #{KApp.db_schema_name}.file_cache_entries SET last_access=NOW(), access_count=access_count+1 WHERE id=#{self.id.to_i}; COMMIT")
+    end
   end
 
   # Get the name of the file on disk
@@ -39,8 +52,7 @@ class FileCacheEntry < ActiveRecord::Base
   end
 
   # Clean up when deleting objects
-  # after_destroy
-  def delete_files_on_disk
+  def after_delete
     pathname = self.disk_pathname
     if File.exists?(pathname)
       File.unlink(pathname)
@@ -51,7 +63,7 @@ class FileCacheEntry < ActiveRecord::Base
     raise "negative int for short_path_component" if id < 0
     leaf = id & 0xff
     e = id >> 8
-    p = ''
+    p = ''.dup
     while e > 0
       p << sprintf("%02x/", e & 0xff)
       e >>= 8

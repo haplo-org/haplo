@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 require 'lib/kobjref'
@@ -11,6 +14,8 @@ require 'lib/kconstants_app'
 
 
 begin
+
+  EXCLUDE_CONSTANTS_FROM_JS = ['ERB', 'IO', 'JSON']
 
   # Find all the ruby files
   rb = `find app -name *.rb`.split(/[\r\n]+/)
@@ -46,10 +51,10 @@ begin
       file.each_line do |line|
         line.scan(/\b[A-Z][A-Z_0-9]+\b/) do |constant|
           s = constant.to_sym
-          if KConstants.const_defined? s
+          if KConstants.const_defined?(s) && !EXCLUDE_CONSTANTS_FROM_JS.include?(constant)
             # Include this constant
             val = KConstants.const_get s
-            constants[constant] = if val.class == Fixnum
+            constants[constant] = if val.class == Integer
               val.to_s
             elsif val.class == String
               "'#{val}'"  # assume encoding OK

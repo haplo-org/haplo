@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 unless PLUGIN_DEBUGGING_SUPPORT_LOADED
@@ -28,28 +31,28 @@ class StdDeveloperPortalPlugin < KTrustedPlugin
     controller = KFramework.request_context.controller
 
     app_descriptions = JSON.parse(KApp.global(:std_developer_portal_descriptions) || '{}')
-    edit_app_description = controller.params[:edit_app_description]
-
-    db = KApp.get_pg_database
-    apps = db.exec("SELECT application_id,hostname FROM applications WHERE application_id<>#{KApp.current_application.to_i} ORDER BY hostname")
-    apps = apps.sort_by{ |app| app[1].to_s.split(/(\d+)/).map { |s| [s.to_i, s] } } # natural sort of hostnames
+    edit_app_description = controller.params['edit_app_description']
 
     app_html = []
-    apps.each do |application_id,hostname|
-      system_name = nil
-      begin
-        system_name = db.exec("SELECT value_string FROM a#{application_id}.app_globals WHERE key='system_name'").first.first
-      rescue => e
-        KApp.logger.info("Temporary error reading system_name app global from app ID #{application_id}")
-        system_name = 'UNKNOWN (APPLICATION MAY NOT BE READY)'
-      end
-      description = app_descriptions[application_id.to_s]
-      app_html.push <<__E
-        <form method="POST" action="/do/std_developer_portal/login">
-        #{controller.form_csrf_token}<input type="hidden" name="appid" value="#{application_id}">
-        <h2 id="app_#{application_id}">#{h(hostname)}</h2>
-        <p><input type="submit" value="Login"> #{h(system_name)}</p>
-        </form>
+    KApp.with_pg_database do |db|
+      apps = db.exec("SELECT application_id,hostname FROM applications WHERE application_id<>#{KApp.current_application.to_i} ORDER BY hostname")
+      apps = apps.sort_by{ |app| app[1].to_s.split(/(\d+)/).map { |s| [s.to_i, s] } } # natural sort of hostnames
+
+      apps.each do |application_id,hostname|
+        system_name = nil
+        begin
+          system_name = db.exec("SELECT value_string FROM a#{application_id}.app_globals WHERE key='system_name'").first.first
+        rescue => e
+          KApp.logger.info("Temporary error reading system_name app global from app ID #{application_id}")
+          system_name = 'UNKNOWN (APPLICATION MAY NOT BE READY)'
+        end
+        description = app_descriptions[application_id.to_s]
+        app_html.push <<__E
+          <form method="POST" action="/do/std_developer_portal/login">
+          #{controller.form_csrf_token}<input type="hidden" name="appid" value="#{application_id}">
+          <h2 id="app_#{application_id}">#{h(hostname)}</h2>
+          <p><input type="submit" value="Login"> #{h(system_name)}</p>
+          </form>
 __E
         if edit_app_description == application_id
           app_html.push <<__E
@@ -61,6 +64,7 @@ __E
         else
           app_html.push(%Q!<p><i>#{h(description)}</i> &nbsp; <a href="?edit_app_description=#{application_id}#app_#{application_id}">edit</a></p>!)
         end
+      end
     end
 
     result.title = 'Applications on this development server'
@@ -86,11 +90,11 @@ __E
         return
       end
 
-      application_id = params[:appid].to_i
+      application_id = params['appid'].to_i
       raise "Bad application ID" unless application_id > 0
       raise "Can't use portal to log into current application" if application_id == KApp.current_application
 
-      hostname = KApp.get_pg_database.exec("SELECT value_string FROM a#{application_id.to_i}.app_globals WHERE key='ssl_hostname'").first.first
+      hostname = KApp.with_pg_database { |db| db.exec("SELECT value_string FROM a#{application_id.to_i}.app_globals WHERE key='ssl_hostname'").first.first }
       raise "Unknown application" unless hostname
 
       secret2 = KRandom.random_api_key(76)
@@ -131,9 +135,9 @@ __E
 
     _PostOnly
     def handle_description
-      application_id = params[:appid].to_i
+      application_id = params['appid'].to_i
       raise "Bad application ID" unless application_id > 0
-      text = params[:text] || ''
+      text = params['text'] || ''
       app_descriptions = JSON.parse(KApp.global(:std_developer_portal_descriptions) || '{}')
       app_descriptions[application_id.to_s] = text
       KApp.set_global(:std_developer_portal_descriptions, JSON.generate(app_descriptions))

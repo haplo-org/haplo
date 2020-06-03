@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module SchemaRequirements
@@ -249,7 +252,7 @@ module SchemaRequirements
       @elements = KApp.global(:home_page_elements)
     end
     attr_accessor :elements
-    def save!
+    def save
       KApp.set_global(:home_page_elements, @elements || '')
     end
   end
@@ -318,7 +321,7 @@ module SchemaRequirements
       @data = JSON.parse(KApp.global(:javascript_config_data) || '{}')
     end
     attr_accessor :data
-    def save!
+    def save
       KApp.set_global(:javascript_config_data, JSON.generate(data))
     end
   end
@@ -379,7 +382,7 @@ module SchemaRequirements
       @navigation = YAML::load(KApp.global(:navigation))
     end
     attr_accessor :navigation
-    def save!
+    def save
       KApp.set_global(:navigation, YAML::dump(@navigation))
     end
   end
@@ -432,6 +435,9 @@ module SchemaRequirements
           @template.send(set, nil)
         end
       end
+    end
+    def save
+      @template.save
     end
     def method_missing(symbol, *args)
       @template.__send__(symbol, *args)
@@ -581,7 +587,7 @@ module SchemaRequirements
       @group_member_requirements = []
       @service_users = {}
       @service_user_group_requirements = []
-      User.where("(kind IN (#{User::KIND_GROUP},#{User::KIND_GROUP_DISABLED},#{User::KIND_SERVICE_USER})) AND code IS NOT NULL").each do |user|
+      User.where_kind_in([User::KIND_GROUP,User::KIND_GROUP_DISABLED,User::KIND_SERVICE_USER]).where_not_null(:code).each do |user|
         if user.kind == User::KIND_SERVICE_USER
           @service_users[user.code] = user
         else
@@ -590,7 +596,7 @@ module SchemaRequirements
       end
       # Email template objects
       @email_templates = {}
-      EmailTemplate.find(:all, :conditions => 'code IS NOT NULL').each do |email_template|
+      EmailTemplate.where().where_not_null(:code).select().each do |email_template|
         @email_templates[email_template.code] = EmailTemplateProxy.new(email_template)
       end
     end
@@ -645,12 +651,12 @@ module SchemaRequirements
     def apply_for_email_template(code)
       template = @email_templates[code] ||= begin
         generic = @email_templates['std:email-template:generic'].template
-        EmailTemplateProxy.new(EmailTemplate.new({
-          :code => code,
-          :purpose => nil,
-          :from_email_address => generic.from_email_address,
-          :from_name => generic.from_name
-        }))
+        et = EmailTemplate.new
+        et.code = code
+        et.purpose = nil
+        et.from_email_address = generic.from_email_address
+        et.from_name = generic.from_name
+        EmailTemplateProxy.new(et)
       end
       ApplyToEmailTemplate.new(code, template, EMAIL_TEMPLATE_RULES)
     end
@@ -861,7 +867,7 @@ module SchemaRequirements
 
   def self.apply_schema_requirements_for_plugins(plugins)
     applier = nil
-    ms = Benchmark.ms do
+    ms = KApp.execution_time_ms do
       applier = applier_for_plugins(plugins)
       applier.apply
       # Don't commit if there are any errors, as the schema won't work

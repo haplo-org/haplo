@@ -1,5 +1,5 @@
 <%
-  @page_title = (params[:id] == 'new') ? 'New aliased attribute' : 'Edit '+h(@title)
+  @page_title = (params['id'.freeze] == 'new') ? 'New aliased attribute' : 'Edit '+h(@title)
   # Ask for the basics, which aren't provided automatically for the management UI
   client_side_resources :basics
   client_side_controller_js('edit_alias')
@@ -9,8 +9,8 @@
 
 <form method="post"><%= form_csrf_token %>
 
-<% if params.has_key?(:for) -%>
-  <input type="hidden" name="for" value="<%= h(params[:for]) %>">
+<% if params.has_key?('for'.freeze) -%>
+  <input type="hidden" name="for" value="<%= h(params['for'.freeze]) %>">
 <% end -%>
 
 <p><input type="submit" value="Save changes"></p>

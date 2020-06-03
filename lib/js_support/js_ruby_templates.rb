@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module JSRubyTemplates
@@ -107,10 +110,10 @@ module JSRubyTemplateControllerSupport
     # Display nothing if there's no query presented
     return '' unless query || searchWithin
     # Make spec, using the same validation as from searches in the UI, execute search, display results
-    params = {:sort => sort}
-    params[:q] = query.to_s if query
-    params[:w] = searchWithin.to_s if searchWithin
-    params[:rs] = 'mini' if miniDisplay
+    params = {'sort' => sort}
+    params['q'] = query.to_s if query
+    params['w'] = searchWithin.to_s if searchWithin
+    params['rs'] = 'mini' if miniDisplay
     spec = search_make_spec(params)
     return '' unless spec
     results = perform_search_for_rendering(spec)

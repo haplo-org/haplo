@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module Setup_TypeHelper
@@ -38,7 +41,7 @@ module Setup_TypeHelper
     raise "Out of hand recursion" if max_depth <= 0   # just in case something gets really screwed up
     type_descs = objrefs.map { |o| @schema.type_descriptor(o) }
     type_descs.sort! { |a,b| a.printable_name <=> b.printable_name }
-    r = '<ul>'
+    r = '<ul>'.dup
     type_descs.each do |t|
       ref = t.objref.to_presentation
       r << %Q!<li><a href="#{path_base}/#{ref}" target="workspace"#{ref == @selected_type ? 'class="z__selected"' : ''}>#{html_for_icon(t.render_icon, :micro)} #{h(t.printable_name)}</a></li>!
@@ -102,7 +105,7 @@ module Setup_TypeHelper
       parent_value = yield :parent_value
 
       # Make HTML
-      html = '<table class="z__type_edit_inherit_selector"><tr><th>'
+      html = '<table class="z__type_edit_inherit_selector"><tr><th>'.dup
       if parent_value == nil
         # Nothing to inherit
         html << %Q!<input type="radio" name="#{name}_s" id="#{name}_s_1" class="z__type_edit_inherit_radio" value="d" disabled="true"></th><td id="#{name}_s_1c"><i>(no value to inherit)</i></td></tr>!
@@ -130,7 +133,7 @@ module Setup_TypeHelper
   # Options for types menu
   def type_edit_options_for_subtype_menu(objref, selected, indent = 0)
     spaces = ('&nbsp; ' * indent)
-    html = ''
+    html = ''.dup
     type = @schema.type_descriptor(objref)
     if type != nil
       html << %Q!<option value="#{objref.to_presentation}"#{objref == selected ? ' selected' : ''}>#{spaces}#{h(type.printable_name)}</option>!

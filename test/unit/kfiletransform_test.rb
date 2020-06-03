@@ -8,9 +8,9 @@ class KFileTransformTest < Test::Unit::TestCase
   include KConstants
 
   def setup
-    FileCacheEntry.destroy_all # to delete files from disk
-    StoredFile.destroy_all # to delete files from disk
-    KApp.get_pg_database.perform("DELETE FROM jobs WHERE application_id=#{_TEST_APP_ID}")
+    destroy_all FileCacheEntry # to delete files from disk
+    destroy_all StoredFile # to delete files from disk
+    KApp.with_pg_database { |db| db.perform("DELETE FROM public.jobs WHERE application_id=#{_TEST_APP_ID}") }
   end
 
   def test_extract_return_for_not_extractable
@@ -26,29 +26,33 @@ class KFileTransformTest < Test::Unit::TestCase
     stored_file3 = StoredFile.from_upload(fixture_file_upload('files/example.doc', 'application/msword'))
     assert stored_file3 != nil
     # Nothing in cache for this file
-    assert_equal 0, FileCacheEntry.count(:conditions => ['stored_file_id=?',stored_file1.id])
+    assert_equal 0, FileCacheEntry.where(:stored_file_id => stored_file1.id).count
     # Transform, gets a cache entry
+    timenow = Time.now
     result1 = KFileTransform.transform(stored_file1, "image/png", {:w => 4, :h => 8})
     assert File.exist?(result1)
-    assert_equal 1, FileCacheEntry.count(:conditions => ['stored_file_id=?',stored_file1.id])
-    assert_equal 1, FileCacheEntry.count(:conditions => ['stored_file_id=? AND output_options=?',stored_file1.id,'h=8,w=4'])
+    assert_equal 1, FileCacheEntry.where(:stored_file_id => stored_file1.id).count
+    assert_equal 1, FileCacheEntry.where(:stored_file_id => stored_file1.id, :output_options => 'h=8,w=4').count
+    file_cache_entry1 = FileCacheEntry.where(:stored_file_id => stored_file1.id).first
+    assert file_cache_entry1.created_at >= timenow
+    assert file_cache_entry1.last_access >= timenow
     # Second transform, doesn't get a new entry
     result2 = KFileTransform.transform(stored_file1, "image/png", {:w => 4, :h => 8})
     assert_equal result1, result2
     assert File.exist?(result2)
-    assert_equal 1, FileCacheEntry.count(:conditions => ['stored_file_id=?',stored_file1.id])
+    assert_equal 1, FileCacheEntry.where(:stored_file_id => stored_file1.id).count
     # Third transform, but with different options
     result3 = KFileTransform.transform(stored_file1, "image/png", {:w => 5, :h => 8})
     assert result3 != result1
     assert File.exist?(result3)
-    assert_equal 2, FileCacheEntry.count(:conditions => ['stored_file_id=?',stored_file1.id])
-    assert_equal 1, FileCacheEntry.count(:conditions => ['stored_file_id=? AND output_options=?',stored_file1.id,'h=8,w=4'])
-    assert_equal 1, FileCacheEntry.count(:conditions => ['stored_file_id=? AND output_options=?',stored_file1.id,'h=8,w=5'])
+    assert_equal 2, FileCacheEntry.where(:stored_file_id => stored_file1.id).count
+    assert_equal 1, FileCacheEntry.where(:stored_file_id => stored_file1.id, :output_options => 'h=8,w=4').count
+    assert_equal 1, FileCacheEntry.where(:stored_file_id => stored_file1.id, :output_options => 'h=8,w=5').count
     # And again
     result4 = KFileTransform.transform(stored_file1, "image/png", {:w => 5, :h => 8})
     assert_equal result3, result4
     assert File.exist?(result4)
-    assert_equal 2, FileCacheEntry.count(:conditions => ['stored_file_id=?',stored_file1.id])
+    assert_equal 2, FileCacheEntry.where(:stored_file_id => stored_file1.id).count
 
     # Check full interface, used for async transforms in requests
     # Cached result
@@ -76,10 +80,10 @@ class KFileTransformTest < Test::Unit::TestCase
     assert nil != file_transform2.result_pathname
     assert result1 != file_transform2.result_pathname
     assert result2 != file_transform2.result_pathname
-    assert_equal 3, FileCacheEntry.count(:conditions => ['stored_file_id=?',stored_file1.id])
-    assert_equal 1, FileCacheEntry.count(:conditions => ['stored_file_id=? AND output_options=?',stored_file1.id,'h=8,w=4'])
-    assert_equal 1, FileCacheEntry.count(:conditions => ['stored_file_id=? AND output_options=?',stored_file1.id,'h=8,w=5'])
-    assert_equal 1, FileCacheEntry.count(:conditions => ['stored_file_id=? AND output_options=?',stored_file1.id,'h=9,w=5'])
+    assert_equal 3, FileCacheEntry.where(:stored_file_id => stored_file1.id).count
+    assert_equal 1, FileCacheEntry.where(:stored_file_id => stored_file1.id, :output_options => 'h=8,w=4').count
+    assert_equal 1, FileCacheEntry.where(:stored_file_id => stored_file1.id, :output_options => 'h=8,w=5').count
+    assert_equal 1, FileCacheEntry.where(:stored_file_id => stored_file1.id, :output_options => 'h=9,w=5').count
     # Another transform, which we'll pretend failed
     file_transform3 = KFileTransform.new(stored_file1,  "image/png", {:w => 5, :h => 3})
     assert_equal "h=3,w=5", file_transform3.output_options_str
@@ -102,10 +106,9 @@ class KFileTransformTest < Test::Unit::TestCase
     file_transform5.operation.perform()
     file_transform5.operation_performed()
     assert File.exists?(file_transform5.result_pathname)
-    assert_equal 4, FileCacheEntry.count(:conditions => ['stored_file_id=?',stored_file1.id])
-    assert_equal 0, FileCacheEntry.count(:conditions => ['stored_file_id=?',stored_file2.id])
-    assert_equal 1, FileCacheEntry.count(:conditions => ['stored_file_id=? AND output_mime_type=? AND output_options=?',
-        stored_file1.id, 'image/gif', 'h=200,w=100'])
+    assert_equal 4, FileCacheEntry.where(:stored_file_id => stored_file1.id).count
+    assert_equal 0, FileCacheEntry.where(:stored_file_id => stored_file2.id).count
+    assert_equal 1, FileCacheEntry.where(:stored_file_id => stored_file1.id, :output_mime_type => 'image/gif', :output_options => 'h=200,w=100').count
 
     # First transformed files still there
     assert File.exist?(result1)
@@ -118,13 +121,13 @@ class KFileTransformTest < Test::Unit::TestCase
     assert stored_file != nil
     file_identifier = KIdentifierFile.new(stored_file)
     # Make sure that there isn't anything in the cache for this identifier
-    assert_equal nil, FileCacheEntry.find(:first, :conditions => ['stored_file_id=?',stored_file.id])
+    assert_equal 0, FileCacheEntry.where(:stored_file_id => stored_file.id).count
     # Convert it
     assert KTextExtract.can_extract_terms?(file_identifier)
     contents = KTextExtract.extract_from(stored_file)
     assert contents =~ /this:this is:is a:a sample:sampl word:word document:document /
     # Check there's no cache entry - text extraction doesn't go through the cache
-    assert_equal 0, FileCacheEntry.count(:conditions => ['stored_file_id=?',stored_file.id])
+    assert_equal 0, FileCacheEntry.where(:stored_file_id => stored_file.id).count
   end
 
   def test_basic_rtf_transform
@@ -195,11 +198,11 @@ class KFileTransformTest < Test::Unit::TestCase
     assert_equal 93, d2.height
     assert_equal :px, d2.units
     # Create just one file cache entry
-    FileCacheEntry.destroy_all
+    destroy_all FileCacheEntry
     img_stored_file = StoredFile.from_upload(fixture_file_upload('files/example4.gif', 'image/gif'))
     run_all_jobs :expected_job_count => 1
     KFileTransform.transform(img_stored_file, "image/png")
-    assert_equal 1, FileCacheEntry.count # file cache entry not created
+    assert_equal 1, FileCacheEntry.where().count # file cache entry not created
   end
 
   def test_thumbnailing_and_misc_transforms
@@ -208,7 +211,7 @@ class KFileTransformTest < Test::Unit::TestCase
     png_stored_file = StoredFile.from_upload(fixture_file_upload('files/example5.png', 'image/png'))
     assert png_stored_file != nil
     run_all_jobs :expected_job_count => 1
-    png_stored_file.reload
+    png_stored_file = StoredFile.read(png_stored_file.id)
     assert_equal StoredFile::THUMBNAIL_FORMAT_PNG, png_stored_file.thumbnail_format
     assert_equal 96, png_stored_file.thumbnail_w
     assert_equal 192, png_stored_file.thumbnail_h
@@ -219,7 +222,7 @@ class KFileTransformTest < Test::Unit::TestCase
     # OpenOffice file with embedded PNG
     doc_with_png_file = StoredFile.from_upload(fixture_file_upload('files/example.odt', 'application/vnd.oasis.opendocument.text'))
     run_all_jobs :expected_job_count => 1
-    doc_with_png_file.reload
+    doc_with_png_file = StoredFile.read(doc_with_png_file.id)
     assert_equal StoredFile::THUMBNAIL_FORMAT_PNG, doc_with_png_file.thumbnail_format
     assert_equal 'ok 135 192 png', tgfdo_get_dim_string(doc_with_png_file.disk_pathname_thumbnail)
     assert_equal 135, doc_with_png_file.thumbnail_w
@@ -382,13 +385,13 @@ class KFileTransformTest < Test::Unit::TestCase
       assert old_max_transform_file_size > 134217718
 
       # Clear the file cache
-      FileCacheEntry.destroy_all
+      destroy_all FileCacheEntry
 
       # Check a file transform
       png_stored_file = StoredFile.from_upload(fixture_file_upload('files/example5.png', 'image/png'))
       assert png_stored_file != nil
       run_all_jobs :expected_job_count => 1
-      png_stored_file.reload
+      png_stored_file = StoredFile.read(png_stored_file.id)
       assert_equal StoredFile::THUMBNAIL_FORMAT_PNG, png_stored_file.thumbnail_format
       transformed_filename = KFileTransform.transform(png_stored_file, 'image/jpeg', {:w => 40, :h => 42})
       assert transformed_filename != nil
@@ -400,7 +403,7 @@ class KFileTransformTest < Test::Unit::TestCase
       gif_stored_file2 = StoredFile.from_upload(fixture_file_upload('files/example4.gif', 'image/gif'))
       assert gif_stored_file2 != nil
       run_all_jobs :expected_job_count => 1
-      gif_stored_file2.reload
+      gif_stored_file2 = StoredFile.read(gif_stored_file2.id)
       assert_equal nil, gif_stored_file2.thumbnail_format
       transformed_filename = KFileTransform.transform(gif_stored_file2, 'image/jpeg', {:w => 59, :h => 20})
       assert transformed_filename == nil

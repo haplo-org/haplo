@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2017    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module JSMessageBus
@@ -46,7 +49,7 @@ module JSMessageBus
       LOCK.synchronize { DESTINATIONS.delete(:bus) }
     end
 
-    DIRECT_INSERT_INTO_QUEUE = "INSERT INTO js_message_bus_queue(created_at,application_id,bus_id,is_send,reliability,body,transport_options) VALUES(NOW(),$1,$2,false,$3,$4,'{}')".freeze
+    DIRECT_INSERT_INTO_QUEUE = "INSERT INTO js_message_bus_queue(created_at,application_id,bus_id,is_send,reliability,body,transport_options) VALUES(NOW(),$1,$2,false,$3,$4,'{}')"
 
     def self.send_message(bus_name, bus_secret, reliability, body)
       # Inter-app messaging inserts the message directly into the bus message queue

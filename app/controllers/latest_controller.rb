@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module LatestUtils; end
@@ -28,13 +31,13 @@ class LatestController < ApplicationController
     # TODO: Latest updates selects objects based on creation_time, not updated_at -- should use update time?
 
     # Date range ... generate a range based on the last week (to midnight tonight) and then work backwards
-    @weeks_ago = params[:ago].to_i  # 0 if not specified
-    et = Time.now.advance(:days => (7 * (0 - @weeks_ago)) + 1)
-    st = et.advance(:days => -7)
+    @weeks_ago = params['ago'].to_i  # 0 if not specified
+    et = Time.now + (((7 * (0 - @weeks_ago)) + 1) * KFramework::SECONDS_IN_DAY)
+    st = et - 7
     # ... clamping to start and end of days
     @start_time = Time.local(st.year, st.month, st.day, 0, 0)
     @end_time =   Time.local(et.year, et.month, et.day, 0, 0)
-    @end_date_display = @end_time.ago(4) # move over midnight boundary
+    @end_date_display = @end_time - 4 # move over midnight boundary
 
     requests = requests_by(@request_user)
 
@@ -51,13 +54,11 @@ class LatestController < ApplicationController
   # Display choices to make
   def handle_choose
     # Get all the requests for this user and all the groups
-    requests = LatestRequest.find_all_relevant_to_user(@request_user)
-
-    # Now work out how to present it all to the user
+    # and work out how to present it all to the user
     @request_selected = Hash.new
     @request_from_groups = Hash.new
     uid = @request_user.id
-    requests.each do |r|
+    LatestRequest.where_relevant_to_user(@request_user).each do |r|
       objref = r.objref
       # Did the request come from a group, and therefore should be advertised in the main display?
       @request_from_groups[objref] = true if r.user_id != uid
@@ -113,11 +114,9 @@ class LatestController < ApplicationController
   def handle_update
     if request.post?
       choices = Hash.new
-      if params.has_key?(:r)
-        params[:r].each_key { |k| choices[KObjRef.from_presentation(k)] = true }
+      if params.has_key?('r')
+        params['r'].each_key { |k| choices[KObjRef.from_presentation(k)] = true }
       end
-
-      requests = LatestRequest.find_all_relevant_to_user(@request_user)
 
       uid = @request_user.id
 
@@ -125,7 +124,7 @@ class LatestController < ApplicationController
       group_selection = Hash.new
       forced = Hash.new
       user_requests = Hash.new
-      requests.each do |req|
+      LatestRequest.where_relevant_to_user(@request_user).each do |req|
         if req.user_id == uid
           user_requests[req.objref] = req
         else
@@ -139,7 +138,7 @@ class LatestController < ApplicationController
       # Remove all forced choices
       forced.each_key do |objref|
         if user_requests[objref] != nil
-          user_requests[objref].destroy
+          user_requests[objref].delete
           user_requests.delete objref
         end
         # And remove from the group selection too, so they don't get added in the next phase
@@ -155,7 +154,7 @@ class LatestController < ApplicationController
             # Make sure this is switched off
             if r.inclusion != LatestRequest::REQ_EXCLUDE
               r.inclusion = LatestRequest::REQ_EXCLUDE
-              r.save!
+              r.save
             end
             # Delete from user_requests so it doesn't get deleted later
             user_requests.delete objref
@@ -165,7 +164,7 @@ class LatestController < ApplicationController
             r.user_id = uid
             r.objref = objref
             r.inclusion = LatestRequest::REQ_EXCLUDE
-            r.save!
+            r.save
           end
         end
       end
@@ -181,7 +180,7 @@ class LatestController < ApplicationController
             # Switched on?
             if r.inclusion != LatestRequest::REQ_INCLUDE
               r.inclusion = LatestRequest::REQ_INCLUDE
-              r.save!
+              r.save
             end
             # Delete from user_requests so it doesn't get deleted later
             user_requests.delete objref
@@ -191,14 +190,14 @@ class LatestController < ApplicationController
             r.user_id = uid
             r.objref = objref
             r.inclusion = LatestRequest::REQ_INCLUDE
-            r.save!
+            r.save
           end
         end
       end
 
       # Remove any user_requests which are left over
       user_requests.each_value do |req|
-        req.destroy
+        req.delete
       end
     end
 
@@ -209,8 +208,8 @@ class LatestController < ApplicationController
   # Lookup objects for adding to selected subjects
   # NOTE: Also used by the admin latest controller, UI included via the partial.
   def handle_object_lookup_api
-    obj_type = KObjRef.from_presentation(params[:t])
-    query = params[:q]
+    obj_type = KObjRef.from_presentation(params['t'])
+    query = params['q']
     if query != nil && query =~ /\w/
       q = KObjectStore.query_and.link(obj_type, A_TYPE)
       q.free_text(query)

@@ -21,18 +21,18 @@
   end
 %>
 
-<form method="POST" id="z__keditor_form" action="/do/edit<% if params.has_key?(:id) %>/<%= h(params[:id]) %><% end %>"><%= form_csrf_token %>
+<form method="POST" id="z__keditor_form" action="/do/edit<% if params.has_key?('id'.freeze) %>/<%= h(params['id'.freeze]) %><% end %>"><%= form_csrf_token %>
   <div class="z__editor_buttons">
     <input type="submit" name="save" value="<%= @locale.text(:Edit_View_Preview) %>" class="z__editor_buttons_preview"> <input type="submit" name="save" value="<%= @locale.text(:Edit_View_Save) %>" class="z__editor_buttons_save">
   </div>
   <div class="z__editor_buttons_end"></div>
 <%
-  [:new, :parent, :pop].each do |k|
+  ['new'.freeze, 'parent'.freeze, 'pop'.freeze].each do |k|
     if params.has_key?(k)
       %><input type="hidden" name="<%= k %>" value="<%= h(params[k]) %>"><%
     end
   end
-  success_redirect = params[:success_redirect] || params[:then] # nice alias for URLs
+  success_redirect = params['success_redirect'.freeze] || params['then'.freeze] # nice alias for URLs
   if success_redirect
     %><input type="hidden" name="success_redirect" value="<%= h(success_redirect) %>"><%
   end

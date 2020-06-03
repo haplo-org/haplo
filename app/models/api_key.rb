@@ -1,18 +1,42 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-class ApiKey < ActiveRecord::Base
-  after_commit :invalidate_apikey_cache
-  after_create :send_create_notification
-  after_destroy :send_destroy_notification
-  belongs_to :user
+
+class ApiKey < MiniORM::Record
 
   PART_A_LENGTH = 16
   PART_B_BCRYPT_ROUNDS = 5 # because the secret is good, and checking is performance sensitive (especially for plugin tool)
+
+  # -------------------------------------------------------------------------
+
+  table :api_keys do |t|
+    t.column :int, :user_id
+    t.column :text, :a
+    t.column :text, :b
+    t.column :text, :path
+    t.column :text, :name
+
+    t.order :name, 'name'
+  end
+
+  def after_create
+    KNotificationCentre.notify(:user_api_key, :create, self)
+  end
+  def after_save
+    ApiKey.invalidate_cached
+  end
+  def after_delete
+    ApiKey.invalidate_cached
+    KNotificationCentre.notify(:user_api_key, :destroy, self)
+  end
+
+  # -------------------------------------------------------------------------
 
   STRICT_EQUALITY_PATH = /\A\=(\/.+?)\z/
 
@@ -54,7 +78,7 @@ class ApiKey < ActiveRecord::Base
       object = @storage[a]
       return object if object && object.b_matchs?(b)
       # Try and find it, caching it if it is
-      object = ApiKey.find(:first, :conditions => ['a = ?', a])
+      object = ApiKey.where(:a => a).first()
       return nil unless object && object.b_matchs?(b)
       @storage[a] = object
     end
@@ -66,28 +90,6 @@ class ApiKey < ActiveRecord::Base
   end
   def self.invalidate_cached
     KApp.cache_invalidate(APIKEY_CACHE)
-  end
-
-  # ----------------------------------------------------------------------------
-  #  Callbacks to invalidate the cache appropriately
-  # ----------------------------------------------------------------------------
-  # after_commit
-  def invalidate_apikey_cache
-    ApiKey.invalidate_cached
-  end
-
-  # ----------------------------------------------------------------------------
-  #  Notifications for auditing
-  # ----------------------------------------------------------------------------
-
-  # after_create
-  def send_create_notification
-    KNotificationCentre.notify(:user_api_key, :create, self)
-  end
-
-  # after_destroy
-  def send_destroy_notification
-    KNotificationCentre.notify(:user_api_key, :destroy, self)
   end
 
 end

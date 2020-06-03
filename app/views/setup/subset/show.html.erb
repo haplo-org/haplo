@@ -34,7 +34,13 @@
   </td></tr>
 </table>
 
-<%= sys_mng_edit_button("/do/setup/subset/edit/#{params[:id]}") %>
+<div class="z__management_extra_buttons_holder">
+  <form method="get" action="/do/setup/subset/delete/<%= h(params['id'.freeze]) %>"><%= form_csrf_token %>
+    <input type="submit" value="Delete">
+  </form>
+</div>
 
-<%= sys_mng_update_submenu(@title, "/do/setup/subset/show/#{params[:id]}") %>
+<%= sys_mng_edit_button("/do/setup/subset/edit/#{params['id'.freeze]}") %>
+
+<%= sys_mng_update_submenu(@title, "/do/setup/subset/show/#{params['id'.freeze]}") %>
 

@@ -1,4 +1,4 @@
-# coding: utf-8
+# frozen_string_literal: true
 
 # Haplo Platform                                     http://haplo.org
 # (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
@@ -14,8 +14,8 @@ module Application_RenderHelper
   # For reporting exceptions which are otherwise hidden in the logs
   RENDERING_HEALTH_EVENTS = KFramework::HealthEventReporter.new('RENDERING_ERROR')
 
-  LINK_HTML_FOR_UNAUTHORISED_READ = '<a href="/do/authentication/hidden-object" class="z__link_to_hidden_object">ACCESS DENIED</a>'.freeze
-  RENDER_OBJ_FOR_UNAUTHORISED_READ = "<div>#{LINK_HTML_FOR_UNAUTHORISED_READ}</div>".freeze
+  LINK_HTML_FOR_UNAUTHORISED_READ = '<a href="/do/authentication/hidden-object" class="z__link_to_hidden_object">ACCESS DENIED</a>'
+  RENDER_OBJ_FOR_UNAUTHORISED_READ = "<div>#{LINK_HTML_FOR_UNAUTHORISED_READ}</div>"
 
   # ========================================================================================================
   # Right column in standard layout
@@ -109,7 +109,7 @@ module Application_RenderHelper
 
   # Render document text as HTML
   def render_doc_as_html(document, store, render_options = nil, recursion_limit = 16)
-    o = '<div class="z__document">'
+    o = '<div class="z__document">'.dup
     # Convert the XML document text into HTML
     begin
       o << document.render_with_widgets(proc do |type, spec|
@@ -136,8 +136,8 @@ module Application_RenderHelper
 
   def render_widget_obj(spec, store, render_options, recursion_limit)
     o = nil
-    ref_as_text = spec[:ref]
-    style = (spec[:style] == nil) ? :generic : spec[:style].to_sym
+    ref_as_text = spec['ref']
+    style = (spec['style'] == nil) ? :generic : spec['style'].to_sym
     # insert object
     if recursion_limit <= 0
       o = "<h1>ERROR: Recursion limit exceeded</h1>\n"
@@ -163,14 +163,14 @@ module Application_RenderHelper
     search_spec = search_make_spec(spec)
     return '' if search_spec == nil
 
-    search_spec[:force_no_ajax] = true if spec[:paged] == '1'
-    search_spec[:render_style] = spec[:style] if spec[:style] != nil
-    limit = spec[:limit].to_i
+    search_spec[:force_no_ajax] = true if spec['paged'] == '1'
+    search_spec[:render_style] = spec['style'] if spec['style'] != nil
+    limit = spec['limit']
     if limit != nil
       limit = limit.to_i
       search_spec[:maximum_results] = limit if limit > 0
     end
-    case spec[:within]
+    case spec['within']
     when 'link'; search_spec[:search_within_ui] = :link
     when 'field'; search_spec[:search_within_ui] = :field
     end
@@ -178,7 +178,7 @@ module Application_RenderHelper
     results = perform_search_for_rendering(search_spec)
     if results == nil || results[:results] == nil || results[:results].length == 0
       # Nothing found, output some text
-      %Q!<div class="z__search_widget_no_results">No results for <b>#{h(spec[:q])}</b></div>!
+      %Q!<div class="z__search_widget_no_results">No results for <b>#{h(spec['q'])}</b></div>!
     else
       render(:partial => 'shared/search_results', :data_for_template => results)
     end
@@ -186,7 +186,7 @@ module Application_RenderHelper
 
   def render_widget_html(spec, store, render_options, recursion_limit)
     if KApp.global_bool(:enable_feature_doc_text_html_widgets)
-      spec[:html]
+      spec['html']
     else
       %Q!<div style="border:1px solid red;background:#eee;text-align:center;margin:16px 0">HTML widgets have been disabled by the administrator.</div>!
     end
@@ -201,7 +201,7 @@ module Application_RenderHelper
     attr_desc = nil
     if obj != nil
       obj.each do |value,desc,q|
-        if value.k_typecode == T_IDENTIFIER_FILE && value.presentation_filename == spec[:name]
+        if value.k_typecode == T_IDENTIFIER_FILE && value.presentation_filename == spec['name']
           file_identifier = value
           attr_desc = desc
         end
@@ -213,15 +213,15 @@ module Application_RenderHelper
     render_options[:file_widget_rendered] << file_identifier
 
     stored_file = file_identifier.find_stored_file
-    if spec[:img] == '0'
+    if spec['img'] == '0'
       # Just link to the file
       %Q!<div class="z__file_with_icon_container">#{render_value(file_identifier, obj, render_options, attr_desc)}</div><div class="z__file_with_icon_container_list_end"></div>!
     else
-      link_to_download = (spec[:link] == '1')
+      link_to_download = (spec['link'] == '1')
       # Get the dimensions of the file, and what it'll be for that size
       dims = stored_file.dimensions
-      img_size = spec[:size]
-      img_size = 's' if spec[:pos] == 's' # // sidebar
+      img_size = spec['size']
+      img_size = 's' if spec['pos'] == 's' # // sidebar
       dims_for_size = (dims == nil) ? nil : KFileTransform.transform_dimensions_for_size(dims, img_size)
       if dims_for_size == nil
         # give up if not known
@@ -239,14 +239,14 @@ module Application_RenderHelper
         atag2 = '</a>'
       end
 
-      caption = spec[:caption]
+      caption = spec['caption']
       caption = nil if caption == ''
 
-      cssclass = FILE_IMAGE_CLASSES[spec[:pos]] || 'z__file_image_middle'
-      h = %Q!<div class="#{cssclass}">#{atag1}<img src="#{src}" width="#{dims_for_size.width}" height="#{dims_for_size.height}"!
+      cssclass = FILE_IMAGE_CLASSES[spec['pos']] || 'z__file_image_middle'
+      h = %Q!<div class="#{cssclass}">#{atag1}<img src="#{src}" width="#{dims_for_size.width}" height="#{dims_for_size.height}"!.dup
       h << %Q! alt="#{h(caption)}"! if caption != nil
       h << %Q!>#{atag2}<br>!
-      h << %Q!<span class="z__file_image_caption">#{h(spec[:caption])}</span>! if spec.has_key?(:caption) && spec[:caption] =~ /\S/
+      h << %Q!<span class="z__file_image_caption">#{h(spec['caption'])}</span>! if spec.has_key?('caption') && spec['caption'] =~ /\S/
       h << '</div>'
       h
     end
@@ -347,7 +347,6 @@ module Application_RenderHelper
     %Q!<span class="z__show_hierarchy_entry">#{levels.join(' &raquo;</span> <span class="z__show_hierarchy_entry">')}</span>!
   end
 
-  # NOTE: Called by display_text_for_value with obj == nil && render_options == nil
   def render_value_datetime(value, obj, render_options, attr_desc = nil)
     if attr_desc != nil && value.timezone != nil && time_attribute_should_be_local_time(attr_desc)
       # Display this datetime in local time
@@ -364,7 +363,7 @@ module Application_RenderHelper
       return ''
     end
     first = true
-    h = '<div class="z__object_attribute_group">'
+    h = '<div class="z__object_attribute_group">'.dup
     value.transformed.each do |t|
       unless t.attributes.empty?
         h << %Q!<div class="z__object_attribute_group_attribute_name">#{ERB::Util.h(t.descriptor.printable_name.to_s)}</div>! unless first
@@ -452,7 +451,7 @@ module Application_RenderHelper
     return nil if dims == nil
     dims_for_size = KFileTransform.transform_dimensions_for_size(dims, img_size)
     return nil if dims_for_size == nil
-    src = stored_file.url_path(img_size)
+    src = file_url_path(stored_file, img_size)
     %Q!<img src="#{src}" width="#{dims_for_size.width}" height="#{dims_for_size.height}">!
   end
 
@@ -474,26 +473,6 @@ module Application_RenderHelper
   end
 
   # ========================================================================================================
-  # Turn anything into something which can be displayed as HTML
-  def display_text_for_value(value, link_refs = true)
-    if value.kind_of? KText
-      value.to_html
-    elsif value.class == KObjRef
-      # retrieve the object and get the title from it
-      obj = _read_object_during_render(value)
-      return '????' if obj == nil
-      title = title_of_object(obj)
-      if link_refs
-        link_to_object title, obj
-      else
-        h(title)
-      end
-    elsif value.k_typecode == T_DATETIME
-      render_value_datetime(value, nil, nil, nil)
-    else
-      h(value.to_s)
-    end
-  end
 
   def title_of_object(obj, kind = :simple)
     KObjectUtils.title_of_object(obj, kind)
@@ -557,7 +536,7 @@ module Application_RenderHelper
     return '' if transformed.empty?
 
     first_attr = true
-    html = ''
+    html = ''.dup
     transformed.each do |toa|
       # If displaying with aliasing, don't display plain un-aliased type attributes where it would give no extra information
       if allow_aliasing &&
@@ -608,7 +587,7 @@ module Application_RenderHelper
     transformed.delete_if { |toa| toa.attributes.empty? }
     return '' if transformed.empty?
 
-    html = '<table class="z__keyvalue_table">'
+    html = '<table class="z__keyvalue_table">'.dup
     transformed.each do |toa|
       # If displaying with aliasing, don't display plain un-aliased type attributes where it would give no extra information
       if allow_aliasing &&

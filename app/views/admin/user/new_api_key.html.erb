@@ -10,9 +10,9 @@
 
 <p><b>WARNING:</b> Knowledge of the API key is equivalent to knowing the email address and password of the authenticated user. The API key still grants access even if the password is changed.</p>
 
-<%= form_error_messages_for(@data) %>
+<%= form_error_messages_for(@transfer) %>
 
-<% f = form_for(@data, :key) %><form method="POST"><%= form_csrf_token %>
+<% f = form_for(@transfer, :key) %><form method="POST"><%= form_csrf_token %>
   <p>API Key name<br><%= f.text_field(:name) %></p>
   <p>Request path<br><%= f.text_field(:path) %><br>
   Request paths must start with /, and will match all requests starting with this path. In most cases, it should end with / to avoid unexpected matches. To set an exact path match, prefix with =</p>

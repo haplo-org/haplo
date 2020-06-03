@@ -8,6 +8,7 @@ package org.haplo.jsinterface;
 
 import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
+import org.haplo.javascript.JsConvert;
 
 import org.haplo.utils.StringUtils;
 
@@ -60,7 +61,7 @@ public class KStoredFile extends KScriptable {
     }
 
     public Scriptable jsGet_createdAt() {
-        return Runtime.createHostObjectInCurrentRuntime("Date", this.storedFile.jsGetCreatedAt());
+        return JsConvert.millisecondsToJsDate(this.storedFile.created_at_milliseconds());
     }
 
     public String jsGet_digest() {

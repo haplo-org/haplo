@@ -1,15 +1,23 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
+
 # NOTE: Preferred usage for the current user is via @request_user.get_user_data() / @request_user.set_user_data()
 
-class UserData < ActiveRecord::Base
-  set_table_name "user_datas" # rules changed, so have to specify the table name
-  belongs_to :user
+class UserData < MiniORM::Record
+  table :user_datas do |t|
+    t.column :int,      :user_id
+    t.column :smallint, :data_name
+    t.column :text,     :data_value
+
+    t.where :user_id_in, 'user_id = ANY (?)', :int_array
+  end
 
   # ------------------------------------------------------------
   # Name setup function
@@ -44,10 +52,10 @@ class UserData < ActiveRecord::Base
 
   # ------------------------------------------------------------
   # Get data (may return nil)
-  # User can be of class User, User::Info (preferred), Fixnum/Bignum (user ID)
+  # User can be of class User, User::Info (preferred), Integer (user ID)
   def self.get(user, name, info_required = :value_only) # or :value_and_uid
     user_id = ((user.kind_of?(Integer)) ? user : user.id)
-    ud = UserData.find(:first, :conditions => "user_id=#{user_id} AND data_name=#{name.to_i}")
+    ud = UserData.where(:user_id => user_id, :data_name => name.to_i).first()
     # Return it if it's found
     return ((info_required == :value_only) ? ud.value : [ud.value, user_id]) if ud != nil
     # Not found, try inherited
@@ -58,7 +66,7 @@ class UserData < ActiveRecord::Base
       groups = user.groups_ids
       return nil if groups.empty?
       # Find all data
-      uds = UserData.find(:all, :conditions => "user_id IN (#{groups.join(',')}) AND data_name=#{name.to_i}")
+      uds = UserData.where_user_id_in(groups).where(:data_name => name.to_i).select()
       # Return the value for the first group in the groups list -- returns the lowest possible name in
       # the heirarchy.
       groups.each do |gid|
@@ -71,21 +79,17 @@ class UserData < ActiveRecord::Base
 
   # ------------------------------------------------------------
   # Set data
-  # User can be of class User, User::Info, Fixnum/Bignum (user ID) -- all types are just as good as each other
+  # User can be of class User, User::Info, Integer (user ID) -- all types are just as good as each other
   def self.set(user, name, value)
     user_id = ((user.kind_of?(Integer)) ? user : user.id)
-    db = KApp.get_pg_database
-    begin
+    KApp.with_pg_database do |db|
       db.perform('BEGIN')
-      u = db.update('UPDATE user_datas SET data_value=$1 WHERE user_id=$2 AND data_name=$3', value.to_s, user_id, name.to_i)
+      u = db.update("UPDATE #{KApp.db_schema_name}.user_datas SET data_value=$1 WHERE user_id=$2 AND data_name=$3", value.to_s, user_id, name.to_i)
       if u.cmdtuples() == 0
         # Doesn't exist, add it
-        db.update('INSERT INTO user_datas (user_id,data_name,data_value) VALUES($1,$2,$3)', user_id, name.to_i, value.to_s)
+        db.update("INSERT INTO #{KApp.db_schema_name}.user_datas (user_id,data_name,data_value) VALUES($1,$2,$3)", user_id, name.to_i, value.to_s)
       end
       db.perform('COMMIT')
-    rescue
-      db.perform('ROLLBACK')
-      raise
     end
     KNotificationCentre.notify(:user_data, :set, name, user_id, value)
     value
@@ -93,10 +97,10 @@ class UserData < ActiveRecord::Base
 
   # ------------------------------------------------------------
   # Delete data
-  # User can be of class User, User::Info, Fixnum/Bignum (user ID) -- all types are just as good as each other
+  # User can be of class User, User::Info, Integer (user ID) -- all types are just as good as each other
   def self.delete(user, name)
     user_id = ((user.kind_of?(Integer)) ? user : user.id)
-    UserData.delete_all("user_id=#{user_id} AND data_name=#{name.to_i}")
+    UserData.where(:user_id => user_id, :data_name => name.to_i).delete()
     KNotificationCentre.notify(:user_data, :delete, name, user_id, nil)
     nil
   end

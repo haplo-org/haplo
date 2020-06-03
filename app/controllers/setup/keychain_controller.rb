@@ -1,57 +1,65 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Setup_KeychainController < ApplicationController
   policies_required :setup_system
   include SystemManagementHelper
 
-  NOT_CHANGED = '********'.freeze
+  NOT_CHANGED = '********'
 
   def render_layout
     'management'
   end
 
   def handle_index
-    @keychain = KeychainCredential.find(:all, :order => :id)
+    @keychain = KeychainCredential.where().order(:id).select()
   end
 
   def handle_info
-    @credential = KeychainCredential.find(params[:id].to_i)
+    @credential = KeychainCredential.read(params['id'].to_i)
     @ui = get_ui(@credential)
   end
 
   _GetAndPost
   def handle_edit
     # Load existing credential, or choose model for new credential
-    unless params.has_key?(:id)
-      unless params.has_key?(:kind)
+    unless params.has_key?('id')
+      unless params.has_key?('kind')
         render :action => 'choose'
         return
       else
         model = KeychainCredential::MODELS.find do |m|
-          (m[:kind] == params[:kind]) && (m[:instance_kind] == params[:instance_kind])
+          (m[:kind] == params['kind']) && (m[:instance_kind] == params['instance_kind'])
         end
         raise "Can't find model" unless model
-        @credential = KeychainCredential.new(model)
+        @credential = KeychainCredential.new
+        @credential.name = model[:name] if model.has_key?(:name)
+        @credential.kind = model[:kind]
+        @credential.instance_kind = model[:instance_kind]
+        @credential.account = model[:account]
+        @credential.secret = model[:secret]
       end
     else
-      @credential = KeychainCredential.find(params[:id].to_i)
+      @credential = KeychainCredential.read(params['id'].to_i)
     end
     @ui = get_ui(@credential)
     # Update/create credential
     if request.post?
-      @credential.name = (params[:name] || '').strip
+      @credential.name = (params['name'] || '').strip
       @credential.name = 'Unnamed credential' unless @credential.name =~ /\S/
-      @credential.account = params[:account] || {}
+      @credential.account = params['account'] || {}
       # Secrets aren't sent to the browser, so need to be checked against a sentinal value
       old_secrets = @credential.secret || {}
       new_secrets = {}
       # Use password so parameters are filtered out of the logs
-      (params[:password] || {}).each do |key,value|
+      (params['password'] || {}).each do |key,value|
         if value == NOT_CHANGED
           if old_secrets.has_key?(key)
             new_secrets[key] = old_secrets[key]
@@ -62,11 +70,8 @@ class Setup_KeychainController < ApplicationController
           new_secrets[key] = value
         end
       end
-      @credential.secret= new_secrets
-      ActiveRecord::Base.logger.silence do
-        # Don't log save, as it would put secrets in the logs
-        @credential.save!
-      end
+      @credential.secret = new_secrets
+      @credential.save
       KApp.logger.info("KeychainCredential saved")
       redirect_to "/do/setup/keychain/info/#{@credential.id}?update=1"
     end
@@ -74,12 +79,12 @@ class Setup_KeychainController < ApplicationController
 
   _GetAndPost
   def handle_delete
-    @credential = KeychainCredential.find(params[:id].to_i)
+    @credential = KeychainCredential.read(params['id'].to_i)
     if request.post?
-      if params[:delete] != 'confirm'
+      if params['delete'] != 'confirm'
         @should_confirm = true
       else
-        @credential.destroy
+        @credential.delete
         render :action => 'refresh_list'
       end
     end

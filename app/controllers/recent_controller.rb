@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class RecentController < ApplicationController
@@ -18,9 +21,9 @@ class RecentController < ApplicationController
 
   # AJAX callback when scrolling.
   def handle_more
-    @days = recent_get_relevant_audit_entries(NUMBER_OF_ITEMS, params[:t].to_i)
+    @days = recent_get_relevant_audit_entries(NUMBER_OF_ITEMS, params['t'].to_i)
     # Client side sends the text of the last date displayed so it's not repeated in the inserted HTML
-    @unnecessary_date_text = (params[:d] || '').gsub(/[^a-zA-Z0-9 ]/,'')
+    @unnecessary_date_text = (params['d'] || '').gsub(/[^a-zA-Z0-9 ]/,'')
     render :action => 'more', :layout => false
   end
 
@@ -33,11 +36,11 @@ private
     permission_denied unless @request_user.permissions.something_allowed?(:read)
     # Get *displayable* entries from audit trail
     finder = AuditEntry.where_labels_permit(:read, @request_user.permissions).where({:displayable => true}).
-      where("user_id <> #{User::USER_SYSTEM}"). # don't include SYSTEM user because it's likely to be just automatic changes
-      where("obj_id IS NOT NULL"). # for backwards compatibility with converted applications
+      where_user_id_is_not(User::USER_SYSTEM). # don't include SYSTEM user because it's likely to be just automatic changes
+      where_not_null(:objref). # for backwards compatibility with converted applications
       limit(number_of_items).
-      order('id DESC');
-    finder = finder.where(['id < ?', older_than]) if older_than != nil
+      order(:id_desc)
+    finder.where_id_less_than(older_than) if older_than != nil
     # Timezone info
     tz = TZInfo::Timezone.get(time_user_timezone)
     # Split them into days, using local timezone

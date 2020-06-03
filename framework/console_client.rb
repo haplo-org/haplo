@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 #!/usr/bin/env jruby
 
 # Haplo Platform                                     http://haplo.org
@@ -30,12 +31,17 @@ end
 
 # Start a local server for callbacks on a random port on the loopback address.
 # This allows writes to $stdout in the server to appear on the console $stdout.
+Thread.report_on_exception = false # don't report exceptions from the DRb threads
 DRb.start_service('druby://localhost:0')
 
 # Get a working connection to the console
 console_ok = true
 # Connect to console
 $console = DRbObject.new_with_uri(CONSOLE_URI)
+at_exit do
+  # Explicitly close the connection when this process exits to avoid exceptions being reported
+  DRb.stop_service
+end
 # Check the console is working
 console_ok = true
 begin
@@ -63,7 +69,7 @@ end
 $console.all_methods.each do |name|
   eval <<-__E
     def #{name}(*args)
-      $console.call_console_method($stdout, :#{name}, args)
+      $console.call_console_method($stdout, :#{name}, nil, args)
     end
   __E
 end
@@ -89,7 +95,7 @@ if console_command == nil
   IRB.start
 else
   if console_command == :runner
-    $console.call_console_method($stdout, :runner, [ConsoleClient.new, *console_args])
+    $console.call_console_method($stdout, :runner, ConsoleClient.new, console_args)
   else
     raise "Unsupported command"
   end

@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class KIdentifier < KText
@@ -375,7 +378,7 @@ class KIdentifierTelephoneNumber < KIdentifier
     raise "Country not known" unless KCountry::COUNTRY_BY_ISO.has_key?(hash[:country])
     t = "#{hash[:country]}\x1f#{hash[:number].to_s}"
     if hash.has_key?(:extension)
-      t << "\x1f#{hash[:extension].to_s}"
+      t += "\x1f#{hash[:extension].to_s}"
     end
     t
   end

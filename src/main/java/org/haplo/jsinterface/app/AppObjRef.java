@@ -7,5 +7,5 @@
 package org.haplo.jsinterface.app;
 
 public interface AppObjRef {
-    public long objId();
+    public long obj_id();
 }

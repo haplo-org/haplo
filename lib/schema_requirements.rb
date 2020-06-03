@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module SchemaRequirements
@@ -30,9 +33,9 @@ module SchemaRequirements
     IGNORE_LINE = /\A\s*(\#.+)?\z/m # comment or blank line
     OBJECT_FORMAT = /\A(?<optional>OPTIONAL )?(?<kind>\S+)\s+(?<code>[a-zA-Z0-9_:-]+)\s*(as\s+(?<name>[a-zA-Z0-9_]+))?\s*\z/m
     VALUE_FORMAT = /\A\s+((?<remove>(?<forceremove>(FORCE-)?)REMOVE\b)\s*)?(?<key>\S+?):?\s+(?<string>.+?)\s*(\[sort=(?<sort>\d+)\])?\s*\z/m
-    OPTIONAL_NAMES_KEY = "_optional".freeze
-    TEMPLATE_KIND = "schema-template".freeze
-    TEMPLATE_KEY = "apply-schema-template".freeze
+    OPTIONAL_NAMES_KEY = "_optional"
+    TEMPLATE_KIND = "schema-template"
+    TEMPLATE_KEY = "apply-schema-template"
 
     def parse(plugin_name, io)
       @number_of_files += 1
@@ -231,7 +234,7 @@ module SchemaRequirements
     def generate_requirements_definition(type_name, short_defn, context)
       return nil unless @code
       title = self.get_title(@object)
-      line1 = "#{type_name} #{@code}"
+      line1 = "#{type_name} #{@code}".dup
       line1 << " as #{title.gsub(/\b([a-z])/) { $1.upcase } .gsub(/[^A-Za-z0-9]/,'')}" if title
       return "#{line1}\n" if short_defn
       lines = [line1]
@@ -302,7 +305,7 @@ module SchemaRequirements
 
   # ---------------------------------------------------------------------------------------------------------------
 
-  # Implementation for applying requirements to Ruby objects which have a save! method, eg ActiveRecord.
+  # Implementation for applying requirements to Ruby objects which have a save method, eg MiniORM Record.
   # Rules are a map of key to RubyObjectRule and define the allowed attribute keys.
   # Has logic for prefering to leave user values alone unless they're explicitly removed.
 
@@ -341,7 +344,7 @@ module SchemaRequirements
 
   class ApplyToRubyObject < ObjectApplier
     def do_commit()
-      @object.save!
+      @object.save
     end
     def get_title(object)
       object.name

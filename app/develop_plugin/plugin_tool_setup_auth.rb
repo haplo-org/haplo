@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 unless PLUGIN_DEBUGGING_SUPPORT_LOADED
@@ -19,7 +22,7 @@ class PluginToolSetupAuth
     # Plugin tool calls this API to generate a token for collecting a new API key
     _PoliciesRequired nil
     def handle_start_auth_api
-      client_name = (params[:name] || 'UNKNOWN').gsub(/[^a-zA-Z0-9\.\- ]/,' ')
+      client_name = (params['name'] || 'UNKNOWN').gsub(/[^a-zA-Z0-9\.\- ]/,' ')
       client_name = client_name[0..39] if client_name.length > 40
       token = KRandom.random_api_key
       LOCK.synchronize do
@@ -33,15 +36,18 @@ class PluginToolSetupAuth
     # User visits this URL in their browser to create a key for the plugin tool to collect
     _PoliciesRequired :setup_system, :not_anonymous
     def handle_create
-      given_token = params[:id] || 'INVALID'
+      given_token = params['id'] || 'INVALID'
       generated = false
       LOCK.synchronize do
         lookup = PENDING[KApp.current_application]
         value = lookup[given_token]
         if value && value[:status] == :pending
-          key = ApiKey.new(:user_id => @request_user.id, :path => '/api/development-plugin-loader/', :name => "Plugin Tool (#{value[:name]})")
+          key = ApiKey.new
+          key.user_id = @request_user.id
+          key.path = '/api/development-plugin-loader/'
+          key.name = "Plugin Tool (#{value[:name]})"
           secret = key.set_random_api_key
-          key.save!
+          key.save
           value[:status] = :generated
           value[:key] = secret
           generated = true
@@ -55,7 +61,7 @@ class PluginToolSetupAuth
     # Plugin tool polls this API until the key is available
     _PoliciesRequired nil
     def handle_poll_api
-      given_token = params[:id] || 'INVALID'
+      given_token = params['id'] || 'INVALID'
       result = nil
       LOCK.synchronize do
         lookup = PENDING[KApp.current_application]

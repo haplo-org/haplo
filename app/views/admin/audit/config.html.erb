@@ -3,7 +3,7 @@
 %>
 <%= sys_mng_header %>
 
-<% if params.has_key?(:updated) %>
+<% if params.has_key?('updated'.freeze) %>
   <p><b>Configuration updated</b></p>
 <% else %>
   <p>&nbsp;</p>

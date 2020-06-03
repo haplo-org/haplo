@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module Application_ControlsHelper
@@ -25,7 +28,7 @@ module Application_ControlsHelper
 
   def control_tree(dom_id, size = :normal)
     client_side_resources(:tree)
-    h = %Q!<div id="#{dom_id}" class="z__tree_control_container!
+    h = %Q!<div id="#{dom_id}" class="z__tree_control_container!.dup
     # Change size if necessary
     h << ' z__tree_control_container_small' if size == :small
     h << %Q!"><div class="z__tree_control_placeholder">#{SPINNER_HTML_PLAIN} Loading...</div></div>!

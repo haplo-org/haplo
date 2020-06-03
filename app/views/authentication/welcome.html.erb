@@ -10,13 +10,13 @@
 <%= render :partial => 'bad_password', :data_for_template => { :message => @locale.text(:Authencation_Welcome_Password_not_set) } %>
 
 <form method="POST"><%= form_csrf_token %>
-<input type="hidden" name="t" value="<%= h(params[:t]) %>">
+<input type="hidden" name="t" value="<%= h(params['t'.freeze]) %>">
 
 <p><%= @locale.text(:Authentication_View_Password) %><br>
-<input type="password" name="pw1" value="" class="z__focus_candidate"></p>
+<input type="password" name="password" value="" class="z__focus_candidate"></p>
 
 <p><%= @locale.text(:Authentication_View_Confirm_password) %><br>
-<input type="password" name="pw2" value=""></p>
+<input type="password" name="password_2" value=""></p>
 
 <p><input type="submit" value="<%= @locale.text(:Authentication_View_Set_password) %>"></p>
 

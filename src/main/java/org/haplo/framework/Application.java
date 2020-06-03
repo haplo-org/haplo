@@ -15,6 +15,10 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.TimeUnit;
 
 import org.haplo.appserver.Response;
 
@@ -36,7 +40,8 @@ public class Application {
     private long applicationID;
     private Object rubyObject;
     private Semaphore requestConcurrencySempahore;
-    private Object requestFinishedNotifier;
+    private Lock requestFinishedLock;
+    private Condition requestFinishedCondition;
     private volatile HashMap<String, Response> dynamicFiles; // could probably get away with not being volatile
     private int numAppSpecificStaticFiles;   // the files uploaded by the user for use in styling. -1 means "not set"
     private Set<String> allowedPluginFilePaths;
@@ -121,7 +126,8 @@ public class Application {
     private Application(long applicationID) {
         this.applicationID = applicationID;
         this.requestConcurrencySempahore = new Semaphore(ConcurrencyLimits.APPLICATION_CONCURRENT_REQUESTS_PERMITS, true /* sempahore is fair */);
-        this.requestFinishedNotifier = new Object();
+        this.requestFinishedLock = new ReentrantLock(true);
+        this.requestFinishedCondition = requestFinishedLock.newCondition();
         this.numAppSpecificStaticFiles = -1;
     }
 
@@ -278,21 +284,26 @@ public class Application {
      * Call when a request has finished.
      */
     public void requestFinished() {
-        synchronized(requestFinishedNotifier) {
-            requestFinishedNotifier.notify();
+        requestFinishedLock.lock();
+        try {
+            requestFinishedCondition.signal();
+        } finally {
+            requestFinishedLock.unlock();
         }
     }
 
     /**
      * Wait for a request to finish
+     * returns true if the wait finished early because a request finished
      */
-    public void waitForARequestToFinish(long timeout) {
+    public boolean waitForARequestToFinish(long timeout) {
+        requestFinishedLock.lock();
         try {
-            synchronized(requestFinishedNotifier) {
-                requestFinishedNotifier.wait(timeout);
-            }
-        } catch(java.lang.InterruptedException e) {
-            // ignore
+            return requestFinishedCondition.await(timeout, TimeUnit.MILLISECONDS);
+        } catch(InterruptedException e) {
+            return false; // request didn't finish
+        } finally {
+            requestFinishedLock.unlock();
         }
     }
 

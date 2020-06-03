@@ -1,14 +1,17 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 module Setup_AppearanceHelper
 
   # Displays a row in the colour matrix, checking to see if a colour is required in that cell
   def appearance_colours_editor_row_for(name, symbol_base, eg_background_if_none = :page)
-    r = ''
+    r = ''.dup
     # Colour examples
     eg_bg_sym = @colour_name_usage.has_key?(symbol_base) ? symbol_base : eg_background_if_none
     eg_bg = @colours[eg_bg_sym]

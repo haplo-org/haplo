@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class DisplayController < ApplicationController
@@ -16,8 +19,8 @@ class DisplayController < ApplicationController
     if exchange.annotations[:object_url]
       raise "Bad params" unless path_elements.length >= 1
       # TODO: Tidy up DisplayController handling
-      params[:action] = 'index'
-      params[:id] = path_elements.first
+      params['action'] = 'index'
+      params['id'] = path_elements.first
       # Linked display?
       n = (KApp.global(:max_slug_length) > 0) ? 2 : 1
       if path_elements.length > n && path_elements[n] == 'linked'
@@ -35,7 +38,7 @@ class DisplayController < ApplicationController
   # ----------------------------------------------------------------------------------------------------------
 
   def perform_main_object_display
-    @objref = KObjRef.from_presentation(params[:id])
+    @objref = KObjRef.from_presentation(params['id'])
     if @objref != nil
       @obj = KObjectStore.read(@objref)
     end
@@ -45,8 +48,8 @@ class DisplayController < ApplicationController
       return
     end
 
-    if params.has_key?(:tray)
-      if params[:tray] == 'r'
+    if params.has_key?('tray')
+      if params['tray'] == 'r'
         tray_remove_object @obj
       else
         tray_add_object @obj
@@ -90,13 +93,13 @@ class DisplayController < ApplicationController
     @type_desc = (type == nil) ? nil : KObjectStore.schema.type_descriptor(type)
 
     # Search for linked objects
-    @show_linked_objects_type_filter = KObjRef.from_presentation(params[:type])
+    @show_linked_objects_type_filter = KObjRef.from_presentation(params['type'])
     # Build search spec (use :w rather than :q to ease generation of links and search withins)
     linked_search_query = "#L#{@objref.to_presentation}#"
     if @type_desc && @type_desc.is_classification? && @type_desc.is_hierarchical?
-      linked_search_query << " not #L#{@type_desc.objref.to_presentation}#"
+      linked_search_query += " not #L#{@type_desc.objref.to_presentation}#"
     end
-    spec = search_make_spec(:w => linked_search_query, :sort => params[:sort] || :date)
+    spec = search_make_spec('w' => linked_search_query, 'sort' => params['sort'] || :date)
     spec[:with_type_counts] = true  # for displaying type counts
     if @show_linked_objects_type_filter != nil
       spec[:type] = [@show_linked_objects_type_filter] # and only this type, not subtypes
@@ -107,7 +110,7 @@ class DisplayController < ApplicationController
 
     @linked_search = perform_search_for_rendering(spec)
     @display_search_spec = spec
-    @total_linked_objects = @linked_search[:results].type_counts.values.sum
+    @total_linked_objects = 0; @linked_search[:results].type_counts.each_value { |v| @total_linked_objects += v }
 
     # Work out counts and heirarchy
     @linked_search_type_roots = make_rooted_type_counts(@linked_search)
@@ -122,7 +125,7 @@ class DisplayController < ApplicationController
 
     # Is there a query?
     spec2 = nil
-    if params.has_key?(:q) || params.has_key?(:f)
+    if params.has_key?('q') || params.has_key?('f')
       # Attempt to make another search, which might return nil if the query is just whitespace
       spec2 = search_make_spec(params)
     end
@@ -211,8 +214,8 @@ class DisplayController < ApplicationController
   # Historical versions
 
   def handle_history
-    @version = params[:v].to_i
-    @history = KObjectStore.history(KObjRef.from_presentation(params[:id]))
+    @version = params['v'].to_i
+    @history = KObjectStore.history(KObjRef.from_presentation(params['id']))
     permission_denied unless @history && @request_user.policy.can_view_history_of?(@history.object)
   end
 
@@ -245,11 +248,11 @@ class DisplayController < ApplicationController
   def handle_html_api
     @objref = nil
     is_old_version = false
-    if params[:id] != nil
-      @objref = KObjRef.from_presentation(params[:id])
+    if params['id'] != nil
+      @objref = KObjRef.from_presentation(params['id'])
       @obj = KObjectStore.read(@objref)
       # Load a previous version? If so, set a flag to say whether it's an old version.
-      version = params[:v].to_i
+      version = params['v'].to_i
       if @obj && version > 0
         obj_at_version = KObjectStore.read_version(@objref, version)
         is_old_version = true if obj_at_version.version != @obj.version

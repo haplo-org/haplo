@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 #
 # KSchemaApp
@@ -89,7 +92,7 @@ class KSchemaApp < KSchema
       end
       # Render category must be a number and if not, default to 0
       @render_category = obj.first_attr(A_RENDER_CATEGORY)
-      @render_category = nil unless @render_category.kind_of?(Fixnum) && @render_category >= 0 && @render_category < 8
+      @render_category = nil unless @render_category.kind_of?(Integer) && @render_category >= 0 && @render_category < 8
       # Display Elements
       @display_elements = obj.first_attr(A_DISPLAY_ELEMENTS)
       @display_elements = @display_elements.to_s if @display_elements != nil
@@ -186,10 +189,6 @@ class KSchemaApp < KSchema
     def is_classification?
       @behaviours.include?(O_TYPE_BEHAVIOUR_CLASSIFICATION)
     end
-    def is_physical?
-      @behaviours.include?(O_TYPE_BEHAVIOUR_PHYSICAL)
-    end
-    alias :is_physical :is_physical?    # for compatibility
     def is_hierarchical?
       @behaviours.include?(O_TYPE_BEHAVIOUR_HIERARCHICAL)
     end
@@ -276,7 +275,7 @@ class KSchemaApp < KSchema
       # Relaxed about the control?
       unless @control_by_types.empty?
         r = ado.first_attr(KConstants::A_ATTR_CONTROL_RELAXED)
-        @control_relaxed = r if r != nil && r.class == Fixnum
+        @control_relaxed = r if r != nil && r.class == Integer
       end
 
       # Group type

@@ -21,7 +21,7 @@
 
 <% if @obj_is_deleted %><div class="z__deleted_object"><% end %>
 
-<%= rendered_object = render_obj(@obj_display, params.has_key?(:noaliasing) ? :noaliasing : :generalview, @render_options) %>
+<%= rendered_object = render_obj(@obj_display, params.has_key?('noaliasing'.freeze) ? :noaliasing : :generalview, @render_options) %>
 
 <% if @obj_is_deleted %>
   </div>

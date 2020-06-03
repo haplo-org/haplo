@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module KMIMETypes
@@ -79,7 +82,7 @@ module KMIMETypes
         e = line.chomp.split(/\s+/)
         t = e.shift                   # mime type is first entry
         unless t == 'application/octet-stream'
-          e.each { |ex| extns[ex] = t } # extensions, probably none
+          e.each { |ex| extns[ex.freeze] = t.freeze }
         end
       end
     end
@@ -206,7 +209,7 @@ module KMIMETypes
       expected_extension = self.extension_from_type(self.correct_mime_type(mime_type_without_options))
     end
     if expected_extension && (expected_extension != extension.downcase)
-      filename = "#{filename}.#{expected_extension}"
+      filename = "#{filename}.#{expected_extension}".freeze
     end
     filename
   end
@@ -216,13 +219,13 @@ module KMIMETypes
     if filename != nil && filename =~ /\.([^\.]+)\z/
       ext = $1.downcase
       type = MIME_TYPE_FROM_EXTENSION_OVERRIDES[ext]
-      return type.dup if type != nil
+      return type if type != nil
     end
     # Do various corrections
     type = nil
     opts = nil
     type = $1 if mime_type_in =~ /\s*([a-zA-Z0-9\.\-]+\/[a-zA-Z0-9\.\-]+)/
-    type = type.downcase if type != nil   # case insensitive, so canonicalise to lower case
+    type = type.downcase.freeze if type != nil   # case insensitive, so canonicalise to lower case
     opts = $1 if mime_type_in =~ /.+?;\s*(.+?)\s*\z/
     # Did the uploader know?
     if type != nil && type == 'application/octet-stream'
@@ -242,6 +245,6 @@ module KMIMETypes
       end
     end
     return 'application/octet-stream' if type == nil
-    (opts == nil) ? type : "#{type}; #{opts}"
+    (opts == nil) ? type : "#{type}; #{opts}".freeze
   end
 end

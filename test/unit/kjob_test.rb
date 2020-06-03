@@ -67,7 +67,7 @@ class KJobTest < Test::Unit::TestCase
 
   def setup
     db_reset_test_data
-    KApp.get_pg_database.perform("DELETE FROM public.jobs WHERE application_id=#{_TEST_APP_ID}")
+    KApp.with_pg_database { |db| db.perform("DELETE FROM public.jobs WHERE application_id=#{_TEST_APP_ID}") }
   end
 
   def test_trivial_jobs

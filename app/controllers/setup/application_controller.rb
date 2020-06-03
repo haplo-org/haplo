@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 class Setup_ApplicationController < ApplicationController
   include ERB::Util # for html_escape
@@ -38,15 +41,6 @@ class Setup_ApplicationController < ApplicationController
 
   # -------------------------------------------------------------------------------------------
 
-  # TODO: Nicer system status implementation, maybe expose flag to administrators properly?
-  # Here because it's a reasonable URL, and :setup_system is required.
-  def handle_status
-    status = "Store indexing: #{KObjectStore.is_indexing_outstanding? ? 'yes' : 'no'}"
-    render :text => status, :kind => :text
-  end
-
-  # -------------------------------------------------------------------------------------------
-
   def handle_identity
     @system_name = KApp.global(:system_name)
     @url_hostname = KApp.global(:url_hostname)
@@ -70,7 +64,7 @@ class Setup_ApplicationController < ApplicationController
   def handle_edit_sluglen
     @max_slug_length = KApp.global(:max_slug_length)
     if request.post?
-      KApp.set_global(:max_slug_length, params[:max_slug_length].to_i)
+      KApp.set_global(:max_slug_length, params['max_slug_length'].to_i)
       redirect_to '/do/setup/application/identity'
     end
   end
@@ -85,7 +79,7 @@ class Setup_ApplicationController < ApplicationController
 
   _GetAndPost
   def handle_feature_enable
-    @do_edit = (params[:id] == 'edit')
+    @do_edit = (params['id'] == 'edit')
     if request.post?
       update_appglobal_bools(*(ENABLE_FEATURES.map {|f| f.first}))
       redirect_to '/do/setup/application/feature-enable'
@@ -99,9 +93,9 @@ class Setup_ApplicationController < ApplicationController
   _GetAndPost
   def handle_code_lock
     if request.post?
-      if params.has_key?(:lock)
+      if params.has_key?('lock')
         KApp.set_global_bool(:schema_api_codes_locked, true)
-      elsif params.has_key?(:unlock)
+      elsif params.has_key?('unlock')
         KApp.set_global_bool(:schema_api_codes_locked, false)
       end
       redirect_to '/do/setup/application/code-lock'
@@ -118,7 +112,7 @@ class Setup_ApplicationController < ApplicationController
     @parsed_data = JSON.parse(@data)
     @display_data = JSON.pretty_generate(@parsed_data)
     if request.post?
-      @data = params[:data] || '{}'
+      @data = params['data'] || '{}'
       @display_data = @data # show data user entered if there's an error
       begin
         # Attempt to parse the data to ensure it is valid JSON
@@ -159,15 +153,15 @@ class Setup_ApplicationController < ApplicationController
     @ssl_policy = KApp.global(:ssl_policy).split(//)
 
     if request.post?
-      uh = params[:url_hostname]
+      uh = params['url_hostname']
       if @hostnames.include?(uh)
         KApp.set_global(:url_hostname, uh)
       end
-      sh = params[:ssl_hostname]
+      sh = params['ssl_hostname']
       if @hostnames.include?(sh)
         KApp.set_global(:ssl_hostname, sh)
       end
-      sp = ''
+      sp = ''.dup
       0.upto(ENCRYPTION_POLICY_NAMES.length - 1) do |n|
         sp << (params.has_key?("ssl_policy#{n}") ? 'e' : 'c')
       end
@@ -197,13 +191,10 @@ class Setup_ApplicationController < ApplicationController
           else
             @uploaded = AppStaticFile.new
             @uploaded.uploaded_file = upload
-            if @uploaded.save
-              # Let the app server know there's a new file it might want to serve
-              KDynamicFiles.invalidate_app_static_count
-              @notice = 'File uploaded successfully'
-            else
-              @notice = 'Error uploading file'
-            end
+            @uploaded.save
+            # Let the app server know there's a new file it might want to serve
+            KDynamicFiles.invalidate_app_static_count
+            @notice = 'File uploaded successfully'
           end
           File.unlink(pathname)
         else
@@ -211,17 +202,15 @@ class Setup_ApplicationController < ApplicationController
         end
       end
     end
-    # For uploading form
-    @file = AppStaticFile.new
     # List all files, by ID, but don't retrieve the data for this listing operation
-    @static_files = AppStaticFile.find_all_without_data
+    @static_files = AppStaticFile.select_all_without_data
   end
 
   _PostOnly
   def handle_delete_file
     if request.post?
-      file = AppStaticFile.find(params[:id])
-      file.destroy if file != nil
+      file = AppStaticFile.read(params['id'].to_i)
+      file.delete if file != nil
     end
     redirect_to '/do/setup/application/files'
   end
@@ -232,7 +221,7 @@ class Setup_ApplicationController < ApplicationController
   _GetAndPost
   def handle_edit_otp_contact
     if request.post?
-      @otp_admin_contact = params[:contact].strip
+      @otp_admin_contact = params['contact'].strip
       KApp.set_global(:otp_admin_contact, @otp_admin_contact)
       redirect_to '/do/setup/application/otp_contact'
     else
@@ -249,11 +238,11 @@ class Setup_ApplicationController < ApplicationController
     @time_zone_list = time_zone_list
     if request.post?
       tz = []
-      if params.has_key?(:tz)
+      if params.has_key?('tz')
         # Separate out the list into items with and without /s
         tz_first = []
         tz_second = []
-        params[:tz].each_key do |t|
+        params['tz'].each_key do |t|
           (t =~ /\// ? tz_second : tz_first).push(t)
         end
         # Force GMT to the first entry in the list
@@ -295,7 +284,7 @@ class Setup_ApplicationController < ApplicationController
   def handle_edit_sort_order
     @person_name_sort = KObjectStore.schema.store_options[:ktextpersonname_western_sortas] || KTextPersonName::NAME_SORTAS_ORDER_F_L
     if request.post?
-      choice = params[:personsname_sortas]
+      choice = params['personsname_sortas']
       raise "Bad value" if choice.length > 32
       KObjectStore.set_store_option(:ktextpersonname_western_sortas, choice)
       redirect_to '/do/setup/application/sort_order?changed=1'
@@ -330,7 +319,7 @@ class Setup_ApplicationController < ApplicationController
   def handle_search_by_fields_edit
     handle_search_by_fields # load attribute names
     if request.post?
-      fields = params[:fields].split(',')
+      fields = params['fields'].split(',')
       # Validate the fields to make sure they're all numbers, and there's at least one. Don't need to bother checking they're valid descs, though.
       ok = fields.length > 0
       fields.each do |f|
@@ -345,20 +334,20 @@ class Setup_ApplicationController < ApplicationController
   def handle_home_page
     @elements = KApp.global(:home_page_elements) || ''
     if request.post?
-      KApp.set_global(:home_page_elements, params[:elements])
+      KApp.set_global(:home_page_elements, params['elements'])
       redirect_to '/do/setup/application/home_page?show=1'
     end
     # Get a list of all the groups for reference
-    @groups = User.find(:all, :conditions => "kind=#{User::KIND_GROUP} AND code IS NOT NULL", :order => 'name')
+    @groups = User.where(:kind => User::KIND_GROUP).where_not_null(:code).order(:lower_name).select()
   end
 
   _GetAndPost
   def handle_edit_csp
     @content_security_policy = KApp.global(:content_security_policy) || ''
     if request.post?
-      csp = params[:csp] || ''
+      csp = params['csp'] || ''
       if csp == '$_CUSTOM'
-        csp = params[:custom_csp] || ''
+        csp = params['custom_csp'] || ''
       end
       if csp != ''
         KApp.set_global(:content_security_policy, csp.gsub(/\s+/,' '))
@@ -378,7 +367,7 @@ private
     syms.each do |sym|
       ag = KApp.global(sym)
       # don't let the user enter HTML (this doesn't quite work when reediting, but will do for now)
-      n = html_escape(params[sym])
+      n = html_escape(params[sym.to_s])
       if n != nil && ag != n
         KApp.set_global(sym, n)
       end
@@ -388,7 +377,7 @@ private
   def update_appglobal_strings_no_escape(*syms)
     syms.each do |sym|
       ag = KApp.global(sym)
-      n = params[sym] # no escaping
+      n = params[sym.to_s] # no escaping
       if n != nil && ag != n
         KApp.set_global(sym, n)
       end
@@ -398,7 +387,7 @@ private
   def update_appglobal_bools(*syms)
     syms.each do |sym|
       ag = KApp.global_bool(sym)
-      n = params.has_key?(sym)
+      n = params.has_key?(sym.to_s)
       if ag != n
         KApp.set_global_bool(sym, n)
       end

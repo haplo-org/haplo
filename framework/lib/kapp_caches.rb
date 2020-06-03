@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module KApp
@@ -226,7 +229,7 @@ module KApp
         if cache == nil
           puts "  * nothing cached"
         else
-          internal_count = ""
+          internal_count = "".dup
           cache.caches.each do |obj|
             internal_count << if obj.kind_of?(Array) || obj.kind_of?(Hash)
               "#{obj.length} "

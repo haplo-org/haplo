@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Admin_LatestController < ApplicationController
@@ -19,8 +22,8 @@ class Admin_LatestController < ApplicationController
 
   _GetAndPost
   def handle_edit
-    @user = User.find(params[:id])
-    reqs = LatestRequest.find_all_by_user_id(@user.id)
+    @user = User.read(params['id'].to_i)
+    reqs = LatestRequest.where(:user_id => @user.id).select()
 
     if request.post?
       # Build a lookup of objref -> request
@@ -31,8 +34,8 @@ class Admin_LatestController < ApplicationController
       reqs = Array.new
 
       # Go through values in response
-      if params[:r] != nil
-        params[:r].each do |k,v|
+      if params['r'] != nil
+        params['r'].each do |k,v|
           inc = v.to_i
           ref = KObjRef.from_presentation(k)
           if ref != nil && inc >= LatestRequest::REQ__MIN && inc <= LatestRequest::REQ__MAX
@@ -42,7 +45,7 @@ class Admin_LatestController < ApplicationController
               # Needs update?
               if existing.inclusion != inc
                 existing.inclusion = inc
-                existing.save!
+                existing.save
               end
               # Remove from lookup so it doesn't get deleted
               lookup.delete(k)
@@ -54,7 +57,7 @@ class Admin_LatestController < ApplicationController
               n.user_id = @user.id
               n.inclusion = inc
               n.objref = ref
-              n.save!
+              n.save
               # Add to array so it's displayed
               reqs << n
             end
@@ -62,7 +65,7 @@ class Admin_LatestController < ApplicationController
         end
         # Now delete anything which wasn't mentioned in the form
         lookup.each_value do |r|
-          r.destroy
+          r.delete
         end
       end
       redirect_to "/do/admin/user/show/#{@user.id}"
@@ -77,11 +80,11 @@ class Admin_LatestController < ApplicationController
 
   _GetAndPost
   def handle_settings
-    @user = User.find(params[:id])
+    @user = User.read(params['id'].to_i)
     @template_id = UserData.get(@user, UserData::NAME_LATEST_EMAIL_TEMPLATE)
     # Reset to defaults?
     dont_save = false
-    if request.post? && params.has_key?(:todefaults)
+    if request.post? && params.has_key?('todefaults')
       UserData.delete(@user, UserData::NAME_LATEST_EMAIL_FORMAT)
       UserData.delete(@user, UserData::NAME_LATEST_EMAIL_SCHEDULE)
       UserData.delete(@user, UserData::NAME_LATEST_EMAIL_TEMPLATE)
@@ -89,8 +92,8 @@ class Admin_LatestController < ApplicationController
       dont_save = true  # don't allow the helper function to save the form data (which isn't there anyway) or redirect
       redirect_to "/do/admin/user/show/#{@user.id}"
     end
-    if request.post? && params.has_key?(:template)
-      template = params[:template]
+    if request.post? && params.has_key?('template')
+      template = params['template']
       if template == ''
         @template_id = nil
         UserData.delete(@user, UserData::NAME_LATEST_EMAIL_TEMPLATE)

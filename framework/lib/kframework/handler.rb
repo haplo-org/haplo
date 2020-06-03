@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class KFramework
@@ -27,7 +30,7 @@ class KFramework
       @body_as_bytes = body_as_bytes
       @body_spill_pathaname = body_spill_pathaname
       # Turn the byte[] body from java into a string
-      @body = (body_as_bytes == nil) ? '' : String.from_java_bytes(body_as_bytes)
+      @body = (body_as_bytes == nil) ? ''.dup : String.from_java_bytes(body_as_bytes)
       @body.force_encoding(REQUEST_ENCODING)
       @is_ssl = is_ssl
     end
@@ -78,13 +81,15 @@ class KFramework
   end
 
   # Special exceptions
-  class SecurityAbort < StandardError
+  class RespondableException < StandardError
   end
-  class CSRFAttempt < SecurityAbort
+  class SecurityAbort < RespondableException
   end
-  class WrongHTTPMethod < StandardError
+  class CSRFAttempt < RespondableException
   end
-  class RequestPathNotFound < StandardError
+  class WrongHTTPMethod < RespondableException
+  end
+  class RequestPathNotFound < RespondableException
   end
 
   # Reportable error reporting
@@ -161,8 +166,7 @@ class KFramework
       # Is it a reportable error?
       reportable_error_text = KFramework.reportable_exception_error_text(e, :html)
       if reportable_error_text == nil
-        # Not reportable or reportable errors disabled in production instance -- log error and set health event
-        REQUEST_EXCEPTION_HEALTH_EVENTS.log_and_report_exception(e)
+        # Not reportable or reportable errors disabled in production instance
         exchange.response = make_error_response(e, exchange)
       else
         # Errors may be reported to the user if it's a plugin debug instance
@@ -200,7 +204,6 @@ class KFramework
         params[k.to_s] = v.to_s
       end
     end
-    params = HashWithIndifferentAccess.new(params)
     exchange.params = params
     handle(exchange)
   end
@@ -208,7 +211,7 @@ class KFramework
   def handle(exchange)
     begin
       KApp.in_application(exchange.application_id) do
-        ms = Benchmark.ms do
+        ms = KApp.execution_time_ms do
           # Find the controller used to handle this request
           path_elements, controller_factory, annotations = @namespace.resolve(exchange.request.path, exchange.request.host)
           # If the URL didn't match anything, a nil controller would be returned. Let something else make this a 404.
@@ -221,19 +224,8 @@ class KFramework
           # Handle the request, storing a request context in a thread global
           controller = controller_factory.make_controller
           context = RequestHandlingContext.new(controller, exchange)
-          begin
-            Thread.current[:_frm_request_context] = context
-            controller.handle(exchange, path_elements)
-          rescue => handle_exception
-            # Add more info to the exception - used by the health reporter for accurate emails
-            handle_exception.instance_variable_set(:@__handle_info, [
-                KApp.current_application,
-                KApp.global(:ssl_hostname),
-                context.exchange.request.method,
-                context.exchange.request.path
-              ])
-            raise
-          end
+          Thread.current[:_frm_request_context] = context
+          controller.handle(exchange, path_elements)
           unless exchange.has_response?
             # Not creating a response is bad. Throw a normal exception so it'll trigger the health alerting.
             raise "Controller #{controller_factory.name} didn't create a response for this request."
@@ -241,6 +233,11 @@ class KFramework
         end
         KApp.logger.info("Store: #{KObjectStore.statistics.to_s}\n** Finished in #{ms.to_i}ms\n")
         true
+      rescue => e
+        unless e.kind_of?(RespondableException)
+          REQUEST_EXCEPTION_HEALTH_EVENTS.log_and_report_exception(e)
+        end
+        raise
       end
     ensure
       # Make absolutely sure the request context is cleared
@@ -276,7 +273,7 @@ class KFramework
 
   def make_csrf_response(exchange)
     # NOTE: IntegrationTest does pattern matching on the content of this message
-    message = "<html><h1>Request denied for security reasons</h1><p>Your request looked like an attempt to circumvent security measures. If you see this message again, please contact support.</p><h2>Cookies need to be enabled</h2><p>Please check that you have enabled cookies for this web site. Disabled cookies are the most likely cause of this problem.</p>"
+    message = "<html><h1>Request denied for security reasons</h1><p>Your request looked like an attempt to circumvent security measures. If you see this message again, please contact support.</p><h2>Cookies need to be enabled</h2><p>Please check that you have enabled cookies for this web site. Disabled cookies are the most likely cause of this problem.</p>".dup
     # In plugin development mode remind the developer about the requirement for a CSRF token
     if PLUGIN_DEBUGGING_SUPPORT_LOADED
       message << %Q!<hr><div style="border:2px solid #f00;padding: 4px 16px"><h1>Developing a plugin?</h1><p>This message is most likely caused by omitting the CSRF token in a POSTed form.</p><p>Use the <tt>std:form:token()</tt> template function within your &lt;form&gt;. (or <tt>{{&gt;std:form_csrf_token}}</tt> for legacy Handlebars templates)</div>!

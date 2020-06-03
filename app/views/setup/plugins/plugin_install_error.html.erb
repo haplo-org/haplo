@@ -20,6 +20,6 @@
 <% else %>
 
   <h2>Unknown plugin</h2>
-  <p>Plugin <b><%= h(params[:plugin]) %></b> not known.</p>
+  <p>Plugin <b><%= h(params['plugin'.freeze]) %></b> not known.</p>
 
 <% end %>

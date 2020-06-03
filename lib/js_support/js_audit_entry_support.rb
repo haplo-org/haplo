@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 # Provide utility functions to KAuditEntry JavaScript objects
 
@@ -12,7 +15,7 @@ module JSAuditEntrySupport
     ["auditEntryType", :kind,     String,   :required,
         proc { |v| (v =~ /\A[a-z0-9_]+\:[a-z0-9_]+\z/) ? nil : "Property auditEntryType must match /^[a-z0-9_]+:[a-z0-9_]+$/" }
     ],
-    ["objId",       :obj_id,      Integer,  :optional],
+    ["objId",       :objref,      Integer,  :optional],
     ["entityId",    :entity_id,   Integer,  :optional],
     ["displayable", :displayable, nil,      :required,
         proc { |v| (v.kind_of?(TrueClass) || v.kind_of?(FalseClass)) ? nil : "Property displayable must be true or false" }
@@ -21,21 +24,11 @@ module JSAuditEntrySupport
   ]
 
   SIMPLE_COLUMN_ATTRIBUTE_MAPPINGS = [
-    [:getObjId, :obj_id],
     [:getEntityId, :entity_id],
     [:getDisplayable, :displayable],
     [:getUserId, :user_id],
     [:getAuthenticatedUserId, :auth_user_id],
   ]
-
-  DB_COLUMN_TYPE_MAPPINGS = {
-    :displayable => proc { |v| { 't' => true, 'f' => false }[v] },
-    :data => proc { |v| JSON.parse v },
-    :user_id => proc  { |v| Integer v },
-    :auth_user_id =>  proc { |v| Integer v },
-    :entity_id =>  proc { |v| Integer v },
-    :obj_id => proc { |v| KObjRef.new(v.to_i).to_presentation }
-  }
 
   FIELD_TO_COLUMNS = {
     "creationDate" => :created_at,
@@ -43,7 +36,7 @@ module JSAuditEntrySupport
     "userId" => :user_id,
     "authenticatedUserId" => :auth_user_id,
     "auditEntryType" => :kind,
-    "ref" => :obj_id,
+    "ref" => :objref,
     "entityId" => :entity_id,
     "displayable" => :displayable,
     "data" => :data,
@@ -63,6 +56,7 @@ module JSAuditEntrySupport
         if validation && nil != (error = validation.call(value))
           raise JavaScriptAPIError, error
         end
+        value = KObjRef.new(value) if ruby_name == :objref
         # Attribute looks OK
         attributes[ruby_name] = value
       else
@@ -83,44 +77,49 @@ module JSAuditEntrySupport
   end
 
   def self.constructQuery(query)
-    entries = AuditEntry.where(
+    entries = AuditEntry.where().unsafe_where_sql(
       KObjectStore.user_permissions.sql_for_read_query_filter("labels")
     )
 
     types = query.getAuditEntryTypes()
     unless types.nil? or types.length == 0
-      entries = entries.where("kind IN (?)", query.getAuditEntryTypes())
+      entries.where_kind_is_one_of(query.getAuditEntryTypes())
     end
     fromDate = query.getFromDate()
     unless fromDate.nil?
       fromTime = Time.at(fromDate.getTime/1000)
-      entries = entries.where("created_at >= ?", fromTime)
+      entries.where_created_at_or_after(fromTime)
     end
     toDate = query.getToDate()
     unless toDate.nil?
       toTime = Time.at(toDate.getTime/1000)
-      entries = entries.where("created_at <= ?", toTime)
+      entries.where_created_at_or_before(toTime)
+    end
+    objId = query.getObjId()
+    unless objId.nil?
+      entries.where(:objref => KObjRef.new(objId))
     end
     SIMPLE_COLUMN_ATTRIBUTE_MAPPINGS.each do |method, column|
       queryValue = query.send(method);
       unless queryValue.nil?
-        entries = entries.where("#{column} = ?", queryValue)
+        entries.where(column => queryValue)
       end
     end
-    unless query.getSortField.nil?
+    if query.getSortField.nil?
+      entries.order(:recent_first)
+    else
       sortOrder = query.getSortDesc() ? "DESC" : "ASC"
       sortColumn = safeGetColumnFromField(query.getSortField)
-      entries = entries.order("#{sortColumn} #{sortOrder}")
+      entries = entries.unsafe_order("#{sortColumn} #{sortOrder}, created_at DESC")
     end
     unless query.getLimit.nil?
       entries = entries.limit(query.getLimit)
     end
-    entries.order("created_at DESC")
   end
 
   def self.executeQuery(query, firstResultOnly)
     entries = constructQuery(query)
-    firstResultOnly ? [entries.first].compact : entries.to_a
+    firstResultOnly ? [entries.first()].compact : entries.select()
   end
 
 end

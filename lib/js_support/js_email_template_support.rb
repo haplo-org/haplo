@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Provide utility functions to KEmailTemplate JavaScript objects
@@ -11,7 +14,7 @@ module JSEmailTemplateSupport
 
   def self.loadTemplate(code)
     if code == nil
-      EmailTemplate.find(EmailTemplate::ID_DEFAULT_TEMPLATE)
+      EmailTemplate.read(EmailTemplate::ID_DEFAULT_TEMPLATE)
     else
       # Backwards compatible fallback to checking for an email template with the given name
       # NOTE: There's also a similar fallback in work_unit.rb to select auto notify template

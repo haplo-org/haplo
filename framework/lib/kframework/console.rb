@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Console
@@ -35,11 +38,25 @@ class Console
     out
   end
 
-  def call_console_method(remote_io, method_name, args)
-    $stdout.with_alternative_write_proc_in_thread(proc { |d| remote_io.write(d) }) do
-      self.__send__(method_name, *args)
+  def call_console_method(remote_io, method_name, remote_console_client, args)
+    begin
+      if remote_console_client # only passed to runner by console client
+        raise "Unexpected PID match" unless Process.pid != remote_console_client.test_remote_client(Dir.getwd)
+        Thread.current[:_remote_console_client] = remote_console_client
+      end
+      $stdout.with_alternative_write_proc_in_thread(proc { |d| remote_io.write(d) }) do
+        self.__send__(method_name, *args)
+      end
+    ensure
+      Thread.current[:_remote_console_client] = nil
     end
     nil
+  end
+
+  def self.remote_console_client
+    console_client = Thread.current[:_remote_console_client]
+    raise "No console client connected for this thread" unless console_client
+    console_client
   end
 
   # ---------------------------------------------------------------------------------------------------
@@ -59,11 +76,11 @@ class Console
     else
       puts "Type command <args> to run a command."
       puts
-      puts "Commands available:\n"
+      puts "Commands available:"
       self.class.public_instance_methods(false).sort.each do |method|
         desc = self.class.annotation_get(method.to_sym, :description)
         if desc != nil
-          puts sprintf("  %20s  %s\n", method, desc)
+          puts sprintf("  %20s  %s", method, desc)
         end
       end
       puts
@@ -90,18 +107,6 @@ class Console
       end
     end
     nil
-  end
-
-  # ---------------------------------------------------------------------------------------------------
-
-  _Description "Show database connections"
-  _Help <<-__E
-    List the current database connection, with some diagnostic information.
-    Note that this is not a consistent snapshot, so errors shown might be due
-    to changes during the time the checks are running.
-  __E
-  def db_conns
-    ActiveRecord::Base.connection_pool.dump_info
   end
 
   # ---------------------------------------------------------------------------------------------------

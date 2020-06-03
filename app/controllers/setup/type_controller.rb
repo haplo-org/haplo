@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Setup_TypeController < ApplicationController
@@ -34,12 +37,12 @@ class Setup_TypeController < ApplicationController
       t = @schema.type_descriptor(objref)
       (t.is_classification? ? @root_classifications : @root_types) << objref
     end
-    @selected_type = params[:select]
+    @selected_type = params['select']
   end
 
   def handle_show
     @schema = KObjectStore.schema
-    @type_desc = @schema.type_descriptor(KObjRef.from_presentation(params[:id]))
+    @type_desc = @schema.type_descriptor(KObjRef.from_presentation(params['id']))
     if @type_desc.is_classification?
       # Check it has the CONCEPT label in the base labels
       @classification_type_no_concept_label = !(@type_desc.base_labels.include?(O_LABEL_CONCEPT))
@@ -69,15 +72,15 @@ class Setup_TypeController < ApplicationController
   def handle_edit
     @schema = KObjectStore.schema
 
-    if params[:id] == 'new'
+    if params['id'] == 'new'
       # Create a new object
       @obj = KObject.new([O_LABEL_STRUCTURE])
       @obj.add_attr(O_TYPE_APP_VISIBLE, A_TYPE);
-      if params.has_key?(:parent)
-        @obj.add_attr(KObjRef.from_presentation(params[:parent]), A_PARENT)
+      if params.has_key?('parent')
+        @obj.add_attr(KObjRef.from_presentation(params['parent']), A_PARENT)
       else
         @obj.add_attr(KObjRef.from_desc(A_TITLE), A_RELEVANT_ATTR)
-        if params.has_key?(:classification)
+        if params.has_key?('classification')
           @obj.add_attr(O_TYPE_BEHAVIOUR_CLASSIFICATION, A_TYPE_BEHAVIOUR)
           @obj.add_attr(O_LABEL_CONCEPT, A_TYPE_BASE_LABEL)
           @obj.add_attr("classification", A_RENDER_TYPE_NAME)
@@ -92,7 +95,7 @@ class Setup_TypeController < ApplicationController
       @is_new = true
     else
       # Load the existing one for editing
-      @obj = KObjectStore.read(KObjRef.from_presentation(params[:id])).dup
+      @obj = KObjectStore.read(KObjRef.from_presentation(params['id'])).dup
     end
 
     # Get parent type desc?
@@ -130,15 +133,15 @@ class Setup_TypeController < ApplicationController
       # Add in the new bits
 
       # Type behaviours
-      if params.has_key?(:behaviour)
-        params[:behaviour].keys.each do |behaviour|
+      if params.has_key?('behaviour')
+        params['behaviour'].keys.each do |behaviour|
           o = KObjRef.from_presentation(behaviour)
           @obj.add_attr(o, A_TYPE_BEHAVIOUR) if o != nil
         end
       end
 
       # Title
-      title = params[:title]
+      title = params['title']
       title = 'UNNAMED' unless title =~ /\S/
       @obj.add_attr(title.strip.gsub(/\s+/,' '), A_TITLE)
 
@@ -146,7 +149,7 @@ class Setup_TypeController < ApplicationController
       code_set_edited_value_in_object(@obj)
 
       # Short names (additive on inheritance)
-      params[:short_type_names].split(/\s*\,\s*/).each do |s|
+      params['short_type_names'].split(/\s*\,\s*/).each do |s|
         n = KSchemaApp.to_short_name_for_type(s)
         @obj.add_attr(n, A_ATTR_SHORT_NAME) if n.length > 0
       end
@@ -154,20 +157,20 @@ class Setup_TypeController < ApplicationController
       # Attributes
       if @parent_type_desc == nil
         # Root type -- set any attribute
-        params[:root_attr].split(',').each do |a|
+        params['root_attr'].split(',').each do |a|
           i = a.to_i
           @obj.add_attr(KObjRef.from_desc(i), A_RELEVANT_ATTR) if i != 0
         end
         # Descriptive attributes
-        descriptive_attribute = params[:descriptive_attribute].to_i
+        descriptive_attribute = params['descriptive_attribute'].to_i
         if descriptive_attribute != 0
           @obj.add_attr(KObjRef.from_desc(descriptive_attribute), A_ATTR_DESCRIPTIVE)
         end
       else
         # Child type -- remove attributes from the parent
         selected_attrs = Hash.new
-        if params.has_key?(:a_)
-          params[:a_].keys.each { |s| selected_attrs[s.to_i] = true }
+        if params.has_key?('a_')
+          params['a_'].keys.each { |s| selected_attrs[s.to_i] = true }
         end
         @parent_type_desc.attributes.each do |desc|
           unless selected_attrs[desc]
@@ -177,76 +180,76 @@ class Setup_TypeController < ApplicationController
       end
 
       # Weight
-      if @parent_type_desc == nil || params[:relevancy_weight_s] == 't'
-        if params[:relevancy_weight] != ''
-          @obj.add_attr((params[:relevancy_weight].to_f * RELEVANCY_WEIGHT_MULTIPLER).to_i, A_RELEVANCY_WEIGHT)
+      if @parent_type_desc == nil || params['relevancy_weight_s'] == 't'
+        if params['relevancy_weight'] != ''
+          @obj.add_attr((params['relevancy_weight'].to_f * RELEVANCY_WEIGHT_MULTIPLER).to_i, A_RELEVANCY_WEIGHT)
         end
       end
 
       # Meta inclusion
-      if @parent_type_desc == nil || params[:term_inclusion_spec_s] == 't'
-        if params[:term_inclusion_spec] =~ /\S/
-          @obj.add_attr(params[:term_inclusion_spec].strip, A_TERM_INCLUSION_SPEC)
+      if @parent_type_desc == nil || params['term_inclusion_spec_s'] == 't'
+        if params['term_inclusion_spec'] =~ /\S/
+          @obj.add_attr(params['term_inclusion_spec'].strip, A_TERM_INCLUSION_SPEC)
         end
       end
 
       # Render type
-      if @parent_type_desc == nil || params[:render_type_s] == 't'
-        render_type = params[:render_type].downcase.gsub(/[^a-z0-9]_/,'')
+      if @parent_type_desc == nil || params['render_type_s'] == 't'
+        render_type = params['render_type'].downcase.gsub(/[^a-z0-9]_/,'')
         @obj.add_attr(render_type, A_RENDER_TYPE_NAME) if render_type != ''
       end
 
       # Render icon
-      if @parent_type_desc == nil || params[:render_icon_s] == 't'
-        render_icon = params[:render_icon]
+      if @parent_type_desc == nil || params['render_icon_s'] == 't'
+        render_icon = params['render_icon']
         @obj.add_attr(render_icon, A_RENDER_ICON) if icon_is_valid_description?(render_icon)
       end
 
       # Render category
-      if @parent_type_desc == nil || params[:render_category_s] == 't'
-        @obj.add_attr(params[:render_category].to_i, A_RENDER_CATEGORY)
+      if @parent_type_desc == nil || params['render_category_s'] == 't'
+        @obj.add_attr(params['render_category'].to_i, A_RENDER_CATEGORY)
       end
 
       # Display Elements
-      if @parent_type_desc == nil || params[:display_elements_s] == 't'
-        @obj.add_attr(params[:display_elements], A_DISPLAY_ELEMENTS)
+      if @parent_type_desc == nil || params['display_elements_s'] == 't'
+        @obj.add_attr(params['display_elements'], A_DISPLAY_ELEMENTS)
       end
 
       # Default subtype? (root only)
       if @parent_type_desc == nil
-        cds = KObjRef.from_presentation(params[:create_default_subtype])
+        cds = KObjRef.from_presentation(params['create_default_subtype'])
         @obj.add_attr(cds, A_TYPE_CREATE_DEFAULT_SUBTYPE) if cds != nil
       end
 
       # Show type in submenu?
-      if params[:create_show_type] != 't'
+      if params['create_show_type'] != 't'
         @obj.add_attr(0, A_TYPE_CREATE_SHOW_SUBTYPE)
       end
 
       # UI creation position (root only)
       if @parent_type_desc == nil
-        @obj.add_attr(params[:creation_ui_position].to_i, A_TYPE_CREATION_UI_POSITION)
+        @obj.add_attr(params['creation_ui_position'].to_i, A_TYPE_CREATION_UI_POSITION)
       end
 
       # Labelling (root only)
       if @parent_type_desc == nil
         # Base labels
-        params[:base_labels].split(',').map { |r| KObjRef.from_presentation(r) } .compact.each do |label_ref|
+        params['base_labels'].split(',').map { |r| KObjRef.from_presentation(r) } .compact.each do |label_ref|
           @obj.add_attr(label_ref, A_TYPE_BASE_LABEL)
         end
         # Applicable labels
-        applicable_labels = params[:applicable_labels].split(',').map { |r| KObjRef.from_presentation(r) } .compact
+        applicable_labels = params['applicable_labels'].split(',').map { |r| KObjRef.from_presentation(r) } .compact
         applicable_labels.each do |label_ref|
           @obj.add_attr(label_ref, A_TYPE_APPLICABLE_LABEL)
         end
-        default_applicable_label = KObjRef.from_presentation(params[:default_applicable_label])
+        default_applicable_label = KObjRef.from_presentation(params['default_applicable_label'])
         if default_applicable_label
           @obj.add_attr(default_applicable_label, A_TYPE_LABEL_DEFAULT)
         end
         
         # Labelling attributes
-        if params.has_key?(:labelling_attr)
-          params[:labelling_attr].each_key do |adesc|
+        if params.has_key?('labelling_attr')
+          params['labelling_attr'].each_key do |adesc|
             if adesc.to_i != 0
               attr_ref = KObjRef.from_desc(adesc.to_i)
               @obj.add_attr(attr_ref, A_TYPE_LABELLING_ATTR)
@@ -257,14 +260,14 @@ class Setup_TypeController < ApplicationController
 
       # TODO: Validate information for saved type (match some validation in the JS code)
 
-      if params[:id] == 'new'
+      if params['id'] == 'new'
         KObjectStore.create(@obj)
       else
         KObjectStore.update(@obj)
       end
 
       @type_is_classification = has_classification_behaviour?(@obj)
-      if (params[:id] == 'new') || (was_behaviour_classification != @type_is_classification)
+      if (params['id'] == 'new') || (was_behaviour_classification != @type_is_classification)
         # Reload the submenu if it's a new object, or it's classification behaviour changed
         render :action => 'show_reload_submenu'
       else

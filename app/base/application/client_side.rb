@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # The application sends a lot of resources to the browser, but a different set for everything.
@@ -52,7 +55,7 @@ class ApplicationController
 
   # Generate the HTML for the script and link tags needed to include all the plugin resources
   def client_side_resources_plugin_html()
-    html = ''
+    html = ''.dup
     if @client_side_resources_plugin != nil
       @client_side_resources_plugin.each do |kind, pathname|
         if kind == :css

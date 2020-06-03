@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Separate out these utilities into another module
@@ -13,7 +16,7 @@ module LatestUtils
   # Find selected requests for a user
   def requests_by(user)
     # This could probably be written more efficiently
-    requests = LatestRequest.find_all_relevant_to_user(user)
+    requests = LatestRequest.where_relevant_to_user(user).select()
     uid = user.id
     user_reqs = Hash.new
     group_reqs = Hash.new
@@ -78,7 +81,7 @@ module LatestUtils
       # Send a month's worth on the specified day
       if target_day == base_time.mday
         # Move back a month
-        b = base_time.months_ago(1)
+        b = base_time.to_datetime.prev_month.to_time
         start_time = Time.local(b.year, b.month, latest_capped_mday(b, settings_day_of_month), b.hour, b.min)
       end
     end
@@ -130,15 +133,15 @@ module LatestUtils
   # Handle the settings form -- used by LatestController and
   def latest_settings_form_for_user(user, redirect_on_submit_to, dont_save = false)
     if request.post? && !dont_save
-      format = params[:format]
+      format = params['format']
       if format != nil
         UserData.set(user, UserData::NAME_LATEST_EMAIL_FORMAT, format.to_i)
       end
-      swhen = params[:when]
+      swhen = params['when']
       if swhen != nil
-        workdays = (params.has_key?(:workdays_only)) ? 1 : 0
+        workdays = (params.has_key?('workdays_only')) ? 1 : 0
         UserData.set(user, UserData::NAME_LATEST_EMAIL_SCHEDULE,
-          "#{swhen.to_i}:#{workdays}:#{params[:day_of_week].to_i}:#{params[:day_of_month].to_i}")
+          "#{swhen.to_i}:#{workdays}:#{params['day_of_week'].to_i}:#{params['day_of_month'].to_i}")
       end
       redirect_to redirect_on_submit_to
       return

@@ -38,7 +38,7 @@ public class KObjRef extends KScriptable {
     }
 
     static public KObjRef fromAppObjRef(AppObjRef ref) {
-        return (KObjRef)Runtime.createHostObjectInCurrentRuntime("$Ref", ref.objId());
+        return (KObjRef)Runtime.createHostObjectInCurrentRuntime("$Ref", ref.obj_id());
     }
 
     static public KObjRef fromId(Integer id) {

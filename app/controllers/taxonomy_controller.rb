@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class TaxonomyController < ApplicationController
@@ -19,7 +22,7 @@ class TaxonomyController < ApplicationController
   def handle_new
     # Build a nice template root object to present to the user
     schema = KObjectStore.schema
-    @type_ref = KObjRef.from_presentation(params[:id])
+    @type_ref = KObjRef.from_presentation(params['id'])
     @type_desc = schema.type_descriptor(@type_ref)
     raise "Bad new URL" unless @type_ref && @type_desc && @type_desc.is_classification? && @type_desc.is_hierarchical?
     @template_root = KObject.new
@@ -40,7 +43,7 @@ class TaxonomyController < ApplicationController
 
   _PoliciesRequired :not_anonymous
   def handle_edit
-    @objref = KObjRef.from_presentation(params[:id])
+    @objref = KObjRef.from_presentation(params['id'])
     ok = (@objref != nil)
     if ok
       @taxonomy = KObjectStore.read(@objref)
@@ -53,7 +56,7 @@ class TaxonomyController < ApplicationController
     # Tree source for the taxonomy
     # Use :schema_user_version not :schema_version because this is the one which gets updated for subjects
     url = "/api/taxonomy/fetch?v=#{KApp.global(:schema_user_version)}&"
-    @selected = params.has_key?(:s) ? KObjRef.from_presentation(params[:s]) : nil
+    @selected = params.has_key?('s') ? KObjRef.from_presentation(params['s']) : nil
     @treesource = ktreesource_generate(KObjectStore.store, url, @objref, @taxonomy.first_attr(A_TYPE),
       (@selected != nil) ? [@selected] : nil)
   end
@@ -61,9 +64,9 @@ class TaxonomyController < ApplicationController
   _PostOnly
   _PoliciesRequired :not_anonymous
   def handle_move
-    @root_objref = KObjRef.from_presentation(params[:id])
-    @node_objref = KObjRef.from_presentation(params[:move])
-    @dest_parent_objref = KObjRef.from_presentation(params[:to])
+    @root_objref = KObjRef.from_presentation(params['id'])
+    @node_objref = KObjRef.from_presentation(params['move'])
+    @dest_parent_objref = KObjRef.from_presentation(params['to'])
     # TODO: Check @node_objref and @dest_parent_objref have correct parents when moving taxonomy?
     # Rewrite parent
     obj = KObjectStore.read(@node_objref).dup
@@ -83,7 +86,7 @@ class TaxonomyController < ApplicationController
   _PostOnly
   _PoliciesRequired :not_anonymous
   def handle_check_delete_api
-    @objref = KObjRef.from_presentation(params[:id])
+    @objref = KObjRef.from_presentation(params['id'])
     @obj = KObjectStore.read(@objref)
     delstate = term_deletable_state(@obj)
     template_name = case delstate
@@ -100,7 +103,7 @@ class TaxonomyController < ApplicationController
   _PostOnly
   _PoliciesRequired :not_anonymous
   def handle_delete_term_api
-    @objref = KObjRef.from_presentation(params[:id])
+    @objref = KObjRef.from_presentation(params['id'])
     @obj = KObjectStore.read(@objref)
     if term_deletable_state(@obj) == :deletable
       # Find and delete all children

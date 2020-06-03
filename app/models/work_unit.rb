@@ -1,19 +1,89 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-class WorkUnit < ActiveRecord::Base
+
+class WorkUnit < MiniORM::Record
   include KPlugin::HookSite
   include Java::OrgHaploJsinterfaceApp::AppWorkUnit
-  composed_of :objref, :allow_nil => true, :class_name => 'KObjRef', :mapping => [[:obj_id,:obj_id]]
-  belongs_to :created_by,     :class_name => 'User', :foreign_key => 'created_by_id'
-  belongs_to :actionable_by,  :class_name => 'User', :foreign_key => 'actionable_by_id'
-  belongs_to :closed_by,      :class_name => 'User', :foreign_key => 'closed_by_id'
 
   MAX_OPENED_AT_IN_FUTURE_FOR_NOTIFICATION = (12*60*60)
+
+  # -------------------------------------------------------------------------
+
+  table :work_units do |t|
+    t.column :text,       :work_type
+    t.column :boolean,    :visible
+    t.column :boolean,    :auto_visible
+    t.column :timestamp,  :created_at
+    t.column :timestamp,  :opened_at
+    t.column :timestamp,  :deadline,          nullable:true
+    t.column :timestamp,  :closed_at,         nullable:true
+    t.column :int,        :created_by_id
+    t.column :int,        :actionable_by_id
+    t.column :int,        :closed_by_id,      nullable:true
+    t.column :objref,     :objref,            nullable:true, db_name:'obj_id'
+    t.tags_column_and_where_clauses
+    t.column :json_on_text, :data_json,       nullable:true, db_name:'data', property:'data'
+
+    t.order :id, 'id'
+    t.order :stable_created_at, 'created_at DESC,id DESC'
+
+    t.where :is_actionable_by_user, 'actionable_by_id = ANY (?)', :int_array
+    t.where :visible_open_actionable_by_user, 'closed_at IS NULL AND actionable_by_id = ANY (?) AND visible=TRUE', :int_array
+    t.where :opened_at_in_past, 'opened_at <= NOW()'
+    t.where :opened_at_in_future, 'opened_at > NOW()'
+    t.where :deadline_missed, 'deadline < NOW()'
+    t.where :is_open, 'closed_at IS NULL'
+    t.where :is_closed, 'closed_at IS NOT NULL'
+  end
+
+  def initialize
+    # Set defaults matching SQL table definition
+    @visible = true
+    @auto_visible = true
+  end
+
+  def before_save
+    self.created_at = Time.now if self.created_at.nil?
+    # When updating, if the actionable user changes, automatically make the work unit visible again
+    unless self.id.nil?
+      if self.auto_visible && self.attribute_changed?(:actionable_by_id)
+        self.visible = true
+      end
+    end
+    call_hook(:hPreWorkUnitSave) do |hooks|
+      hooks.run(self)
+    end
+    if @_js_object
+      Java::OrgHaploJsinterface::KWorkUnit.updateWorkUnit(@_js_object)
+    end
+  end
+
+  def after_create
+    self.auto_notify if self.actionable_by_id != AuthContext.user.id
+  end
+
+  def after_update
+    if self.attribute_changed?(:actionable_by_id) && (self.actionable_by_id != AuthContext.user.id)
+      self.auto_notify
+    end
+  end
+
+  def after_save
+    invalidate_work_unit_count_cache
+  end
+
+  def after_delete
+    invalidate_work_unit_count_cache
+  end
+
+  # -------------------------------------------------------------------------
 
   # Hide work units when the object becomes unreadable or deleted, if they're set for
   # automatic visibilty changes.
@@ -21,7 +91,7 @@ class WorkUnit < ActiveRecord::Base
     [:os_object_change, :update],
     [:os_object_change, :relabel]
   ]) do |name, detail, previous_obj, modified_obj, is_schema_object|
-    find_all_by_objref(modified_obj.objref).each do |work_unit|
+    WorkUnit.where(:objref => modified_obj.objref).each do |work_unit|
       if work_unit.auto_visible && !(work_unit.is_closed?)
         required_visibility = if modified_obj.deleted?
           false
@@ -35,25 +105,9 @@ class WorkUnit < ActiveRecord::Base
         end
         if work_unit.visible != required_visibility
           work_unit.visible = required_visibility
-          work_unit.save!
+          work_unit.save
         end
       end
-    end
-  end
-
-  # If the actionable user changes, automatically make the work unit visible again
-  before_update Proc.new { |wu|
-    if wu.auto_visible && wu.actionable_by_id_changed?
-      wu.visible = true
-    end
-  }
-
-  before_save do
-    call_hook(:hPreWorkUnitSave) do |hooks|
-      hooks.run(self)
-    end
-    if @_js_object
-      Java::OrgHaploJsinterface::KWorkUnit.updateWorkUnit(@_js_object)
     end
   end
 
@@ -62,6 +116,8 @@ class WorkUnit < ActiveRecord::Base
     delete_all_by_objref(modified_obj.objref)
   end
 
+  # -------------------------------------------------------------------------
+
   # Cache of counts of outstanding work units for each user, int user_id -> int count.
   USER_COUNT_CACHE = KApp.cache_register(
     SyncedLookupCache.factory(proc { |user_id| WorkUnit.count_actionable_by_user(user_id, :now) }),
@@ -69,9 +125,7 @@ class WorkUnit < ActiveRecord::Base
   )
   # Listen for any changes to users and invalidate - group changes affect work counts.
   KNotificationCentre.when(:user_modified) { KApp.cache(USER_COUNT_CACHE).clear }
-  # Invalidate it after any changes to a work unit
-  after_commit :invalidate_work_unit_count_cache
-  # after_commit
+  # Invalidate it after any changes to a work unit (see after_save above)
   def invalidate_work_unit_count_cache
     # Any commit, clear the cache -- not as simple as just the user id because it could be responded to by a group
     KApp.cache(USER_COUNT_CACHE).clear
@@ -83,34 +137,31 @@ class WorkUnit < ActiveRecord::Base
     proc { KApp.in_every_application { KApp.cache(WorkUnit::USER_COUNT_CACHE).clear } }
   )
 
+  # -------------------------------------------------------------------------
+
   # Count of outstanding work for a user
   def self.cached_count_actionable_now_by_user(user_id) # must be int
     KApp.cache(USER_COUNT_CACHE)[user_id.to_i]
   end
   def self.count_actionable_by_user(user, actionable_when = :now)
-    self.count(:conditions => conditions_for_actionable_by_user(user, actionable_when))
-  end
-
-  # Find all outstanding work for a user
-  def self.find_actionable_by_user(user, actionable_when)
-    find(:all, :conditions => conditions_for_actionable_by_user(user, actionable_when), :order => 'created_at,id')
+    where_actionable_by_user_when(user, actionable_when).count()
   end
 
   # Conditions will only find visible work units
-  def self.conditions_for_actionable_by_user(user, actionable_when)
+  def self.where_actionable_by_user_when(user, actionable_when)
     user = User.cache[user] if user.kind_of? Integer
-    c = "closed_at IS NULL AND actionable_by_id IN (#{(user.groups_ids + [user.id]).join(',')}) AND visible=TRUE"
+    q = where_visible_open_actionable_by_user(user.groups_ids + [user.id])
     case actionable_when
     when :now
-      c << ' AND opened_at <= NOW()'
+      q.where_opened_at_in_past()
     when :future
-      c << ' AND opened_at > NOW()'
+      q.where_opened_at_in_future()
     when :all
       # Nothing - retrieve all
     else
-      raise "Bad actionable_when for conditions_for_actionable_by_user"
+      raise "Bad actionable_when for where_actionable_by_user_when"
     end
-    c
+    q
   end
 
   def is_closed?
@@ -133,55 +184,23 @@ class WorkUnit < ActiveRecord::Base
   end
 
   def self.delete_all_by_objref(objref)
-    self.delete_all(:objref => objref)
+    where(:objref => objref).delete()
     KApp.cache(USER_COUNT_CACHE).clear
-  end
-
-  def data
-    @decoded_data ||= begin
-      json = read_attribute('data')
-      (json == nil || json == '') ? nil : JSON.parse(json)
-    end
-  end
-
-  def data=(new_data)
-    write_attribute('data', (new_data == nil) ? nil : JSON.generate(new_data))
-    @decoded_data = new_data.dup
-    new_data
-  end
-
-  # JavaScript data API
-  def jsGetDataRaw()
-    read_attribute('data')
-  end
-
-  def jsSetDataRaw(data)
-    write_attribute('data', data)
   end
 
   # JavaScript tags API
   def jsGetTagsAsJson()
-    hstore = read_attribute('tags')
+    hstore = self.tags
     hstore ? JSON.generate(PgHstore.parse_hstore(hstore)) : nil
   end
 
   def jsSetTagsAsJson(tags)
-    write_attribute('tags', tags ? PgHstore.generate_hstore(JSON.parse(tags)) : nil)
+    self.tags = tags ? PgHstore.generate_hstore(JSON.parse(tags)) : nil
   end
 
   def jsStoreJSObject(object)
     @_js_object = object
   end
-
-  # TODO: Can jsSetOpenedAt and jsSetDeadline be done better? Workaround for change from JRuby 1.5.3 -> 1.6.0
-  def jsSetOpenedAt(openedAt)
-    self.opened_at = Time.at(openedAt.getTime/1000)
-  end
-  def jsSetDeadline(deadline)
-    self.deadline = deadline ? Time.at(deadline.getTime/1000) : nil
-  end
-
-  KActiveRecordJavaInterface.make_jsset_methods(WorkUnit, :visible, :auto_visible, :created_by_id, :actionable_by_id, :closed_by_id, :obj_id)
 
   # ----------------------------------------------------------------------------------------------------------------
   #   Automatic notifications
@@ -189,14 +208,6 @@ class WorkUnit < ActiveRecord::Base
 
   # TODO: Revisit automatic notifications API, given that std_workflow reimplemented it, and the API is undocumented and not in the preferred new style
 
-  after_create Proc.new { |wu|
-    wu.auto_notify if wu.actionable_by_id != AuthContext.user.id
-  }
-  after_update Proc.new { |wu|
-    if wu.actionable_by_id_changed? && (wu.actionable_by_id != AuthContext.user.id)
-      wu.auto_notify
-    end
-  }
   def auto_notify
     return if self.is_closed?
     min_opened_at = Time.new + MAX_OPENED_AT_IN_FUTURE_FOR_NOTIFICATION
@@ -213,7 +224,7 @@ class WorkUnit < ActiveRecord::Base
     template = info["template"] ? EmailTemplate.where(:code => info["template"]).first : nil
     # Backwards compatible fallback to checking name
     template ||= info["template"] ? EmailTemplate.where(:name => info["template"]).first : nil
-    template ||= EmailTemplate.find(EmailTemplate::ID_DEFAULT_TEMPLATE)
+    template ||= EmailTemplate.read(EmailTemplate::ID_DEFAULT_TEMPLATE)
     return unless template
     template.deliver({
       :to => deliver_to,

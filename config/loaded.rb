@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Called after the application files are loaded.
@@ -42,15 +45,5 @@ if KInstallProperties.get(:register_mdns_hostnames) == 'yes'
   end
   KNotificationCentre.when(:applications, :changed) do
     MulticastDNSRegistration.update
-  end
-end
-
-# Turn off ActiveSupport's autoloader, as it's buggy and not thread-safe.
-module ActiveSupport::Dependencies::Loadable
-  def load(file, *)
-    super
-  end
-  def require(file, *)
-    super
   end
 end

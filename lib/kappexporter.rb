@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class KAppExporter
@@ -16,7 +19,6 @@ class KAppExporter
 
   def self.do_export(filename_base, options)
     raise 'No export filename specified' unless filename_base != nil && filename_base.length > 0
-    pg = KApp.get_pg_database
 
     # Get the remote console process for running commands so main server process doesn't have to fork
     remote_process = Console.remote_console_client
@@ -41,12 +43,11 @@ class KAppExporter
 
     hostnames = Array.new
     data["hostnames"] = hostnames
-    begin
+    KApp.with_pg_database do |pg|
       s = pg.exec("SELECT hostname FROM public.applications WHERE application_id=#{app_id}")
       s.each do |row|
         hostnames << row.first
       end
-      s.clear
     end
 
     data["serverClassificationTags"] = KInstallProperties.server_classification_tags

@@ -8,6 +8,8 @@ package org.haplo.jsinterface;
 
 import org.mozilla.javascript.*;
 
+import org.jruby.runtime.builtin.IRubyObject;
+
 import org.haplo.javascript.Runtime;
 import org.haplo.javascript.JsConvert;
 import org.haplo.javascript.OAPIException;
@@ -660,7 +662,7 @@ public class KObject extends KScriptable {
         if(value == null) {
             return null;
         } else if(value instanceof AppObjRef) {
-            return runtime.createHostObject("$Ref", ((AppObjRef)value).objId());
+            return runtime.createHostObject("$Ref", ((AppObjRef)value).obj_id());
         } else if(value instanceof AppText) {
             KText text = (KText)runtime.createHostObject("$KText");
             text.setText((AppText)value);
@@ -732,7 +734,7 @@ public class KObject extends KScriptable {
 
         public AppObject readObject(int objID);
         public AppObject readObjectVersion(int objID, int version);
-        public AppObject readObjectVersionAtTime(int objID, Object time);
+        public AppObject readObjectVersionAtTime(int objID, IRubyObject time);
 
         public AppObject updateObject(AppObject object, AppLabelChanges labelChanges);
 

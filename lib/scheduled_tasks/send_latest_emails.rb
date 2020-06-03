@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module KScheduledTasks
@@ -45,7 +48,7 @@ class LatestEmailSender
 
     templates = Hash.new
 
-    User.find(:all, :conditions => "kind=#{User::KIND_USER}").each do |user|
+    User.where(:kind => User::KIND_USER).each do |user|
 
       schedule = UserData.get(user, UserData::NAME_LATEST_EMAIL_SCHEDULE) || UserData::Latest::DEFAULT_SCHEDULE
       start_time = latest_start_time_for_email(schedule, base_time)
@@ -65,7 +68,7 @@ class LatestEmailSender
           email_format = (user.get_user_data(UserData::NAME_LATEST_EMAIL_FORMAT) == UserData::Latest::FORMAT_HTML) ? :html : :plain
 
           # Render objects
-          items = ''
+          items = ''.dup
           results.each do |obj|
             items << controller.render_obj(obj, :latest_email_html)
           end
@@ -79,7 +82,7 @@ class LatestEmailSender
           email_template_id = user.get_user_data(UserData::NAME_LATEST_EMAIL_TEMPLATE) || EmailTemplate::ID_LATEST_UPDATES
           email_template = templates[email_template_id]
           if email_template == nil
-            email_template = EmailTemplate.find(email_template_id)
+            email_template = EmailTemplate.read(email_template_id)
             templates[email_template_id] = email_template
           end
 

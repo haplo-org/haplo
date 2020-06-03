@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Exception for throwing errors which may be reported to the developer
@@ -118,7 +121,7 @@ class KJavaScriptPlugin < KPlugin
   def javascript_generate_global_js()
     # Load global.js file, if appropraite, set up prefix and suffix for wrapping loaded scripts.
     name = self.name
-    global_javascript = ''
+    global_javascript = ''.dup
     global_js = "#{@plugin_path}/global.js"
     if File.exist?(global_js)
       global_javascript = File.read(global_js)
@@ -143,7 +146,7 @@ class KJavaScriptPlugin < KPlugin
 
   def javascript_file_wrappers(schema_for_js_runtime)
     name = self.name
-    prefix = "(function(P"
+    prefix = "(function(P".dup
     loadargs = name.dup
     (@plugin_json["locals"] || {}).each do |k,v|
       # these values are checked, so can be trusted to be OK
@@ -480,14 +483,14 @@ class KJavaScriptPlugin < KPlugin
 
   PLUGIN_JSON_VERIFY = [
       PluginJSONVerify.new("pluginName", true, String),
-      PluginJSONVerify.new("restrictToApplicationId", false, Fixnum),
+      PluginJSONVerify.new("restrictToApplicationId", false, Integer),
       PluginJSONVerify.new("pluginAuthor", true, String),
-      PluginJSONVerify.new("pluginVersion", true, Fixnum),
+      PluginJSONVerify.new("pluginVersion", true, Integer),
       PluginJSONVerify.new("displayName", true, String),
       PluginJSONVerify.new("displayDescription", true, String),
-      PluginJSONVerify.new("apiVersion", true, Fixnum),
+      PluginJSONVerify.new("apiVersion", true, Integer),
       PluginJSONVerifyArray.new("depend", false, String),
-      PluginJSONVerify.new("loadPriority", false, Fixnum),
+      PluginJSONVerify.new("loadPriority", false, Integer),
       PluginJSONVerify.new("installSecret", false, String),
       PluginJSONVerifyLocals.new("locals", false),
       PluginJSONVerifyArrayOfFilenames.new("load", true),

@@ -77,6 +77,8 @@ Publication.respondToDirectory("/publication/response-kinds", function(E, contex
         var zip = O.zip.create("pub");
         zip.add(O.binaryData("DATA", {mimeType:"text/plain", filename:"test1.txt"}));
         E.response.body = zip;
+    } else if(kind === "stored-file") {
+        E.response.body = O.file("3442354441f857a2dd63ab43161fb5d4f9473927afbe39d5f9a8e1cb2ee4cc59"); // example3.pdf
     } else if(kind === "json") {
         E.response.kind = "json";
         E.response.body = JSON.stringify({"a":42});

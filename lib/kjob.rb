@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class KJob
@@ -77,12 +80,13 @@ class KJob
   # Call to queue the job for execution later
   # Will be run within the current pg transaction; if the transaction fails the job won't be run.
   def submit(delay_for = nil, queue = nil, retries_allowed = nil)
-    pg = KApp.get_pg_database
     serialised = Marshal.dump(self)
     job_queue = queue || self.default_queue
     state = AuthContext.state
     raise "Cannot submit job without AuthContext" unless state
-    pg.update("INSERT INTO public.jobs (application_id,user_id,auth_user_id,queue,retries_left,run_after,object) VALUES (#{KApp.current_application},#{state.user.id.to_i},#{state.auth_user.id.to_i},#{job_queue},#{retries_allowed || default_retries_allowed},NOW()+interval '#{delay_for || 0} seconds',E'#{PGconn.escape_bytea(serialised)}')")
+    KApp.with_pg_database do |db|
+      db.update("INSERT INTO public.jobs (application_id,user_id,auth_user_id,queue,retries_left,run_after,object) VALUES (#{KApp.current_application},#{state.user.id.to_i},#{state.auth_user.id.to_i},#{job_queue},#{retries_allowed || default_retries_allowed},NOW()+interval '#{delay_for || 0} seconds',E'#{PGconn.escape_bytea(serialised)}')")
+    end
 
     # Send a notification about an entry in the job queue, which causes the queue to be
     # triggered later at the end request checkpoint, or the end of the in_application block.
@@ -154,9 +158,7 @@ class KJob
     # Returns true if a job was processed (even if it errored)
     def run_next_job
       job_info = nil
-      KApp.in_application(:no_app) do
-        pg = KApp.get_pg_database
-
+      KApp.with_pg_database do |pg|
         db_retries = 10
         res = nil
         while res == nil && db_retries > 0
@@ -165,9 +167,9 @@ class KJob
             pg.perform("BEGIN ISOLATION LEVEL SERIALIZABLE")
             res = pg.exec(@next_job_sql)
             if res.length == 0
-              res.clear
               pg.perform('ROLLBACK')
-              return false  # nothing happened
+              res = nil
+              break # nothing happened
             end
             pg.perform('COMMIT')
           rescue
@@ -175,17 +177,15 @@ class KJob
             # update the same row and conflict.
             pg.perform('ROLLBACK')
             db_retries -= 1
-            res.clear if res != nil
             res = nil
             sleep((db_retries == 0) ? 100 : 1)  # throttle
           end
         end
-        # If an exception is returned every time, return saying that nothing happened.
-        return false if res == nil
-
-        job_info = res.result.first
-        res.clear
+        job_info = res.first if res
       end
+
+      # No job, or a repeated exception, return saying that nothing happened.
+      return false unless job_info
 
       job_id,application_id,user_id,auth_user_id,retries_left,serialised = job_info
       application_id = application_id.to_i
@@ -197,7 +197,7 @@ class KJob
         JOB_HEALTH_EVENTS.log_and_report_exception(e, 'deserialisation failed')
         KApp.logger.error("Deserialisation of job failed")
         KApp.in_application(:no_app) do
-          delete_job(job_id, KApp.get_pg_database)
+          delete_job(job_id)
         end
         return true   # did something
       end
@@ -215,7 +215,7 @@ class KJob
       begin
         KApp.in_application(application_id) do
           ms = AuthContext.with_user(User.cache[user_id.to_i], User.cache[auth_user_id.to_i]) do
-            Benchmark.ms do
+            KApp.execution_time_ms do
               job.run(context)
             end
           end
@@ -229,11 +229,9 @@ class KJob
       gave_up_on_job = false
 
       KApp.in_application(:no_app) do
-        pg = KApp.get_pg_database
-
         case context.status
         when :complete
-          delete_job(job_id, pg)
+          delete_job(job_id)
 
         when :failure
           JOB_HEALTH_EVENTS.log_and_report_exception(nil, 'job failed')
@@ -241,27 +239,31 @@ class KJob
           if retries_left.to_i <= 1
             # Can't do anything more
             gave_up_on_job = true
-            delete_job(job_id, pg)
+            delete_job(job_id)
           else
             # Mark it for retrying, and re-serialize the job so it can have updated state
             d = context.delay || DEFAULT_RETRY_DELAY
             @last_delay = d
-            pg.update("UPDATE public.jobs SET runner_pid=0,retries_left=(retries_left-1),run_after=NOW()+interval '#{d} seconds',object=E'#{PGconn.escape_bytea(Marshal.dump(job))}' WHERE id=#{job_id}")
+            KApp.with_pg_database do |db|
+              db.update("UPDATE public.jobs SET runner_pid=0,retries_left=(retries_left-1),run_after=NOW()+interval '#{d} seconds',object=E'#{PGconn.escape_bytea(Marshal.dump(job))}' WHERE id=#{job_id}")
+            end
           end
 
         when :fatal
           KApp.logger.error "Job fatal error: #{log_info}, message=\"#{context.log_message || '?'}\""
-          delete_job(job_id, pg)
+          delete_job(job_id)
 
         when :defer
           # Reserialise the job so it can update it's state
           d = context.delay || DEFAULT_RETRY_DELAY
           @last_delay = d
-          pg.update("UPDATE public.jobs SET runner_pid=0,run_after=NOW()+interval '#{d} seconds',object=E'#{PGconn.escape_bytea(Marshal.dump(job))}' WHERE id=#{job_id}")
+          KApp.with_pg_database do |db|
+            db.update("UPDATE public.jobs SET runner_pid=0,run_after=NOW()+interval '#{d} seconds',object=E'#{PGconn.escape_bytea(Marshal.dump(job))}' WHERE id=#{job_id}")
+          end
 
         else
           # If it returns anything, just delete it
-          delete_job(job_id, pg)
+          delete_job(job_id)
         end
       end
 
@@ -284,8 +286,10 @@ class KJob
       KApp.logger.flush_buffered
     end
 
-    def delete_job(job_id, pg)
-      pg.perform("DELETE FROM public.jobs WHERE id=#{job_id}")
+    def delete_job(job_id)
+      KApp.with_pg_database do |db|
+        db.perform("DELETE FROM public.jobs WHERE id=#{job_id.to_i}")
+      end
     end
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -367,29 +371,30 @@ class Console
   __E
   def jobs(app_id = nil)
     KApp.in_application(:no_app) do
-      db = KApp.get_pg_database
-      if app_id == nil
-        # List counts of jobs
-        r = db.exec("SELECT application_id,COUNT(id) FROM public.jobs GROUP BY application_id ORDER BY application_id")
-        puts "  APP_ID   COUNT"
-        total = 0
-        r.each do |application_id,count_s|
-          count = count_s.to_i
-          total += count
-          puts sprintf("  %-8d %-8d", application_id, count)
-        end
-        puts "(#{total} jobs queued)"
-      else
-        # List jobs for a particular application
-        r = db.exec("SELECT id,user_id,queue,retries_left,run_after,runner_pid,object FROM public.jobs WHERE application_id=$1 ORDER BY id", app_id)
-        puts "  JOBID  UID Q  RTL TID    RUNAFTER"
-        r.each do |id,user_id,queue,retries_left,run_after,runner_pid,object|
-          puts sprintf("  %-6d %-3d %-2d %-3d %-6d %s", id.to_i, user_id.to_i, queue.to_i, retries_left.to_i, runner_pid.to_i, run_after)
-          begin
-            job = Marshal.load(PGconn.unescape_bytea(object))
-            puts "    #{job.inspect}"
-          rescue => e
-            puts "  ** couldn't deserialise job"
+      KApp.with_pg_database do |db|
+        if app_id == nil
+          # List counts of jobs
+          r = db.exec("SELECT application_id,COUNT(id) FROM public.jobs GROUP BY application_id ORDER BY application_id")
+          puts "  APP_ID   COUNT"
+          total = 0
+          r.each do |application_id,count_s|
+            count = count_s.to_i
+            total += count
+            puts sprintf("  %-8d %-8d", application_id, count)
+          end
+          puts "(#{total} jobs queued)"
+        else
+          # List jobs for a particular application
+          r = db.exec("SELECT id,user_id,queue,retries_left,run_after,runner_pid,object FROM public.jobs WHERE application_id=$1 ORDER BY id", app_id)
+          puts "  JOBID  UID Q  RTL TID    RUNAFTER"
+          r.each do |id,user_id,queue,retries_left,run_after,runner_pid,object|
+            puts sprintf("  %-6d %-3d %-2d %-3d %-6d %s", id.to_i, user_id.to_i, queue.to_i, retries_left.to_i, runner_pid.to_i, run_after)
+            begin
+              job = Marshal.load(PGconn.unescape_bytea(object))
+              puts "    #{job.inspect}"
+            rescue => e
+              puts "  ** couldn't deserialise job"
+            end
           end
         end
       end

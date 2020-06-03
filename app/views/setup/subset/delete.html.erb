@@ -6,8 +6,8 @@
 
 <p>Really delete subset <b><%= h(title) %></b>?</p>
 
-<form method="post" action="/do/setup/subset/delete/<%= h(params[:id]) %>"><%= form_csrf_token %>
+<form method="post" action="/do/setup/subset/delete/<%= h(params['id'.freeze]) %>"><%= form_csrf_token %>
   <input type="submit" value="Delete subset">
 </form>
 
-<p><a href="/do/setup/subset">cancel</a></p>
+<p><a href="/do/setup/subset/show/<%= h(params['id'.freeze]) %>">cancel</a></p>

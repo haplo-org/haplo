@@ -1,4 +1,3 @@
-# coding: utf-8
 
 # Haplo Platform                                    https://haplo.org
 # (c) Haplo Services Ltd 2006 - 2017   https://www.haplo-services.com
@@ -15,7 +14,10 @@ class JavaScriptXMLRequestTest < IntegrationTest
     db_reset_test_data
 
     # Use an API key for authentication so CSRF token isn't required
-    api_key = ApiKey.new(:user => User.find(41), :path => '/', :name => 'test')
+    api_key = ApiKey.new
+    api_key.user_id = 41
+    api_key.path = '/'
+    api_key.name = 'test'
     api_key_secret = api_key.set_random_api_key
     api_key.save()
     auth_header = {"Authorization"=>"Basic "+["haplo:#{api_key_secret}"].pack('m').gsub(/\s/,'')}

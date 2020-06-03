@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class OAuthClient
@@ -73,7 +76,7 @@ class OAuthClient
     # Load credentials, build config
     conditions = {:kind => 'OAuth Identity Provider'}
     conditions[:name] = @service_name if @service_name
-    @credential = KeychainCredential.find(:first, :conditions => conditions, :order => :id)
+    @credential = KeychainCredential.where(conditions).order(:id).first()
     raise OAuthError.new('no_config') if @credential.nil?
 
     return_url = "#{KApp.url_base(:logged_in)}/do/authentication/oauth-rtx"
@@ -187,7 +190,7 @@ class OAuthClient
         begin
           pem = Java::OrgBouncycastleUtilIoPem::PemReader.new(certificate_stream).readPemObject()
           public_key_cache[key] = certificate_factory.generateCertificate(input_stream.new(pem.getContent()))
-        rescue Java::javaSecurityCert::CertificateException => e
+        rescue => e
           KApp.logger.log_exception(e)
           raise OAuthError.new('bad_cert', { 'message' => e.to_s})
         end
@@ -257,7 +260,7 @@ class OAuthClient
   end
 
   def authenticate(params)
-    details = decode_state(params[:state]) # validates state
+    details = decode_state(params['state']) # validates state
     raise OAuthError.new(params['error']) unless params['error'].nil?
 
     id_token = get_id_token_from_server(params)

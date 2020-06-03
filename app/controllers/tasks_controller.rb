@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class TasksController < ApplicationController
@@ -16,22 +19,22 @@ class TasksController < ApplicationController
     @workunits_deadline_near = Array.new
     @workunits_normal = Array.new
     @now = true
-    @work_units = WorkUnit.find_actionable_by_user(@request_user, :now)
+    @work_units = WorkUnit.where_actionable_by_user_when(@request_user, :now).select()
     prioritise_workunits
   end
 
   def handle_future
     @workunits_deadline_passed = Array.new
     @workunits_deadline_near = Array.new
-    @workunits_normal = WorkUnit.find_actionable_by_user(@request_user, :future)
+    @workunits_normal = WorkUnit.where_actionable_by_user_when(@request_user, :future).select()
     @showing_future_tasks = true
     render :action => 'index'
   end
 
   def prioritise_workunits
     @work_units.each do |work_unit|
-      today = Date.today
-      near = Date.today + NEAR_DEADLINE_DAYS
+      today = Time.now
+      near = Time.now + (NEAR_DEADLINE_DAYS*KFramework::SECONDS_IN_DAY)
       unless work_unit.deadline && work_unit.deadline < near
         @workunits_normal.push(work_unit)
       else

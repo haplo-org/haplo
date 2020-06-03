@@ -1,4 +1,3 @@
-# coding: utf-8
 
 # Haplo Platform                                     http://haplo.org
 # (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
@@ -111,16 +110,17 @@ class KObjectStoreTest < Test::Unit::TestCase
     # Check reads of unknown objects return nil
     assert_equal nil, KObjectStore.read(KObjRef.new(99999999))
     assert_equal nil, KObjectStore.history(KObjRef.new(99999999))
+    assert_equal nil, KObjectStore.labels_for_ref(KObjRef.new(99999999))
 
     # Check the stored objects doesn't include the lables
-    dbr = KApp.get_pg_database.exec("SELECT object,labels FROM os_objects WHERE id=#{obj.objref.obj_id}")
+    dbr = KApp.with_pg_database { |pg| pg.exec("SELECT object,labels FROM #{KApp.db_schema_name}.os_objects WHERE id=#{obj.objref.obj_id}") }
     assert_equal '{100}', dbr.first[1] # O_LABEL_UNLABELLED
     unmarshaled = Marshal.load(PGconn.unescape_bytea(dbr.first[0]))
     assert_equal nil, unmarshaled.labels
     assert_equal nil, unmarshaled.__send__(:instance_variable_get, :@labels)
 
     # Set some labels directly on the row in the database, then read the object, checking the labels updated
-    KApp.get_pg_database.perform("UPDATE os_objects SET labels='{8,5,10}'::int[] WHERE id=#{obj.objref.obj_id}")
+    KApp.with_pg_database { |pg| pg.perform("UPDATE #{KApp.db_schema_name}.os_objects SET labels='{8,5,10}'::int[] WHERE id=#{obj.objref.obj_id}") }
     retrieved2 = KObjectStore.read(obj.objref)
     assert retrieved2.frozen?
     assert_equal 1, retrieved2.version # doesn't change version
@@ -171,7 +171,7 @@ class KObjectStoreTest < Test::Unit::TestCase
     obj3_after_initial = obj3.dup
 
     # Check labels in database
-    dbr = KApp.get_pg_database.exec("SELECT labels FROM os_objects WHERE id=#{obj3.objref.obj_id}")
+    dbr = KApp.with_pg_database { |pg| pg.exec("SELECT labels FROM #{KApp.db_schema_name}.os_objects WHERE id=#{obj3.objref.obj_id}") }
     assert_equal '{89,128,2387}', dbr.first[0]
 
     # Change labels, update, check again
@@ -179,7 +179,7 @@ class KObjectStoreTest < Test::Unit::TestCase
     KObjectStore.update(obj3, KLabelChanges.new([4,1],[2387]))
     assert obj3.frozen?
     assert_equal 2, obj3.version
-    dbr = KApp.get_pg_database.exec("SELECT labels FROM os_objects WHERE id=#{obj3.objref.obj_id}")
+    dbr = KApp.with_pg_database { |pg| pg.exec("SELECT labels FROM #{KApp.db_schema_name}.os_objects WHERE id=#{obj3.objref.obj_id}") }
     assert_equal '{1,4,89,128}', dbr.first[0]
 
     # Check that you can't update from a pvrevious version
@@ -754,7 +754,7 @@ __E
     ## AS A SUITABLY LABELLED USER: Finds the telephone number
 
     # Become a user that the hooks return O_COMMON for
-    u = User.find(41) # User 41 from test fixture data
+    u = User.read(41) # User 41 from test fixture data
     assert u.permissions.allow?(:read, p.labels)
     original_state = AuthContext.set_user(u,u)
 
@@ -790,7 +790,7 @@ __E
     assert_equal [], query_result.map {|o| o.objref }
 
     # Become a user that the hooks return O_COMMON and O_CONFIDENTIAL for
-    u = User.find(43) # User 43 from test fixture data
+    u = User.read(43) # User 43 from test fixture data
     assert u.permissions.allow?(:read, p.labels)
     AuthContext.set_user(u,u)
 
@@ -824,7 +824,7 @@ __E
     ## AS NOBODY USER: Finds nothing
 
     # Become a user that the hooks return no labels for
-    u = User.find(42) # User 42 from test fixture data
+    u = User.read(42) # User 42 from test fixture data
     assert u.permissions.allow?(:read, p.labels)
     assert_equal [], u.attribute_restriction_labels
     AuthContext.set_user(u,u)
@@ -1140,7 +1140,6 @@ __E
     obj_creator = Array.new
     obj_modifier = Array.new
     obj_history = Array.new
-    db = KObjectStore.get_pgdb
     [
       0,1,0,2,1,0,1,1,2,3,0,0,1,1,0,2,2,3,0,1,1,3,4,5,6,3,5,4,6,4,6,6,6
     ].each do |obj_number|
@@ -1176,12 +1175,11 @@ __E
       assert_equal obj_modifier[obj_number], obj.last_modified_user_id
 
       # Check the os_objects table matches
-      r = db.exec("SELECT created_by,updated_by,version FROM os_objects WHERE id=#{objs[obj_number].objref.to_i}").result
+      r = KApp.with_pg_database { |db| db.exec("SELECT created_by,updated_by,version FROM #{KApp.db_schema_name}.os_objects WHERE id=#{objs[obj_number].objref.to_i}") }
       assert_equal 1, r.length
       assert_equal obj_creator[obj_number], r.first[0].to_i
       assert_equal obj_modifier[obj_number], r.first[1].to_i
       assert_equal obj_version[obj_number], r.first[2].to_i
-      r.clear
 
       # Check searching by user_id matches
       first_uid.upto(uid) do |user_id|
@@ -1208,7 +1206,7 @@ __E
       end
 
       # Check the history matches -- order by retired_by to get the array in time order
-      r = db.exec("SELECT version,created_by,updated_by,retired_by,labels FROM os_objects_old WHERE id=#{obj.objref.obj_id} ORDER BY retired_by").result
+      r = KApp.with_pg_database { |db| db.exec("SELECT version,created_by,updated_by,retired_by,labels FROM #{KApp.db_schema_name}.os_objects_old WHERE id=#{obj.objref.obj_id} ORDER BY retired_by") }
       history = Array.new
       r.each do |row|
         # Change labels into a UID
@@ -1217,7 +1215,6 @@ __E
         # Add to history
         history << row.map { |x| x.to_i }
       end
-      r.clear
       assert_equal obj_history[obj_number], history
 
       # Ask the store for history, check it matches our view
@@ -1229,7 +1226,7 @@ __E
         version_entry = store_history.versions[index]
         assert_equal version, version_entry.version
         assert_equal index + 1, version_entry.object.version
-        assert version_entry.update_time.kind_of? DateTime
+        assert version_entry.update_time.kind_of? Time
         assert_equal Time.now.year, version_entry.update_time.year
         assert_equal obj.objref, version_entry.object.objref
       end
@@ -1244,11 +1241,11 @@ __E
       end
 
       # Current version?
-      version_at_now = KObjectStore.read_version_at_time(obj.objref, DateTime.now)
+      version_at_now = KObjectStore.read_version_at_time(obj.objref, Time.now)
       assert_equal obj.objref, version_at_now.objref
       assert_equal obj_version[obj_number], version_at_now.version
       # No version a year ago
-      version_year_ago = KObjectStore.read_version_at_time(obj.objref, DateTime.now - 365)
+      version_year_ago = KObjectStore.read_version_at_time(obj.objref, Time.now - (365*KFramework::SECONDS_IN_DAY))
       assert_equal nil, version_year_ago
       # Reading version at creation time works with small adjustments
       [
@@ -1258,7 +1255,7 @@ __E
         [3,true],   # because it's in the future
         [-3,false,true]  # but not in the past
       ].each do |adjustment, should_find, check_is_version_1|
-        version_at_creation = KObjectStore.read_version_at_time(obj.objref, (obj.obj_creation_time + adjustment).to_datetime)
+        version_at_creation = KObjectStore.read_version_at_time(obj.objref, obj.obj_creation_time + adjustment)
         if should_find
           assert_equal obj.objref, version_at_creation.objref
           if check_is_version_1
@@ -1277,7 +1274,7 @@ __E
       # Check erase really erases everything
       counts_in_tables = Proc.new do |objref|
         ['os_objects', 'os_objects_old'].map do |table|
-          db.exec("SELECT COUNT(*) FROM #{table} WHERE id=#{objref.to_i}").first.first.to_i
+          KApp.with_pg_database { |db| db.exec("SELECT COUNT(*) FROM #{KApp.db_schema_name}.#{table} WHERE id=#{objref.to_i}").first.first.to_i }
         end
       end
       objref0 = objs[0].objref
@@ -1323,15 +1320,15 @@ __E
     assert_equal 6, obj.version
 
     # Hack the times in the database for testing, so it looks like an update every two days for the last 6 days
-    KApp.get_pg_database.perform "UPDATE os_objects_old SET updated_at=NOW() - (interval '1 day' * (6-version) * 2) WHERE id=#{obj.objref.to_i}"
+    KApp.with_pg_database { |pg| pg.perform "UPDATE #{KApp.db_schema_name}.os_objects_old SET updated_at=NOW() - (interval '1 day' * (6-version) * 2) WHERE id=#{obj.objref.to_i}" }
 
     # Read versions at the given time
     1.upto(6) do |version|
-      old_obj = KObjectStore.read_version_at_time(obj.objref, DateTime.now - (((5-version)*2)+1))
+      old_obj = KObjectStore.read_version_at_time(obj.objref, Time.now - ((((5-version)*2)+1)*KFramework::SECONDS_IN_DAY))
       assert_equal obj.objref, old_obj.objref
       assert_equal version, old_obj.version
     end
-    assert_equal nil, KObjectStore.read_version_at_time(obj.objref, DateTime.now - 16)
+    assert_equal nil, KObjectStore.read_version_at_time(obj.objref, Time.now - (16*KFramework::SECONDS_IN_DAY))
   end
 
   def test_schema
@@ -1923,7 +1920,7 @@ __E
     ].each do |ident, attrs|
       o = KObject.new()
       o.add_attr(ident, 4)
-      attrs.each { |s,a| o.add_attr(time_base.advance(:days => s), a) }
+      attrs.each { |s,a| o.add_attr((time_base + s*86400), a) } # 86400 = seconds in day
       o.add_attr('FINDTHIS',9) # something for the search to find
       KObjectStore.create(o)
       objs[ident] = o
@@ -1934,7 +1931,7 @@ __E
     # Adjust
     middle = objs[3].dup
     middle.delete_attrs!(A_DOCUMENT)
-    middle.add_attr(time_base.advance(:days => 30), A_DATE)
+    middle.add_attr((time_base + 30*86400), A_DATE)
     KObjectStore.update(middle)
     assert_equal [3,4,1,2,5,0], tdo_do_query()
   end
@@ -1952,7 +1949,7 @@ __E
     0.upto(30) do |day|
       o = KObject.new()
       o.add_attr(day, 4)
-      o.add_attr(time_base.advance(:days => day), A_DATE)
+      o.add_attr((time_base + day*86400), A_DATE)
       o.add_attr('FINDTHIS',9) # something for the search to find
       KObjectStore.create(o)
     end
@@ -1972,8 +1969,8 @@ __E
       # Query the store
       query = KObjectStore.query_and.free_text('FINDTHIS')
       query.constrain_to_time_interval(
-          (start_day != nil) ? time_base.advance(:days => start_day) : nil,
-          (end_day != nil)   ? time_base.advance(:days => end_day)   : nil
+          (start_day != nil) ? (time_base + start_day*86400) : nil,
+          (end_day != nil)   ? (time_base + end_day*86400)   : nil
         )
       results = query.execute(:all, :date_asc)
 
@@ -1994,10 +1991,10 @@ __E
 
     # Test constrained by update time query
     [
-      [nil, DateTime.now + 1, true],
-      [DateTime.now + 1, nil, false],
-      [DateTime.now - 4, DateTime.now + 4, true],
-      [DateTime.now + 4, DateTime.now + 8, false],
+      [nil, Time.now + KFramework::SECONDS_IN_DAY, true],
+      [Time.now + KFramework::SECONDS_IN_DAY, nil, false],
+      [Time.now - (4*KFramework::SECONDS_IN_DAY), Time.now + (4*KFramework::SECONDS_IN_DAY), true],
+      [Time.now + (4*KFramework::SECONDS_IN_DAY), Time.now + (8*KFramework::SECONDS_IN_DAY), false],
       [nil, nil, true]
     ].each do |start, endtime, haveresults|
       update_time_query = KObjectStore.query_and.free_text('FINDTHIS')
@@ -2094,7 +2091,7 @@ __E
   def test_datetime_ranges
     restore_store_snapshot("min")
     # Build some test data
-    base_date = DateTime.new(2010, 10, 23, 0, 0)
+    base_date = Time.new(2010, 10, 23, 0, 0)
     [
       # ident, offset start, offset end
       [0, 0, 10],
@@ -2109,8 +2106,8 @@ __E
       obj = KObject.new()
       obj.add_attr(ident, 4)
       obj.add_attr(KDateTime.new(
-        base_date.advance(:days => ostart),
-        base_date.advance(:days => oend - 1), # -1 because the KDateTime precision will go to the END of that day
+        base_date + (ostart * KFramework::SECONDS_IN_DAY),
+        base_date + ((oend - 1) * KFramework::SECONDS_IN_DAY), # -1 because the KDateTime precision will go to the END of that day
         'd'
       ), 5)
       obj.add_attr('FINDTHIS', 6)
@@ -2134,11 +2131,17 @@ __E
       [10, 10, [1,2,3,5]], # 0 isn't included because 10 is the top of the range
     ].each do |min_date, max_date, expected|
       q = KObjectStore.query_and.date_range(
-        (min_date != nil) ? base_date.advance(:days => min_date) : nil,
-        (max_date != nil) ? base_date.advance(:days => max_date) : nil)
+        (min_date != nil) ? (base_date + (min_date * KFramework::SECONDS_IN_DAY)) : nil,
+        (max_date != nil) ? (base_date + (max_date * KFramework::SECONDS_IN_DAY)) : nil)
       r = q.execute(:all, :any).map { |obj| obj.first_attr(4) } .sort
       assert_equal expected, r
     end
+
+    # DateTime can't be used
+    e = assert_raises(RuntimeError) { KObjectStore.query_and.date_range(DateTime.new(2012,2,1), nil) }
+    assert_equal 'DateRangeClause min value must be Time object', e.message
+    e = assert_raises(RuntimeError) { KObjectStore.query_and.date_range(nil, DateTime.new(2012,2,1)) }
+    assert_equal 'DateRangeClause max value must be Time object', e.message
   end
 
   # ---------------------
@@ -2235,6 +2238,13 @@ obj [O_LABEL_STRUCTURE] A_DESCRIPTION
   A_ATTR_SHORT_NAME 'x2'
   A_ATTR_DATA_TYPE  T_TEXT
 
+obj [O_LABEL_STRUCTURE] A_DOCUMENT
+  A_TYPE        O_TYPE_ATTR_DESC
+  A_TITLE       'Text'
+  A_ATTR_SHORT_NAME	'text'
+  A_ATTR_DATA_TYPE  T_TEXT_DOCUMENT
+  A_RELEVANCY_WEIGHT  750
+
 obj [O_LABEL_STRUCTURE] O_TYPE_APP_VISIBLE
   A_TITLE   "! Type of Thing"
 
@@ -2311,6 +2321,28 @@ _OBJS
     KObjectStore.update(o)
     run_outstanding_text_indexing :expected_work => true, :expected_reindex => true
     tarr_check('ww', 'obj2 obj1')
+
+    # Check reindexing will set expected number of reindex operations
+    KApp.with_pg_database do |db|
+      current_number_of_operations = Proc.new { db.exec("SELECT COUNT(*) FROM public.os_store_reindex WHERE app_id=$1", _TEST_APP_ID).first.first.to_i }
+      assert_equal 0, current_number_of_operations.call()
+
+      o = KObjectStore.read(KObjRef.from_desc(A_DESCRIPTION)).dup
+      o.delete_attrs!(A_RELEVANCY_WEIGHT)
+      o.add_attr(0,A_RELEVANCY_WEIGHT)
+      KObjectStore.update(o)
+      assert_equal 1, current_number_of_operations.call()
+
+      o = KObjectStore.read(KObjRef.from_desc(A_DOCUMENT)).dup
+      o.delete_attrs!(A_RELEVANCY_WEIGHT)
+      o.add_attr(1,A_RELEVANCY_WEIGHT)
+      KObjectStore.update(o)
+      assert_equal 2, current_number_of_operations.call()
+
+      # Reindex all removes the two outstanding jobs & replaces with one which covers all objects
+      KObjectStore.reindex_all_objects
+      assert_equal 1, current_number_of_operations.call()
+    end
   end
 
   def tarr_check(query_string, results)
@@ -2405,8 +2437,8 @@ _OBJS
   # ---------------------
 
   def test_term_inclusion_and_search_constraints
-    FileCacheEntry.destroy_all
-    StoredFile.destroy_all
+    destroy_all FileCacheEntry
+    destroy_all StoredFile
 
     # Get the app's schema loaded
     restore_store_snapshot("basic")
@@ -2501,7 +2533,8 @@ _OBJS
 
     # Test "any link" queries to find all books with an author
     alq = KObjectStore.query_and.link_to_any(A_AUTHOR).execute(:all, :title)
-    assert_equal authors.sum { |a| a.num_books }, alq.length
+    authors_sum = 0; authors.each { |a| authors_sum += a.num_books }
+    assert_equal authors_sum, alq.length
     alq_titles = alq.map { |o| o.first_attr(A_TITLE).to_s } .sort
     assert_equal authors.map { |a| a.book_names } .flatten.sort, alq_titles
     # Any link queries without desc should just return nothing, and not break
@@ -2911,11 +2944,20 @@ _OBJS
     assert ary1.include?(isbn2)
     assert ary1.include?(KIdentifierISBN.new('1902505840'))
     assert ! ary1.include?(KIdentifierISBN.new('0000000000'))
-    fs1 = KIdentifierFile.new(StoredFile.new(:digest => 'ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06', :size => 1823, :upload_filename => 'T.doc', :mime_type => 'text/plain'))
-    fs2 = KIdentifierFile.new(StoredFile.new(:digest => 'ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06', :size => 1823, :upload_filename => 'T.doc', :mime_type => 'text/rtf'))
+    fs1 = KIdentifierFile.new(tib_make_stored_file(:digest => 'ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06', :size => 1823, :upload_filename => 'T.doc', :mime_type => 'text/plain'))
+    fs2 = KIdentifierFile.new(tib_make_stored_file(:digest => 'ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06', :size => 1823, :upload_filename => 'T.doc', :mime_type => 'text/rtf'))
     assert fs1 != isbn1a
     assert fs1 == fs1
     assert fs1 != fs2
+  end
+
+  def tib_make_stored_file(a)
+    stored_file = StoredFile.new
+    stored_file.digest = a[:digest]
+    stored_file.size = a[:size]
+    stored_file.upload_filename = a[:upload_filename]
+    stored_file.mime_type = a[:mime_type]
+    stored_file
   end
 
   def test_identifier_searches
@@ -3311,7 +3353,7 @@ _OBJS
   def test_superuser_permissions_with_user_invalidation
     # Make sure the system which updates the object store permissions when users are invalidation doesn't lose superuser permissions
     db_reset_test_data
-    AuthContext.with_user(User.find(41)) do
+    AuthContext.with_user(User.read(41)) do
       assert_equal false, KObjectStore.superuser_permissions_active?
       KObjectStore.with_superuser_permissions do
         assert_equal true, KObjectStore.superuser_permissions_active?
@@ -3399,7 +3441,7 @@ _OBJS
     wst.add_attr(O_TYPE_BOOK, A_TYPE)
     wst.add_attr(" Pants stuff   ", A_TITLE)
     KObjectStore.create(wst)
-    wst_r = KApp.get_pg_database.exec("SELECT sortas_title FROM os_objects WHERE id=#{wst.objref.obj_id}").result
+    wst_r = KApp.with_pg_database { |pg| pg.exec("SELECT sortas_title FROM #{KApp.db_schema_name}.os_objects WHERE id=#{wst.objref.obj_id}") }
     assert_equal 'pants stuff', wst_r.first.first
   end
 
@@ -3426,7 +3468,7 @@ _OBJS
       [O_TYPE_FILE_BROCHURE, 3, 3],
       [O_TYPE_FILE_AUDIO, 8, 8]
     ]
-    total_objs = creations.map {|a,b,c| b }.sum
+    total_objs = 0; creations.each {|a,b,c| total_objs += b }
     filters = Array.new
     creations.each { |t,q,qs| filters << [[t],q,qs]}
     filters += [

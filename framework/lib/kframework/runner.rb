@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Implements the application server side of script/runner
@@ -35,23 +38,7 @@ end
 
 class Console
   # runner() isn't declared as a command, because it's intended for use with the script/runner script
-  def runner(remote_console_client, code)
-    success = false
-    begin
-      if remote_console_client # not passed by installer's use of runner
-        raise "Unexpected PID match" unless Process.pid != remote_console_client.test_remote_client(Dir.getwd)
-        Thread.current[:_remote_console_client] = remote_console_client
-      end
-      success = KFramework.run_arbitary_code(code)
-    ensure
-      Thread.current[:_remote_console_client] = nil
-    end
-    success
-  end
-
-  def self.remote_console_client
-    console_client = Thread.current[:_remote_console_client]
-    raise "No console client connected for this thread" unless console_client
-    console_client
+  def runner(code)
+    KFramework.run_arbitary_code(code)
   end
 end

@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class ApplicationController
@@ -25,19 +28,19 @@ class ApplicationController
   # -----------------------------------------------------------------------
   # Make a search specification suitable for perform_search_for_rendering() from a hash
   # Returns nil if nothing for a search is possible
-  def search_make_spec(from)
+  def search_make_spec(params)
     # Main query string
-    query_string = from[:q]
+    query_string = params['q']
     query_string = nil unless query_string != nil && query_string =~ /\S/
     # Search within string
-    search_within = from[:w]
+    search_within = params['w']
     search_within = nil unless search_within != nil && search_within =~ /\S/
     # Fields
     fields_string = nil
     fields_obj = nil
-    if from.has_key?(:f)
+    if params.has_key?('f')
       # Detokenise the results from the editor
-      fields_obj = search_detokenise_encoded_fields(from[:f])
+      fields_obj = search_detokenise_encoded_fields(params['f'])
       # Build a search string
       # Do this rather than building a query from the fields so that all the abilities of the query parser can be used
       schema = KObjectStore.schema
@@ -46,7 +49,7 @@ class ApplicationController
         attr_desc = schema.attribute_descriptor(desc)
         if attr_desc != nil
           items << if value.kind_of? KObjRef
-            v = "#L#{value.to_presentation}/d#{desc}"
+            v = "#L#{value.to_presentation}/d#{desc}".dup
             v << "/q#{qualifier}" if qualifier != nil
             v << "#"
             v
@@ -71,25 +74,25 @@ class ApplicationController
     spec[:q] = query_string if query_string != nil
     spec[:w] = search_within if search_within != nil
     if fields_string != nil
-      spec[:f] = from[:f]
+      spec[:f] = params['f']
       spec[:f_query] = fields_string
       spec[:f_obj] = fields_obj
     end
     # ... then add options
 
     # Sorting
-    sort = POSSIBLE_USER_SORT_OPTIONS[from[:sort]]
+    sort = POSSIBLE_USER_SORT_OPTIONS[params['sort']]
     spec[:sort] = sort if sort != nil
 
     # Subset
-    if from.has_key?(:subset)
-      subset_ref = KObjRef.from_presentation(from[:subset])
+    if params.has_key?('subset')
+      subset_ref = KObjRef.from_presentation(params['subset'])
       spec[:subset] = subset_ref if subset_ref != nil
     end
 
     # Type restriction
-    if from.has_key?(:type)
-      type_refs = from[:type].split(',')
+    if params.has_key?('type')
+      type_refs = params['type'].split(',')
       # First element might be '_' for filtering with types and subtypes
       with_subtypes = false
       if type_refs.length > 0 && type_refs.first == '_'
@@ -105,8 +108,8 @@ class ApplicationController
     end
 
     # Render style
-    if from.has_key?(:rs)
-      spec[:render_style] = from[:rs] if ALLOWED_SEARCH_RENDER_STYLE[from[:rs]]
+    if params.has_key?('rs')
+      spec[:render_style] = params['rs'] if ALLOWED_SEARCH_RENDER_STYLE[params['rs']]
     end
 
     # Make audit entry version of the spec, with just the minimum details
@@ -159,7 +162,7 @@ class ApplicationController
   # And a version for creating form parameters
   # -- slightly different, will exclude the :q parameter if asked
   def search_params_as_hidden(spec, *without)
-    p = ''
+    p = ''.dup
     p << %Q!<input type="hidden" name="subset" value="#{spec[:subset].to_presentation}">! if spec.has_key?(:subset) && !without.include?(:subset)
     p << %Q!<input type="hidden" name="sort" value="#{spec[:sort]}">! if spec.has_key?(:sort) && !without.include?(:sort)
     if spec.has_key?(:type) && !without.include?(:type)
@@ -191,13 +194,13 @@ class ApplicationController
     fields_items = Array.new
     obj.each do |value,desc,qualifier|
       attr_desc = schema.attribute_descriptor(desc)
-      i = "<i>"
+      i = "<i>".dup
       if attr_desc != nil
-        i << attr_desc.short_name.to_s
+        i << h(attr_desc.short_name.to_s)
         qual_desc = (qualifier == nil) ? nil : schema.qualifier_descriptor(qualifier)
         if qual_desc != nil
           i << '/'
-          i << qual_desc.short_name.to_s
+          i << h(qual_desc.short_name.to_s)
         end
         i << ':</i>'
         if value.kind_of? KObjRef
@@ -255,8 +258,8 @@ class ApplicationController
         return nil if store_query.empty?
 
         if is_calendar_style
-          # If we're doing a calendar, only show the events which are after the beginning of today (- an hour to avoid midnight issues)
-          store_query.and.date_range(1.hour.ago.beginning_of_day(), nil, A_DATE)
+          now = Time.now # only show the events which are after the beginning of today # TODO time zones for calendar searches
+          store_query.and.date_range(Time.new(now.year, now.month, now.day), nil, A_DATE)
         end
 
         # Make flags; use the search within query first so user can override flags in the search within field

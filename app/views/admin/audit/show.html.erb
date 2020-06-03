@@ -75,7 +75,7 @@
         <%= h(entry.labels._to_internal.join(' ')) %><br>
         <%= h(entry.remote_addr) %>
       </td>
-      <td colspan="4" class="z__management_audit_trail_json"><div><%= h(entry.read_attribute('data')) %></div></td>
+      <td colspan="4" class="z__management_audit_trail_json"><div><%= h(entry.data_json) %></div></td>
     </tr><%
   end
 %>

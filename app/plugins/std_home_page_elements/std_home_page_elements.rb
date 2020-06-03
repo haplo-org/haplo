@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class StdHomePageElementsPlugin < KTrustedPlugin
@@ -72,7 +75,7 @@ class StdHomePageElementsPlugin < KTrustedPlugin
       ie_version = $1.to_i
       if ie_version < CURRENT_INTERNET_EXPLORER_VERSION
         result.title = ''
-        result.html = '<div class="z__acknowledgment_notice"><div class="z__acknotice_message">'
+        result.html = '<div class="z__acknowledgment_notice"><div class="z__acknotice_message">'.dup
         if ie_version < FIRST_VAGUELY_ACCEPTABLE_INTERNET_EXPLORER_VERSION
           result.html << <<__E
             <p>You're running a very old version of Internet Explorer. Some things won't look quite right.</p>
@@ -93,10 +96,11 @@ __E
   def render_recent(controller, result, path, object, style, options)
     opts = decode_options(options)
     number_items = (opts['items'] || 5)
-    recent = AuditEntry.where_labels_permit(:read, AuthContext.user.permissions).where({:displayable => true, :kind => 'CREATE'}).
-      where("obj_id IS NOT NULL"). # for backwards compatibility with converted applications
+    recent = AuditEntry.where_labels_permit(:read, AuthContext.user.permissions).
+      where(:displayable => true, :kind => 'CREATE').
+      where_not_null(:objref). # for backwards compatibility with converted applications
       limit(number_items + 20). # +20 to allow for a few deletions
-      order('id DESC');
+      order(:id_desc)
     # TODO: It'd be lovely to load objects in bulk to avoid having to inefficiently load them one by one
     html = []
     recent.each do |entry|
@@ -120,7 +124,7 @@ __E
     quick_link_search = KObjectStore.query_and.link(O_TYPE_QUICK_LINK, A_TYPE)
     quick_link_search.add_exclude_labels([O_LABEL_STRUCTURE])
     quick_link_search.maximum_results(32)
-    html = '<div class="z__home_page_main_action_link">'
+    html = '<div class="z__home_page_main_action_link">'.dup
     quick_link_search.execute(:all, :title).each do |obj|
       title = obj.first_attr(KConstants::A_TITLE)
       url = obj.first_attr(KConstants::A_URL)
@@ -145,7 +149,7 @@ __E
     news_search.add_exclude_labels([O_LABEL_STRUCTURE])
     news_search.maximum_results(opts['items'] || 10)
     people_links = Hash.new
-    html = ''
+    html = ''.dup
     news_search.execute(:all, :date).each do |obj|
       render_options = {}
       # Generate posting link
@@ -198,8 +202,8 @@ __E
   def render_banners(controller, result, path, object, style, options)
     opts = decode_options(options)
     return unless opts["captions"].kind_of?(Array)
-    html = '<div id="z__home_page_banners" role="presentation">'
-    choosers = ''
+    html = '<div id="z__home_page_banners" role="presentation">'.dup
+    choosers = ''.dup
     opts["captions"].each_with_index do |caption, index|
       html << %Q!<div class="z__home_page_banner_container bbg#{index % NUM_BANNER_BACKGROUNDS}"!
       choosers << %Q!<a href="#banner#{index}" id="z__banner_chooser#{index}"!

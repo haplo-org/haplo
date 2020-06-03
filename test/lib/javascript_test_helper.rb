@@ -75,14 +75,15 @@ module JavaScriptTestHelper
           assert have_file_pipeline_temp_files?
         else
           # Implement just enough of the job runner to run the pipeline jobs in this thread and runtime
-          pg = KApp.get_pg_database
-          jobs = pg.exec("SELECT id,object FROM jobs WHERE queue=#{KJob::QUEUE_FILE_TRANSFORM_PIPELINE} AND application_id=#{_TEST_APP_ID}").result
-          assert_equal string.to_i, jobs.length
-          jobs.each do |id,serialised|
-            job = Marshal.load(PGconn.unescape_bytea(serialised))
-            context = KJob::Context.new
-            job.run(context)
-            pg.exec("DELETE FROM jobs WHERE id=#{id}")
+          KApp.with_pg_database do |pg|
+            jobs = pg.exec("SELECT id,object FROM public.jobs WHERE queue=#{KJob::QUEUE_FILE_TRANSFORM_PIPELINE} AND application_id=#{_TEST_APP_ID}")
+            assert_equal string.to_i, jobs.length
+            jobs.each do |id,serialised|
+              job = Marshal.load(PGconn.unescape_bytea(serialised))
+              context = KJob::Context.new
+              job.run(context)
+              pg.exec("DELETE FROM public.jobs WHERE id=#{id}")
+            end
           end
         end
       })
@@ -94,16 +95,16 @@ module JavaScriptTestHelper
   end
 
   def drop_all_javascript_db_tables
-    db = KApp.get_pg_database
-    sql = "SELECT table_schema,table_name FROM information_schema.tables WHERE table_schema='a#{KApp.current_application}' AND table_name LIKE 'j_%' ORDER BY table_name"
-    drop = "BEGIN; SET CONSTRAINTS ALL DEFERRED; "
-    r = db.exec(sql)
-    r.each do |table_schema,table_name|
-      drop << "DROP TABLE IF EXISTS #{table_name} CASCADE; " # IF EXISTS required because of CASCADE
+    KApp.with_pg_database do |db|
+      sql = "SELECT table_schema,table_name FROM information_schema.tables WHERE table_schema='a#{KApp.current_application}' AND table_name LIKE 'j_%' ORDER BY table_name"
+      drop = "BEGIN; SET CONSTRAINTS ALL DEFERRED; "
+      r = db.exec(sql)
+      r.each do |table_schema,table_name|
+        drop << "DROP TABLE IF EXISTS #{KApp.db_schema_name}.#{table_name} CASCADE; " # IF EXISTS required because of CASCADE
+      end
+      drop << "COMMIT"
+      db.perform(drop) if drop.include?('TABLE')
     end
-    r.clear
-    drop << "COMMIT"
-    db.perform(drop) if drop.include?('TABLE')
   end
 
   # -----------------------------------------------------------------------------------------------------------------

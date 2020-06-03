@@ -1,13 +1,19 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-# Copied from Rack, most deleted, choice bits retained
+
+# TODO: Is this the best place for this regex?
+K_EMAIL_VALIDATION_REGEX = /\A[a-zA-Z0-9!\#$%*\/?\|\^{}`~&'+=_\.-]+\@[a-zA-Z0-9-]+\.[a-zA-Z0-9\.-]+\z/
+
 
 class KFramework
+  # Copied from Rack, most deleted, choice bits retained
   # contains a grab-bag of useful methods for writing web
   # applications adopted from all kinds of Ruby libraries.
 
@@ -123,19 +129,6 @@ class KFramework
         gsub('"', "&quot;")
     end
     module_function :escape_html
-
-    # Return the bytesize of String; uses String#length under Ruby 1.8 and
-    # String#bytesize under 1.9.
-    if ''.respond_to?(:bytesize)
-      def bytesize(string)
-        string.bytesize
-      end
-    else
-      def bytesize(string)
-        string.size
-      end
-    end
-    module_function :bytesize
 
   end
 end

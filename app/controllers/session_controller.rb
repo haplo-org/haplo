@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 class SessionController < ApplicationController
   policies_required nil
@@ -13,7 +16,7 @@ class SessionController < ApplicationController
   # which is used to make guesses to improve the user experience.
   def handle_capability
     # Check the dimensions, then store the info in a cookie which signals that everything works
-    dimensions = params[:d]
+    dimensions = params['d']
     if dimensions != nil && dimensions =~ /\A\d+-\d+\z/
       # Set the cookie
       response.set_cookie({

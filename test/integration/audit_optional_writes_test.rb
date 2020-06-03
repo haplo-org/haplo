@@ -34,7 +34,8 @@ class AuditOptionalWritesTest < IntegrationTest
 
   def test_audit_optional_writes
     # Setup for tests
-    StoredFile.destroy_all
+    destroy_all FileCacheEntry
+    destroy_all StoredFile
     book0 = make_book("Book Zero")
     book0_url = "/#{book0.objref.to_presentation}/XX"
     book1 = make_book("Book One")
@@ -49,7 +50,7 @@ class AuditOptionalWritesTest < IntegrationTest
     xml_book = make_book("XML Book")
 
     # Login as one of the pre-defined users
-    assert_login_as(User.find(TEST_USER_ID),'password')
+    assert_login_as(User.read(TEST_USER_ID),'password')
     get_a_page_to_refresh_csrf_token
 
     # Reset so everything is clear

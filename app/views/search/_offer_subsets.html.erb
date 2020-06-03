@@ -1,10 +1,10 @@
 <%
   subsets = subsets_for_current_user
-  selected_subset = params[:subset]
+  selected_subset = params['subset'.freeze]
 -%>
 <% unless subsets.empty? -%>
   <div class="z__search_form_offered_subsets">
-    <span id="z__search_form_offered_subsets_label"><% if params[:action] == 'browse' %><%= @locale.text(:Search_View_Browse) %><% else %><%= @locale.text(:Search_View_Search_in) %><% end %></span> <select aria-labelledby="z__search_form_offered_subsets_label" name="subset" id="z__search_subset_selection">
+    <span id="z__search_form_offered_subsets_label"><% if params['action'.freeze] == 'browse' %><%= @locale.text(:Search_View_Browse) %><% else %><%= @locale.text(:Search_View_Search_in) %><% end %></span> <select aria-labelledby="z__search_form_offered_subsets_label" name="subset" id="z__search_subset_selection">
       <%
         subsets.each do |subset|
           ref = subset.objref.to_presentation

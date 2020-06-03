@@ -1,5 +1,5 @@
 <%
-  user = @api_key.user
+  user = User.read(@api_key.user_id)
   @page_title = h(@api_key.name) + ' for ' + h(user.name)
 %>
 
@@ -15,7 +15,7 @@
       <b>This is the only time the API key can be displayed.</b>
     </td></tr>
   <% else %>
-    <tr><th>API key</th><td><% if params.has_key?(:reveal) %>
+    <tr><th>API key</th><td><% if params.has_key?('reveal'.freeze) %>
         <%= h(@api_key.a) %>...
       <% else %>
         <i><a href="?reveal=1">Reveal partial API key</a></i>

@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 class AuthenticationController < ApplicationController
   include AuthenticationHelper
@@ -10,7 +13,7 @@ class AuthenticationController < ApplicationController
   include HardwareOTPHelper
   include KPlugin::HookSite
 
-  # NOTE: password, old, pw1, pw2 parameters filtered with KFRAMEWORK_LOGGING_PARAM_FILTER in environment.rb to keep passwords out of logs
+  # NOTE: password.* & otp_.* parameters filtered with KFRAMEWORK_LOGGING_PARAM_FILTER in environment.rb to keep passwords out of logs
 
   CSRF_NOT_REQUIRED_FOR_URLS = ['/do/authentication/support_login']
 
@@ -46,7 +49,7 @@ class AuthenticationController < ApplicationController
     # back to the login URL (which happens a suprisingly large number of times and can be
     # a little confusing for the user).
     if @request_user.policy.is_not_anonymous? && !(request.post?)
-      rdr = params[:rdr]
+      rdr = params['rdr']
       redirect_to(KSafeRedirect.checked(rdr, '/'))
       return
     end
@@ -55,8 +58,8 @@ class AuthenticationController < ApplicationController
     unless request.post?
       redirect_path = nil
       call_hook(:hLoginUserInterface) do |hooks|
-        rdr = params[:rdr]
-        redirect_path = hooks.run(KSafeRedirect.checked(rdr), params[:auth]).redirectPath
+        rdr = params['rdr']
+        redirect_path = hooks.run(KSafeRedirect.checked(rdr), params['auth']).redirectPath
       end
       if redirect_path
         redirect_to redirect_path
@@ -84,8 +87,8 @@ class AuthenticationController < ApplicationController
         # Redirect to request an OTP, storing the ID of the user for the pending login
         session[:pending_uid] = @logged_in_user.id
         session[:pending_was_autologin] = @was_autologin
-        redirect_to(if KSafeRedirect.is_safe?(params[:rdr])
-          "/do/authentication/otp?rdr=#{ERB::Util.url_encode(params[:rdr])}"
+        redirect_to(if KSafeRedirect.is_safe?(params['rdr'])
+          "/do/authentication/otp?rdr=#{ERB::Util.url_encode(params['rdr'])}"
         else
           '/do/authentication/otp'
         end)
@@ -117,14 +120,14 @@ class AuthenticationController < ApplicationController
     # Try auto-login
     @was_autologin = false
 
-    if request.post? && !(params.has_key?(:no_login))
+    if request.post? && !(params.has_key?('no_login'))
       if @logged_in_user == nil
         # Make the login attempt
         @login_attempted = true
         begin
-          @logged_in_user = User.login(params[:email], params[:password], request.remote_ip)
+          @logged_in_user = User.login(params['email'], params['password'], request.remote_ip)
           unless @logged_in_user
-            KNotificationCentre.notify(:authentication, :interactive_failure, {:email => params[:email].strip, :provider => 'localhost'})
+            KNotificationCentre.notify(:authentication, :interactive_failure, {:email => params['email'].strip, :provider => 'localhost'})
           end
         rescue KLoginAttemptThrottle::LoginThrottled => e
           # Nice message for throttled login attempts
@@ -138,10 +141,12 @@ class AuthenticationController < ApplicationController
   # Handle the OAuth return for OAuthClient, then ask plugins to do something with the returned data
   _PoliciesRequired nil
   def handle_oauth_rtx
-    if params.has_key? :state
+    if params.has_key?('state')
       oauth_client = nil
       begin
-        (oauth_client = OAuthClient.new).setup(session, params)
+        details = {}
+        details[:state] = params['state'] if params.has_key?('state')
+        (oauth_client = OAuthClient.new).setup(session, details)
         auth_info = oauth_client.authenticate(params)
         redirect_path = nil
         if auth_info
@@ -180,7 +185,7 @@ class AuthenticationController < ApplicationController
     end
     if request.post?
       @login_attempted = true
-      otp = params[:password].gsub(/\D/,'') # remove all non-digit letters
+      otp = params['otp_session'].gsub(/\D/,'') # remove all non-digit letters
       if otp.length > 5
         user = nil
         begin
@@ -213,18 +218,18 @@ class AuthenticationController < ApplicationController
   _PostOnly
   _PoliciesRequired nil
   def handle_support_login
-    if request.post? && params.has_key?(:secret) && params.has_key?(:reference) && params.has_key?(:user_id)
+    if request.post? && params.has_key?('secret') && params.has_key?('reference') && params.has_key?('user_id')
       # See if there's an active support request outstanding with this secret
-      secret1, secret2 = params[:secret].split(':', 2)
+      secret1, secret2 = params['secret'].split(':', 2)
       info = nil
       encoded = KTempDataStore.get(secret1, 'superuser_auth')
       if encoded != nil && encoded.class == String && (info = YAML::load(encoded)) != nil && secret1.length > 16 && secret2.length > 32 &&
-            info[:secret2] == secret2 && info[:app_id] == KApp.current_application && info[:uid] == params[:user_id].to_i
+            info[:secret2] == secret2 && info[:app_id] == KApp.current_application && info[:uid] == params['user_id'].to_i
         # Reset current session, create a new session
         session_reset
         session_create
         # Get the requested user, and set the session accordingly
-        user_to_login_as = User.find(info[:uid].to_i)
+        user_to_login_as = User.cache[info[:uid].to_i]
         raise "Bad user from support request" if user_to_login_as == nil
         session[:uid] = user_to_login_as.id.to_i
         # Redirect to home page
@@ -276,7 +281,7 @@ class AuthenticationController < ApplicationController
         (authenticated_user && authenticated_user.policy.can_impersonate_user?)
     raise "Impersonate not allowed for API keys" if @request_uses_api_key # TODO: Test to make sure impersonation isn't allowed for API keys
     if request.post?
-      impersonate_uid = params[:uid].to_i
+      impersonate_uid = params['uid'].to_i
       if impersonate_uid == 0
         # Nothing selected
         redirect_to '/do/authentication/impersonate'
@@ -286,11 +291,11 @@ class AuthenticationController < ApplicationController
         history = (session[:impersonate_history] ||= [])
         history.push(impersonate_uid) unless history.include?(impersonate_uid)
         session[:locale] = nil
-        rdr = params[:rdr]
+        rdr = params['rdr']
         redirect_to(KSafeRedirect.checked(rdr, '/'))
       end
     else
-      @users = User.find_all_by_kind(User::KIND_USER)
+      @users_query = User.where(:kind => User::KIND_USER).order(:lower_name)
     end
   end
 
@@ -345,15 +350,15 @@ class AuthenticationController < ApplicationController
     if request.post? && session[:uid] != nil
       @failed_change = true
 
-      @bad_old = ! (@request_user.password_check(params[:old]))
-      @not_match = (params[:pw1] != params[:pw2])
-      @bad_new = ! (User.is_password_secure_enough?(params[:pw1]))
+      @bad_old = ! (@request_user.password_check(params['password_old']))
+      @not_match = (params['password'] != params['password_2'])
+      @bad_new = ! (User.is_password_secure_enough?(params['password']))
 
       @failed_change = false unless @bad_old || @not_match || @bad_new
 
       unless @failed_change
-        @request_user.password = params[:pw1]
-        @request_user.save!
+        @request_user.password = params['password']
+        @request_user.save
         render :action => 'password_changed'
       end
     end
@@ -363,8 +368,8 @@ class AuthenticationController < ApplicationController
   _GetAndPost
   _PoliciesRequired nil
   def handle_recovery
-    if request.post? && params.has_key?(:email)
-      email = params[:email].gsub(/\s/,'')
+    if request.post? && params.has_key?('email')
+      email = params['email'].gsub(/\s/,'')
       if email =~ K_EMAIL_VALIDATION_REGEX
 
         # Is this enabled for this email address?
@@ -374,9 +379,9 @@ class AuthenticationController < ApplicationController
           return
         end
 
-        user_record = User.find_first_by_email(email)
+        user_record = User.where_lower_email(email.gsub(/\s+/,'')).where(:kind => User::KIND_USER).order(:id).first()
 
-        template = EmailTemplate.find(EmailTemplate::ID_PASSWORD_RECOVERY)
+        template = EmailTemplate.read(EmailTemplate::ID_PASSWORD_RECOVERY)
 
         if user_record == nil
           # Send an email explaining there isn't something at that address
@@ -407,24 +412,24 @@ class AuthenticationController < ApplicationController
   _GetAndPost
   _PoliciesRequired nil
   def handle_r # short link for recovery
-    user_record = User.get_user_for_recovery_token(params[:id])
+    user_record = User.get_user_for_recovery_token(params['id'])
     unless user_record
-      render(:action => ((params[:action] == 'welcome') ? 'bad_welcome' : 'bad_recovery'))
+      render(:action => ((params['action'] == 'welcome') ? 'bad_welcome' : 'bad_recovery'))
     else
       @user_first_name = user_record.name_first
       @user_id = user_record.id
       if request.post?
         # Check passwords
         @failed_change = true
-        @not_match = (params[:pw1] != params[:pw2])
-        @bad_new = ! (User.is_password_secure_enough?(params[:pw1]))
+        @not_match = (params['password'] != params['password_2'])
+        @bad_new = ! (User.is_password_secure_enough?(params['password']))
         @failed_change = false unless @not_match || @bad_new
         # Change it?
         unless @failed_change
-          user_record.password = params[:pw1]
+          user_record.password = params['password']
           user_record.recovery_token = nil    # stop the link from working again
-          user_record.save!
-          if params[:action] == 'welcome'
+          user_record.save
+          if params['action'] == 'welcome'
             # Welcome email gets a special page
             @email = user_record.email
             render(:action => 'welcome_done')
@@ -446,6 +451,6 @@ class AuthenticationController < ApplicationController
 
 private
   def do_redirect_to_destination
-    redirect_to KSafeRedirect.checked(params[:rdr], '/')
+    redirect_to KSafeRedirect.checked(params['rdr'], '/')
   end
 end

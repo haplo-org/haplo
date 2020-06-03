@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 # Haplo Platform                                    https://haplo.org
-# (c) Haplo Services Ltd 2006 - 2018   https://www.haplo-services.com
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # NOTE: This is not a normal ApplicationController because it needs direct access to the Java
@@ -11,21 +14,21 @@ class Saml2ServiceProviderController
 
   include KPlugin::HookSite
 
-  ADFS_KEYCHAIN_CRED_KIND = "SAML2 Identity Provider".freeze
-  ADFS_KEYCHAIN_CRED_INSTANCE_KIND = "AD FS".freeze
+  ADFS_KEYCHAIN_CRED_KIND = "SAML2 Identity Provider"
+  ADFS_KEYCHAIN_CRED_INSTANCE_KIND = "AD FS"
 
-  ADFS_KEYCHAIN_CRED_IDP_SSO_SERVICE_URL = "IdP SSO Service URL".freeze
-  ADFS_KEYCHAIN_CRED_IDP_ENTITYID = "IdP Entity ID".freeze
-  ADFS_KEYCHAIN_CRED_IDP_METADATA_URL = "IdP Metadata URL".freeze
-  ADFS_KEYCHAIN_CRED_IDP_LOGOUT_SERVICE_URL = "IdP Sign-Out URL".freeze
-  ADFS_KEYCHAIN_CRED_OPTIONS = "Options".freeze
-  ADFS_KEYCHAIN_CRED_IDP_X509CERT = "IdP x509 Certificate".freeze
+  ADFS_KEYCHAIN_CRED_IDP_SSO_SERVICE_URL = "IdP SSO Service URL"
+  ADFS_KEYCHAIN_CRED_IDP_ENTITYID = "IdP Entity ID"
+  ADFS_KEYCHAIN_CRED_IDP_METADATA_URL = "IdP Metadata URL"
+  ADFS_KEYCHAIN_CRED_IDP_LOGOUT_SERVICE_URL = "IdP Sign-Out URL"
+  ADFS_KEYCHAIN_CRED_OPTIONS = "Options"
+  ADFS_KEYCHAIN_CRED_IDP_X509CERT = "IdP x509 Certificate"
 
-  ADFS_KEYCHAIN_CRED_SP_X509CERT = "SP x509 Certificate".freeze
-  ADFS_KEYCHAIN_CRED_SP_PRIVATEKEY = "SP Private Key".freeze
+  ADFS_KEYCHAIN_CRED_SP_X509CERT = "SP x509 Certificate"
+  ADFS_KEYCHAIN_CRED_SP_PRIVATEKEY = "SP Private Key"
 
-  ADFS_KEYCHAIN_CRED_ERROR_MESSAGE = "Error Help Message".freeze
-  ADFS_KEYCHAIN_CRED_ERROR_MESSAGE__DEFAULT_TEXT = "If this problem persists, please contact your system administrator.".freeze
+  ADFS_KEYCHAIN_CRED_ERROR_MESSAGE = "Error Help Message"
+  ADFS_KEYCHAIN_CRED_ERROR_MESSAGE__DEFAULT_TEXT = "If this problem persists, please contact your system administrator."
 
   ADFS_KEYCHAIN_VALID_NAME_REGEXP = /\A[a-zA-Z0-9\.-]+\z/
   
@@ -268,10 +271,11 @@ class Saml2ServiceProviderController
     # Usually x509cert and privateKey of the SP are provided by files placed at
     # the certs folder. But we can also provide them with the following parameters
 
-    conditions = {:kind => ADFS_KEYCHAIN_CRED_KIND, :instance_kind => ADFS_KEYCHAIN_CRED_INSTANCE_KIND}
-    conditions[:name] = sp_name
-
-    credential = KeychainCredential.find(:first, :conditions => conditions, :order => :id)
+    credential = KeychainCredential.where(
+        :kind => ADFS_KEYCHAIN_CRED_KIND,
+        :instance_kind => ADFS_KEYCHAIN_CRED_INSTANCE_KIND,
+        :name => sp_name
+      ).order(:id).first()
 
     # If we couldn't find any credentials with the given name, return nil
     if credential.nil?

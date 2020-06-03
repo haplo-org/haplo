@@ -1,4 +1,3 @@
-# coding: utf-8
 
 # Haplo Platform                                     http://haplo.org
 # (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
@@ -82,30 +81,33 @@ class StringEncodingTest < Test::Unit::TestCase
     assert_equal Encoding::UTF_8, utf8_string.encoding
     utf8_string_quoted = %Q!\\"Test\\" \\'string\\': ☃✓!
     assert_equal Encoding::UTF_8, utf8_string_quoted.encoding
+    utf8_string_ascii_range = 'Test String'
+    assert_equal Encoding::UTF_8, utf8_string_ascii_range.encoding
 
-    # ActiveRecord
-    ud = UserData.new(:user_id => 0, :data_name => 9999, :data_value => utf8_string)
-    ud.save!
-    from_db = UserData.find(ud.id)
+    # MiniORM
+    ud = UserData.new; ud.user_id = 0; ud.data_name = 9999; ud.data_value = utf8_string
+    ud.save
+    from_db = UserData.read(ud.id)
     assert ! ud.equal?(from_db)
     assert Encoding::UTF_8, from_db.data_value.encoding
     assert_equal utf8_string, from_db.data_value
-    ud.destroy
+    ud.delete
 
     # Ancient-postgres-gem compatibility wrapper
-    pg = KApp.get_pg_database
-    check_stored_data = Proc.new do
-      results = pg.exec("SELECT value_string FROM app_globals WHERE key='string_coding_test'")
-      from_pg = results.first.first
-      assert_equal Encoding::UTF_8, from_pg.encoding
-      assert_equal utf8_string, from_pg
-      pg.perform("DELETE FROM app_globals WHERE key='string_coding_test'")
+    KApp.with_pg_database do |pg|
+      check_stored_data = Proc.new do
+        results = pg.exec("SELECT value_string FROM #{KApp.db_schema_name}.app_globals WHERE key='string_coding_test'")
+        from_pg = results.first.first
+        assert_equal Encoding::UTF_8, from_pg.encoding
+        assert_equal utf8_string, from_pg
+        pg.perform("DELETE FROM #{KApp.db_schema_name}.app_globals WHERE key='string_coding_test'")
+      end
+      pg.perform("DELETE FROM #{KApp.db_schema_name}.app_globals WHERE key='string_coding_test'")
+      pg.perform("INSERT INTO #{KApp.db_schema_name}.app_globals(key,value_string) VALUES('string_coding_test',E'#{utf8_string_quoted}')")
+      check_stored_data.call
+      pg.perform("INSERT INTO #{KApp.db_schema_name}.app_globals(key,value_string) VALUES('string_coding_test',$1)", utf8_string)
+      check_stored_data.call
     end
-    pg.perform("DELETE FROM app_globals WHERE key='string_coding_test'")
-    pg.perform("INSERT INTO app_globals(key,value_string) VALUES('string_coding_test',E'#{utf8_string_quoted}')")
-    check_stored_data.call
-    pg.perform("INSERT INTO app_globals(key,value_string) VALUES('string_coding_test',$1)", utf8_string)
-    check_stored_data.call
   end
 
   # -------------------------------------------------------------------------------------------
@@ -177,14 +179,24 @@ class StringEncodingTest < Test::Unit::TestCase
         assert_equal Encoding::US_ASCII, attrs_str[:digest].encoding
         assert_equal Encoding::ASCII_8BIT, attrs_bin[:digest].encoding
         # Correct encodings
-        identifier = KIdentifierFile.new(StoredFile.new(attrs_str))
+        stored_file = StoredFile.new
+        stored_file.digest = attrs[:digest]
+        stored_file.size = attrs[:size]
+        stored_file.upload_filename = attrs[:upload_filename]
+        stored_file.mime_type = attrs[:mime_type]
+        identifier = KIdentifierFile.new(stored_file)
         assert_equal Encoding::UTF_8, identifier.digest.encoding
         assert_equal Encoding::UTF_8, identifier.presentation_filename.encoding
         assert_equal Encoding::UTF_8, identifier.mime_type.encoding
-        assert identifier.size.kind_of?(Fixnum)
+        assert identifier.size.kind_of?(Integer)
         assert_equal 1234, identifier.size
         # Binary
-        assert_raises(RuntimeError) { KIdentifierFile.new(StoredFile.new(attrs_bin)) }
+        bin_file = StoredFile.new
+        bin_file.digest = attrs_bin[:digest]
+        bin_file.size = attrs_bin[:size]
+        bin_file.upload_filename = attrs_bin[:upload_filename]
+        bin_file.mime_type = attrs_bin[:mime_type]
+        assert_raises(RuntimeError) { KIdentifierFile.new(bin_file) }
 
       when KConstants::T_IDENTIFIER_POSTAL_ADDRESS
         components = ["1", "2", "3", "4", "5", "GB"].map { |x| x.force_encoding(Encoding::US_ASCII) }

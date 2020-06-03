@@ -1,12 +1,11 @@
-# coding: utf-8
+# frozen_string_literal: true
 
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#    -- to ensure Strings generated here are UTF-8
 
 class KText
   # Example use: search results
@@ -174,7 +173,7 @@ class KTextDocument < KText
     def text(text)
       return if @in_widget  # Ignore values in widgets!
       if @output == nil
-        @output = ''
+        @output = ''.dup
       else
         @output << ' '
       end
@@ -186,7 +185,7 @@ class KTextDocument < KText
     include REXML::StreamListener
     attr_reader :output
     def initialize(initial_tag_level)
-      @output = ''
+      @output = ''.dup
       @tag_level = initial_tag_level
     end
     def tag_start(name, attrs)
@@ -255,7 +254,7 @@ class KTextDocument < KText
       @block_element.text(text) if @block_element
     end
     def output
-      html = ''
+      html = ''.dup
       current_enclosing_tag = nil
       @output.each do |block_element|
         et = block_element.enclosing_tag
@@ -284,7 +283,7 @@ class KTextDocument < KText
       def initialize(name, chars_left)
         @chars_left = chars_left
         @name = name
-        @output = "<#{name}>"
+        @output = "<#{name}>".dup
         @enclosing_tag = (name == LIST_ITEM) ? 'ul' : nil
         @closing_tags = ["</#{name}>"]
       end
@@ -333,7 +332,6 @@ class KTextDocument < KText
 
     # Widget top level element, externally rendered, ignored by default
     class WidgetElement < Block
-      ALLOWED_NAMES = ["q", "sort", "style", "paged", "subset", "limit", "within", "html", "ref", "title", "name", "img", "caption", "size", "pos", "link"]
       def initialize(type, widget_renderer)
         @type = type
         @spec = {}
@@ -341,8 +339,7 @@ class KTextDocument < KText
       end
       def tag_start(name, attrs)
         if name == 'v'
-          a = attrs['name']
-          @attr = a.to_sym if ALLOWED_NAMES.include?(a)
+          @attr = attrs['name']
         end
       end
       def tag_end(name)
@@ -409,7 +406,7 @@ class KTextFormattedLine < KTextDocument
     attr_reader :output
     def initialize()
       @tag_level = 0
-      @output = ''
+      @output = ''.dup
     end
     def tag_start(name, attrs)
       @tag_level += 1
@@ -612,7 +609,7 @@ class KTextPersonName < KText
   end
 
   def encode(hash)
-    output = (SYMBOL_TO_CULTURE[hash[:culture]] || 'w').dup # dup to avoid corrupting constant
+    output = (SYMBOL_TO_CULTURE[hash[:culture]] || 'w').dup
     ordering = OUTPUT_ORDERING[hash[:culture]] || OUTPUT_ORDERING[:western]
     ordering.each do |k|
       value = hash[k]
@@ -653,19 +650,19 @@ class KTextPluginDefined < KText
   end
 
   def to_s
-    transform(:string) || (''.force_encoding(Encoding::UTF_8))
+    transform(:string) || (''.dup.force_encoding(Encoding::UTF_8))
   end
 
   def to_sortas_form
-    transform(:sortas, :string) || (''.force_encoding(Encoding::UTF_8))
+    transform(:sortas, :string) || (''.dup.force_encoding(Encoding::UTF_8))
   end
 
   def to_indexable
-    transform(:indexable, :string) || (''.force_encoding(Encoding::UTF_8))
+    transform(:indexable, :string) || (''.dup.force_encoding(Encoding::UTF_8))
   end
 
   def to_html
-    transform(:html) || (''.force_encoding(Encoding::UTF_8))
+    transform(:html) || (''.dup.force_encoding(Encoding::UTF_8))
   end
 
   def to_identifier_index_str

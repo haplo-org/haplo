@@ -10,7 +10,7 @@ class AuditEntryTest < Test::Unit::TestCase
 
   def setup
     db_reset_test_data
-    AuditEntry.delete_all
+    delete_all AuditEntry
     @expected_entries = 0
   end
 
@@ -28,31 +28,31 @@ class AuditEntryTest < Test::Unit::TestCase
       assert_equal 0, entry.user_id
       assert_equal 0, entry.auth_user_id
       assert_equal true, entry.displayable
-      assert_equal nil, entry.obj_id
+      assert_equal nil, entry.objref
       assert_equal nil, entry.data
     end
     # write sure it's not easy to modify
     entry0.kind = 'CHANGE'
-    assert_raises(RuntimeError) { entry0.save! }
+    assert_raises(RuntimeError) { entry0.save }
 
     # Objref support
     entry1 = AuditEntry.write(:kind => 'TEST2', :objref => KObjRef.new(8), :displayable => false)
     get_checked_next_entry() do |entry|
       assert_equal entry1.id, entry.id
-      assert_equal 8, entry.obj_id
+      assert_equal 8, entry.objref.obj_id
       assert entry.objref.kind_of? KObjRef
       assert_equal KObjRef.new(8), entry.objref
       assert_equal false, entry.displayable
     end
     AuditEntry.write(:kind => 'TEST2', :objref => KObjRef.new(9), :displayable => false) # a different ref
     get_checked_next_entry() {}
-    assert_equal 1, AuditEntry.where(:objref => KObjRef.new(8)).length
+    assert_equal 1, AuditEntry.where(:objref => KObjRef.new(8)).count()
 
     # Data attribute
     entry3 = AuditEntry.write(:kind => "TEST1", :objref => KObjRef.new(45), :data => {"hello" => "there"}, :displayable => true)
     get_checked_next_entry() do |entry|
       assert_equal entry3.id, entry.id
-      assert_equal '{"hello":"there"}', entry.read_attribute('data')
+      assert_equal '{"hello":"there"}', entry.data_json
       assert_equal "there", entry.data["hello"]
     end
 
@@ -73,15 +73,15 @@ class AuditEntryTest < Test::Unit::TestCase
     perms.statement(:op0, KLabelList.new([5,6]), KLabelList.new([7]))
     perms.statement(:op1, KLabelList.new([10]), KLabelList.new([]))
     perms.statement(:op2, KLabelList.new([6]), KLabelList.new([]))
-    labelq0 = AuditEntry.where_labels_permit(:op0, perms)
+    labelq0 = AuditEntry.where_labels_permit(:op0, perms).select()
     assert_equal 1, labelq0.length
     assert_equal entrylabelled0.id, labelq0[0].id
-    labelq1 = AuditEntry.where_labels_permit(:op1, perms)
+    labelq1 = AuditEntry.where_labels_permit(:op1, perms).select()
     assert_equal 1, labelq1.length
     assert_equal entrylabelled2.id, labelq1[0].id
-    labelq2 = AuditEntry.where_labels_permit(:op2, perms)
+    labelq2 = AuditEntry.where_labels_permit(:op2, perms).select()
     assert_equal 2, labelq2.length
-    labelq3 = AuditEntry.where_labels_permit(:op2, perms).where(:kind => "TEST2") # can chain other queries
+    labelq3 = AuditEntry.where_labels_permit(:op2, perms).where(:kind => "TEST2").select() # can chain other queries
     assert_equal 1, labelq3.length
     assert_equal entrylabelled1.id, labelq3[0].id # extra where clause worked
 
@@ -151,7 +151,9 @@ class AuditEntryTest < Test::Unit::TestCase
 
     # Check repeat supression with fake created at value so it is actually written
     r1_attrs = {:kind => 'TEST1', :displayable => true, :remote_addr => '1.3.4.5'}
-    AuditEntry.write(r1_attrs.merge(:created_at => '2013-01-01 00:00:00.00'))
+    AuditEntry.write(r1_attrs) do |e|
+      e.created_at = Time.new(2013,1,1)
+    end
     get_checked_next_entry() {}
     AuditEntry.write(r1_attrs) do |e|
       e.cancel_if_repeats_previous
@@ -219,7 +221,7 @@ class AuditEntryTest < Test::Unit::TestCase
   # -----------------------------------------------------------------------------------------------------
 
   def test_objectstore_auditing
-    restore_store_snapshot("basic"); AuditEntry.delete_all
+    restore_store_snapshot("basic")
 
     assert_audit_trail_is_empty
 
@@ -270,7 +272,7 @@ class AuditEntryTest < Test::Unit::TestCase
       assert_equal obj.objref, entry.objref
       assert_equal 2, entry.version
       assert_equal true, entry.displayable
-      assert_equal '{"old":[5,6]}', entry.read_attribute('data')
+      assert_equal '{"old":[5,6]}', entry.data_json
       assert_equal KLabelList.new([5,10]), entry.labels
     end
 
@@ -280,7 +282,7 @@ class AuditEntryTest < Test::Unit::TestCase
       assert_equal "RELABEL", entry.kind
       assert_equal true, entry.displayable
       assert_equal 2, entry.version
-      assert_equal '{"old":[5,10],"delete":true}', entry.read_attribute('data')
+      assert_equal '{"old":[5,10],"delete":true}', entry.data_json
       assert_equal KLabelList.new([5,10,O_LABEL_DELETED]), entry.labels
     end
     obj = KObjectStore.relabel(obj, KLabelChanges.new([],[O_LABEL_DELETED])).dup
@@ -288,7 +290,7 @@ class AuditEntryTest < Test::Unit::TestCase
       assert_equal "RELABEL", entry.kind
       assert_equal 2, entry.version
       assert_equal true, entry.displayable
-      assert_equal %Q!{"old":[5,10,#{O_LABEL_DELETED.to_i}],"delete":false}!, entry.read_attribute('data')
+      assert_equal %Q!{"old":[5,10,#{O_LABEL_DELETED.to_i}],"delete":false}!, entry.data_json
       assert_equal KLabelList.new([5,10]), entry.labels
     end
 
@@ -299,7 +301,7 @@ class AuditEntryTest < Test::Unit::TestCase
       assert_equal obj.objref, entry.objref
       assert_equal 2, entry.version
       assert_equal true, entry.displayable
-      assert_equal nil, entry.read_attribute('data')
+      assert_equal nil, entry.data_json
       assert_equal KLabelList.new([5,10]), entry.labels
     end
 
@@ -325,10 +327,10 @@ class AuditEntryTest < Test::Unit::TestCase
     end
 
     # When objects with files have versions modified, they have extra audit data as hints for the recent listing
-    fileid0 = KIdentifierFile.new(StoredFile.new(:digest => 'f8c131ec7a86734cfeb9a8533d1d88e90bc254fada9bded9f5a3da920c1cd929', :size => 100, :upload_filename => 'a.txt', :mime_type => 'text/plain'))
-    fileid1 = KIdentifierFile.new(StoredFile.new(:digest => '3d988ef8786d9a770a00b9f2a130fc550496f657c840d9675599e0e069e38a25', :size => 200, :upload_filename => 'b.txt', :mime_type => 'text/plain'))
-    fileid2 = KIdentifierFile.new(StoredFile.new(:digest => '431c444264e78574afb247f38f4fb6bca86de4d35f06f2cf8320d8ab22843f71', :size => 300, :upload_filename => 'c.txt', :mime_type => 'text/plain'))
-    fileid3 = KIdentifierFile.new(StoredFile.new(:digest => '48393ab741899a81e6b748521de7f7a1d362445eac4c9e29a60fe62168e87cb0', :size => 400, :upload_filename => 'd.txt', :mime_type => 'text/plain'))
+    fileid0 = KIdentifierFile.new(toa_make_stored_file(:digest => 'f8c131ec7a86734cfeb9a8533d1d88e90bc254fada9bded9f5a3da920c1cd929', :size => 100, :upload_filename => 'a.txt', :mime_type => 'text/plain'))
+    fileid1 = KIdentifierFile.new(toa_make_stored_file(:digest => '3d988ef8786d9a770a00b9f2a130fc550496f657c840d9675599e0e069e38a25', :size => 200, :upload_filename => 'b.txt', :mime_type => 'text/plain'))
+    fileid2 = KIdentifierFile.new(toa_make_stored_file(:digest => '431c444264e78574afb247f38f4fb6bca86de4d35f06f2cf8320d8ab22843f71', :size => 300, :upload_filename => 'c.txt', :mime_type => 'text/plain'))
+    fileid3 = KIdentifierFile.new(toa_make_stored_file(:digest => '48393ab741899a81e6b748521de7f7a1d362445eac4c9e29a60fe62168e87cb0', :size => 400, :upload_filename => 'd.txt', :mime_type => 'text/plain'))
     with_tracking_id = Proc.new { |fid, tid| i = fid.dup; i.tracking_id = tid; i }
 
     # No annotations for new objects with files
@@ -339,7 +341,7 @@ class AuditEntryTest < Test::Unit::TestCase
     obj_with_files.add_attr(with_tracking_id.call(fileid1, 'TRACK_ID_1'), A_FILE)
     KObjectStore.create(obj_with_files);
     get_checked_next_entry() do |entry|
-      assert_equal nil, entry.read_attribute('data')
+      assert_equal nil, entry.data_json
     end
 
     # Update without changes doesn't annontate
@@ -347,7 +349,7 @@ class AuditEntryTest < Test::Unit::TestCase
     obj_with_files.add_attr("Nicely", A_TITLE, Q_ALTERNATIVE)
     KObjectStore.update(obj_with_files)
     get_checked_next_entry() do |entry|
-      assert_equal nil, entry.read_attribute('data')
+      assert_equal nil, entry.data_json
     end
 
     # Update changing tracked file does
@@ -357,7 +359,7 @@ class AuditEntryTest < Test::Unit::TestCase
     obj_with_files.add_attr(with_tracking_id.call(fileid2, 'TRACK_ID_1'), A_FILE)
     KObjectStore.update(obj_with_files)
     get_checked_next_entry() do |entry|
-      assert_equal '{"filev":["TRACK_ID_1"]}', entry.read_attribute('data')
+      assert_equal '{"filev":["TRACK_ID_1"]}', entry.data_json
     end
 
     # Update changing tracked file and adding some other attribute does
@@ -369,7 +371,7 @@ class AuditEntryTest < Test::Unit::TestCase
     obj_with_files.add_attr(with_tracking_id.call(fileid2, 'TRACK_ID_1'), A_FILE)
     KObjectStore.update(obj_with_files)
     get_checked_next_entry() do |entry|
-      assert_equal '{"filev":["TRACK_ID_0"],"with-filev":true}', entry.read_attribute('data')
+      assert_equal '{"filev":["TRACK_ID_0"],"with-filev":true}', entry.data_json
     end
 
     # Changing both files includes both the tracking IDs
@@ -379,8 +381,17 @@ class AuditEntryTest < Test::Unit::TestCase
     obj_with_files.add_attr(with_tracking_id.call(fileid0, 'TRACK_ID_1'), A_FILE)
     KObjectStore.update(obj_with_files)
     get_checked_next_entry() do |entry|
-      assert_equal '{"filev":["TRACK_ID_0","TRACK_ID_1"]}', entry.read_attribute('data')
+      assert_equal '{"filev":["TRACK_ID_0","TRACK_ID_1"]}', entry.data_json
     end
+  end
+
+  def toa_make_stored_file(a)
+    stored_file = StoredFile.new
+    stored_file.digest = a[:digest]
+    stored_file.size = a[:size]
+    stored_file.upload_filename = a[:upload_filename]
+    stored_file.mime_type = a[:mime_type]
+    stored_file
   end
 
   # -----------------------------------------------------------------------------------------------------
@@ -418,17 +429,17 @@ class AuditEntryTest < Test::Unit::TestCase
   # -----------------------------------------------------------------------------------------------------
 
   def assert_audit_trail_is_empty
-    assert_equal 0, AuditEntry.count
+    assert_equal 0, AuditEntry.where().count()
   end
 
   def get_checked_next_entry
-    assert_equal (@expected_entries + 1), AuditEntry.count
+    assert_equal (@expected_entries + 1), AuditEntry.where().count()
     @expected_entries += 1
-    yield AuditEntry.find(:first, :order => 'id DESC')
+    yield AuditEntry.where().order(:id_desc).first()
   end
 
   def assert_no_new_entry_written
-    assert_equal @expected_entries, AuditEntry.count
+    assert_equal @expected_entries, AuditEntry.where().count()
   end
 
 end

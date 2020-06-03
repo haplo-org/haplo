@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module KHooks
@@ -15,13 +18,13 @@ module KHooks
       @runner = Class.new(KPlugin::HookSite::HookRunner)
       @runner.instance_variable_set(:@_NAME, name)  # so name can be retrieved
       @response = Class.new(KPlugin::HookSite::HookResponse)
-      @response_init = ''
+      @response_init = ''.dup
       @run_arguments = []
       @js_call_index = 0
-      @js_call_args = ''
+      @js_call_args = ''.dup
       @response_fields = Java::OrgHaploJsinterface::KPluginResponse::Fields.new
-      @response_in = ""
-      @response_out = ""
+      @response_in = "".dup
+      @response_out = "".dup
     end
 
     def private_hook
@@ -36,7 +39,7 @@ module KHooks
       # Build the JavaScript hook caller array
       if klass.equal?(String) || klass.equal?(Symbol)
         @js_call_args << %Q!, args[#{@js_call_index}].to_s.to_java_string()!
-      elsif klass.equal?(Fixnum)
+      elsif klass.equal?(Integer)
         @js_call_args << %Q!, args[#{@js_call_index}].to_i!
       elsif klass.equal?(KObject)
         @js_call_args << %Q!, ((args[#{@js_call_index}] == nil) ? nil : Java::OrgHaploJsinterface::KObject.fromAppObject(args[#{@js_call_index}], false))!
@@ -74,7 +77,7 @@ module KHooks
         @response_fields.stringField(name, true)  # is symbol
         @response_in << "j.putR('#{name}',r.#{name}.to_s.to_java_string) if r.#{name} != nil\n"
         @response_out << "v = j.getR('#{name}'); r.#{name} = (v == nil) ? nil : v.to_sym\n"
-      elsif klass.equal?(Fixnum)
+      elsif klass.equal?(Integer)
         @response_fields.integerField(name)
         @response_in << "j.putR('#{name}',java.lang.Integer.new(r.#{name})) if r.#{name} != nil\n"
         @response_out << "v = j.getR('#{name}'); r.#{name} = (v == nil) ? nil : v.to_i\n"
@@ -135,7 +138,7 @@ module KHooks
       # Set the class of the response in the runner
       @runner.instance_variable_set(:@_RESPONSE, @response)
       # Define the runner class in the KHooks module to give it a name
-      class_const_name = "#{@name}Runner"
+      class_const_name = "#{@name}Runner".dup
       class_const_name[0] = class_const_name[0,1].upcase
       KHooks.const_set(class_const_name, @runner)
       # And give the response class a name within the runner class

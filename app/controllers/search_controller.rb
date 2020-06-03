@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class SearchController < ApplicationController
@@ -109,7 +112,7 @@ class SearchController < ApplicationController
     search_spec = search_make_spec(params)
     # Send notification for auditing
     KNotificationCentre.notify(:display, :search, search_spec)
-    range = params[:r]
+    range = params['r']
     if range != nil
       @first,@last = range.split(',').map { |e| e.to_i }
     end
@@ -137,9 +140,9 @@ class SearchController < ApplicationController
     check_anonymous_user
 
     selectable = nil
-    if params[:id] != nil
+    if params['id'] != nil
       # If a objref is specified for selection, make sure that data is loaded in the tree source
-      @initial_selection = KObjRef.from_presentation(params[:id])
+      @initial_selection = KObjRef.from_presentation(params['id'])
       unless KObjectStore.schema.type_descriptor(@initial_selection)
         # If the selected node from the URL is *not* a type, use it as an optimisation to send all
         # the required nodes to display the tree. Don't try it for a type, as non-admin users don't
@@ -160,8 +163,8 @@ class SearchController < ApplicationController
 
   # Get the object editor description for the fields display
   def handle_fields_api
-    fields_obj = if params.has_key?(:f)
-      search_detokenise_encoded_fields(params[:f])
+    fields_obj = if params.has_key?('f')
+      search_detokenise_encoded_fields(params['f'])
     else
       KObject.new()
     end
@@ -194,7 +197,7 @@ class SearchController < ApplicationController
   # AJAX callback for explainations on the search page.
   def handle_explain_api
     @explaination = nil
-    q = params[:q]
+    q = params['q']
     if q != nil && q != ''
       query = KQuery.from_string(q)
       @explaination = query.query_as_html(KObjectStore.schema)

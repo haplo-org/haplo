@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.haplo</groupId>
   <artifactId>haplo</artifactId>
-  <version>3.20200505.2018.d487fb8334</version>
+  <version>3.20200531.1513.f9925c8431</version>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -22,12 +22,17 @@
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-      <version>9.2-1002-jdbc4</version>
+      <version>42.2.12</version>
+    </dependency>
+    <dependency>
+      <groupId>com.zaxxer</groupId>
+      <artifactId>HikariCP</artifactId>
+      <version>3.1.0</version>
     </dependency>
     <dependency>
       <groupId>org.mozilla</groupId>
       <artifactId>rhino</artifactId>
-      <version>1.7.11</version>
+      <version>1.7.12</version>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
@@ -72,17 +77,17 @@
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcprov-jdk15on</artifactId>
-      <version>1.48</version>
+      <version>1.62</version>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcmail-jdk15on</artifactId>
-      <version>1.48</version>
+      <version>1.62</version>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>
       <artifactId>bcpkix-jdk15on</artifactId>
-      <version>1.48</version>
+      <version>1.62</version>
     </dependency>
     <dependency>
       <groupId>com.ibm.icu</groupId>

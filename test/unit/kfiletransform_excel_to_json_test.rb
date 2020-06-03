@@ -8,9 +8,9 @@
 class KFileTransformExcelToJsonTest < Test::Unit::TestCase
 
   def setup
-    FileCacheEntry.destroy_all # to delete files from disk
-    StoredFile.destroy_all # to delete files from disk
-    KApp.get_pg_database.perform("DELETE FROM jobs WHERE application_id=#{_TEST_APP_ID}")
+    destroy_all FileCacheEntry # to delete files from disk
+    destroy_all StoredFile # to delete files from disk
+    KApp.with_pg_database { |db| db.perform("DELETE FROM public.jobs WHERE application_id=#{_TEST_APP_ID}") }
   end
 
   def transform_excel(stored_file)
@@ -31,6 +31,8 @@ class KFileTransformExcelToJsonTest < Test::Unit::TestCase
     # PDF returns nothing
     pdf_file = StoredFile.from_upload(fixture_file_upload('files/example3.pdf', 'application/pdf'))
     assert_equal(nil, transform_excel(pdf_file))
+
+    run_all_jobs({})
   end
 
   DATATYPES_EXPECTED_JSON = <<'___E'

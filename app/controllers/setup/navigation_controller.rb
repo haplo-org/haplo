@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Setup_NavigationController < ApplicationController
@@ -16,7 +19,7 @@ class Setup_NavigationController < ApplicationController
   end
 
   def handle_index
-    @groups = User.find_all_by_kind(User::KIND_GROUP)
+    @groups_query = User.where(:kind => User::KIND_GROUP).order(:lower_name)
   end
 
   # -------------------------------------------------------------------------------------------------------------
@@ -24,7 +27,7 @@ class Setup_NavigationController < ApplicationController
   _GetAndPost
   def handle_edit
     if request.post?
-      data_from_client = JSON.parse(params[:nav])
+      data_from_client = JSON.parse(params['nav'])
       # Don't trust the client - rebuild the entries
       nav_entries = []
       data_from_client.each do |group, type, data, title|
@@ -57,8 +60,9 @@ class Setup_NavigationController < ApplicationController
       redirect_to '/do/setup/navigation/edit?saved=1'
     else
       @nav_entries = YAML::load(KApp.global(:navigation))
-      @groups = User.find(:all, :conditions => ['kind = ?', User::KIND_GROUP], :order => 'name').map do |group|
-        [group.id, group.name]
+      @groups = []
+      User.where(:kind => User::KIND_GROUP).order(:lower_name).each do |group|
+        @groups << [group.id, group.name]
       end
     end
   end
@@ -66,7 +70,7 @@ class Setup_NavigationController < ApplicationController
   # -------------------------------------------------------------------------------------------------------------
 
   def handle_preview
-    @group = User.find(params[:id].to_i)
+    @group = User.read(params['id'].to_i)
     raise "Bad uid" unless @group && @group.is_active
     @nav_groups = navigation_for_user(@group, :notify_plugin_positions, NavigationPreviewSpec.new)
   end

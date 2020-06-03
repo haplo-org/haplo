@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # TODO: Turn the dynamic CSS files into a methods which can be executed without the use of lots of evals
@@ -33,7 +36,7 @@ module KDynamicFiles
 
       if filename =~ /\A(\d+)\z/
         # App static file, stored in database
-        file = AppStaticFile.find_by_id($1)
+        file = AppStaticFile.read($1.to_i)
         if file != nil
           mime_type = file.mime_type
           # allow compression if the file isn't an image
@@ -107,12 +110,12 @@ module KDynamicFiles
     # Actually returns the highest ID + 1
     num = 0
     KApp.in_application(:no_app) do
-      db = KApp.get_pg_database
-      r = db.exec("SELECT MAX(id) FROM a#{app_id.to_i}.app_static_files")
-      if r.length > 0
-        num = (r.first.first.to_i + 1)
+      KApp.with_pg_database do |db|
+        r = db.exec("SELECT MAX(id) FROM a#{app_id.to_i}.app_static_files")
+        if r.length > 0
+          num = (r.first.first.to_i + 1)
+        end
       end
-      r.clear
     end
     num
   end
@@ -164,7 +167,7 @@ module KDynamicFiles
     end
     # Define method for this CSS file
     css_method = "__kdynamicfiles_css_#{filename.gsub(/[^a-z0-9]/,'_')}".to_sym
-    source = "def #{css_method}\n"
+    source = "def #{css_method}\n".dup
     if has_webfonts
       source << "webfont_size = (KApp.global(:appearance_webfont_size) || 0)\n"
     end

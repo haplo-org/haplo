@@ -1,17 +1,42 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
+
 # Represents an uploaded file
 
-class StoredFile < ActiveRecord::Base
-  has_many :file_cache_entries, :dependent => :destroy  # will delete files from disk
-  after_create :send_create_notification
-  after_create :do_background_thumbnailing
-  after_destroy :delete_file_from_disk
+class StoredFile < MiniORM::Record
+  table :stored_files do |t|
+    t.column :timestamp,  :created_at
+    t.column :text,       :digest
+    t.column :bigint,     :size
+    t.column :text,       :upload_filename
+    t.column :text,       :mime_type
+    t.column :text,       :tags,              nullable:true         # actually an HSTORE column
+    t.column :int,        :dimensions_w,      nullable:true
+    t.column :int,        :dimensions_h,      nullable:true
+    t.column :text,       :dimensions_units,  nullable:true
+    t.column :int,        :dimensions_pages,  nullable:true
+    t.column :smallint,   :thumbnail_w,       nullable:true
+    t.column :smallint,   :thumbnail_h,       nullable:true
+    t.column :smallint,   :thumbnail_format,  nullable:true
+    t.column :int,        :render_text_chars, nullable:true
+  end
+  def before_save
+    self.created_at = Time.now if self.created_at.nil?
+  end
+  def after_create
+    send_create_notification
+    do_background_thumbnailing
+  end
+  def after_delete
+    delete_file_from_disk
+  end
 
   # This algorithm choosen (in 2014) because:
   #  * SHA-1 is old, a bit short, and has structural problems
@@ -20,7 +45,7 @@ class StoredFile < ActiveRecord::Base
   #  * It's relatively easy to change things in the future
   #  * It's not used for security access control
   # We don't encode the algorithm in the identifier because it'll be easy to add that later if we need multiple algorithm support.
-  FILE_DIGEST_ALGORITHM = 'SHA-256'.freeze
+  FILE_DIGEST_ALGORITHM = 'SHA-256'
   FILE_DIGEST_HEX_VALIDATE_REGEXP = /\A[a-f0-9]{64}\z/
 
   # Create directories so the group can read them (for backup user doing offsite backups by rsync)
@@ -88,8 +113,8 @@ class StoredFile < ActiveRecord::Base
 
     # Create stored file, checking for existing file
     file = nil
-    StoredFile.transaction do
-      file = StoredFile.find(:first, :conditions => {:digest => file_digest, :size => file_size})
+    MiniORM.transaction do
+      file = StoredFile.where(:digest => file_digest, :size => file_size).first
       if file
         # Already exists. Do a very basic check on the file on disc, as we're going to throw away the uploaded file
         unless File.size(file.disk_pathname) == file_size
@@ -110,7 +135,7 @@ class StoredFile < ActiveRecord::Base
         File.chmod(0640, file_pathname) # change permission for the backup user
         FileUtils.mv(file_pathname, file.disk_pathname)
 
-        file.save!
+        file.save
       end
     end
     file
@@ -192,7 +217,6 @@ class StoredFile < ActiveRecord::Base
   end
 
   # Clean up files when deleted
-  # after_destroy
   def delete_file_from_disk
     pathname = self.disk_pathname
     if File.exists?(pathname)
@@ -222,7 +246,9 @@ class StoredFile < ActiveRecord::Base
   end
 
   def self.storage_space_used
-    calculate(:sum, :size)
+    KApp.with_pg_database do |db|
+      db.perform("SELECT SUM(size) FROM #{KApp.db_schema_name}.stored_files").first.first.to_i
+    end
   end
 
   # ----------------------------------------------------------------------------------------------------------------
@@ -283,7 +309,6 @@ class StoredFile < ActiveRecord::Base
   # ----------------------------------------------------------------------------------------------------------------
 
   # Post-create callback to get the job - in the same transaction
-  # after_create
   def do_background_thumbnailing
     PostCreate.new(self.id).submit
   end
@@ -294,7 +319,7 @@ class StoredFile < ActiveRecord::Base
     end
     def run(context)
       # Ask file transformation service to add the extra info
-      stored_file = StoredFile.find(@stored_file_id)
+      stored_file = StoredFile.read(@stored_file_id)
       KFileTransform.set_image_dimensions_and_make_thumbnail(stored_file)
       KFileTransform.set_render_text(stored_file)
     end
@@ -303,13 +328,12 @@ class StoredFile < ActiveRecord::Base
   # ----------------------------------------------------------------------------------------------------------------
 
   # JavaScript interface
-  KActiveRecordJavaInterface.make_date_methods(self, :created_at, :jsGetCreatedAt)
   def jsGetBasename
     self.upload_filename.gsub(/\.[^\.]+\z/,'')
   end
 
   def jsGetTagsAsJson()
-    hstore = read_attribute('tags')
+    hstore = self.tags
     hstore ? JSON.generate(PgHstore.parse_hstore(hstore)) : nil
   end
 
@@ -330,15 +354,19 @@ class StoredFile < ActiveRecord::Base
       new_value = "(#{new_value} - ARRAY[#{delete.map { |k| PGconn.quote(k) } .join(',')}])"
     end
     unless set.empty?
-      new_value << ' || hstore(ARRAY['
+      new_value += ' || hstore(ARRAY['
       new_value << set.map do |k,v|
         "[#{PGconn.quote(k)},#{PGconn.quote(v)}]"
       end .join(',')
       new_value << '])'
     end
-    sql = "UPDATE stored_files SET tags = (#{new_value}) WHERE id=#{self.id.to_i}";
-    KApp.get_pg_database.exec(sql)
-    self.reload
+    sql = "UPDATE #{KApp.db_schema_name}.stored_files SET tags = (#{new_value}) WHERE id=#{self.id.to_i} RETURNING tags";
+    KApp.with_pg_database do |db|
+      tags_update = db.exec(sql)
+      raise "Logic error with stored file tags update for id #{self.id.to_i}" if tags_update.length != 1
+      @tags = tags_update.first.first
+    end
+    nil
   end
 
 end

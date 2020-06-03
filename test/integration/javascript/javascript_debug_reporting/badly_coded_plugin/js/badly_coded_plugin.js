@@ -19,9 +19,9 @@ P.respond("GET", "/do/test_error/js_throw", [], function(E) {
     new DBTime(); // org.mozilla.javascript.JavaScriptException
 });
 
-//    P.respond("GET", "/do/test_error/ar_notfound", [], function(E) {
-//        O.group(12346); // ActiveRecord::RecordNotFound
-//    });
+P.respond("GET", "/do/test_error/orm_notfound", [], function(E) {
+    O.work.load(12346); // MiniORM::MiniORMRecordNotFoundException
+});
 
 P.respond("GET", "/do/test_error/stackoverflow", [], function(E) {
     var x = function() {

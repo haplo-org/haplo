@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Display of elements
@@ -19,7 +22,7 @@ module Application_ElementHelper
   }
 
   def elements_available_html
-    output = '<table>'
+    output = '<table>'.dup
     call_hook(:hElementDiscover) do |hooks|
       result = hooks.run
       result.elements.sort { |a,b| a.first <=> b.first } .each do |name, description|
@@ -71,7 +74,7 @@ module Application_ElementHelper
     end
     # Generate the output HTML for a given position, using the style object for making the frames around the element HTML
     def html_for(position, style = DEFAULT_ELEMENT_DISPLAY_STYLE)
-      output = ''
+      output = ''.dup
       prefix = style.element_prefix
       suffix = style.element_suffix
       @elements.each do |element_name, element_position, element_options|

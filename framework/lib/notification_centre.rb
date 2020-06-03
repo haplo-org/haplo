@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # This has been written with the possibility of optimising delivery by generating a method which
@@ -179,7 +182,7 @@ class KFramework
       end
 
       def dump_options
-        opts = ""
+        opts = "".dup
         opts << 'S' if @start_buffering
         opts << 'D' if @deduplicate
         opts << @max_arguments.to_s if @max_arguments != nil

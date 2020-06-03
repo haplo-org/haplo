@@ -1,13 +1,16 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2017    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
+
 class RobotsTxtController < ApplicationController
 
-  DEFAULT_ROBOTS_TXT = "User-agent: *\nDisallow: /\n".freeze
+  DEFAULT_ROBOTS_TXT = "User-agent: *\nDisallow: /\n"
 
   def handle(exchange, path_elements)
     if exchange.request.path != "/robots.txt"

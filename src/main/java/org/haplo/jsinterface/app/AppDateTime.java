@@ -22,5 +22,5 @@ public interface AppDateTime {
 
     public String to_s();
 
-    public String toHtml();
+    public String to_html();
 }

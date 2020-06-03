@@ -9,21 +9,24 @@ class ParamsDecodeTest < IntegrationTest
 
   def setup
     db_reset_test_data
-    @user = User.new(
-      :name_first => 'first',
-      :name_last => "last",
-      :email => 'authtest@example.com')
+    @user = User.new
+    @user.name_first = 'first'
+    @user.name_last = "last"
+    @user.email = 'authtest@example.com'
     @user.kind = User::KIND_USER
     @user.password = 'pass1234'
-    @user.save!
-    @api_key = ApiKey.new(:user_id => @user.id, :path => '/api/', :name => 'test')
+    @user.save
+    @api_key = ApiKey.new
+    @api_key.user_id = @user.id
+    @api_key.path = '/api/'
+    @api_key.name = 'test'
     @api_key_secret = @api_key.set_random_api_key
-    @api_key.save!
+    @api_key.save
   end
 
   def teardown
-    @api_key.destroy
-    @user.destroy
+    @api_key.delete
+    @user.delete
   end
 
   def test_params_decoding

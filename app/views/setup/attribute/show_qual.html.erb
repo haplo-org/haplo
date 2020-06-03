@@ -17,6 +17,6 @@
   </td></tr>
 </table>
 
-<%= sys_mng_edit_button("/do/setup/attribute/edit_qual/#{params[:id].to_i}") %>
+<%= sys_mng_edit_button("/do/setup/attribute/edit_qual/#{params['id'.freeze].to_i}") %>
 
-<%= sys_mng_update_submenu(@title, "/do/setup/attribute/show_qual/#{params[:id].to_i}") %>
+<%= sys_mng_update_submenu(@title, "/do/setup/attribute/show_qual/#{params['id'.freeze].to_i}") %>

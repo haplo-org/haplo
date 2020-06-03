@@ -1,13 +1,16 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
+
 module Setup_AttributeHelper
 
   def af_field(name,values)
-    r = ''
+    r = ''.dup
     0.upto(values.length-1) do |i|
       r << %Q!<input type="text" name="#{name}[#{i}]" value="#{h(values[i])}" size="42"><br>!
     end
@@ -15,7 +18,7 @@ module Setup_AttributeHelper
   end
 
   def af_field_show_in_table(label,values)
-    r = ''
+    r = ''.dup
     0.upto(values.length-1) do |i|
       r << ((i == 0) ? "<tr><th>#{label}</th><td>" : '<tr><th></th><td>')
       r << h(values[i])
@@ -61,7 +64,7 @@ module Setup_AttributeHelper
 
   def af_types_display(input_name, selected_types)
     raise "JS file expects input_name to be 'linktypes'" unless input_name == 'linktypes'
-    html = %Q!<div id="#{input_name}_cont">!
+    html = %Q!<div id="#{input_name}_cont">!.dup
     @schema.root_type_descs_sorted_by_printable_name.each do |desc|
       html << af_types_display_r(input_name, selected_types, desc, false, 256)
     end
@@ -77,7 +80,7 @@ module Setup_AttributeHelper
     is_selected = parent_selected || selected_types.include?(desc.objref)
     # This level
     checkbox_id = "#{input_name}_#{desc.objref.to_presentation}"
-    html = %Q!<div class="z__attr_edit_type_container"><input type="checkbox" name="#{input_name}[#{desc.objref.to_presentation}]" id="#{checkbox_id}" value="t"#{is_selected ? ' checked' : ''}#{parent_selected ? ' disabled="true"' : ''}><label for="#{checkbox_id}"> #{h(desc.printable_name.to_s)}</label>!
+    html = %Q!<div class="z__attr_edit_type_container"><input type="checkbox" name="#{input_name}[#{desc.objref.to_presentation}]" id="#{checkbox_id}" value="t"#{is_selected ? ' checked' : ''}#{parent_selected ? ' disabled="true"' : ''}><label for="#{checkbox_id}"> #{h(desc.printable_name.to_s)}</label>!.dup
     # Children
     desc.children_types.map { |r| @schema.type_descriptor(r) } .sort { |a,b| a.printable_name.to_s <=> b.printable_name.to_s } . each do |d|
       html << af_types_display_r(input_name, selected_types, d, is_selected, recursion_limit - 1)

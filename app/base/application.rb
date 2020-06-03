@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 #
 # The ApplicationController includes quite a bit of code which is shared. The strategy is to put
@@ -73,7 +76,6 @@ class ApplicationController
   include Application_TrayHelper
   include Application_WorkflowButtonsHelper
   include Application_ControlsHelper
-  include Application_KeyValueDisplayHelper
 
   include KObjectURLs
 
@@ -171,11 +173,11 @@ class ApplicationController
   #
   def redirect_to(a)
     # Normal?
-    unless params.has_key?(:_sx)
+    unless params.has_key?('_sx')
       super(a)
     else
       # In a spawned window
-      sx = params[:_sx].to_i  # makes sure it doesn't contain bad characters
+      sx = params['_sx'].to_i  # makes sure it doesn't contain bad characters
       raise "Redirect isn't a string as expected by redirect_to" unless a.class == String
       if a =~ /[\&\?]_sx/
         super(a)

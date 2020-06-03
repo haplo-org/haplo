@@ -7,7 +7,7 @@
     %><option value=""><%= h(data_for_template[:blank]) %></option><%
   end
   # Go through templates with the ones NOT in the menu first, so an out-of-menu selection comes first
-  EmailTemplate.find(:all, :select => 'id,in_menu,name', :order => 'in_menu,name').each do |template|
+  EmailTemplate.where().order(:in_menu_and_name).each do |template|
     if template.in_menu || template.id == template_id
       %><option value="<%= template.id %>"<% if template.id == template_id %> selected<% end %>><%= h(template.name) %></option><%
     end

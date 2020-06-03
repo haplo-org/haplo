@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Setup_SchemaRequirementsController < ApplicationController
@@ -17,7 +20,7 @@ class Setup_SchemaRequirementsController < ApplicationController
   _GetAndPost
   def handle_apply
     if request.post?
-      @requirements = params[:requirements] || ''
+      @requirements = params['requirements'] || ''
       applier = SchemaRequirements.applier_for_requirements_file(@requirements)
       KApp.logger.info("Applying one-off requirements from admin user")
       applier.apply.commit
@@ -38,9 +41,9 @@ class Setup_SchemaRequirementsController < ApplicationController
   _GetAndPost
   def handle_generate
     return unless request.post?
-    short_standard_names = !!(params[:short_std])
+    short_standard_names = !!(params['short_std'])
     # Recusively read all the schema objects relevant to the selected types
-    refs_to_read = (params[:types] || {}).keys.map { |t| KObjRef.from_presentation(t) } .compact
+    refs_to_read = (params['types'] || {}).keys.map { |t| KObjRef.from_presentation(t) } .compact
     selected_types = refs_to_read.dup
     is_short_defn = Proc.new do |objref|
       (short_standard_names && (objref.obj_id < MAX_RESERVED_OBJID) && !(selected_types.include?(objref)))
@@ -79,8 +82,8 @@ class Setup_SchemaRequirementsController < ApplicationController
       refs_to_read = next_refs_to_read
     end
     # Output schema definitions
-    @generated_requirements_short = ""
-    @generated_requirements = ""
+    @generated_requirements_short = "".dup
+    @generated_requirements = "".dup
     requirements_app_context = SchemaRequirements::AppContext.new
     SCHEMA_OBJECT_TYPES_IN_ORDER.each do |type_ref, comment|
       objects = schema_objects_by_type[type_ref].sort do |a,b|
@@ -110,9 +113,9 @@ class Setup_SchemaRequirementsController < ApplicationController
     @generated_requirements_short << "\n" unless @generated_requirements_short.empty?
 
     # Groups?
-    if params[:groups]
+    if params['groups']
       @generated_requirements << "\n# -------- Groups ----------------------------------\n\n"
-      groups = User.find(:all, :conditions => "kind=#{User::KIND_GROUP} AND code IS NOT NULL", :order => 'name')
+      groups = User.where(:kind => User::KIND_GROUP).where_not_null(:code).order(:lower_name).select()
       gid_to_code = {}
       groups.each do |group|
         gid_to_code[group.id] = group.code
@@ -126,7 +129,7 @@ class Setup_SchemaRequirementsController < ApplicationController
         end
         @generated_requirements << "\n"
       end
-      service_users = User.find(:all, :conditions => "kind=#{User::KIND_SERVICE_USER} AND code IS NOT NULL", :order => 'name')
+      service_users = User.where(:kind => User::KIND_SERVICE_USER).where_not_null(:code).order(:lower_name).select()
       if service_users.length > 0
         @generated_requirements << "\n# -------- Service users ---------------------------\n\n"
         service_users.each do |user|
@@ -142,7 +145,7 @@ class Setup_SchemaRequirementsController < ApplicationController
     end
 
     # Generic objects?
-    if params[:objects]
+    if params['objects']
       @generated_requirements << "\n# -------- Objects ---------------------------------\n\n"
       objects = KObjectStore.query_and.
           any_indentifier_of_type(T_IDENTIFIER_CONFIGURATION_NAME, A_CONFIGURED_BEHAVIOUR).
@@ -173,7 +176,7 @@ class Setup_SchemaRequirementsController < ApplicationController
       end
     end
 
-    if params[:email_templates]
+    if params['email_templates']
       @generated_requirements << "\n# -------- Email templates -------------------------\n\n"
       requirements_app_context.email_templates.each_key do |code|
         @generated_requirements << requirements_app_context.apply_for_email_template(code).
@@ -182,7 +185,7 @@ class Setup_SchemaRequirementsController < ApplicationController
     end
 
     # Features?
-    if params[:features]
+    if params['features']
       @generated_requirements << "\n# -------- Features --------------------------------\n\n"
       home_page_elements = (KApp.global(:home_page_elements) || '').split(/[\r\n]+/)
       unless home_page_elements.empty?

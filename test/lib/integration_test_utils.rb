@@ -17,7 +17,7 @@ module IntegrationTestUtils
   end
 
   def assert_login_as(user, password)
-    user = User.find_by_email(user) if user.kind_of? String
+    user = User.where(:email => user).first() if user.kind_of? String
     get "/do/authentication/login"  # for CSRF token
     post_302("/do/authentication/login", {:email => user.email, :password => password})
     assert_equal(user.id, current_user.id)

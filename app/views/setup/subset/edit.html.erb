@@ -1,5 +1,5 @@
 <%
-  @page_title = (params[:id] == 'new') ? 'New search subset' : 'Edit '+h(@title.to_s)
+  @page_title = (params['id'.freeze] == 'new') ? 'New search subset' : 'Edit '+h(@title.to_s)
 
   client_side_resources :mng_labels
   client_side_controller_js "edit_subset"
@@ -7,7 +7,7 @@
 
 <%= sys_mng_header %>
 
-<form id="z__subset_form" method="post" action="/do/setup/subset/edit/<%= h(params[:id]) %>"><%= form_csrf_token %>
+<form id="z__subset_form" method="post" action="/do/setup/subset/edit/<%= h(params['id'.freeze]) %>"><%= form_csrf_token %>
 
 <p><input type="submit" value="Save changes"></p>
 

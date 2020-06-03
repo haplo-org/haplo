@@ -22,5 +22,5 @@
 <% end -%>
 
 <p><%= @locale.text(:Authentication_View_Enter_your_email_address__then_click___) %><br>
-<input type="text" name="email" value="<%= h(params[:email]) %>" class="z__focus_candidate"> <input type="submit" value="<%= @locale.text(:Authentication_View_Send_email) %>"></p>
+<input type="text" name="email" value="<%= h(params['email'.freeze]) %>" class="z__focus_candidate"> <input type="submit" value="<%= @locale.text(:Authentication_View_Send_email) %>"></p>
 </form>

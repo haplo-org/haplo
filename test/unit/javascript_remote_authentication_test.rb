@@ -18,9 +18,9 @@ class JavascriptRemoteAuthenticationTest < Test::Unit::TestCase
       run_javascript_test(:file, 'unit/javascript/javascript_remote_authentication/test_remote_authentication1_no_priv.js')
       run_javascript_test(:file, 'unit/javascript/javascript_remote_authentication/test_remote_authentication1.js', nil, "grant_privileges_plugin")
       # Set a known password
-      user42 = User.find(42)
+      user42 = User.read(42)
       user42.password = 'abcd5432'
-      user42.save!
+      user42.save
       # Create credentials for the LDAP server
       ldap_account = {
         "URL" => 'ldaps://127.0.0.1:1636',
@@ -30,24 +30,26 @@ class JavascriptRemoteAuthenticationTest < Test::Unit::TestCase
         "Search" => "uid={0}",
         "Username" => "cn=service_account"
       }
-      credential = KeychainCredential.new({:name => 'test-ldap', :kind => 'Authentication Service', :instance_kind => 'LDAP' })
-      credential.account = ldap_account
-      credential.secret = {"Password" => 'abcd9876'}
-      credential.save
+      credential = keychain_credential_create(
+        :name => 'test-ldap', :kind => 'Authentication Service', :instance_kind => 'LDAP',
+        :account => ldap_account,
+        :secret => {"Password" => 'abcd9876'}
+      )
       # And another with a different set of attributes
       ldap_account2 = ldap_account.dup
       ldap_account2['Attributes (single value)'] = 'uid cn notarealattribute'
       ldap_account2['Attributes (multi-value)'] = 'notarealmultivalue'
-      credential2 = KeychainCredential.new({:name => 'test-ldap-reduced-attributes', :kind => 'Authentication Service', :instance_kind => 'LDAP' })
-      credential2.account = ldap_account2
-      credential2.secret = {"Password" => 'abcd9876'}
-      credential2.save
+      credential2 = keychain_credential_create(
+        :name => 'test-ldap-reduced-attributes', :kind => 'Authentication Service', :instance_kind => 'LDAP',
+        :account => ldap_account2,
+        :secret => {"Password" => 'abcd9876'}
+      )
       # Wait for LDAP server to start (probably have started by now anyway, so no point in doing anything fancy with mutexes etc)
       sleep(0.1) while ! @@test_ldap_server_started
       # Check normal use
       run_javascript_test(:file, 'unit/javascript/javascript_remote_authentication/test_remote_authentication2.js', nil, "grant_privileges_plugin")
     ensure
-      KeychainCredential.delete_all
+      delete_all KeychainCredential
       uninstall_grant_privileges_plugin
     end
   end
@@ -60,7 +62,7 @@ class JavascriptRemoteAuthenticationTest < Test::Unit::TestCase
     IntegrationTest::AUTHENTICATION_LOGIN_TEST_FAILURE_LOCK.synchronize do
       time1_token = HardwareOtpToken.find_by_identifier('test-1-time')
       time1_token.counter = 12345
-      time1_token.save! # reset counter
+      time1_token.save # reset counter
       data = {
         "NEXT_OTP" => TestHardwareOTP.next_otp_for("test-1-time")
       }
@@ -101,7 +103,7 @@ class JavascriptRemoteAuthenticationTest < Test::Unit::TestCase
       ds.importFromLDIF(false, "#{File.dirname(__FILE__)}/javascript/javascript_remote_authentication/ldap_test_directory_contents.ldif")
       ds.startListening()
       @@test_ldap_server_started = true;
-      at_exit { ds.shutDown(true); puts "hustdown " }
+      at_exit { ds.shutDown(true); }
     end
   end
 

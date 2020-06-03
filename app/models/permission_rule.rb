@@ -1,12 +1,27 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-class PermissionRule < ActiveRecord::Base
-  belongs_to :user
+
+class PermissionRule < MiniORM::Record
+  table :permission_rules do |t|
+    t.column :int,      :user_id
+    t.column :int,      :label_id
+    t.column :smallint, :statement
+    t.column :int,      :permissions
+
+    t.order :label_id, 'label_id'
+    t.order :id_desc, 'id DESC'
+
+    t.where :user_id_in, 'user_id = ANY (?)', :int_array
+  end
+
+  # -------------------------------------------------------------------------
 
   DENY = 0 # Lower numbers here take precendence over higher numbers
   ALLOW = 1
@@ -19,7 +34,7 @@ class PermissionRule < ActiveRecord::Base
   }
 
   def self.valid_statement?(statement)
-    statement.kind_of?(Fixnum) && (STATEMENT_SYMBOLS.values.include? statement)
+    statement.kind_of?(Integer) && (STATEMENT_SYMBOLS.values.include? statement)
   end
 
 
@@ -30,26 +45,28 @@ class PermissionRule < ActiveRecord::Base
     ]
 
   # Send individual notifications after changes, which include the user ID
-  after_commit do
+  def send_rule_modified_notification
     KNotificationCentre.notify(:user_permission_rule_modified, nil, self.user_id)
   end
+  def after_save;   send_rule_modified_notification; end
+  def after_delete; send_rule_modified_notification; end
 
   def self.new_rule!(statement, user, label, *operations)
     statement = STATEMENT_SYMBOLS[statement] unless self.valid_statement? statement
     user = user.id if user.is_a? User
     label = label.to_i if label.is_a? KObjRef
     permissions = KPermissionRegistry.to_bitmask(*operations)
-    new_rule = PermissionRule.new(:user_id => user, :label_id => label, :statement => statement, :permissions => permissions)
-    new_rule.save!
-    new_rule
+    new_rule = PermissionRule.new
+    new_rule.user_id = user
+    new_rule.label_id = label
+    new_rule.statement = statement
+    new_rule.permissions = permissions
+    new_rule.save
   end
 
-  # Use the notification centre system to count depth of transactions, as ActiveRecord automatically wraps saves with transactions
-  def self.transaction
+  def self.delaying_update_notification
     @@change_notification_buffer.while_buffering do
-      ActiveRecord::Base.transaction do
-        yield
-      end
+      yield
     end
   end
 
@@ -82,13 +99,10 @@ class PermissionRule < ActiveRecord::Base
       uid_to_distance = {user.id => DISTANCE_USER}
       group_info = user.user_groups.calculated_group_info()
       group_info.each { |uid,distance| uid_to_distance[uid] = distance }
-      where_clause = "user_id IN (#{uid_to_distance.keys.join(',')})"
       # Get list of rules in format
       #   [distance, statement, plugin_name, user_id, label_id, permissions]
-      KApp.get_pg_database.exec("SELECT statement, user_id, label_id, permissions FROM permission_rules WHERE #{where_clause}").each do |x|
-        r = x.map { |n| n.to_i }
-        statement, user_id, label_id, permissions = r
-        @rules << [uid_to_distance[user_id] || 99999, statement, nil, user_id, label_id, permissions]
+      PermissionRule.where_user_id_in(uid_to_distance.keys).each do |r|
+        @rules << [uid_to_distance[r.user_id] || 99999, r.statement, nil, r.user_id, r.label_id, r.permissions]
       end
       # Get more rules from the plugins
       call_hook(:hUserPermissionRules) do |hooks|

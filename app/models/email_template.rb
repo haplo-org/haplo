@@ -1,4 +1,4 @@
-# coding: utf-8
+# frozen_string_literal: true
 
 # Haplo Platform                                     http://haplo.org
 # (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
@@ -7,7 +7,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-class EmailTemplate < ActiveRecord::Base
+class EmailTemplate < MiniORM::Record
   include Templates::Application  # for the template body
 
   # Message formatting options
@@ -21,7 +21,33 @@ class EmailTemplate < ActiveRecord::Base
   ID_LATEST_UPDATES = 3
   ID_NEW_USER_WELCOME = 4
 
-  after_commit do
+  # -------------------------------------------------------------------------
+
+  table :email_templates do |t|
+    t.column :text, :code,          nullable:true
+    t.column :text, :name
+    t.column :text, :description
+    t.column :text, :purpose
+    t.column :text, :from_email_address
+    t.column :text, :from_name
+    t.column :text, :extra_css,       nullable:true
+    t.column :text, :branding_plain,  nullable:true
+    t.column :text, :branding_html,   nullable:true
+    t.column :text, :header,          nullable:true
+    t.column :text, :footer,          nullable:true
+    t.column :boolean, :in_menu
+
+    t.order :id, 'id'
+    t.order :name, 'name'
+    t.order :in_menu_and_name, 'in_menu,name'
+  end
+
+  def initialize
+    # Set defaults matching SQL table definition
+    @in_menu = true
+  end  
+
+  def after_save
     KNotificationCentre.notify(:email, :template_changed, self)
   end
 
@@ -29,33 +55,39 @@ class EmailTemplate < ActiveRecord::Base
   #   Validation
   # ------------------------------------------------------------------------------------------------------------
 
-  validates_email_format :from_email_address
-  validates_presence_of :name, :description, :from_email_address, :from_name
+  class EditTransfer < MiniORM::Transfer
+    transfer do |f|
+      f.text_attributes :name, :code, :description, :purpose, :from_email_address, :from_name
+      f.text_attributes :extra_css, :branding_plain, :branding_html, :header, :footer
+      f.validate_presence_of :name, :description, :from_email_address, :from_name
+      f.validate_email_format :from_email_address
 
-  PERMITTED_INTERPOLATIONS = %w!FEATURE_NAME RECIPIENT_NAME RECIPIENT_NAME_POSSESSIVE RECIPIENT_FIRST_NAME RECIPIENT_FIRST_NAME_POSSESSIVE RECIPIENT_LAST_NAME RECIPIENT_EMAIL_ADDRESS UNSUBSCRIBE_URL DEFAULT_HOSTNAME USER_HTML_ONLY MESSAGE!
+      PERMITTED_INTERPOLATIONS = %w!FEATURE_NAME RECIPIENT_NAME RECIPIENT_NAME_POSSESSIVE RECIPIENT_FIRST_NAME RECIPIENT_FIRST_NAME_POSSESSIVE RECIPIENT_LAST_NAME RECIPIENT_EMAIL_ADDRESS UNSUBSCRIBE_URL DEFAULT_HOSTNAME USER_HTML_ONLY MESSAGE!
 
-  validates_each [:branding_plain, :branding_html, :header, :footer] do |model,attr,value|
-    unless value == nil
-      value.scan(/\%\%([^\%]+)\%\%/).each do |m|
-        unless PERMITTED_INTERPOLATIONS.include?(m[0]) || m[0] =~ /\AIMG:(\d+)\.(\w+)\z/
-          model.errors.add(attr, "contains an invalid interpolation string (#{ERB::Util.h(m[0])})")
+      f.validate :branding_plain, :branding_html, :header, :footer do |errors,record,attribute,value|
+        unless value == nil
+          value.scan(/\%\%([^\%]+)\%\%/).each do |m|
+            unless PERMITTED_INTERPOLATIONS.include?(m[0]) || m[0] =~ /\AIMG:(\d+)\.(\w+)\z/
+              errors.add(attribute, "contains an invalid interpolation string (#{ERB::Util.h(m[0])})")
+            end
+          end
         end
       end
-    end
-  end
 
-  validates_each [:branding_html, :header, :footer] do |model,attr,value|
-    unless value == nil || value.include?('%%USER_HTML_ONLY%%')
-      begin
-        @bd = REXML::Document.new("<html>#{tweak_html(value)}</html>")
-      rescue
-        model.errors.add(attr, "is not valid HTML")
+      f.validate :branding_html, :header, :footer do |errors,record,attribute,value|
+        unless value == nil || value.include?('%%USER_HTML_ONLY%%')
+          begin
+            @bd = REXML::Document.new("<html>#{EmailTemplate.tweak_html(value)}</html>")
+          rescue
+            errors.add(attribute, "is not valid HTML")
+          end
+        end
+      end
+
+      f.validate :from_name do |errors,record,attribute,value|
+        errors.add(attr, "contains characters which aren't allowed (a-zA-Z0-9._- only)") if value != nil && value =~ /[^a-zA-Z0-9._ -]/
       end
     end
-  end
-
-  validates_each :from_name do |model,attr,value|
-    model.errors.add(attr, "contains characters which aren't allowed (a-zA-Z0-9._- only)") if value != nil && value =~ /[^a-zA-Z0-9._ -]/
   end
 
   # ------------------------------------------------------------------------------------------------------------
@@ -78,11 +110,11 @@ class EmailTemplate < ActiveRecord::Base
     m[:interpolate] ||= {}    # Make sure there's a hash there
     # Get the full user info, if available
     to_addr_only = m[:to]
-    to = if m[:to].class == String
+    to = if m[:to].kind_of?(String)
       m[:to]
     else
-      # TODO: When email can be stored in User::Info, don't look up the User object to find the email address
-      m[:user_obj] = (m[:to].class == User) ? m[:to] : User.find(m[:to].id)
+      raise "Unexpected type of :to for email delivery" unless m[:to].kind_of?(User)
+      m[:user_obj] = m[:to]
       to_addr_only = m[:user_obj].email
       "#{m[:user_obj].name.gsub(/[^a-zA-Z0-9._ -]/,'')} <#{m[:user_obj].email}>"
     end
@@ -154,7 +186,7 @@ class EmailTemplate < ActiveRecord::Base
   def generate_email_html_body(m, for_plain_emails = false)
     branding_html = self.branding_html
     # Build HTML for message text
-    message = %Q!#{self.header}#{m[:message]}#{self.footer}!
+    message = %Q!#{self.header}#{m[:message]}#{self.footer}!.dup
     # Add in unsubscribe text?
     if m[:interpolate].has_key?('UNSUBSCRIBE_URL') && !(message.include?('%%UNSUBSCRIBE_URL%%'))
       if for_plain_emails || (branding_html == nil || !(branding_html.include?('%%UNSUBSCRIBE_URL%%')))
@@ -165,7 +197,7 @@ class EmailTemplate < ActiveRecord::Base
     html = nil
     if for_plain_emails
       # Simple version for plain text email
-      html = %Q!<body>#{message}</body>!
+      html = %Q!<body>#{message}</body>!.dup
     else
       # More complex version for HTML emails - needs to take into account various branding options
       if branding_html != nil && branding_html.include?('%%USER_HTML_ONLY%%')
@@ -173,7 +205,7 @@ class EmailTemplate < ActiveRecord::Base
         html = branding_html.gsub('%%MESSAGE%%', message)
       else
         # Simple version of branding, then rewrite email to inline styles and rewrite HTML
-        buffer = ''
+        buffer = ''.dup
         begin
           doc = REXML::Document.new("<body>#{EmailTemplate.tweak_html("#{branding_html}#{message}")}</body>")
           doc.context[:attribute_quote] = :quote
@@ -181,10 +213,10 @@ class EmailTemplate < ActiveRecord::Base
           formatter = REXML::Formatters::Default.new(true) # reformat with spaces before closing />
           doc.root.each { |node| formatter.write(node, buffer) } # do each node individually to avoid outputing the fake <body> tag
         rescue => e
-          logger.error("Error parsing html in EmailTemplate#generate_email_html_body")
-          logger.log_exception(e)
-          if e.kind_of?(REXML::ParseException) && e.continued_exception
-            KNotificationCentre.notify(:email, :html_to_plain_error, e.continued_exception.to_s, html)
+          KApp.logger.error("Error parsing html in EmailTemplate#generate_email_html_body")
+          KApp.logger.log_exception(e)
+          if e.kind_of?(REXML::ParseException)
+            KNotificationCentre.notify(:email, :html_to_plain_error, e.to_s, message)
           end
         end
         html = buffer
@@ -337,6 +369,7 @@ class EmailTemplate < ActiveRecord::Base
       '????'
     end
     if possessive
+      # TODO I18N: Use locale for possessive in email templates -- need to handle localisation in email templates better, and/or this feature may not be needed
       value = (value =~ /[sS]\z/) ? "#{value}'" : "#{value}'s"
     end
     value
@@ -347,13 +380,13 @@ class EmailTemplate < ActiveRecord::Base
   # ------------------------------------------------------------------------------------------------------------
   # convert html to plain text, for the plain text email
   def html_to_text(html)
-    buffer = ''
+    buffer = ''.dup
     begin
       doc = REXML::Document.new(EmailTemplate.tweak_html(html))
       doc.root.each_element { |el| element_to_text(el, buffer) }
     rescue => e
-      logger.error("Error parsing html in EmailTemplate#html_to_text")
-      logger.log_exception(e)
+      KApp.logger.error("Error parsing html in EmailTemplate#html_to_text")
+      KApp.logger.log_exception(e)
       if e.kind_of?(REXML::ParseException) && e.continued_exception
         KNotificationCentre.notify(:email, :html_to_plain_error, e.continued_exception.to_s, html)
       end
@@ -365,42 +398,42 @@ class EmailTemplate < ActiveRecord::Base
   end
 
   ELEMENT_INDENT = { # Elements ignored if they're not in this definition
-    'p' => ''.freeze,
-    'h1' => ''.freeze,
-    'h2' => ''.freeze,
-    'h3' => '* '.freeze,
-    'blockquote' => '    '.freeze,
-    'div' => '  '.freeze
+    'p' => '',
+    'h1' => '',
+    'h2' => '',
+    'h3' => '* ',
+    'blockquote' => '    ',
+    'div' => '  '
   }
   CLASS_INDENT = {
-    'link1' => '  '.freeze,
-    'button' => '>>> '.freeze,
-    'description' => '  '.freeze,
-    'action' => '* '.freeze
+    'link1' => '  ',
+    'button' => '>>> ',
+    'description' => '  ',
+    'action' => '* '
   }
   LINK_INDENT = {
-    'link0' => '  '.freeze,
-    'link1' => '    '.freeze,
-    'action' => '    '.freeze,
-    'button' => '    '.freeze
+    'link0' => '  ',
+    'link1' => '    ',
+    'action' => '    ',
+    'button' => '    '
   }
   ABOVE_ELEMENT = {
-    'p' => "\n\n".freeze,
-    'h1' => "\n\n\n".freeze,
-    'h2' => "\n\n".freeze,
-    'h3' => "\n\n".freeze,
-    'blockquote' => "\n\n".freeze,
-    'div' => "\n\n".freeze
+    'p' => "\n\n",
+    'h1' => "\n\n\n",
+    'h2' => "\n\n",
+    'h3' => "\n\n",
+    'blockquote' => "\n\n",
+    'div' => "\n\n"
   }
   ABOVE_CLASS = {
-    'description' => "\n".freeze,
-    'footer' => "\n\n\n\n\n****************************************************************************\n\n".freeze
+    'description' => "\n",
+    'footer' => "\n\n\n\n\n****************************************************************************\n\n"
   }
   UNDERLINE_CHAR = {
-    'h1' => '='.freeze,
-    'h2' => '-'.freeze
+    'h1' => '=',
+    'h2' => '-'
   }
-  HR_TEXT = "\n\n----------------------------------------------------------------------------".freeze
+  HR_TEXT = "\n\n----------------------------------------------------------------------------"
 
   def element_to_text(el, buffer)
     # Work out what to do with the top level element, and how to format it
@@ -439,7 +472,7 @@ class EmailTemplate < ActiveRecord::Base
   end
 
   def gather_text(el)
-    text = ''
+    text = ''.dup
     link = nil
     case el.node_type
     when :element

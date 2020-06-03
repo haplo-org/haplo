@@ -13,8 +13,8 @@ class FileControllerTest < IntegrationTest
 
   def setup
     db_reset_test_data
-    FileCacheEntry.destroy_all()
-    StoredFile.destroy_all()
+    destroy_all FileCacheEntry
+    destroy_all StoredFile
   end
 
   def make_object_for_file(file)
@@ -63,6 +63,7 @@ class FileControllerTest < IntegrationTest
       make_request url, {}, {:expected_response_codes => [405]}, :options
       assert_equal "405", response.code
     end
+    delete_all_jobs
   end
 
   # -----------------------------------------------------------------------------------------------------
@@ -92,11 +93,13 @@ class FileControllerTest < IntegrationTest
 
     # Check 'preview/' in the spec doesn't get in the cache.
     # Note that the PDF preview is returning an HTML document but not putting anything in the cache.
-    all_cached = FileCacheEntry.find(:all)
+    all_cached = FileCacheEntry.where().select()
     assert_equal 1, all_cached.length
     assert_equal html_file.id, all_cached[0].stored_file_id
     assert_equal 'text/plain', all_cached[0].output_mime_type
     assert_equal '', all_cached[0].output_options
+
+    delete_all_jobs
   end
 
   # -----------------------------------------------------------------------------------------------------
@@ -117,7 +120,7 @@ class FileControllerTest < IntegrationTest
     # all works, and hopefully hit the edge cases.
 
     # Check cache is empty, no in-progress transforms
-    assert_equal 0, FileCacheEntry.count()
+    assert_equal 0, FileCacheEntry.where().count()
     assert_equal 0, KApp.cache(FileController::IN_PROGRESS_CACHE).trackers.length
 
     # Make lots of requests in parallel to make sure
@@ -129,22 +132,22 @@ class FileControllerTest < IntegrationTest
     threads.each { |t| assert t.result == true, t.result }
 
     # Two cache entries
-    assert_equal 2, FileCacheEntry.count()
+    assert_equal 2, FileCacheEntry.where().count()
     # No transforms in progress
     assert_equal 0, KApp.cache(FileController::IN_PROGRESS_CACHE).trackers.length
 
     # Check actual cache entries
-    assert_equal 1, FileCacheEntry.count(:conditions => ['stored_file_id=? AND output_mime_type=? AND output_options=?',
-        file.id, 'image/png', 'h=180,w=90'])
-    assert_equal 1, FileCacheEntry.count(:conditions => ['stored_file_id=? AND output_mime_type=? AND output_options=?',
-        file.id, 'image/gif', 'h=200,w=100'])
+    assert_equal 1, FileCacheEntry.where(:stored_file_id => file.id, :output_mime_type => 'image/png', :output_options => 'h=180,w=90').count()
+    assert_equal 1, FileCacheEntry.where(:stored_file_id => file.id, :output_mime_type => 'image/gif', :output_options => 'h=200,w=100').count()
 
     # Check clean error when transformation not possible
     get "/file/#{file.digest}/#{file.size}/html/preview", nil, {:expected_response_codes => [400]}
     assert response.body.include?("An error occurred during file conversion.")
+
+    delete_all_jobs
   end
 
-  class TestingThread < Thread
+  class TestingThread
     include KFileUrls
     def initialize(session, request_type, file)
       @session = session

@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Provide utility functions to KUser JavaScript objects
@@ -33,47 +36,41 @@ module JSUserSupport
   # ---------------------------------------------------------------------------------------------
 
   def self.getUserById(id)
-    user = nil
-    begin
-      user = User.cache[id]
-    rescue ActiveRecord::RecordNotFound => e
-      # Ignore to return nil
-    end
-    user
+    User.cache[id]
   end
 
   def self.getUserByEmail(email, enforceKind, group)
-    q = User.where("lower(email) = lower(?)", email).order(:id)
+    q = User.where_lower_email((email||'').strip).order(:id)
     if enforceKind
       if group
-        q = q.where("kind IN (#{User::KIND_GROUP},#{User::KIND_GROUP_DISABLED})")
+        q.where_kind_in([User::KIND_GROUP, User::KIND_GROUP_DISABLED])
       else
-        q = q.where("kind IN (#{User::KIND_USER},#{User::KIND_USER_BLOCKED},#{User::KIND_USER_DELETED})")
+        q.where_kind_in([User::KIND_USER, User::KIND_USER_BLOCKED, User::KIND_USER_DELETED])
       end
     end
-    q.first
+    q.first()
   end
 
   def self.getAllUsersByEmail(email)
-    User.find_all_by_email(email).to_a
+    User.where_lower_email((email||'').strip).order(:id).select()
   end
 
   def self.getAllUsersByTags(tags)
     tag_values = JSON.parse(tags);
     raise JavaScriptAPIError, "Argument to O.usersByTags() must be a JavaScript object mapping tag names to values." unless tag_values.kind_of? Hash
-    query = User.where("kind IN (#{User::KIND_USER},#{User::KIND_USER_BLOCKED},#{User::KIND_USER_DELETED})")
+    query = User.where_kind_in([User::KIND_USER, User::KIND_USER_BLOCKED, User::KIND_USER_DELETED])
     tag_values.each do |k, v|
       if v.nil?
-        query = query.where(PgHstore::WHERE_TAG_IS_EMPTY_STRING_OR_NULL, k)
+        query.where_tag_is_empty_string_or_null(k)
       else
-        query = query.where(PgHstore::WHERE_TAG, k, v)
+        query.where_tag(k, v)
       end
     end
-    query.to_a
+    query.select()
   end
 
   def self.getUserByRef(ref)
-    User.find_by_objref(ref)
+    User.where(:objref => ref).first()
   end
 
   def self.getServiceUserByCode(code)
@@ -144,7 +141,7 @@ module JSUserSupport
     # Make a list of all the groups
     uids = group.groups_ids.dup
     uids << groupId
-    "#{fieldName} IN (SELECT user_id FROM user_memberships WHERE member_of IN (#{uids.join(',')}) AND is_active)"
+    "#{fieldName} IN (SELECT user_id FROM #{KApp.db_schema_name}.user_memberships WHERE member_of IN (#{uids.join(',')}) AND is_active)"
   end
 
   def self.makeWhereClauseForPermitRead(user, fieldName)
@@ -153,16 +150,16 @@ module JSUserSupport
 
   def self.loadAllMembers(group, active)
     user_kind = active ? User::KIND_USER : User::KIND_USER_BLOCKED
-    conditions = if group.id == User::GROUP_EVERYONE
+    query = if group.id == User::GROUP_EVERYONE
       # Special case for Everyone, as the memberships don't actually exist in the user_memberships table
-      "kind = #{user_kind} AND id <> #{User::USER_ANONYMOUS}"
+      User.where(:kind => user_kind).where_id_is_not(User::USER_ANONYMOUS)
     else
       # Normal groups use the UIDs
       uids = group.member_group_ids.dup
       uids << group.id
-      "kind = #{user_kind} AND id IN (SELECT user_id FROM user_memberships WHERE member_of IN (#{uids.join(',')}) AND is_active)"
+      User.where(:kind => user_kind).where_member_of_direct_gid_list(uids)
     end
-    User.find(:all, :conditions => conditions, :order => 'lower(name)')
+    query.order(:lower_name).select()
   end
 
   # operation is checked to be an allowed operation by the Java layer, so safe to to_sym() it
@@ -280,8 +277,8 @@ module JSUserSupport
     user.objref = objref if objref
     user.tags = tags_hstore if tags_hstore
     user.set_invalid_password
-    User.transaction do
-      user.save!
+    MiniORM.transaction do
+      user.save
       user.set_groups_from_ids(group_membership) if group_membership
       user.set_user_data(UserData::NAME_LOCALE, locale_id) if locale_id
     end
@@ -292,7 +289,7 @@ module JSUserSupport
     details = validatedUserJSON(json)
     USER_DETAILS.each { |js,ruby| user.send(ruby, details[js].strip) }
     changed = user.changed?
-    user.save! if changed
+    user.save if changed
     changed
   end
 
@@ -302,7 +299,7 @@ module JSUserSupport
     else
       user.kind = active ? User::KIND_USER : User::KIND_USER_BLOCKED
     end
-    user.save!
+    user.save
     user
   end
 
@@ -313,7 +310,7 @@ module JSUserSupport
   def self.createAPIKey(user, name, pathPrefix)
     raise JavaScriptAPIError, "Cannot create API keys for groups" if user.is_group
     api_key = ApiKey.new
-    api_key.user = user
+    api_key.user_id = user.id
     api_key.name = name
     api_key.path = pathPrefix
     secret = api_key.set_random_api_key
@@ -322,15 +319,16 @@ module JSUserSupport
   end
 
   def self.createGroup(groupName)
-    group = User.new(:name => groupName)
+    group = User.new
+    group.name = groupName
     group.kind = User::KIND_GROUP
-    group.save!
+    group.save
     group
   end
 
   def self.setUserRef(user, ref)
     user.objref = ref
-    user.save!
+    user.save
     nil
   end
 

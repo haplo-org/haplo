@@ -189,7 +189,6 @@ File.unlink(SESSIONS_PRESERVED_DATA)    if File.exist?(SESSIONS_PRESERVED_DATA)
 
 class TestApplicationInit
   extend TestStoreHelper
-  OBJECT_STORE_GLOBAL_TABLES = File.open("#{KFRAMEWORK_ROOT}/db/objectstore_global.sql") { |f| f.read }
   def self.app(test_app_id)
     # Initialise the test application
     # Clean up old files?
@@ -203,10 +202,6 @@ class TestApplicationInit
     KAppInit.create_app_user("www#{test_app_id}.example.com", 'Init User', 'test@example.com', 'password1')
     # Make some changes
     KApp.in_application(test_app_id) do
-      # Add in the object store global tables, so that text indexing can be done indepedendently in each
-      KApp.get_pg_database.perform(OBJECT_STORE_GLOBAL_TABLES)
-      # Having a api key defined by app init stops tests deleting users
-      KApp.get_pg_database.perform("DELETE FROM api_keys")
       # Change the SSL policy so integration tests don't have to use SSL
       KApp.set_global(:ssl_policy, 'ccc')
 
@@ -223,8 +218,7 @@ class TestApplicationInit
       load_basic_schema_objects()
       snapshot_store("basic", test_app_id)
 
-      KObjectStore::TEXTIDX_FLAG_GENERAL.clearFlag()
-      KObjectStore::TEXTIDX_FLAG_REINDEX.clearFlag()
+      KObjectStore::TEXTIDX_FLAG.clearFlag()
     end
   end
 end
@@ -268,8 +262,7 @@ def testing_replace_const(object, constant, value)
   $VERBOSE = old_verbosity
 end
 
-testing_replace_const(KObjectStore, "TEXTIDX_FLAG_GENERAL", MockedObjectStoreFlag.new(FIRST_TEST_APP_ID, LAST_TEST_APP_ID))
-testing_replace_const(KObjectStore, "TEXTIDX_FLAG_REINDEX", MockedObjectStoreFlag.new(FIRST_TEST_APP_ID, LAST_TEST_APP_ID))
+testing_replace_const(KObjectStore, "TEXTIDX_FLAG", MockedObjectStoreFlag.new(FIRST_TEST_APP_ID, LAST_TEST_APP_ID))
 
 # Patch Test::Unit::TestCase to:
 #  - Use KApp.in_application to set framework state
@@ -306,7 +299,7 @@ console = KFramework::ConsoleServer.new
 Thread.new { console.start }
 
 # Clear anything from the jobs queue in case a previous test left something there
-KApp.in_application(:no_app) { KApp.get_pg_database.perform("DELETE FROM jobs") }
+KApp.with_pg_database { |db| db.perform("DELETE FROM jobs") }
 
 # Run the tests in the required number of threads
 puts "Test concurrency: #{MULTIPLE_CONCURRENT_TESTS}"

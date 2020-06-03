@@ -18,20 +18,21 @@ class JavaScriptControllerTest < IntegrationTest
   def setup
     db_reset_test_data
     drop_all_javascript_db_tables
-    StoredFile.destroy_all
+    destroy_all FileCacheEntry
+    destroy_all StoredFile
     KApp.set_global(:_pjson_test_response_plugin, '{}')
     KPlugin.install_plugin("test_response_plugin")
-    @user = User.new(
-      :name_first => 'first',
-      :name_last => "last",
-      :email => 'authtest@example.com')
+    @user = User.new
+    @user.name_first = 'first'
+    @user.name_last = "last"
+    @user.email = 'authtest@example.com'
     @user.kind = User::KIND_USER
     @user.password = 'pass1234'
-    @user.save!
+    @user.save
   end
 
   def teardown
-    @user.destroy
+    @user.delete
     # Uninstall plugins
     KPlugin.uninstall_plugin("test_response_plugin")
     KPlugin.uninstall_plugin("test_request_callbacks")
@@ -60,10 +61,13 @@ class JavaScriptControllerTest < IntegrationTest
 
     # Authenticated with a service user & API key
     service_user = User.where(:code=>'test:service-user:test-response').first
-    apikey = ApiKey.new(:user_id => service_user.id, :path => '/', :name => 'TEST');
+    apikey = ApiKey.new
+    apikey.user_id = service_user.id
+    apikey.path = '/'
+    apikey.name = 'TEST'
     key = apikey.set_random_api_key
     apikey_auth_headers = {"Authorization"=>"Basic "+["haplo:#{key}"].pack('m').gsub(/\s/,''),}
-    apikey.save!
+    apikey.save
     get "/do/plugin_test/current_user", nil, apikey_auth_headers
     assert_response :success
     assert_equal "USER #{service_user.id} 'Test Resource Service User' 'null' 'null' 'null'", response.body
@@ -74,7 +78,7 @@ class JavaScriptControllerTest < IntegrationTest
     assert_equal "USER #{service_user.id} 'Test Resource Service User'", response.body
 
     # And it doesn't work when the api key is destroyed
-    apikey.destroy
+    apikey.delete
     get_403 "/do/plugin_test/current_user", nil, apikey_auth_headers
     get_403 "/do/anon-not-allowed/current-user", nil, apikey_auth_headers
     KPlugin.uninstall_plugin('test_anon_not_allowed')
@@ -392,21 +396,28 @@ class JavaScriptControllerTest < IntegrationTest
     assert_equal "400", response.code
 
     begin
-      different_user = User.new(
-        :name_first => 'first',
-        :name_last => "last",
-        :email => 'different@example.com')
+      different_user = User.new
+      different_user.name_first = 'first'
+      different_user.name_last = "last"
+      different_user.email = 'different@example.com'
       different_user.kind = User::KIND_USER
       different_user.password = 'pass1234'
-      different_user.save!
+      different_user.save
 
-      work_unit = WorkUnit.new(:work_type => "plugin_test:unit", :opened_at => Time.now,
-                               :created_at => Time.now, :created_by_id => @user.id,
-                               :actionable_by => @user)
+      work_unit = WorkUnit.new
+      work_unit.work_type = "plugin_test:unit"
+      work_unit.opened_at = Time.now
+      work_unit.created_at = Time.now
+      work_unit.created_by_id = @user.id
+      work_unit.actionable_by_id = @user.id
       work_unit.save()
-      different_work_unit = WorkUnit.new(:work_type => "plugin_test:different", :opened_at => Time.now,
-                                         :created_at => Time.now, :created_by_id => @user.id,
-                                         :actionable_by => different_user)
+
+      different_work_unit = WorkUnit.new
+      different_work_unit.work_type = "plugin_test:different"
+      different_work_unit.opened_at = Time.now
+      different_work_unit.created_at = Time.now
+      different_work_unit.created_by_id = @user.id
+      different_work_unit.actionable_by_id = different_user.id
       different_work_unit.save()
 
       get "/do/plugin_test/work_unit_simple/#{work_unit.id}"
@@ -491,13 +502,13 @@ __E
 
     # Expiry times
     [1, 4, 1000, 23069, 347343].each do |seconds|
-      request_time = DateTime.current
+      request_time = Time.now
       get "/do/plugin_test/expiry/#{seconds}"
       assert_equal "s=#{seconds}", response.body
       assert_equal "private, max-age=#{seconds}", response['Cache-Control']
       # Check date - should be either the before or after time. Will fail if it takes longer than a second, but that's bad too!
       found_ok = false
-      [request_time.advance(:seconds => seconds), DateTime.current.advance(:seconds => seconds)].each do |time|
+      [request_time + seconds, Time.now + seconds].each do |time|
         found_ok = true if time.to_formatted_s(:rfc822) == response['Expires']
       end
       assert found_ok
@@ -563,6 +574,7 @@ __E
     assert_equal 'attachment; filename="test-1234.zip"', response['content-disposition']
     zip_file = Tempfile.new('zip_file_response')
     begin
+      zip_file.binmode
       zip_file.write response.body
       zip_file.flush
       zip_contents = read_zip_file(zip_file.path)
@@ -737,7 +749,7 @@ __E
         # Wait for the identifier to be set
         identifier_in_data = nil
         while identifier_in_data == nil
-          r = KApp.get_pg_database.exec("SELECT value_string FROM app_globals WHERE key='_pjson_test_response_plugin'")
+          r = KApp.with_pg_database { |db| db.exec("SELECT value_string FROM #{KApp.db_schema_name}.app_globals WHERE key='_pjson_test_response_plugin'") }
           identifier_in_data = JSON.parse(r.first.first)['lastContinuationIdentifier']
           java.lang.Thread.sleep(20) unless identifier_in_data
         end
@@ -786,12 +798,12 @@ __E
     new_rule = PermissionRule.new_rule! :deny, @user, O_TYPE_BOOK, :read
     get "/do/edit?new=#{types["book"].objref.to_presentation}"
     assert_equal [["Book", KObjRef.new(O_TYPE_BOOK).to_presentation, false]], thluih_get_displayed_label_options
-    new_rule.destroy
+    new_rule.delete
 
     new_rule = PermissionRule.new_rule! :deny, @user, O_TYPE_BOOK, :create
     get "/do/edit?new=#{types["book"].objref.to_presentation}"
     assert_equal [], thluih_get_displayed_label_options
-    new_rule.destroy
+    new_rule.delete
 
     get "/do/edit?new=#{types["multiple"].objref.to_presentation}"
     assert_equal([

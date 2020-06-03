@@ -1,5 +1,7 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -15,7 +17,7 @@ module HardwareOTPMessages
     result = nil
     case message['action']
     when 'check'
-      HardwareOTPMessages.using_database do
+      KApp.in_application(:no_app) do
         # Check a token
         token = HardwareOtpToken.find_by_identifier(message['token'])
         if token != nil
@@ -33,25 +35,6 @@ module HardwareOTPMessages
     # Check a reply was generated, then return it
     raise "Internal logic error" if result == nil
     result
-  end
-
-  # Application specific support
-  if RUNNING_IN_KAPPLICATION == :khq
-    # Main application
-    def self.using_database
-      KApp.in_application(:no_app) do
-        yield
-      end
-    end
-  else
-    # Normal Rails app
-    def self.using_database
-      begin
-        yield
-      ensure
-        ActiveRecord::Base.clear_active_connections!
-      end
-    end
   end
 end
 

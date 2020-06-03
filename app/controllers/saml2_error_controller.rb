@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 # Haplo Platform                                    https://haplo.org
-# (c) Haplo Services Ltd 2006 - 2019            https://www.haplo.com
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Saml2ErrorController < ApplicationController
@@ -12,9 +15,9 @@ class Saml2ErrorController < ApplicationController
     conditions = {
       :kind => Saml2ServiceProviderController::ADFS_KEYCHAIN_CRED_KIND,
       :instance_kind => Saml2ServiceProviderController::ADFS_KEYCHAIN_CRED_INSTANCE_KIND,
-      :name => params[:id]
+      :name => params['id']
     }
-    credential = KeychainCredential.find(:first, :conditions => conditions, :order => :id)
+    credential = KeychainCredential.where(conditions).order(:id).first
     if credential
       @message = credential.account[Saml2ServiceProviderController::ADFS_KEYCHAIN_CRED_ERROR_MESSAGE]
     end

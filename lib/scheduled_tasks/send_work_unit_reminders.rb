@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module KScheduledTasks
@@ -42,22 +45,22 @@ class WorkUnitRemindersSender
     application_send_start = Time.now
 
     # TODO: Email template selection for work unit reminders - should probably refactor the UI and system for latest updates to give more control
-    email_template = EmailTemplate.find(:first, :conditions => {:code => 'std:email-template:task-reminder'})
+    email_template = EmailTemplate.where(:code => 'std:email-template:task-reminder').first()
     return unless email_template # Emails only sent if template exists
 
     js_runtime = KJSPluginRuntime.current
     url_base = KApp.url_base(:logged_in)
 
-    User.find(:all, :conditions => "kind=#{User::KIND_USER}").each do |user|
+    User.where(:kind => User::KIND_USER).each do |user|
       AuthContext.with_user(user) do
-        work_units = WorkUnit.find_actionable_by_user(user, :now)
+        work_units = WorkUnit.where_actionable_by_user_when(user, :now).select()
         unless work_units.empty?
 
-          subject = "Reminder - #{work_units.length} task"
+          subject = "Reminder - #{work_units.length} task".dup
           subject << 's' if work_units.length != 1
           subject << ' waiting'
 
-          html = ""
+          html = "".dup
           work_units.each do |wu|
             begin
               json = js_runtime.call_fast_work_unit_render(wu, "reminderEmail")

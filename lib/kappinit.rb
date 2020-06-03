@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module KAppInit
@@ -32,8 +35,7 @@ module KAppInit
 
     KApp.in_application(:no_app) do
 
-      begin
-        db = KApp.get_pg_database
+      KApp.with_pg_database do |db|
 
         db.perform('BEGIN')
 
@@ -43,7 +45,6 @@ module KAppInit
         if r.length > 0
           raise "Application ID #{app_id} is already in use"
         end
-        r.clear
 
         db.perform("CREATE SCHEMA a#{app_id}")
         db.perform("SET search_path TO a#{app_id},public")
@@ -84,6 +85,9 @@ module KAppInit
       rescue => e
         db.perform('ROLLBACK')
         raise
+
+      ensure 
+        db.perform("SET search_path TO public")
       end
 
     end
@@ -92,8 +96,6 @@ module KAppInit
     KApp.in_application(app_id) do
 
       app = AppCreator.new
-
-      db = KApp.get_pg_database
 
       KObjectLoader.load_store_initialisation
 
@@ -104,13 +106,17 @@ module KAppInit
       all_policies_admin.delete(:require_token) # This would stop people logging in without tokens defined, so remove this one
       all_policies_admin.delete(:impersonate_user) # Don't allow this by default
       all_policies_admin.delete(:use_testing_tools) # Not relevant for production applications
-      Policy.transaction do
+      Policy.delaying_update_notification do
         [
           [User::USER_ANONYMOUS,        0,      KPolicyRegistry.to_bitmask(all_policies)], # DENY all policies to the anonymous user
           [User::GROUP_EVERYONE,        KPolicyRegistry.to_bitmask(:not_anonymous, :use_latest), 0],
           [User::GROUP_ADMINISTRATORS,  KPolicyRegistry.to_bitmask(all_policies_admin), 0] # ALLOW administrators to have most policies
         ].each do |uid, allow, deny|
-          Policy.new(:user_id => uid, :perms_allow => allow, :perms_deny => deny).save!
+          p = Policy.new
+          p.user_id = uid
+          p.perms_allow = allow
+          p.perms_deny = deny
+          p.save
         end
       end
 
@@ -139,51 +145,56 @@ module KAppInit
         raise "Unknown basic_permission_rule_set for template"
       end
 
-      # Make the default templates, changing their IDs to those specified in the constants in the model class
-      footer_html = '<div class="footer"><p class="link0"><a href="https://%%DEFAULT_HOSTNAME%%/">Sent from Haplo</a></p></div>'
-      default_email_template = EmailTemplate.new(
-        :name => 'Generic', :description => 'Generic template for sending emails when no other template is specified.',
-        :code => 'std:email-template:generic',
-        :purpose => 'Generic',
-        :from_name => 'Haplo',
-        :from_email_address => email_from_address,
-        :header => '<p>Dear %%RECIPIENT_NAME%%,</p>',
-        :footer => footer_html)
-      default_email_template.save!
-      db.perform("UPDATE email_templates SET id=#{EmailTemplate::ID_DEFAULT_TEMPLATE} WHERE id=#{default_email_template.id}")
-      # --
-      password_recovery_email_template = EmailTemplate.new(
-        :name => 'Password recovery',
-        :code => 'std:email-template:password-recovery',
-        :description => 'This template is used to send lost password emails. The interpolations are not valid for this email, and should not be used.',
-        :purpose => 'Password recovery',
-        :in_menu => false,
-        :from_name => 'Haplo Administrator',
-        :from_email_address => email_from_address)
-      password_recovery_email_template.save!
-      db.perform("UPDATE email_templates SET id=#{EmailTemplate::ID_PASSWORD_RECOVERY} WHERE id=#{password_recovery_email_template.id}")
-      # --
-      latest_updates_template = EmailTemplate.new(
-        :name => 'Latest Updates', :description => 'Template for latest updates. Uses %%FEATURE_NAME%% to allow renaming. You can apply different templates to different groups of users, but this is the default if nothing is specified.',
-        :code => 'std:email-template:latest-updates',
-        :purpose => 'Latest Updates',
-        :from_name => 'Haplo',
-        :from_email_address => email_from_address,
-        :header => '<h1>%%FEATURE_NAME%% for %%RECIPIENT_NAME%%</h1>',
-        :footer => '<hr><p class="link0"><a href="https://%%DEFAULT_HOSTNAME%%/do/latest">Change your preferences</a></p><p class="link0"><a href="%%UNSUBSCRIBE_URL%%">Click here to unsubscribe from these updates</a></p>'+footer_html)
-      latest_updates_template.save!
-      db.perform("UPDATE email_templates SET id=#{EmailTemplate::ID_LATEST_UPDATES} WHERE id=#{latest_updates_template.id}")
-      # --
-      welcome_template = EmailTemplate.new(
-        :name => 'New user welcome', :description => 'Template send to new users with their login and password.',
-        :code => 'std:email-template:new-user-welcome',
-        :purpose => 'New user welcome',
-        :from_name => 'Haplo',
-        :from_email_address => email_from_address,
-        :header => %Q!<p>%%RECIPIENT_FIRST_NAME%%</p>\n<p>Welcome to <b>#{app_title}</b>. Your account has been created, and to get started you need to set your password.</p>!,
-        :footer => %Q!<p>This link will work only once. Once you've set your password, you can discard this email.</p>\n<p>Your Haplo home page is</p>\n<blockquote><a href="https://%%DEFAULT_HOSTNAME%%/">https://%%DEFAULT_HOSTNAME%%/</a></blockquote>\n<p>Remember to bookmark your Haplo home page in your web browser.</p>\n#{footer_html}!)
-      welcome_template.save!
-      db.perform("UPDATE email_templates SET id=#{EmailTemplate::ID_NEW_USER_WELCOME} WHERE id=#{welcome_template.id}")
+      KApp.with_pg_database do |db|
+        # Make the default templates, changing their IDs to those specified in the constants in the model class
+        footer_html = '<div class="footer"><p class="link0"><a href="https://%%DEFAULT_HOSTNAME%%/">Sent from Haplo</a></p></div>'
+        default_email_template = EmailTemplate.new
+        default_email_template.name = 'Generic'
+        default_email_template.description = 'Generic template for sending emails when no other template is specified.'
+        default_email_template.code = 'std:email-template:generic'
+        default_email_template.purpose = 'Generic'
+        default_email_template.from_name = 'Haplo'
+        default_email_template.from_email_address = email_from_address
+        default_email_template.header = '<p>Dear %%RECIPIENT_NAME%%,</p>'
+        default_email_template.footer = footer_html
+        default_email_template.save
+        db.perform("UPDATE #{KApp.db_schema_name}.email_templates SET id=#{EmailTemplate::ID_DEFAULT_TEMPLATE} WHERE id=#{default_email_template.id}")
+        # --
+        password_recovery_email_template = EmailTemplate.new
+        password_recovery_email_template.name = 'Password recovery'
+        password_recovery_email_template.code = 'std:email-template:password-recovery'
+        password_recovery_email_template.description = 'This template is used to send lost password emails. The interpolations are not valid for this email, and should not be used.'
+        password_recovery_email_template.purpose = 'Password recovery'
+        password_recovery_email_template.in_menu = false
+        password_recovery_email_template.from_name = 'Haplo Administrator'
+        password_recovery_email_template.from_email_address = email_from_address
+        password_recovery_email_template.save
+        db.perform("UPDATE #{KApp.db_schema_name}.email_templates SET id=#{EmailTemplate::ID_PASSWORD_RECOVERY} WHERE id=#{password_recovery_email_template.id}")
+        # --
+        latest_updates_template = EmailTemplate.new
+        latest_updates_template.name = 'Latest Updates'
+        latest_updates_template.description = 'Template for latest updates. Uses %%FEATURE_NAME%% to allow renaming. You can apply different templates to different groups of users, but this is the default if nothing is specified.'
+        latest_updates_template.code = 'std:email-template:latest-updates'
+        latest_updates_template.purpose = 'Latest Updates'
+        latest_updates_template.from_name = 'Haplo'
+        latest_updates_template.from_email_address = email_from_address
+        latest_updates_template.header = '<h1>%%FEATURE_NAME%% for %%RECIPIENT_NAME%%</h1>'
+        latest_updates_template.footer = '<hr><p class="link0"><a href="https://%%DEFAULT_HOSTNAME%%/do/latest">Change your preferences</a></p><p class="link0"><a href="%%UNSUBSCRIBE_URL%%">Click here to unsubscribe from these updates</a></p>'+footer_html
+        latest_updates_template.save
+        db.perform("UPDATE #{KApp.db_schema_name}.email_templates SET id=#{EmailTemplate::ID_LATEST_UPDATES} WHERE id=#{latest_updates_template.id}")
+        # --
+        welcome_template = EmailTemplate.new
+        welcome_template.name = 'New user welcome'
+        welcome_template.description = 'Template send to new users with their login and password.'
+        welcome_template.code = 'std:email-template:new-user-welcome'
+        welcome_template.purpose = 'New user welcome'
+        welcome_template.from_name = 'Haplo'
+        welcome_template.from_email_address = email_from_address
+        welcome_template.header = %Q!<p>%%RECIPIENT_FIRST_NAME%%</p>\n<p>Welcome to <b>#{app_title}</b>. Your account has been created, and to get started you need to set your password.</p>!
+        welcome_template.footer = %Q!<p>This link will work only once. Once you've set your password, you can discard this email.</p>\n<p>Your Haplo home page is</p>\n<blockquote><a href="https://%%DEFAULT_HOSTNAME%%/">https://%%DEFAULT_HOSTNAME%%/</a></blockquote>\n<p>Remember to bookmark your Haplo home page in your web browser.</p>\n#{footer_html}!
+        welcome_template.save
+        db.perform("UPDATE #{KApp.db_schema_name}.email_templates SET id=#{EmailTemplate::ID_NEW_USER_WELCOME} WHERE id=#{welcome_template.id}")
+      end
 
       # Add the plugins which implement the standard elements required by the home page and objects
       KPlugin.install_plugin('std_display_elements')
@@ -212,9 +223,11 @@ module KAppInit
       KNotificationCentre.start_on_thread
 
       # Wipe the audit trail entries created during setup, reset ID, then create a new audit entry
-      AuditEntry.delete_all
-      db.perform("SELECT setval('audit_entries_id_seq', 1, false)") # next ID is 1
-      AuditEntry.write({:kind => 'NEW-APPLICATION', :displayable => false})
+      KApp.with_pg_database do |db|
+        AuditEntry.where().delete()
+        db.perform("SELECT setval('#{KApp.db_schema_name}.audit_entries_id_seq', 1, false)") # next ID is 1
+        AuditEntry.write({:kind => 'NEW-APPLICATION', :displayable => false})
+      end
     end
 
     KApp.clear_all_cached_data_for_app(app_id)
@@ -235,15 +248,15 @@ module KAppInit
       raise "bad initial user real name" unless user_real_first != nil && user_real_last != nil && user_real_first.length > 0 && user_real_last.length > 0
       puts "WARNING: user password does not meet security requirements" unless User.is_password_secure_enough?(user_password)
       # Create a user
-      initial_user = User.new(
-        :kind => User::KIND_USER,
-        :name => user_real,
-        :name_first => user_real_first || '',
-        :name_last => user_real_last || '',
-        :email => user_email)
+      initial_user = User.new
+      initial_user.kind = User::KIND_USER
+      initial_user.name = user_real
+      initial_user.name_first = user_real_first || ''
+      initial_user.name_last = user_real_last || ''
+      initial_user.email = user_email
       initial_user.password = user_password # Can't do mass assignment on passwords
       initial_user.accept_last_password_regardless    # don't want 'bad' passwords causing this to fail
-      initial_user.save!
+      initial_user.save
       # Make this user a member of the Administrators group
       initial_user.set_groups_from_ids([User::GROUP_ADMINISTRATORS])
     end
@@ -262,7 +275,7 @@ module KAppInit
         :ALL => KPermissionRegistry.entries.map { |p| p.symbol },
         :NOT_READ => KPermissionRegistry.entries.map { |p| p.symbol } - [:read]
       }
-      PermissionRule.transaction do
+      PermissionRule.delaying_update_notification do
         rules.each do |uid, label, statement, operations|
           operations = shortcuts[operations] || operations
           PermissionRule.new_rule!(statement, uid, label, *operations)
@@ -298,11 +311,11 @@ module KAppInit
     end
 
     def add_latest_updates(user_id, objref, select_by_default = true)
-      LatestRequest.new(
-        :user_id => user_id,
-        :inclusion => (select_by_default ? LatestRequest::REQ_INCLUDE : LatestRequest::REQ_DEFAULT_OFF),
-        :objref => objref
-      ).save!
+      r = LatestRequest.new
+      r.user_id = user_id
+      r.inclusion = (select_by_default ? LatestRequest::REQ_INCLUDE : LatestRequest::REQ_DEFAULT_OFF)
+      r.objref = objref
+      r.save
     end
 
     def add_search_subset(name, order, include_labels, exclude_labels, include_types)

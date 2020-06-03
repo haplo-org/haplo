@@ -1,20 +1,96 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-class AuditEntry < ActiveRecord::Base
+
+class AuditEntry < MiniORM::Record
   include KPlugin::HookSite
-  before_update :prevent_modification_of_audit_entries
-  composed_of :objref, :allow_nil => true, :class_name => 'KObjRef', :mapping => [[:obj_id,:obj_id]]
-  KLabelsActiveRecord.implement_labels_attribute self
+
+  table :audit_entries do |t|
+    t.column :timestamp,  :created_at
+    t.column :text,       :remote_addr,       nullable:true
+    t.column :int,        :user_id
+    t.column :int,        :auth_user_id
+    t.column :int,        :api_key_id,        nullable:true
+    t.column :text,       :kind
+    t.column :labellist,  :labels
+    t.column :objref,     :objref,            nullable:true, db_name:'obj_id'
+    t.column :int,        :entity_id,         nullable:true
+    t.column :int,        :version,           nullable:true
+    t.column :boolean,    :displayable
+    t.column :json_on_text, :data_json,       nullable:true, db_name:'data', property:'data'
+
+    t.order :id_desc, 'id DESC'
+    t.order :recent_first, 'created_at DESC'
+
+    t.where :created_after, 'created_at > ?', :timestamp
+    t.where :created_at_or_after, 'created_at >= ?', :timestamp
+    t.where :created_at_or_before, 'created_at <= ?', :timestamp
+    t.where :kind_is_one_of, 'kind = ANY (?)', :text_array
+    t.where :user_id_is_not, 'user_id <> ?', :int
+    t.where :user_id_or_auth_user_id, '(user_id = ? OR auth_user_id = ?)', :int, :int
+    t.where :id_less_than, 'id < ?', :int
+    t.where :id_less_than_or_equal, 'id <= ?', :int
+  end
+
+  def before_save
+    if self.persisted?
+      # Not foolproof as you can modify the table underneath, but prevents accident updates
+      # before_update
+      raise "AuditEntry should not be updated."
+    end
+    self.created_at = Time.now unless self.created_at
+    _check_labels()
+  end
+
+  def after_save
+    KNotificationCentre.notify(:audit_trail, :write, self)
+  end
+
+  # ----------------------------------------------------------------------------------------------------------------
+
+  WRITE_ATTRS = {
+    :remote_addr => :remote_addr=,
+    :user_id => :user_id=,
+    :auth_user_id => :auth_user_id=,
+    :api_key_id => :api_key_id=,
+    :kind => :kind=,
+    :labels => :labels=,
+    :objref => :objref=,
+    :entity_id => :entity_id=,
+    :version => :version=,
+    :displayable => :displayable=,
+    :data => :data=
+  }
+
+  COMPARE_ATTRS = WRITE_ATTRS.keys - [:data] + [:data_json]
+
+  # ----------------------------------------------------------------------------------------------------------------
+
+  def _check_labels
+    current_labels = self.labels
+    if current_labels.nil? || current_labels.empty?
+      # If nil or empty, give it the unlabelled label instead
+      self.labels = KLabelList.new([KConstants::O_LABEL_UNLABELLED])
+    end
+  end
+
+  # ----------------------------------------------------------------------------------------------------------------
+
+  def self.where_labels_permit(operation, label_statements)
+    raise "where_labels_permit requires a KLabelStatements" unless label_statements.kind_of? KLabelStatements
+    self.where().unsafe_where_sql(label_statements._sql_condition(operation, "labels"))
+  end
 
   # ----------------------------------------------------------------------------------------------------------------
 
   # A limit on how old an audit entry can be to count as a duplicate
-  REPEAT_PREVIOUS_WITHIN  = 5 # minutes
+  REPEAT_PREVIOUS_WITHIN  = 5*60 # seconds
 
   # ----------------------------------------------------------------------------------------------------------------
   # Write a new audit trail entry. Optionally yields entry for extra functionality.
@@ -27,7 +103,12 @@ class AuditEntry < ActiveRecord::Base
 
   # Write an entry into the audit trail, optionally using a block to modify behaviour
   def self.write(info)
-    entry = AuditEntry.new(info)
+    entry = AuditEntry.new
+    info.each do |key,value|
+      method = WRITE_ATTRS[key]
+      raise "Unknown key for AuditEntry.write: #{key}" unless method
+      entry.__send__(method, value)
+    end
     raise "No kind passed to new AuditEntry" unless entry.kind
     # Fill in details from the controller, if a request is in progress
     if (rc = KFramework.request_context)
@@ -50,16 +131,8 @@ class AuditEntry < ActiveRecord::Base
         return nil
       end
     end
-    entry.save!
+    entry.save
     entry
-  end
-
-  # ----------------------------------------------------------------------------------------------------------------
-
-  # Send notification when new entries are written
-  after_commit :send_write_notification
-  def send_write_notification
-    KNotificationCentre.notify(:audit_trail, :write, self)
   end
 
   # ----------------------------------------------------------------------------------------------------------------
@@ -78,15 +151,15 @@ class AuditEntry < ActiveRecord::Base
   def cancel_if_repeats_previous
     return if cancelled? # to avoid unnecessary database lookup
     # Attempt to find a previous entry matching this one
-    relevant_attrs = self.attributes.dup
-    relevant_attrs.delete('created_at')
-    relevant_attrs.delete('labels')
-    klabels_check_labelling() # to make sure unlabelled is set if necessary
+    _check_labels() # to make sure unlabelled is set if necessary
+    relevant_attrs = {}
+    COMPARE_ATTRS.each do |name|
+      relevant_attrs[name] = self.__send__(name)
+    end
     previous_count = AuditEntry.
-      where(['created_at > ?', REPEAT_PREVIOUS_WITHIN.minutes.ago]).
-      where(['labels = ?', self.labels._to_sql_value]).
+      where_created_after(Time.now - REPEAT_PREVIOUS_WITHIN).
       where(relevant_attrs).
-      count(:all)
+      count()
     # Cancel the write if such an entry exists
     cancel_write!("repeats previous") unless previous_count == 0
   end
@@ -100,43 +173,5 @@ class AuditEntry < ActiveRecord::Base
   # Info for self.write()
   def cancelled?    ; !!(@_cancel_reason) ; end
   def cancel_reason ; @_cancel_reason     ; end
-
-  # ----------------------------------------------------------------------------------------------------------------
-
-  # Not foolproof as you can modify the table underneath, but prevents accident updates
-  # before_update
-  def prevent_modification_of_audit_entries
-    raise "AuditEntry should not be updated."
-  end
-
-  # ----------------------------------------------------------------------------------------------------------------
-
-  # Data field
-  # arbitary data field
-  def data
-    d = read_attribute('data')
-    (d == nil) ? nil : (@_decoded_data ||= JSON.parse(d))
-  end
-
-  def data=(new_data)
-    if new_data == nil
-      write_attribute('data', nil)
-    else
-      write_attribute('data', new_data.kind_of?(String) ? new_data : new_data.to_json)
-    end
-    @_decoded_data = nil
-    new_data
-  end
-
-  # =============================================================================================================
-  #   JavaScript interface
-  # =============================================================================================================
-
-  def jsGetCreationDate
-    self.created_at.to_i * 1000
-  end
-  def jsGetData
-    self.read_attribute('data')
-  end
 
 end

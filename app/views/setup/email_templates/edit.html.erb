@@ -4,7 +4,7 @@
 
 <%= sys_mng_header %>
 
-<%= form_error_messages_for(@email_template) %>
+<%= form_error_messages_for(@transfer) %>
 
 <form method="POST" id="z__template_form"><%= form_csrf_token %>
   <%= render(:partial => 'form') %>

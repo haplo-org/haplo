@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # More general helper methods in app/helpers/application/*_helper.rb
@@ -14,11 +17,11 @@ module ApplicationHelper
   # ========================================================================================================
   # Data attributes in body tag
   def body_tag_data_attributes
-    attrs = ''
+    attrs = ''.dup
     if @represented_objref
       attrs << %Q! data-ref="#{@represented_objref.to_presentation}"!
     end
-    if params.has_key?(:_sx)
+    if params.has_key?('_sx')
       attrs << ' data-sp="1"'
     end
     attrs

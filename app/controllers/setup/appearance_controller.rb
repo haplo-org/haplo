@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 class Setup_AppearanceController < ApplicationController
   include ERB::Util # for html_escape
@@ -28,7 +31,7 @@ class Setup_AppearanceController < ApplicationController
 
     if request.post?
       colours_updated = false
-      case params[:which]
+      case params['which']
       when 'globals'
         old_css = KApp.global(:appearance_css).gsub(/\s+\z/m,'')  # avoid updating if whitespace / line endings gets appended
         update_appglobal_strings_no_escape(:appearance_header, :appearance_css)
@@ -40,7 +43,8 @@ class Setup_AppearanceController < ApplicationController
       when 'colours'
         cols = Array.new
         KApplicationColours::CUSTOM_COLOURS.each do |name,symbol|
-          v = (params.has_key?(symbol)) ? params[symbol].upcase : @colours[symbol]
+          key = symbol.to_s
+          v = (params.has_key?(key)) ? params[key].upcase : @colours[symbol]
           if v == 'AUTO'
             cols << v
           else
@@ -50,8 +54,8 @@ class Setup_AppearanceController < ApplicationController
         KApp.set_global(:appearance_colours, cols.join('|'))
         colours_updated = true
       when 'colourset'
-        if params[:set] != ''
-          KApp.set_global(:appearance_colours, params[:set])
+        if params['set'] != ''
+          KApp.set_global(:appearance_colours, params['set'])
           colours_updated = true
         end
       end
@@ -59,7 +63,7 @@ class Setup_AppearanceController < ApplicationController
         # Invalidate all the cached app dynamic files in framework and browsers
         KDynamicFiles.invalidate_all_cached_files_in_current_app
         # Move on to next page?
-        if params.has_key?(:apply)
+        if params.has_key?('apply')
           # Need redirect to reflect the colours in the form which is redisplayed
           redirect_to('/do/setup/appearance')
         else
@@ -81,7 +85,7 @@ class Setup_AppearanceController < ApplicationController
         ["Full character set (slower initial download)", 8]
       ]
     if request.post?
-      new_setting = params[:size].to_i
+      new_setting = params['size'].to_i
       if new_setting != @webfont_size
         @webfont_size = new_setting
         KApp.set_global(:appearance_webfont_size, new_setting)
@@ -98,7 +102,7 @@ private
   def update_appglobal_strings_no_escape(*syms)
     syms.each do |sym|
       ag = KApp.global(sym)
-      n = params[sym] # no escaping
+      n = params[sym.to_s] # no escaping
       if n != nil && ag != n
         KApp.set_global(sym, n)
       end

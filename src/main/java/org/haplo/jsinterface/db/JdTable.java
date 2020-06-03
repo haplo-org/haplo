@@ -6,6 +6,7 @@
 
 package org.haplo.jsinterface.db;
 
+import org.haplo.framework.Database;
 import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
 import org.haplo.javascript.JsGet;
@@ -59,12 +60,16 @@ public class JdTable extends KScriptable {
     // --------------------------------------------------------------------------------------------------------------
     private String getDatabaseTableName() {
         if(databaseTableName == null) {
-            if(this.dbName == null || this.namespace == null) {
-                throw new RuntimeException("JdTable not set up correctly");
-            }
-            databaseTableName = ("j_" + this.namespace.getName() + "_" + this.dbName).toLowerCase();
+            databaseTableName = (this.namespace.getPostgresSchemaName() + "." + getDatabaseTableNameUnqualified());
         }
         return databaseTableName;
+    }
+
+    private String getDatabaseTableNameUnqualified() {
+        if(this.dbName == null || this.namespace == null) {
+            throw new RuntimeException("JdTable not set up correctly");
+        }
+        return ("j_" + this.namespace.getName() + "_" + this.dbName).toLowerCase();
     }
 
     protected Field getField(String fieldName) {
@@ -184,29 +189,30 @@ public class JdTable extends KScriptable {
     }
 
     public Scriptable jsFunction_load(int id) throws java.sql.SQLException {
-        ParameterIndicies indicies = makeParameterIndicies();
-        Connection db = Runtime.currentRuntimeHost().getSupportRoot().getJdbcConnection();
-        Statement statement = db.createStatement();
-        Scriptable object = null;
-        try {
-            StringBuilder select = new StringBuilder("SELECT ");
-            this.appendColumnNamesForSelect(1, this.getDatabaseTableName(), select, indicies);
-            select.append(" FROM ");
-            select.append(this.getDatabaseTableName());
-            select.append(" WHERE id=" + id);
-            ResultSet results = statement.executeQuery(select.toString());
-            ArrayList<Scriptable> objects = jsObjectsFromResultsSet(results, 1 /* results size hint */, indicies, null /* no includes */);
-            if(objects.size() == 1) {
-                object = objects.get(0);
-            } else if(objects.size() != 0) {
-                throw new OAPIException("Expectations not met; database returns more than one object");
+        return (Scriptable)Database.withConnection((db) -> {
+            ParameterIndicies indicies = makeParameterIndicies();
+            Statement statement = db.createStatement();
+            Scriptable object = null;
+            try {
+                StringBuilder select = new StringBuilder("SELECT ");
+                this.appendColumnNamesForSelect(1, this.getDatabaseTableName(), select, indicies);
+                select.append(" FROM ");
+                select.append(this.getDatabaseTableName());
+                select.append(" WHERE id=" + id);
+                ResultSet results = statement.executeQuery(select.toString());
+                ArrayList<Scriptable> objects = jsObjectsFromResultsSet(results, 1 /* results size hint */, indicies, null /* no includes */);
+                if(objects.size() == 1) {
+                    object = objects.get(0);
+                } else if(objects.size() != 0) {
+                    throw new OAPIException("Expectations not met; database returns more than one object");
+                }
+                results.close();
+            } finally {
+                statement.close();
             }
-            results.close();
-        } finally {
-            statement.close();
-        }
 
-        return object;
+            return object;
+        });
     }
 
     public Scriptable jsFunction_select() {
@@ -241,24 +247,26 @@ public class JdTable extends KScriptable {
         Scriptable rowValues = (Scriptable)row.get("$values", row);
 
         // Run the SQL
-        Connection db = Runtime.currentRuntimeHost().getSupportRoot().getJdbcConnection();
-        PreparedStatement statement = db.prepareStatement(sql.toString());
-        try {
-            int parameterIndex = 1;
-            for(Field field : fields) {
-                parameterIndex = field.setStatementField(parameterIndex, statement, rowValues);
-            }
-            ResultSet results = statement.executeQuery();
-            if(!results.next()) {
-                throw new OAPIException("Create row didn't return an id");
-            }
-            int id = results.getInt(1);
+        Database.withConnection((db) -> {
+            PreparedStatement statement = db.prepareStatement(sql.toString());
+            try {
+                int parameterIndex = 1;
+                for(Field field : fields) {
+                    parameterIndex = field.setStatementField(parameterIndex, statement, rowValues);
+                }
+                ResultSet results = statement.executeQuery();
+                if(!results.next()) {
+                    throw new OAPIException("Create row didn't return an id");
+                }
+                int id = results.getInt(1);
 
-            // Store the id in the row object
-            row.put("id", row, new Integer(id));
-        } finally {
-            statement.close();
-        }
+                // Store the id in the row object
+                row.put("id", row, new Integer(id));
+            } finally {
+                statement.close();
+            }
+            return null;
+        });
     }
 
     public void jsFunction_saveChangesToRow(int id, Scriptable row) throws java.sql.SQLException {
@@ -292,45 +300,47 @@ public class JdTable extends KScriptable {
         update.append(id);
 
         // Execute the SQL
-        Connection db = Runtime.currentRuntimeHost().getSupportRoot().getJdbcConnection();
-        PreparedStatement statement = db.prepareStatement(update.toString());
-        try {
-            for(Field field : this.fields) {
-                field.setUpdateField(statement, rowValues, indicies);
+        Database.withConnection((db) -> {
+            PreparedStatement statement = db.prepareStatement(update.toString());
+            try {
+                for(Field field : this.fields) {
+                    field.setUpdateField(statement, rowValues, indicies);
+                }
+                statement.execute();
+            } finally {
+                statement.close();
             }
-            statement.execute();
-        } finally {
-            statement.close();
-        }
+            return null;
+        });
     }
 
-    public boolean jsFunction_deleteRow(int id) throws java.sql.SQLException {
+    public Boolean jsFunction_deleteRow(int id) throws java.sql.SQLException {
         if(id <= 0) {
             throw new OAPIException("Bad id value for deleting row");
         }
 
-        // Update database
-        boolean wasDeleted = false;
-        Connection db = Runtime.currentRuntimeHost().getSupportRoot().getJdbcConnection();
-        Statement statement = db.createStatement();
-        try {
-            int count = statement.executeUpdate("DELETE FROM " + this.getDatabaseTableName() + " WHERE id=" + id);
-            if(count == 1) {
-                wasDeleted = true;
-            } else if(count != 0) {
-                throw new RuntimeException("Logic error - more than one row deleted");
+        return (Boolean)Database.withConnection((db) -> {
+            // Update database
+            boolean wasDeleted = false;
+            Statement statement = db.createStatement();
+            try {
+                int count = statement.executeUpdate("DELETE FROM " + this.getDatabaseTableName() + " WHERE id=" + id);
+                if(count == 1) {
+                    wasDeleted = true;
+                } else if(count != 0) {
+                    throw new RuntimeException("Logic error - more than one row deleted");
+                }
+            } finally {
+                statement.close();
             }
-        } finally {
-            statement.close();
-        }
-
-        return wasDeleted;
+            return wasDeleted;
+        });
     }
 
     // --------------------------------------------------------------------------------------------------------------
     public void setupStorage(Connection db) throws java.sql.SQLException {
         String postgresSchema = this.namespace.getPostgresSchemaName();
-        String databaseTableName = this.getDatabaseTableName();
+        String databaseTableNameUnqualified = this.getDatabaseTableNameUnqualified();
 
         // Does this table exist?
         boolean tableExists = false;
@@ -341,7 +351,7 @@ public class JdTable extends KScriptable {
             // Check existence of the table by getting the list of columns and their types
             // OK to generate the SQL like this - schema name is internally generated, and table name is checked
             String getColumnsSql = "SELECT column_name,data_type FROM information_schema.columns WHERE table_schema='" +
-                    postgresSchema +"' AND table_name='" + databaseTableName + "'";
+                    postgresSchema +"' AND table_name='" + databaseTableNameUnqualified + "'";
             ResultSet columnResults = checkStatement.executeQuery(getColumnsSql);
             while(columnResults.next()) {
                 existingFields.put(columnResults.getString(1).toLowerCase(), columnResults.getString(2));
@@ -351,7 +361,7 @@ public class JdTable extends KScriptable {
             // If the table exists work out the maximum indexIndex currently defined
             if(tableExists) {
                 String getIndexIndexSql = "SELECT COALESCE(MAX(substring(indexname from '[0-9]+$')::int),-1)+1 FROM pg_catalog.pg_indexes WHERE schemaname='" +
-                        postgresSchema + "' AND tablename='" + databaseTableName + "' AND indexname ~ '_i[0-9]+$'";
+                        postgresSchema + "' AND tablename='" + databaseTableNameUnqualified + "' AND indexname ~ '_i[0-9]+$'";
                 ResultSet indexIndexResults = checkStatement.executeQuery(getIndexIndexSql);
                 if(indexIndexResults.next()) {
                     indexIndex = indexIndexResults.getInt(1);
@@ -369,7 +379,7 @@ public class JdTable extends KScriptable {
             StringBuilder alter = new StringBuilder("ALTER TABLE ");
             alter.append(postgresSchema);
             alter.append(".");
-            alter.append(databaseTableName);
+            alter.append(databaseTableNameUnqualified);
             boolean firstColumn = true;
             boolean needsAlter = false;
             for(Field field : fields) {
@@ -395,7 +405,7 @@ public class JdTable extends KScriptable {
             StringBuilder create = new StringBuilder("CREATE TABLE ");
             create.append(postgresSchema);
             create.append('.');
-            create.append(databaseTableName);
+            create.append(databaseTableNameUnqualified);
             create.append(" (\nid SERIAL PRIMARY KEY");
             for(Field field : fields) {
                 create.append(",\n");
@@ -564,112 +574,111 @@ public class JdTable extends KScriptable {
     }
 
     private Object buildAndExecuteQuery(JdSelect query, QueryExecution execution) throws java.sql.SQLException {
-        ParameterIndicies indicies = makeParameterIndicies();
-        Connection db = Runtime.currentRuntimeHost().getSupportRoot().getJdbcConnection();
-        // Build SELECT statement
-        String from = this.getDatabaseTableName() + " AS m";
-        StringBuilder select = new StringBuilder("SELECT ");
-        int parameterIndexStart = execution.appendOutputExpressions(select, indicies);
-        // Load other tables at the same time?
-        JdTable.LinkField[] includeFields = query.getIncludes();
-        IncludedTable includes[] = null;
-        if(includeFields != null) {
-            includes = new IncludedTable[includeFields.length];
-            // Go through each of the fields
-            for(int includeIndex = 0; includeIndex < includeFields.length; ++includeIndex) {
-                // Get info about included tables
-                JdTable.LinkField field = includeFields[includeIndex];
-                JdTable otherTable = this.namespace.getTable(field.getOtherTableName());
-                String otherAlias = field.getNameForQueryAlias();
-                ParameterIndicies otherIndicies = otherTable.makeParameterIndicies();
-                includes[includeIndex] = new IncludedTable(otherTable, field, otherIndicies);
-                // Ask all the other tables to add their fields?
-                parameterIndexStart = execution.appendOutputExpressionsForLinkedTable(otherTable, parameterIndexStart, otherAlias, select, otherIndicies);
-                // Adjust the FROM statement
-                from = "(" + from + " LEFT JOIN " + otherTable.getDatabaseTableName() + " AS " + otherAlias + " ON m." + field.getDbName() + "=" + otherAlias + ".id)";
+        return Database.withConnection((db) -> {
+            ParameterIndicies indicies = makeParameterIndicies();
+            // Build SELECT statement
+            String from = this.getDatabaseTableName() + " AS m";
+            StringBuilder select = new StringBuilder("SELECT ");
+            int parameterIndexStart = execution.appendOutputExpressions(select, indicies);
+            // Load other tables at the same time?
+            JdTable.LinkField[] includeFields = query.getIncludes();
+            IncludedTable includes[] = null;
+            if(includeFields != null) {
+                includes = new IncludedTable[includeFields.length];
+                // Go through each of the fields
+                for(int includeIndex = 0; includeIndex < includeFields.length; ++includeIndex) {
+                    // Get info about included tables
+                    JdTable.LinkField field = includeFields[includeIndex];
+                    JdTable otherTable = this.namespace.getTable(field.getOtherTableName());
+                    String otherAlias = field.getNameForQueryAlias();
+                    ParameterIndicies otherIndicies = otherTable.makeParameterIndicies();
+                    includes[includeIndex] = new IncludedTable(otherTable, field, otherIndicies);
+                    // Ask all the other tables to add their fields?
+                    parameterIndexStart = execution.appendOutputExpressionsForLinkedTable(otherTable, parameterIndexStart, otherAlias, select, otherIndicies);
+                    // Adjust the FROM statement
+                    from = "(" + from + " LEFT JOIN " + otherTable.getDatabaseTableName() + " AS " + otherAlias + " ON m." + field.getDbName() + "=" + otherAlias + ".id)";
+                }
             }
-        }
-        // FROM
-        select.append(" FROM ");
-        select.append(from);
-        // WHERE
-        String where = query.generateWhereSql("m");
-        if(where != null) {
-            select.append(" WHERE ");
-            select.append(where);
-        }
-        // GROUP BY, ORDER BY, etc
-        execution.appendGroupAndOrder(select);
-        // LIMIT
-        String limit = query.generateLimitAndOffsetSql();
-        if(limit != null) {
-            select.append(limit);
-        }
-
-        // Run the query
-        Object output = null;
-        try ( PreparedStatement statement = db.prepareStatement(select.toString()) ) {
+            // FROM
+            select.append(" FROM ");
+            select.append(from);
+            // WHERE
+            String where = query.generateWhereSql("m");
             if(where != null) {
-                query.setWhereValues(statement);
+                select.append(" WHERE ");
+                select.append(where);
             }
-            try ( ResultSet results = statement.executeQuery() ) {
-                output = execution.createResultObject(results, indicies, includes);
+            // GROUP BY, ORDER BY, etc
+            execution.appendGroupAndOrder(select);
+            // LIMIT
+            String limit = query.generateLimitAndOffsetSql();
+            if(limit != null) {
+                select.append(limit);
             }
-        }
 
-        return output;
+            // Run the query
+            Object output = null;
+            try ( PreparedStatement statement = db.prepareStatement(select.toString()) ) {
+                if(where != null) {
+                    query.setWhereValues(statement);
+                }
+                try ( ResultSet results = statement.executeQuery() ) {
+                    output = execution.createResultObject(results, indicies, includes);
+                }
+            }
+            return output;
+        });
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public int executeUpdate(JdSelect query, Scriptable rowValues) throws java.sql.SQLException {
-        StringBuilder update = new StringBuilder("UPDATE ");
-        String tableName = this.getDatabaseTableName();
-        update.append(tableName);
-        update.append(" SET ");
-        boolean needsComma = false;
-        int parameterIndex = 1;
-        ParameterIndicies indicies = makeParameterIndicies();
-        int lengthBeforeFields = update.length();
-        for(Field field : this.fields) {
-            int nextParameterIndex = field.appendUpdateSQL(update, needsComma, rowValues, parameterIndex, indicies);
-            if(nextParameterIndex != parameterIndex) {
-                parameterIndex = nextParameterIndex;
-                needsComma = true;
-            }
-        }
-        if(update.length() == lengthBeforeFields) {
-            return 0;   // nothing to do (and invalid SQL)
-        }
-        String where = query.generateWhereSql(tableName);
-        if(where != null) {
-            update.append(" WHERE ");
-            update.append(where);
-        }
-
-        int numberUpdated = 0;
-        Connection db = Runtime.currentRuntimeHost().getSupportRoot().getJdbcConnection();
-        PreparedStatement statement = db.prepareStatement(update.toString());
-        try {
+    public Integer executeUpdate(JdSelect query, Scriptable rowValues) throws java.sql.SQLException {
+        return (Integer)Database.withConnection((db) -> {
+            StringBuilder update = new StringBuilder("UPDATE ");
+            String tableName = this.getDatabaseTableName();
+            update.append(tableName);
+            update.append(" SET ");
+            boolean needsComma = false;
+            int parameterIndex = 1;
+            ParameterIndicies indicies = makeParameterIndicies();
+            int lengthBeforeFields = update.length();
             for(Field field : this.fields) {
-                field.setUpdateField(statement, rowValues, indicies);
+                int nextParameterIndex = field.appendUpdateSQL(update, needsComma, rowValues, parameterIndex, indicies);
+                if(nextParameterIndex != parameterIndex) {
+                    parameterIndex = nextParameterIndex;
+                    needsComma = true;
+                }
             }
+            if(update.length() == lengthBeforeFields) {
+                return 0;   // nothing to do (and invalid SQL)
+            }
+            String where = query.generateWhereSql(tableName);
             if(where != null) {
-                query.setWhereValues2(parameterIndex, statement);
+                update.append(" WHERE ");
+                update.append(where);
             }
-            numberUpdated = statement.executeUpdate();
-        } finally {
-            statement.close();
-        }
-        return numberUpdated;
+
+            int numberUpdated = 0;
+            PreparedStatement statement = db.prepareStatement(update.toString());
+            try {
+                for(Field field : this.fields) {
+                    field.setUpdateField(statement, rowValues, indicies);
+                }
+                if(where != null) {
+                    query.setWhereValues2(parameterIndex, statement);
+                }
+                numberUpdated = statement.executeUpdate();
+            } finally {
+                statement.close();
+            }
+            return numberUpdated;
+        });
     }
 
     // --------------------------------------------------------------------------------------------------------------
-    public int executeDelete(JdSelect query) throws java.sql.SQLException {
+    public Integer executeDelete(JdSelect query) throws java.sql.SQLException {
         if(null != query.getIncludes()) {
             throw new OAPIException("deleteAll() cannot use selects which include other tables, or where clauses which refer to a field in another table via a link field. Remove include() statements and check your where() clauses.");
         }
-        Connection db = Runtime.currentRuntimeHost().getSupportRoot().getJdbcConnection();
-        int numberDeleted = 0;
         // Build DELETE statement
         StringBuilder del = new StringBuilder("DELETE FROM ");
         String tableName = this.getDatabaseTableName();
@@ -680,16 +689,19 @@ public class JdTable extends KScriptable {
             del.append(where);
         }
         // Run the query
-        PreparedStatement statement = db.prepareStatement(del.toString());
-        try {
-            if(where != null) {
-                query.setWhereValues(statement);
+        return (Integer)Database.withConnection((db) -> {
+            int numberDeleted = 0;
+            PreparedStatement statement = db.prepareStatement(del.toString());
+            try {
+                if(where != null) {
+                    query.setWhereValues(statement);
+                }
+                numberDeleted = statement.executeUpdate();
+            } finally {
+                statement.close();
             }
-            numberDeleted = statement.executeUpdate();
-        } finally {
-            statement.close();
-        }
-        return numberDeleted;
+            return numberDeleted;
+        });
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -918,7 +930,7 @@ public class JdTable extends KScriptable {
             }
 
             StringBuilder create = new StringBuilder(this.uniqueIndex ? "CREATE UNIQUE INDEX " : "CREATE INDEX ");
-            create.append(table.getDatabaseTableName());
+            create.append(table.getDatabaseTableNameUnqualified()); // index created in same schema as table, can't specify here
             create.append("_i" + indexIndex);
             create.append(" ON ");
             create.append(table.getDatabaseTableName());
@@ -1913,7 +1925,7 @@ public class JdTable extends KScriptable {
                 throw new OAPIException("labelList database fields cannot be indexed with other fields");
             }
             StringBuilder create = new StringBuilder("CREATE INDEX ");
-            create.append(table.getDatabaseTableName());
+            create.append(table.getDatabaseTableNameUnqualified()); // index created in same schema as table, can't specify here
             create.append("_i" + indexIndex);
             create.append(" ON ");
             create.append(table.getDatabaseTableName());

@@ -49,10 +49,10 @@
 <body<% if webfonts_enabled? %> class="z__webfonts_enabled"<% end %><%= body_tag_data_attributes %>>
 <a id="z__skip_link" href="#z__ws_content"><%= @locale.text(:Skip_Link) %></a>
 <%
-  if params.has_key?(:_sx)
+  if params.has_key?('_sx'.freeze)
     # Show spawned task header
     # Title gets inserted into the <span></span> by application.js
-    spawn_accept = params[:_sx]
+    spawn_accept = params['_sx'.freeze]
     %><div id="z__spawned_subtask_header"><a href="#" id="z__spawn_close"><%= @locale.text(:Layouts_View_Close) %></a><%
     if (@represented_objref != nil && spawn_accept.include?('o')) || (@page_selectable_as_search && spawn_accept.include?('s'))
       %><a href="#" id="z__spawn_return">&laquo; <span></span></a><%

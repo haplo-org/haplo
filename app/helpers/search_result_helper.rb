@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 module SearchResultHelper
 
@@ -101,7 +104,7 @@ module SearchResultHelper
       _fill_unused_columns_with_summary_text() unless @no_default_rendering
       _adjust_columns_to_fit()
 
-      html = (@line2_html || @line2_right_html) ? '<h3>' : '<h3 class="z__two_line">'
+      html = (@line2_html || @line2_right_html) ? '<h3>'.dup : '<h3 class="z__two_line">'.dup
       html << @controller.link_to_object_with_title(@object)
       html << '</h3>'
       if @line2_html
@@ -300,7 +303,7 @@ module SearchResultHelper
       end
       def make_inner_html(controller, object, options)
         schema = nil
-        html = @is_truncated ? '<div class="z__searchresult_information_truncated">...</div>' : ''
+        html = @is_truncated ? '<div class="z__searchresult_information_truncated">...</div>'.dup : ''.dup
         html << %Q!<div class="z__searchresult_information_line z__searchresult_value_caption">#{h(@caption)}</div>! if @caption
         @values.each do |value,qual,single_line|
           html << '<div class="z__searchresult_information_line">' if single_line

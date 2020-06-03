@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Setup_TaxonomyController < ApplicationController
@@ -19,7 +22,7 @@ class Setup_TaxonomyController < ApplicationController
   end
 
   def handle_info
-    @objref = KObjRef.from_presentation(params[:id])
+    @objref = KObjRef.from_presentation(params['id'])
     @obj = KObjectStore.read(@objref)
     @name = @obj.first_attr(A_TITLE).to_s
     @num_terms = KObjectStore.query_and.link(@objref, A_PARENT).count_matches
@@ -53,16 +56,14 @@ class Setup_TaxonomyController < ApplicationController
   _GetAndPost
   def handle_add_type
     schema = KObjectStore.schema
-    # Defaults for form
-    @data = FormDataObject.new({
-      :type_ref => O_TYPE_TAXONOMY_TERM.to_presentation
-    })
-    if request.post?
-      # ------------------------- Gather data and check form -------------------------
-      @data.read(params[:s]) do |d|
-        d.attribute(:name)
-      end
-      if @data.valid?
+    @data = AddTypeData.new('')
+    @transfer = AddTypeTransfer.new(@data)
+    unless request.post?
+      @transfer.as_new_record
+    else
+      @transfer.from_params(params['s'])
+      if @transfer.errors.empty?
+        @transfer.apply!
         processed_name = @data.name.strip.downcase
         # Check the type name isn't already used
         used = false
@@ -73,16 +74,16 @@ class Setup_TaxonomyController < ApplicationController
           end
         end
         if used
-          @data.add_error(:name, 'There is already a type with this name')
+          @transfer.errors.add(:name, 'duplicates the name of an existing type')
         end
         # Check the taxonomy name isn't already used
         taxonomies = @request_user.policy.find_all_visible_taxonomies()
         if nil != taxonomies.find { |o| o.first_attr(A_TITLE).to_s.strip.downcase == processed_name }
-          @data.add_error(:name, 'There is already a taxonomy with this name')
+          @transfer.errors.add(:name, 'duplicates the name of a taxonomy')
         end
       end
       # ------------------------- Create taxonomy and other bits and pieces -------------------------
-      if @data.valid?
+      if @transfer.errors.empty?
         name = @data.name.strip
         name_sys = name.downcase.gsub(/[^a-z0-9]/,'-')
         taxonomy_type = nil
@@ -114,6 +115,14 @@ class Setup_TaxonomyController < ApplicationController
 
         redirect_to '/do/setup/taxonomy/add'
       end
+    end
+  end
+
+  AddTypeData = Struct.new(:name)
+  class AddTypeTransfer < MiniORM::Transfer
+    transfer do |f|
+      f.text_attributes :name
+      f.validate_presence_of :name
     end
   end
 

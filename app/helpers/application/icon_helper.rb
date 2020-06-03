@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 
@@ -43,16 +46,16 @@ module Application_IconHelper
   }
 
   # Generic icon definition
-  ICON_GENERIC = 'E201,1,f'.freeze
+  ICON_GENERIC = 'E201,1,f'
   # Icons used as the default when setting up schema
-  ICON_DEFAULT_LIST_OBJECT = 'E501,1,f'.freeze
+  ICON_DEFAULT_LIST_OBJECT = 'E501,1,f'
   # Icons for UI
-  ICON_SPECIAL_RECENT_OBJECT_HAS_FILES = 'E201,1,f,y'.freeze
-  ICON_SPECIAL_LINKED_ITEMS = 'E008,1,f'.freeze
-  ICON_SPECIAL_LINKED_ITEMS_SELECTED = 'E525,1,f E008,1,f'.freeze
-  ICON_SPECIAL_RECENT_VERSION = 'E525,1,f,s E526,2,c'.freeze
-  ICON_SPECIAL_RECENT_ERASE_OBJ = 'E525,1,f,s E413,2,c'.freeze
-  ICON_SPECIAL_HAS_FILES = 'E201,1,f,y E227,0,c'.freeze
+  ICON_SPECIAL_RECENT_OBJECT_HAS_FILES = 'E201,1,f,y'
+  ICON_SPECIAL_LINKED_ITEMS = 'E008,1,f'
+  ICON_SPECIAL_LINKED_ITEMS_SELECTED = 'E525,1,f E008,1,f'
+  ICON_SPECIAL_RECENT_VERSION = 'E525,1,f,s E526,2,c'
+  ICON_SPECIAL_RECENT_ERASE_OBJ = 'E525,1,f,s E413,2,c'
+  ICON_SPECIAL_HAS_FILES = 'E201,1,f,y E227,0,c'
 
   # Build Regexp for validating icon definitions
   icon_part_regexp = "[0-9a-fA-F]{4}(\,[#{ICON_COMPONENT_CLASSES.keys.join('')}])+"

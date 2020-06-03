@@ -11,23 +11,23 @@ class AuthApiKeyTest < IntegrationTest
 
   def setup
     db_reset_test_data
-    u1 = User.find_by_email('user1@example.com')
+    u1 = User.where_lower_email('user1@example.com').first
     u1.password = 'password'
     u1.accept_last_password_regardless
-    u1.save!
-    u2 = User.find_by_email('user2@example.com')
+    u1.save
+    u2 = User.where_lower_email('user2@example.com').first
     u2.password = 'pass1234'
     u2.accept_last_password_regardless
-    u2.save!
-    u3 = User.find_by_email('user3@example.com')
+    u2.save
+    u3 = User.where_lower_email('user3@example.com').first
     u3.password = 'apitest'
     u3.accept_last_password_regardless
-    u3.save!
+    u3.save
   end
 
   def teardown
     # Delete API keys
-    KApp.get_pg_database.perform("DELETE FROM api_keys CASCADE")
+    KApp.with_pg_database { |db| db.perform("DELETE FROM #{KApp.db_schema_name}.api_keys CASCADE") }
   end
 
   # -------------------------------------------------------------------------------------
@@ -70,9 +70,12 @@ class AuthApiKeyTest < IntegrationTest
     check_api_key(KEY0, nil)  # not valid
 
     # Make an API key
-    key1 = ApiKey.new(:user_id => 42, :path => '/api/test/', :name => 'test42');
+    key1 = ApiKey.new
+    key1.user_id = 42
+    key1.path = '/api/test/'
+    key1.name = 'test42'
     key1._set_api_key(KEY1)
-    key1.save!
+    key1.save
     assert_equal KEY1_LEFT, key1.a
     assert key1.b.start_with?('$2a$05$') # bcrypt with small number of round for performance
     assert key1.b_matchs?(KEY1_RIGHT)
@@ -95,10 +98,13 @@ class AuthApiKeyTest < IntegrationTest
     assert_equal key1.id, ApiKey.cache[KEY1].id
 
     # Check random keys
-    key2 = ApiKey.new(:user_id => 44, :path => '/api/test/', :name => 'test44')
+    key2 = ApiKey.new
+    key2.user_id = 44
+    key2.path = '/api/test/'
+    key2.name = 'test44'
     key2_secret = key2.set_random_api_key
     assert key2_secret.length > 16
-    key2.save!
+    key2.save
     check_api_key(key2_secret, 44)
 
     # Other keys
@@ -152,9 +158,9 @@ class AuthApiKeyTest < IntegrationTest
 
     # Disable the user and make sure that it fails cleanly
     check_api_key(KEY1, 42)
-    u42 = User.find(42)
+    u42 = User.read(42)
     u42.kind = User::KIND_USER_BLOCKED
-    u42.save!
+    u42.save
     check_api_key(KEY1, nil, 'UNAUTHORISED', 'Not authorised')
 
     # Check API key's path validity method

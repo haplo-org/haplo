@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class FileVersionController < ApplicationController
@@ -32,12 +35,12 @@ class FileVersionController < ApplicationController
 
   _PostOnly
   def handle_new_version
-    objref = KObjRef.from_presentation(params[:ref])
-    tracking_id = params[:tracking_id]
+    objref = KObjRef.from_presentation(params['ref'])
+    tracking_id = params['tracking_id']
     raise "Bad tracking ID" unless tracking_id =~ /\A[0-9a-zA-Z_-]+\z/
-    log_message = params[:log_message]
-    version_string = params[:version]
-    if params[:file]
+    log_message = params['log_message']
+    version_string = params['version']
+    if params['file']
       obj = KObjectStore.read(objref).dup
       found_value = false
       obj.replace_values! do |value,desc,qual|
@@ -46,13 +49,13 @@ class FileVersionController < ApplicationController
         else
           found_value = true
           # Make new file identifier, keeping the tracking ID
-          new_identifier = KIdentifierFile.from_json(params[:file])
+          new_identifier = KIdentifierFile.from_json(params['file'])
           new_identifier.tracking_id = tracking_id
           # Work out new filename
           old_name, old_ext = split_filename(value.presentation_filename)
           new_name, new_ext = split_filename(new_identifier.presentation_filename)
-          if params[:rename] == '1' && !(params[:basename].empty?)
-            new_identifier.presentation_filename = "#{params[:basename]}#{new_ext}"
+          if params['rename'] == '1' && !(params['basename'].empty?)
+            new_identifier.presentation_filename = "#{params['basename']}#{new_ext}"
           else
             new_identifier.presentation_filename = "#{old_name}#{new_ext}"
           end

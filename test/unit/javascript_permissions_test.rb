@@ -95,7 +95,7 @@ class JavascriptPermissionsTest < Test::Unit::TestCase
 
     KApp.cache_invalidate(KJSPluginRuntime::RUNTIME_CACHE)
 
-    PermissionRule.delete_all
+    delete_all PermissionRule
   end
 
   # -------------------------------------------------------------------------
@@ -111,13 +111,13 @@ class JavascriptPermissionsTest < Test::Unit::TestCase
       PermissionRule.new_rule! :deny, 41, KConstants::O_LABEL_COMMON, :read
 
       # Testing that the javascript can create this group, so check it doesn't already exist
-      assert User.where(:name => 'Test group').length == 0
+      assert User.where(:name => 'Test group').count() == 0
 
       run_javascript_test(:file, 'unit/javascript/javascript_permissions/test_setup_group_no_priv.js')
       run_javascript_test(:file, 'unit/javascript/javascript_permissions/test_setup_group.js', nil, "grant_privileges_plugin")
 
       # Check group created properly
-      groups = User.where(:name => 'Test group')
+      groups = User.where(:name => 'Test group').select()
       assert_equal 1, groups.length
       assert_equal User::KIND_GROUP, groups.first.kind
       assert_equal 'Test group', groups.first.name

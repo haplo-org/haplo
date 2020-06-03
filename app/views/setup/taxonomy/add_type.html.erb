@@ -3,9 +3,9 @@
 %>
 <%= sys_mng_header %>
 
-<%= form_error_messages_for(@data) %>
+<%= form_error_messages_for(@transfer) %>
 
-<% f = form_for(@data, :s) %><form method="post"><%= form_csrf_token %>
+<% f = form_for(@transfer, :s) %><form method="post"><%= form_csrf_token %>
 
   <p>Name for <i>Type</i> and <i>Attribute</i><br><%= f.text_field(:name) %></p>
 

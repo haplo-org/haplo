@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # TODO: Proper tests for edit controller, especially around permissions, delete
@@ -18,8 +21,8 @@ class EditController < ApplicationController
 
   def perform_handle(exchange, path_elements, requested_method)
     if path_elements.length == 1 && path_elements.first =~ KObjRef::VALIDATE_REGEXP
-      params[:action] = 'index'
-      params[:id] = path_elements.first
+      params['action'] = 'index'
+      params['id'] = path_elements.first
       check_request_method_for(:handle_index)
       handle_index
     else
@@ -28,7 +31,7 @@ class EditController < ApplicationController
   end
 
   def render_layout
-    params.has_key?(:pop) ? 'minimal' : 'standard'
+    params.has_key?('pop') ? 'minimal' : 'standard'
   end
 
   def handle_new
@@ -41,7 +44,7 @@ class EditController < ApplicationController
   # Used for choosing a style in popups
   def handle_pop_type
     schema = KObjectStore.schema
-    desc = params[:desc].to_i
+    desc = params['desc'].to_i
     attr_desc = schema.attribute_descriptor(desc) || schema.aliased_attribute_descriptor(desc)
     @types = ((attr_desc == nil) ? [] : attr_desc.control_by_types).
         select { |t| @request_user.policy.can_create_object_of_type?(t) }
@@ -52,22 +55,22 @@ class EditController < ApplicationController
   _GetAndPost
   def handle_index
     # Is it a new object?
-    if params.has_key?(:new)
+    if params.has_key?('new')
       @is_new_object = true
     end
 
     # Editing
     committed = editor_working()
     if committed == :committed
-      if params.has_key?(:pop)
+      if params.has_key?('pop')
         # Pop up editor for creating a new object
         @obj = @object_to_edit
         render(:action => 'finish_pop', :layout => 'minimal')
       else
         # redirect to display the object
-        if params.has_key?(:success_redirect) && KSafeRedirect.is_safe?(params[:success_redirect])
+        if params.has_key?('success_redirect') && KSafeRedirect.is_safe?(params['success_redirect'])
           # Form specifies the redirect URL, to which the object ref should be appended
-          rdr_url = params[:success_redirect]
+          rdr_url = params['success_redirect']
           rdr_url = "#{rdr_url}#{((rdr_url =~ /\?/) ? '&' : '?')}ref=#{@object_to_edit.objref.to_presentation}"
           redirect_to rdr_url
         else
@@ -97,12 +100,12 @@ class EditController < ApplicationController
       json = {:ref => @object_to_edit.objref.to_presentation, :title => title_of_object(@object_to_edit).to_s}
       # using 'new' as a key in the hash stops X-JSON header working on Safari -- gets syntax error when parsing the JSON.
       # Used to work, now doesn't in prototype 1.5.
-      json[:newtype] = params[:new] if params.has_key? :new
+      json[:newtype] = params['new'] if params.has_key?('new')
       parent = @object_to_edit.first_attr(KConstants::A_PARENT)
       json[:parent] = parent.to_presentation if parent != nil
       response.headers["X-JSON"] = json.to_json
       # Render it as HTML or just give a message?
-      if params[:render_on_commit] != nil
+      if params['render_on_commit'] != nil
         render :text => render_obj(@object_to_edit), :kind => :html
       else
         render :text => 'K_COMMITTED', :kind => :text
@@ -128,8 +131,8 @@ class EditController < ApplicationController
   def handle_upload_check_api
     # TODO: Check quota?
     # Use corrected MIME type. Safari (at least) will send empty string if it doesn't know the MIME type
-    mime_type = KMIMETypes.correct_mime_type(params[:type], params[:name])
-    file_size = params[:size].to_i
+    mime_type = KMIMETypes.correct_mime_type(params['type'], params['name'])
+    file_size = params['size'].to_i
     token = "#{KRandom.random_api_key()}.#{file_size}"
     KApp.logger.info("Upload token: "+token)
     response = {
@@ -143,7 +146,7 @@ class EditController < ApplicationController
   _PostOnly
   def handle_upload_file_api
     # Minimal check on token
-    token = params[:id]
+    token = params['id']
     if !token || token.length < 16 || token.length > 128
       response.headers['X-Haplo-Reportable-Error'] = 'yes'
       render :text => 'Token required', :status => 403
@@ -187,7 +190,7 @@ private
   def editor_working(for_action = :edit)
     # Display a nice error if anything goes wrong on the client side and the form is submitted without object
     # data being added by the client side code.
-    if request.post? && !(params.has_key?(:obj))
+    if request.post? && !(params.has_key?('obj'))
       render :action => 'no_editor_data_posted'
       return :error
     end
@@ -196,16 +199,16 @@ private
     # ------------------------------------------------------------------------------------------------------
     @objref = nil
     @object_to_edit = nil
-    if params.has_key?(:new)
+    if params.has_key?('new')
       # Parameter is type of new object
-      type = KObjRef.from_presentation(params[:new])
+      type = KObjRef.from_presentation(params['new'])
       if type != nil
         # Labels for new object
         labels = [] # by default, just use whatever the LabellingPolicy applies
-        if params[:new_labels]
-          labels = params[:new_labels].split(',').map { |l| KObjRef.from_presentation(l) }.compact
-        elsif params[:labels_same_as]
-          labels = KObjectStore.labels_for_ref(KObjRef.from_presentation(params[:labels_same_as]))
+        if params['new_labels']
+          labels = params['new_labels'].split(',').map { |l| KObjRef.from_presentation(l) }.compact
+        elsif params['labels_same_as']
+          labels = KObjectStore.labels_for_ref(KObjRef.from_presentation(params['labels_same_as']))
         end
         # Get the type descriptor from the schema
         type_descriptor = KObjectStore.schema.type_descriptor(type)
@@ -213,12 +216,12 @@ private
         @object_to_edit = KObject.new(labels)
         @object_to_edit.add_attr(type, A_TYPE)
         # If the parameters specify a parent, add it
-        if params.has_key?(:parent)
-          parent = KObjRef.from_presentation(params[:parent])
+        if params.has_key?('parent')
+          parent = KObjRef.from_presentation(params['parent'])
           @object_to_edit.add_attr(parent, A_PARENT) if parent != nil
         end
         # If there's some initial data specified, add that now
-        data = params[:data]
+        data = params['data']
         if data != nil
           schema = KObjectStore.schema
           data.keys.sort.each do |k|
@@ -249,7 +252,7 @@ private
         end
       end
     else
-      @objref = KObjRef.from_presentation(params[:id])
+      @objref = KObjRef.from_presentation(params['id'])
       if @objref != nil
         @object_previous_version = KObjectStore.read(@objref)
         @object_to_edit = @object_previous_version.dup
@@ -270,7 +273,7 @@ private
     edit_behaviour = KEditor.determine_read_only_attributes_and_plugin_object_modifications(
       @request_user,
       @object_to_edit,
-      !(request.post? && params[:obj] != nil) && @objref == nil,  # is this a template for a new object?
+      !(request.post? && params['obj'] != nil) && @objref == nil,  # is this a template for a new object?
       @objref == nil  # is this a new object?
     )
 
@@ -307,7 +310,7 @@ private
     # ------------------------------------------------------------------------------------------------------
 
     if (@objref == nil) && !(request.post?) && type_descriptor.behaviours.include?(O_TYPE_BEHAVIOUR_FORCE_LABEL_CHOICE)
-      if @labeller.can_offer_explicit_label_choice? && !(params.has_key?(:label))
+      if @labeller.can_offer_explicit_label_choice? && !(params.has_key?('label'))
         render :action => 'new_choose_label'
         return
       end
@@ -318,9 +321,9 @@ private
     # ------------------------------------------------------------------------------------------------------
 
     return_code = :display
-    if request.post? && params[:obj] != nil
+    if request.post? && params['obj'] != nil
 
-      [:obj, :obj_read_only].each do |key|
+      ['obj', 'obj_read_only'].each do |key|
         if params.has_key?(key)
           KEditor.apply_tokenised_to_obj(params[key], @object_to_edit, {
             :read_only_attributes => read_only_attributes
@@ -356,7 +359,7 @@ private
 
         # Label object given serialised labelling information from client side
         label_changes = KLabelChanges.new()
-        @labeller.update_label_changes(params[:labelling], label_changes)
+        @labeller.update_label_changes(params['labelling'], label_changes)
 
         if should_redisplay
           return_code = :display
@@ -386,7 +389,7 @@ private
         @object_to_edit,
         @request_user,
         (@objref == nil) ? :create : :update,
-        KObjRef.from_presentation(params[:label])
+        KObjRef.from_presentation(params['label'])
       )
     if read_only_attributes
       read_only_attributes.concat(@labeller.attributes_which_should_not_be_changed)
@@ -397,7 +400,7 @@ public
 
   _GetAndPost
   def handle_delete
-    @objref = KObjRef.from_presentation(params[:id])
+    @objref = KObjRef.from_presentation(params['id'])
     @obj = KObjectStore.read(@objref)
 
     permission_denied unless @request_user.policy.has_permission?(:delete, @obj)
@@ -443,7 +446,7 @@ public
   end
 
   def handle_deleted
-    objref = KObjRef.from_presentation(params[:id])
+    objref = KObjRef.from_presentation(params['id'])
     raise "Bad ref" unless objref
     # If it's not deleted, redirect to the object page, just in case it gets in
     # the browser history and the object is undeleted.
@@ -454,7 +457,7 @@ public
 
   _PostOnly
   def handle_undelete
-    @objref = KObjRef.from_presentation(params[:id])
+    @objref = KObjRef.from_presentation(params['id'])
     @obj = KObjectStore.read(@objref)
     permission_denied unless @request_user.policy.has_permission?(:delete, @obj)
     if request.post?
@@ -468,19 +471,19 @@ public
     lookup_results = Array.new
 
     # Make a search with truncated words everywhere
-    text = params[:text].strip.split(/\s+/).map { |e| e + '*' } .join(' ')
+    text = params['text'].strip.split(/\s+/).map { |e| e + '*' } .join(' ')
 
     types = nil
     schema = KObjectStore.schema
-    if params.has_key?(:parent_lookup_type)
+    if params.has_key?('parent_lookup_type')
       # Special lookup for the A_PARENT field - must use same type as object itself
-      type = KObjRef.from_presentation(params[:parent_lookup_type])
+      type = KObjRef.from_presentation(params['parent_lookup_type'])
       # Make sure the root type is used
       td = schema.type_descriptor(type)
       types = [td.root_type]
 
-    elsif params.has_key?(:desc)
-      desc = params[:desc].to_i
+    elsif params.has_key?('desc')
+      desc = params['desc'].to_i
       info = schema.attribute_descriptor(desc) || schema.aliased_attribute_descriptor(desc)
       types = info.control_by_types
     end

@@ -31,8 +31,6 @@ public interface AppRoot {
     // Database access
     public String getPostgresSchemaName();
 
-    public Connection getJdbcConnection();
-
     public String getSchemaInfo(int type, int objId);
 
     public String getSchemaInfoTypesWithAnnotation(String annotation);

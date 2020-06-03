@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Load other support modules
@@ -107,15 +110,7 @@ class JSSupportRoot
   end
 
   def getPostgresSchemaName()
-    app_id = KApp.current_application
-    if app_id == nil || !(app_id.kind_of?(Integer)) || app_id < 0
-      raise "Not within a valid KApp.current_application"
-    end
-    "a#{app_id}"
-  end
-
-  def getJdbcConnection()
-    KApp.get_jdbc_database
+    KApp.db_schema_name
   end
 
   def getSchemaInfo(type, obj_id)
@@ -355,7 +350,7 @@ class JSSupportRoot
 
   def reportHealthEvent(pluginEventTitle, pluginEventText, exception, exceptionText)
     event_title = "Plugin reported health event: #{pluginEventTitle || '????'}"
-    event_text = "#{pluginEventText}\n\n\n"
+    event_text = "#{pluginEventText}\n\n\n".dup
     if exceptionText && exceptionText != "null"
       # JS side will generate text for exceptions
       event_text << exceptionText

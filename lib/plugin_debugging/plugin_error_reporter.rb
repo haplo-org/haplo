@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module PluginDebugging
@@ -26,7 +29,7 @@ module PluginDebugging
       [java.lang.NullPointerException, "Bad argument. undefined or null passed to an API function which expected a valid object."],
       [java.lang.StackOverflowError, "Stack overflow. Check for recursive calls of functions in the stack trace."],
       [SystemStackError, "Stack overflow. Check for recursive calls of functions in the stack trace."],
-      [ActiveRecord::RecordNotFound, "Attempt to read something which doesn't exist."],
+      [MiniORM::MiniORMRecordNotFoundException, "Attempt to read something which doesn't exist."]
     ]
 
     def self.javascript_message_from_exception(exception)

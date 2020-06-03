@@ -6,7 +6,6 @@
 
 package org.haplo.jsinterface.app;
 
-import java.util.Date;
 import org.haplo.jsinterface.KWorkUnit;
 
 public interface AppWorkUnit {
@@ -19,23 +18,23 @@ public interface AppWorkUnit {
 
     public boolean visible();
 
-    public void jsset_visible(boolean visible);
+    public void setVisible(boolean visible);
 
     public boolean auto_visible();
 
-    public void jsset_auto_visible(boolean auto_visible);
+    public void setAutoVisible(boolean auto_visible);
 
-    public Date created_at();
+    public Long created_at_milliseconds();
 
-    public Date opened_at();
+    public Long opened_at_milliseconds();
 
-    public void jsSetOpenedAt(Date openedAt);
+    public void opened_at_milliseconds_set(Long openedAt);
 
-    public Date deadline();
+    public Long deadline_milliseconds();
 
-    public void jsSetDeadline(Date deadline);
+    public void deadline_milliseconds_set(Long deadline);
 
-    public Date closed_at();
+    public Long closed_at_milliseconds();
 
     public void set_as_closed_by(AppUser user);
 
@@ -43,27 +42,23 @@ public interface AppWorkUnit {
 
     public Integer created_by_id();
 
-    public void jsset_created_by_id(Integer id);
+    public void setCreatedById(Integer id);
 
     public Integer actionable_by_id();
 
-    public void jsset_actionable_by_id(Integer id);
+    public void setActionableById(Integer id);
 
     public Integer closed_by_id();
 
-    public void jsset_closed_by_id(Integer id);
+    public void setClosedById(Integer id);
 
-    public Integer sec_id();
+    public Integer objref_obj_id();
 
-    public void jsset_sec_id(Integer id);
+    public void objref_obj_id_set(Integer id);
 
-    public Integer obj_id();
+    public String data_json();
 
-    public void jsset_obj_id(Integer id);
-
-    public String jsGetDataRaw();
-
-    public void jsSetDataRaw(String data);
+    public void setDataJson(String data);
 
     public String jsGetTagsAsJson();
 
@@ -75,7 +70,7 @@ public interface AppWorkUnit {
     public boolean can_be_actioned_by(AppUser user);
 
     // Commands
-    public boolean save();
+    public void save();
 
-    public void destroy();
+    public void delete();
 }

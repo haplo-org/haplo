@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 
 # Modified implementation of CGI::Cookie to support HttpOnly
 

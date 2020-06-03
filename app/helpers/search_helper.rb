@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 module SearchHelper
 
@@ -13,7 +16,7 @@ module SearchHelper
   }
 
   def search_sort_choices(search_spec, choices, *without_params)
-    html = ''
+    html = ''.dup
     sort = search_spec[:sort]
     base_params = search_url_params(search_spec, :sort, *without_params)
     choices.each do |choice|

@@ -12,10 +12,10 @@
 <form method="POST"><%= form_csrf_token %>
 
 <p><%= @locale.text(:Authentication_View_New_password) %><br>
-<input type="password" name="pw1" value="" class="z__focus_candidate"></p>
+<input type="password" name="password" value="" class="z__focus_candidate"></p>
 
 <p><%= @locale.text(:Authentication_View_Re_enter_new_password_to_confirm) %><br>
-<input type="password" name="pw2" value=""></p>
+<input type="password" name="password_2" value=""></p>
 
 <p><input type="submit" value="<%= @locale.text(:Authentication_View_Change_password) %>"></p>
 

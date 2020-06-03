@@ -1,15 +1,18 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Admin_OtpController < ApplicationController
   policies_required :not_anonymous, :control_trust
 
   def handle_index
-    @users = User.where(:kind => User::KIND_USER).order(:name)
+    @users = User.where(:kind => User::KIND_USER).order(:lower_name)
     @user_with_temporary_code = KHardwareOTP.get_temporary_code_user_id
   end
 
@@ -19,14 +22,14 @@ class Admin_OtpController < ApplicationController
     @new_assignment = (nil == @user.otp_identifier)
     if request.post?
       @set_attempted = true
-      @identifier = params[:identifier].gsub(/\s/,'') # remove whitespace
-      otp = params[:password].gsub(/\D/,'') # remove all non-digit letters
+      @identifier = params['identifier'].gsub(/\s/,'') # remove whitespace
+      otp = params['otp_assign'].gsub(/\D/,'') # remove all non-digit letters
       if otp.length > 5
         @otp_result = KHardwareOTP.check_otp(@identifier, otp, request.remote_ip)
         if @otp_result.ok
           # OTP was correct, set token for user
           @user.otp_identifier = @identifier
-          @user.save!
+          @user.save
           redirect_to '/do/admin/otp'
         end
       end
@@ -39,7 +42,7 @@ class Admin_OtpController < ApplicationController
     @user_requires_token = @user.policy.is_otp_token_required?
     if request.post?
       @user.otp_identifier = nil
-      @user.save!
+      @user.save
       redirect_to '/do/admin/otp'
     end
   end
@@ -49,7 +52,7 @@ class Admin_OtpController < ApplicationController
       render :action => 'temp_code_no_otp'
       return
     end
-    @users = User.where(:kind => User::KIND_USER).where('otp_identifier IS NOT NULL').order(:name)
+    @users = User.where(:kind => User::KIND_USER).where_not_null(:otp_identifier).order(:lower_name)
   end
 
   def handle_temp_code2
@@ -60,7 +63,7 @@ class Admin_OtpController < ApplicationController
   def handle_temp_code3
     return unless load_user
     if request.post?
-      otp = params[:password].gsub(/\D/,'')
+      otp = params['otp_auth_temp'].gsub(/\D/,'')
       if otp.length > 5
         @otp_result = KHardwareOTP.check_otp(@request_user.otp_identifier, otp, request.remote_ip)
         if @otp_result.ok
@@ -83,7 +86,7 @@ class Admin_OtpController < ApplicationController
 private
 
   def load_user
-    @user = User.find(params[:id])
+    @user = User.read(params['id'].to_i)
     unless @user != nil && @user.kind == User::KIND_USER
       redirect_to '/do/admin/otp'
       false

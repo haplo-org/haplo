@@ -13,7 +13,7 @@ class PluginToolSetupAuthTest < IntegrationTest
     plugin_tool_session = open_session
     user_session = open_session
 
-    assert_equal 0, ApiKey.find(:all, :conditions => {:user_id => 41}).length
+    assert_equal 0, ApiKey.where(:user_id => 41).count()
 
     plugin_tool_session.get '/api/plugin-tool-auth/start-auth?name=A1234567890123456789012345678901234567890123456789'
     start_auth = JSON.parse(plugin_tool_session.response.body)
@@ -29,7 +29,7 @@ class PluginToolSetupAuthTest < IntegrationTest
     assert_equal 'failure', JSON.parse(plugin_tool_session.response.body)['status']
 
     # Check user redirect when no login
-    assert User.find(41).policy.can_setup_system?
+    assert User.read(41).policy.can_setup_system?
     user_session.get_302 "/do/plugin-tool-auth/create/#{start_auth['token']}"
     assert user_session.response['location'].include?('/do/authentication/login?rdr=')
     assert user_session.response['location'].include?(start_auth['token'])
@@ -55,7 +55,7 @@ class PluginToolSetupAuthTest < IntegrationTest
     assert good_create['key'] =~ /\A[a-zA-Z0-9_-]{44}\z/
 
     # Check API key created
-    user21_keys = ApiKey.find(:all, :conditions => {:user_id => 41})
+    user21_keys = ApiKey.where(:user_id => 41).select()
     assert_equal 1, user21_keys.length
     new_key = user21_keys[0]
     assert_equal good_create['key'][0,ApiKey::PART_A_LENGTH], new_key.a

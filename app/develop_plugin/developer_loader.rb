@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 unless PLUGIN_DEBUGGING_SUPPORT_LOADED
@@ -69,7 +72,7 @@ class DeveloperLoader
     def initialize()
       @name = KRandom.random_api_key
       @last_use = Time.now.to_i
-      @queue = ''
+      @queue = ''.dup
     end
     attr_reader :name
     attr_reader :last_use
@@ -79,7 +82,7 @@ class DeveloperLoader
     end
     def make_response_and_flush
       @last_use = Time.now.to_i
-      response = @queue; @queue = ''; response
+      response = @queue; @queue = ''.dup; response
     end
     def push_notification(data)
       @queue << data
@@ -133,12 +136,11 @@ class DeveloperLoader
       fields = [["id", entry.id], ["auditEntryType", entry.kind]]
       ref = entry.objref
       fields << ["ref", ref.to_presentation] if ref
-      PLUGIN_TOOL_AUDIT_ENTRY_FIELDS.each do |attr, name|
-        value = entry.read_attribute(attr)
-        if value
-          fields << [name, value]
-        end
-      end
+      fields << ["creationDate", entry.created_at] if entry.created_at
+      fields << ["remoteAddress", entry.remote_addr] if entry.remote_addr
+      fields << ["userId", entry.user_id] if entry.user_id
+      fields << ["authenticatedUserId", entry.auth_user_id] if entry.auth_user_id
+      fields << ["data", entry.data_json] if entry.data_json
       broadcast_notification('audt', fields.to_json)
     end
     # Listen for schema changes and output the list of changed codes on the plugin console
@@ -153,15 +155,6 @@ class DeveloperLoader
       broadcast_notification('log ', "FILE-PIPELINE:#{result.name}:#{result.success ? 'SUCCESS' : 'ERROR'}:#{result.error_message}")
     end
   end
-
-  # Which fields should be sent to the plugin tool from audit entries
-  PLUGIN_TOOL_AUDIT_ENTRY_FIELDS = [
-      ["created_at", "creationDate"],
-      ["remote_addr", "remoteAddress"],
-      ["user_id", "userId"],
-      ["auth_user_id", "authenticatedUserId"],
-      ["data", "data"]
-    ]
 
   # -------------------------------------------------------------------------------------------------------------------
 
@@ -228,10 +221,10 @@ class DeveloperLoader
     # See if a plugin is already registered, and if so, get the ID and manifest
     _PostOnly
     def handle_find_registration_api
-      return unless params.has_key?(:name) && params[:name] =~ /\A[A-Za-z0-9_-]+\z/
+      return unless params.has_key?('name') && params['name'] =~ /\A[A-Za-z0-9_-]+\z/
       found_id = nil
       DeveloperLoader::LOADED_PLUGINS_MUTEX.synchronize do
-        found_id = DeveloperLoader::LOADED_PLUGINS[KApp.current_application][params[:name]]
+        found_id = DeveloperLoader::LOADED_PLUGINS[KApp.current_application][params['name']]
       end
       unless found_id
         render :text => JSON.generate(:result => "success", :found => false)
@@ -345,10 +338,10 @@ class DeveloperLoader
     # Apply changes
     _PostOnly
     def handle_apply_api
-      plugin_loaded_ids = (params[:plugins] || '').split(' ')
-      turbo_mode = (params[:turbo] == '1')
-      static_only = (params[:static_only] == '1')
-      template_change = (params[:template_change] == '1')
+      plugin_loaded_ids = (params['plugins'] || '').split(' ')
+      turbo_mode = (params['turbo'] == '1')
+      static_only = (params['static_only'] == '1')
+      template_change = (params['template_change'] == '1')
 
       # Turbo quick applies?
       need_apply = true
@@ -442,7 +435,7 @@ class DeveloperLoader
       plugin_name = get_plugin_name()
       # Run the tests in a new thread, to keep everything isolated from the main application.
       # Repeated runs of the tests may reuse the underlying JS runtime.
-      tester = JSPluginTests.new(KApp.current_application, plugin_name, params[:test])
+      tester = JSPluginTests.new(KApp.current_application, plugin_name, params['test'])
       tester.run # in another thread
       # Report the result back to the plugin tool
       results = tester.results
@@ -467,16 +460,16 @@ class DeveloperLoader
       if dbname != nil
         raise "bad database mapping" unless dbname =~ /\A[a-zA-Z0-9]+\z/
         # A mapping exists - find all the tables for this plugin and delete them
-        db = KApp.get_pg_database
-        sql = "SELECT table_schema,table_name FROM information_schema.tables WHERE table_schema='a#{KApp.current_application}' AND table_name LIKE 'j_#{dbname}_%' ORDER BY table_name"
-        drop = "BEGIN; SET CONSTRAINTS ALL DEFERRED; "
-        r = db.exec(sql)
-        r.each do |table_schema,table_name|
-          drop << "DROP TABLE IF EXISTS #{table_name} CASCADE; " # IF EXISTS required because of CASCADE
+        sql = "SELECT table_schema,table_name FROM information_schema.tables WHERE table_schema='#{KApp.db_schema_name}' AND table_name LIKE 'j_#{dbname}_%' ORDER BY table_name"
+        drop = "BEGIN; SET CONSTRAINTS ALL DEFERRED; ".dup
+        KApp.with_pg_database do |db|
+          r = db.exec(sql)
+          r.each do |table_schema,table_name|
+            drop << "DROP TABLE IF EXISTS #{KApp.db_schema_name}.#{table_name} CASCADE; " # IF EXISTS required because of CASCADE
+          end
+          drop << "COMMIT"
+          db.perform(drop) if drop.include?('TABLE')
         end
-        r.clear
-        drop << "COMMIT"
-        db.perform(drop) if drop.include?('TABLE')
       end
       render :text => JSON.generate(:result => "success")
     end
@@ -491,7 +484,7 @@ class DeveloperLoader
       rescue => e
         # Fall back to trying the information about loaded plugins
         DeveloperLoader::LOADED_PLUGINS_MUTEX.synchronize do
-          plugin_name = DeveloperLoader::LOADED_PLUGINS[KApp.current_application].key(params[:id])
+          plugin_name = DeveloperLoader::LOADED_PLUGINS[KApp.current_application].key(params['id'])
         end
       end
       if plugin_name == nil
@@ -521,14 +514,14 @@ class DeveloperLoader
     # Template debugging tools
     _PostOnly
     def handle_template_debugging_api
-      KApp.set_global_bool(:debug_config_template_debugging, params[:enable] == '1')
+      KApp.set_global_bool(:debug_config_template_debugging, params['enable'] == '1')
       render :text => 'OK'
     end
 
     # Internationalisation debugging tools
     _PostOnly
     def handle_i18n_debugging_api
-      KApp.set_global_bool(:debug_config_i18n_debugging, params[:enable] == '1')
+      KApp.set_global_bool(:debug_config_i18n_debugging, params['enable'] == '1')
       render :text => 'OK'
     end
 
@@ -539,7 +532,7 @@ class DeveloperLoader
       # Get a continuation for this request
       continuation = request.continuation
       # Get or create a queue, using a queue name from the continuation or the parameter passing in by the plugin tool
-      queue = DeveloperLoader.get_notification_queue(continuation.getAttribute(ATTR_NOTIFICATION_QUEUE_NAME) || params[:queue])
+      queue = DeveloperLoader.get_notification_queue(continuation.getAttribute(ATTR_NOTIFICATION_QUEUE_NAME) || params['queue'])
       queue ||= DeveloperLoader.get_notification_queue(nil)
       # Suspend this request if there aren't any entries to send and it's a fresh request
       if queue.empty? && continuation.isInitial()
@@ -564,7 +557,7 @@ class DeveloperLoader
 
     def setup_plugin_id_info(given_id = nil)
       # Get a checked version of the plugin ID
-      i = (given_id || params[:id] || '').gsub(/[^a-zA-Z0-9_-]/,'') # cleaned version of the ID
+      i = (given_id || params['id'] || '').gsub(/[^a-zA-Z0-9_-]/,'') # cleaned version of the ID
       raise "Bad plugin id" unless i.length > 40
       raise "Bad plugin id" if i =~ /\./ || i =~ /\//
       # Setup info
@@ -607,7 +600,7 @@ class DeveloperLoader
 
     def setup_file_path_info
       # Checked directory
-      @directory = params[:directory]
+      @directory = params['directory']
       if @directory != nil
         directory_elements = @directory.split('/')
         directory_elements.each do |dir|
@@ -616,7 +609,7 @@ class DeveloperLoader
         raise "Bad root directory" unless ALLOWED_PLUGIN_DIRECTORIES.include?(directory_elements.first)
       end
       # Checked filename
-      @filename = params[:filename]
+      @filename = params['filename']
       raise "Bad filename" if @filename =~ BANNED_FILENAMES
       raise "Bad filename" unless @filename =~ ALLOWED_FILENAME_REGEX
       # Plugin path

@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class StdDisplayElementsPlugin < KTrustedPlugin
@@ -65,7 +68,7 @@ class StdDisplayElementsPlugin < KTrustedPlugin
   def render_linked_objects(controller, result, path, object, style, options)
     opts = decode_options(options)
     # Generate query
-    query = "#L#{object.objref.to_presentation}"
+    query = "#L#{object.objref.to_presentation}".dup
     # Linked in attribute?
     attr_name = opts["attr"]
     if attr_name != nil
@@ -85,10 +88,10 @@ class StdDisplayElementsPlugin < KTrustedPlugin
     end
     # Generate search spec
     q = {
-      :q => query,
-      :sort => :title
+      'q' => query,
+      'sort' => :title
     }
-    q[:rs] = 'mini' unless style == :wide
+    q['rs'] = 'mini' unless style == :wide
     spec = controller.search_make_spec(q)
     return unless spec != nil
     # Perform the search and render
@@ -102,9 +105,7 @@ class StdDisplayElementsPlugin < KTrustedPlugin
   def render_created_objects(controller, result, path, object, style, options)
     opts = decode_options(options)
     # Attempt to find the user represented by this object
-    email_address = object.first_attr(A_EMAIL_ADDRESS)
-    return unless email_address && email_address.kind_of?(KIdentifierEmailAddress)
-    user = User.find_first_by_email(email_address.to_s())
+    user = User.where(:objref => object.objref).order(:id).first()
     return unless user
     # Search for the first few items
     created_q = KObjectStore.query_and
@@ -127,13 +128,16 @@ class StdDisplayElementsPlugin < KTrustedPlugin
     opts = decode_options(options)
     return if opts['hideAll']
 
-    work_units = WorkUnit.find(:all, :conditions => {:objref => object.objref, :visible => true})
+    work_units = WorkUnit.
+      where(:objref => object.objref, :visible => true).
+      order(:stable_created_at).
+      select()
     return if work_units.empty?
 
     # Hide closed work units?
     show_closed_work_units = true
     if opts['hideClosed']
-      show_closed_work_units = controller.params.has_key?(:closed_work)
+      show_closed_work_units = controller.params.has_key?('closed_work')
     end
 
     # Render work units
@@ -180,7 +184,7 @@ class StdDisplayElementsPlugin < KTrustedPlugin
 
     # Render notes
     n = 0
-    html = ''
+    html = ''.dup
     notes.each do |note|
       if n >= CONTACT_NOTES_MAX_RESULTS
         # TODO: Use a search subset which will include all the objects... but how to know what that is?

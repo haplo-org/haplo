@@ -22,11 +22,10 @@ class Test::Unit::TestCase
   def run_all_jobs(options)
     TEST_JOBS_LOCK.synchronize do
       # Find which queues are in use
-      pg = KApp.get_pg_database
-      r = pg.exec("SELECT queue FROM jobs WHERE application_id=#{_TEST_APP_ID}")
+      r = KApp.with_pg_database { |db| db.exec("SELECT queue FROM jobs WHERE application_id=#{_TEST_APP_ID}") }
       njobs = 0
       queues = Hash.new
-      r.result.each do |r|
+      r.each do |r|
         queues[r.first] = true
         njobs += 1
       end
@@ -47,9 +46,18 @@ class Test::Unit::TestCase
     nil
   end
 
+  def delete_all_jobs
+    TEST_JOBS_LOCK.synchronize do
+      KApp.with_pg_database do |db|
+        db.exec("DELETE FROM jobs WHERE application_id=#{_TEST_APP_ID}")
+      end
+    end
+  end
+
   def adjust_kjob_runner_for_tests(runner)
     # Hack the select next job SQL in the runner so it only finds jobs for the app being tested in this thread
-    runner.instance_variable_get(:@next_job_sql).gsub!('WHERE queue', "WHERE application_id=#{_TEST_APP_ID} AND queue")
+    sql = runner.instance_variable_get(:@next_job_sql)
+    runner.instance_variable_set(:@next_job_sql, sql.gsub('WHERE queue', "WHERE application_id=#{_TEST_APP_ID} AND queue"))
   end
 
   # Helpers for checking audit entries
@@ -58,7 +66,7 @@ class Test::Unit::TestCase
   end
 
   def reset_audit_trail
-    AuditEntry.delete_all
+    delete_all AuditEntry
     about_to_create_an_audit_entry
   end
 
@@ -69,7 +77,7 @@ class Test::Unit::TestCase
     audit_entry_id = currval - attributes_list.length + 1
     last_entry = nil
     attributes_list.each do |attributes|
-      entry = last_entry = AuditEntry.find(audit_entry_id)
+      entry = last_entry = AuditEntry.read(audit_entry_id)
       audit_entry_id += 1
       assert nil != entry
       attributes.each do |key, value|
@@ -85,7 +93,7 @@ class Test::Unit::TestCase
             end
           end
         else
-          assert_equal value, entry[key]
+          assert_equal value, entry.__send__(key)
         end
       end
     end
@@ -102,7 +110,7 @@ class Test::Unit::TestCase
       # Write a dummy entry so there's always an ID
       AuditEntry.write(:kind => '*TEST*', :displayable => false)
     end
-    KApp.get_pg_database.exec("SELECT MAX(id) FROM audit_entries").result.first.first.to_i
+    KApp.with_pg_database { |db| db.exec("SELECT MAX(id) FROM #{KApp.db_schema_name}.audit_entries").first.first.to_i }
   end
 
   def fixture_file_upload(filename, mime_type)
@@ -130,15 +138,15 @@ class Test::Unit::TestCase
   FIXTURE_TABLES = [:users, :user_memberships, :user_datas, :policies, :permission_rules, :latest_requests, :api_keys]
 
   def db_reset_test_data
-    pg = KApp.get_pg_database
-    FIXTURE_TABLES.reverse_each do |fixture_name|
-      pg.perform("DELETE FROM #{fixture_name}")
+    KApp.with_pg_database do |pg|
+      FIXTURE_TABLES.reverse_each do |fixture_name|
+        pg.perform("DELETE FROM #{KApp.db_schema_name}.#{fixture_name}")
+      end
+      db_load_table_fixtures(pg, FIXTURE_TABLES)
     end
-    db_load_table_fixtures(FIXTURE_TABLES)
   end
 
-  def db_load_table_fixtures(*fixtures)
-    pg = KApp.get_pg_database
+  def db_load_table_fixtures(pg, *fixtures)
     fixtures.flatten.each do |fixture_name|
       csv_name = "#{File.dirname(__FILE__)}/../fixtures/#{fixture_name}.csv"
       if File.exist?(csv_name)
@@ -150,19 +158,11 @@ class Test::Unit::TestCase
               attr_names = elements
             elsif elements.length > 0
               values = attr_names.zip(elements).delete_if { |k, v| !v || v=="" }
-              pg.perform("INSERT INTO #{fixture_name} (#{values.map { |k,v| k }.join(",")}) VALUES ('#{values.map { |k,v| v }.join("','")}')")
+              pg.perform("INSERT INTO #{KApp.db_schema_name}.#{fixture_name} (#{values.map { |k,v| k }.join(",")}) VALUES ('#{values.map { |k,v| v }.join("','")}')")
             end
           end
         end
       end
-    end
-  end
-
-  def _delete_fixtures(fixtures)
-    pg = KApp.get_pg_database
-    # Do them in reverse order
-    fixtures.flatten.reverse.each do |fixture_name|
-      pg.perform("DELETE FROM #{fixture_name}")
     end
   end
 
@@ -214,6 +214,29 @@ class Test::Unit::TestCase
   def set_mock_objectstore_user(id, permissions = nil)
     mock_user = ObjectStorePermissionsTestUser.new(id, (permissions || KLabelStatements.super_user).freeze)
     AuthContext.set_user(mock_user, mock_user)
+  end
+
+  # MiniORM test helper functions
+  # delete everything in the table, calling the after_delete() callback to clean up 
+  def destroy_all(miniorm_class)
+    miniorm_class.where().each do |row|
+      row.delete
+    end
+  end
+  def delete_all(miniorm_class)
+    miniorm_class.where().delete()
+  end
+
+  def keychain_credential_create(k)
+    kc = KeychainCredential.new
+    kc.name = k[:name]
+    kc.kind = k[:kind]
+    kc.instance_kind = k[:instance_kind]
+    kc.account_json = k[:account_json] if k.has_key?(:account_json)
+    kc.account = k[:account] if k.has_key?(:account)
+    kc.secret_json = k[:secret_json] if k.has_key?(:secret_json)
+    kc.secret = k[:secret] if k.has_key?(:secret)
+    kc.save
   end
 
 end

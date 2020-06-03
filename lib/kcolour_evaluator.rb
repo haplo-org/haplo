@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class KColourEvaluator
@@ -43,7 +46,7 @@ class KColourEvaluator
   end
   def colour_components(c)
     c = @named_colours[c] if c.class == Symbol
-    raise "No colour" if c.class != Fixnum
+    raise "No colour" if c.class != Integer
     [(c >> 16) & 0xff, (c >> 8) & 0xff, c & 0xff]
   end
   def components_colour(c)
@@ -127,7 +130,7 @@ class KColourEvaluator
   end
   def colour_out(r)
     r = @named_colours[r] if r.class == Symbol
-    raise "Bad colour evaluator result" if r.class != Fixnum
+    raise "Bad colour evaluator result" if r.class != Integer
     r
   end
 

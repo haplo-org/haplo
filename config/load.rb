@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Called before the application files are loaded.
@@ -11,7 +14,7 @@
 raise "Bad Java version" unless (0 == java.lang.System.getProperty('java.version').index('1.8.'))
 
 # Regexp for filtering parameters from the logs
-KFRAMEWORK_LOGGING_PARAM_FILTER = /\A__|_ak|password|old|pw1|pw2\z/
+KFRAMEWORK_LOGGING_PARAM_FILTER = /\A(__|_ak|secret|password.*|otp_.*)\z/
 
 # Add application library directory to path
 APP_LIB_DIR = File.expand_path("#{KFRAMEWORK_ROOT}/lib")
@@ -44,16 +47,6 @@ unless KFRAMEWORK_ENV == 'production'
   end
 end
 
-# Setup date formats
-# TODO: Work out a decent date/time format for trackers
-Time::DATE_FORMATS.update(
-  :tracker => '%H:%M %d/%m/%Y (%a)',
-  :obj_dates => '%d/%m/%Y',
-  :date_only => '%d %b %Y',
-  :date_and_time => '%d %b %Y, %H:%M',
-  :date_only_full_month => '%d %B %Y'
-)
-
 # Load library modules
 require 'socket'
 require 'digest/sha1'
@@ -72,15 +65,11 @@ require 'jruby/synchronized'
 gem 'rmail'
 require 'rmail'
 
-# Add some useful extensions to Rails and Ruby
-require 'kextend_rails_and_ruby'
-require 'kactiverecord_java_interface'
-
-# Library code which isn't specific to this application
+# Application code
+require 'extend_time'
 require 'bcrypt_j'
 require 'hmac'
-
-# Load essential classes and utilities
+require 'tzinfo_java'
 require 'tzinfo_java'
 require 'k_hostname'        # from lib/common
 require 'kapp_common'       # from lib/common
@@ -105,6 +94,7 @@ require 'kdatetime'
 require 'ktext'
 require 'ktext_app'
 require 'ktext_utilities'
+require 'miniorm_app'
 require 'kmimetypes'
 require 'kcountry'
 require 'ktelephone'
@@ -116,7 +106,6 @@ require 'ktextextract'
 require 'kschema'
 require 'kschema_app'
 require 'klabels'
-require 'klabels_activerecord'
 require 'auth_context'
 require 'kobject'
 require 'kobjectstore'

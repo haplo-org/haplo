@@ -14,6 +14,6 @@
 
 <p>The sort order of <i>Eastern</i> and <i>Western List</i> name styles is always <b>Last First</b>.</p>
 
-<% if params.has_key?(:changed) %>
+<% if params.has_key?('changed'.freeze) %>
   <p><b>Sort order update has started.</b><br>Changes to sort order may take a few minutes to apply.</p>
 <% end %>

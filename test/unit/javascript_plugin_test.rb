@@ -154,14 +154,14 @@ __E
 
     run_javascript_test(:file, 'unit/javascript/javascript_plugin/test_attribute_restrictions.js') do |runtime|
       runtime.host.setTestCallback(proc { |email|
-        u = User.find_first_by_email(email)
+        u = User.where_lower_email(email).first()
         AuthContext.set_user(u,u)
         ''
       })
     end
 
     # Test backwards compatibility in hUserAttributeRestrictionLabels by checking deprecated labels property in hook response works
-    assert_equal [O_LABEL_COMMON.to_i, 123456], User.find(42).attribute_restriction_labels.sort
+    assert_equal [O_LABEL_COMMON.to_i, 123456], User.read(42).attribute_restriction_labels.sort
 
     KPlugin.uninstall_plugin("test_attr_restrictions")
   end
@@ -237,19 +237,19 @@ __E
 
     # Check work unit rendering (uses fast path rendering, or hooks)
     # Just a template
-    rr = render_work_unit(WorkUnit.new(:work_type => "test_plugin:wu_one"), :object)
+    rr = render_work_unit(tb_workunit("test_plugin:wu_one"), :object)
     assert_equal '<div class="z__work_unit_obj_display">BEGIN/(test_plugin:wu_one):object_display/END</div>', rr # legacy API means object -> object_display
     # Has a fullInfo link, but no custom text
-    rr = render_work_unit(WorkUnit.new(:work_type => "test_plugin:wu_two"), :list)
+    rr = render_work_unit(tb_workunit("test_plugin:wu_two"), :list)
     assert_equal '<div class="z__work_unit_obj_display"><div class="z__work_unit_right_info"><a href="/ping">Full info...</a></div>WU_TWO</div>', rr
     # fullInfo link, custom text
-    rr = render_work_unit(WorkUnit.new(:work_type => "test_plugin:wu_three"), :object)
+    rr = render_work_unit(tb_workunit("test_plugin:wu_three"), :object)
     assert_equal '<div class="z__work_unit_obj_display"><div class="z__work_unit_right_info"><a href="/ping">Carrots</a></div>WU_THREE</div>', rr
     # non-default template
-    rr = render_work_unit(WorkUnit.new(:work_type => "test_plugin:wu_four"), :list)
+    rr = render_work_unit(tb_workunit("test_plugin:wu_four"), :list)
     assert_equal '<div class="z__work_unit_obj_display">WU_FOUR: World</div>', rr
     # non-default template, specified as a template object
-    rr = render_work_unit(WorkUnit.new(:work_type => "test_plugin:wu_five"), :object)
+    rr = render_work_unit(tb_workunit("test_plugin:wu_five"), :object)
     assert_equal '<div class="z__work_unit_obj_display">WU_FIVE: Else</div>', rr
 
     # Check that multiple responders set with plugin.hook() work
@@ -272,6 +272,12 @@ __E
     ensure
       KPlugin.uninstall_plugin("test_plugin3")
     end
+  end
+
+  def tb_workunit(work_type)
+    wu = WorkUnit.new
+    wu.work_type = work_type
+    wu
   end
 
   def tb_check_hook_called
@@ -304,7 +310,7 @@ __E
     assert_equal(true, KPlugin.install_plugin("test_plugin"))
     1000.times { tb_check_hook_called }
     number_of_runs = 100000
-    ms = Benchmark.ms do
+    ms = KApp.execution_time_ms do
       number_of_runs.times { tb_check_hook_called }
     end
     puts "Each plugin hook call took #{ms.to_f / number_of_runs.to_f}ms"
@@ -523,7 +529,7 @@ __E
   # -------------------------------------------------------------------------------------------------------------
 
   def test_jobs
-    KApp.get_pg_database.perform("DELETE FROM jobs WHERE application_id=#{_TEST_APP_ID}")
+    KApp.with_pg_database { |db| db.perform("DELETE FROM public.jobs WHERE application_id=#{_TEST_APP_ID}") }
     KApp.set_global(:_pjson_test_plugin, "{}") # Clean up any data stored before running the test
     KPlugin.install_plugin("test_plugin")
     KApp.cache_checkin_all_caches
@@ -583,7 +589,7 @@ __E
     obj.add_attr("Hello", A_TITLE)
     KObjectStore.create(obj)
     get_idx = Proc.new do
-      KApp.get_pg_database.exec("SELECT value FROM os_index_identifier WHERE id=#{obj.objref.obj_id} AND identifier_type=#{T_TEXT_PLUGIN_DEFINED}").result.map { |r| r.first}
+      KApp.with_pg_database { |db| db.exec("SELECT value FROM #{KApp.db_schema_name}.os_index_identifier WHERE id=#{obj.objref.obj_id} AND identifier_type=#{T_TEXT_PLUGIN_DEFINED}").map { |r| r.first} }
     end
     get_query_result = Proc.new do
       KObjectStore.query_and.identifier(plugin_text2).execute(:all,:any).map { |o| o.objref }
@@ -721,8 +727,8 @@ module KHooks
   end
   define_hook :hTestOnLoadAndOnInstall do |h|
     h.description "Checking onLoad and onInstall called in this runtime?"
-    h.result :onInstallCallCount, Fixnum, "0", "onInstall was called"
-    h.result :onLoadCallCount, Fixnum, "0", "onLoad was called"
+    h.result :onInstallCallCount, Integer, "0", "onInstall was called"
+    h.result :onLoadCallCount, Integer, "0", "onLoad was called"
   end
   define_hook :hAppGlobalWrite do |h|
     h.description "Check app global storing"

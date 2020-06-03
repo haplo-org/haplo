@@ -9,8 +9,8 @@ class JavascriptFileTransformPipelineTest < Test::Unit::TestCase
   include JavaScriptTestHelper
 
   def setup
-    FileCacheEntry.destroy_all # to delete files from disk
-    StoredFile.destroy_all # to delete files from disk
+    destroy_all FileCacheEntry # to delete files from disk
+    destroy_all StoredFile # to delete files from disk
     install_grant_privileges_plugin_with_privileges('pFileTransformPipeline')
   end
 
@@ -46,7 +46,7 @@ __E
     TestNotificationObserver.operations.clear
     word_file = StoredFile.from_upload(fixture_file_upload('files/example.doc', 'application/msword'))
     run_all_jobs :expected_job_count => 1
-    assert_equal 1, StoredFile.find(:all).length
+    assert_equal 1, StoredFile.where().count()
     run_javascript_test_with_file_pipeline_callback(:inline, <<__E, nil, 'grant_privileges_plugin')
       TEST(function() {
         var wordFile = O.file("#{word_file.digest}");
@@ -69,8 +69,8 @@ __E
       });
 __E
     run_all_jobs :expected_job_count => 1 # thumbnail of new PDF file
-    assert_equal 2, StoredFile.find(:all).length
-    pdfs = StoredFile.where(:mime_type => 'application/pdf')
+    assert_equal 2, StoredFile.where().count()
+    pdfs = StoredFile.where(:mime_type => 'application/pdf').select()
     assert_equal 1, pdfs.length
     pdf = pdfs[0]
     assert_equal "test1234.pdf", pdf.upload_filename
@@ -111,7 +111,7 @@ __E
   def test_pipelined_word_to_png
     word_file = StoredFile.from_upload(fixture_file_upload('files/example.doc', 'application/msword'))
     run_all_jobs :expected_job_count => 1
-    assert_equal 1, StoredFile.find(:all).length
+    assert_equal 1, StoredFile.where().count()
     run_javascript_test_with_file_pipeline_callback(:inline, <<__E, nil, 'grant_privileges_plugin')
       TEST(function() {
         var wordFile = O.file("#{word_file.digest}");
@@ -130,8 +130,8 @@ __E
       });
 __E
     run_all_jobs :expected_job_count => 1 # thumbnail of new PNG file
-    assert_equal 2, StoredFile.find(:all).length
-    pngs = StoredFile.where(:mime_type => 'image/png')
+    assert_equal 2, StoredFile.where().count()
+    pngs = StoredFile.where(:mime_type => 'image/png').select()
     assert_equal 1, pngs.length
     png = pngs[0]
     assert_equal "file100.doc.png", png.upload_filename # check corrected filename

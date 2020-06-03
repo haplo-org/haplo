@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Queries are split into two parts: the user query and the constraints.
@@ -45,27 +48,28 @@ class KObjectStore
       field = $1
       keywords = $2
       normalised = KTextAnalyser.sort_as_normalise(keywords)
-      db = @store.get_pgdb
-      db.exec(%Q!SELECT oxp_reset()!)
-      db.exec(%Q!SELECT oxp_open(2,'#{@store.get_text_index_path(:full)}')!)
-      different = false
-      words = normalised.split(/\s+/)
-      return nil if words.length > 12 # not too many
       words_out = Array.new
-      words.each do |word|
-        r = db.exec("SELECT oxp_spelling(2, $1)", word)
-        x = r.first.first
-        if x.length > 0 && x != word
-          different = true
-          words_out << x
-        else
-          words_out << word
+      KApp.with_pg_database do |db|
+        db.exec(%Q!SELECT oxp_reset()!)
+        db.exec(%Q!SELECT oxp_open(2,'#{@store.get_text_index_path(:full)}')!)
+        different = false
+        words = normalised.split(/\s+/)
+        return nil if words.length > 12 # not too many
+        words.each do |word|
+          r = db.exec("SELECT oxp_spelling(2, $1)", word)
+          x = r.first.first
+          if x.length > 0 && x != word
+            different = true
+            words_out << x
+          else
+            words_out << word
+          end
         end
-      end
-      return nil unless different
-      # Quote operators
-      words_out.map! do |w|
-        KQuery::OPERATIONS.has_key?(w.downcase) ? %Q!"#{w}"! : w
+        return nil unless different
+        # Quote operators
+        words_out.map! do |w|
+          KQuery::OPERATIONS.has_key?(w.downcase) ? %Q!"#{w}"! : w
+        end
       end
       "#{field}#{words_out.join(' ')}"
     end
@@ -137,34 +141,32 @@ class KObjectStore
         return Results.new(@store, nil, [], nil, nil)
       end
 
-      # Use the raw connection for efficiency to avoid a whole load of copying
-      conn = @store.get_pgdb
-
-      res = nil
-      begin
-        # Setup Xapian interface
-        sql = 'SELECT oxp_reset(); '
-        required_text_indicies = collect_required_textidx(0)
-        if (required_text_indicies & Clause::TEXTIDX_FULL) == Clause::TEXTIDX_FULL
-          sql << %Q!SELECT oxp_open(0,'#{@store.get_text_index_path(:full)}');!
+      data = nil
+      KApp.with_pg_database do |db|
+        begin
+          # Setup Xapian interface
+          sql = 'SELECT oxp_reset(); '.dup
+          required_text_indicies = collect_required_textidx(0)
+          if (required_text_indicies & Clause::TEXTIDX_FULL) == Clause::TEXTIDX_FULL
+            sql << %Q!SELECT oxp_open(0,'#{@store.get_text_index_path(:full)}');!
+          end
+          if (required_text_indicies & Clause::TEXTIDX_FIELDS) == Clause::TEXTIDX_FIELDS
+            sql << %Q!SELECT oxp_open(1,'#{@store.get_text_index_path(:fields)}');!
+          end
+          # Disable the relevancy tracking when it's not needed
+          if required_text_indicies != 0 && sort_by != :relevance
+            sql << 'SELECT oxp_disable_relevancy();'
+          end
+          # Append query SQL then execute -- that create_sql() may call into plugins for restriction
+          # labels if they're not cached, which could do more queries, so everything has to be executed
+          # as one block of SQL.
+          sql << create_sql(results, sort_by, options)
+          data = db.exec(sql)
+        ensure
+          # Clear any results in the Xapian interface
+          db.perform('SELECT oxp_reset()')
         end
-        if (required_text_indicies & Clause::TEXTIDX_FIELDS) == Clause::TEXTIDX_FIELDS
-          sql << %Q!SELECT oxp_open(1,'#{@store.get_text_index_path(:fields)}');!
-        end
-        # Disable the relevancy tracking when it's not needed
-        if required_text_indicies != 0 && sort_by != :relevance
-          sql << 'SELECT oxp_disable_relevancy();'
-        end
-        # Append query SQL then execute -- that create_sql() may call into plugins for restriction
-        # labels if they're not cached, which could do more queries, so everything has to be executed
-        # as one block of SQL.
-        sql << create_sql(results, sort_by, options)
-        res = conn.exec(sql)
-      ensure
-        # Clear any results in the Xapian interface
-        conn.perform('SELECT oxp_reset()')
       end
-      data = res.result
 
       # Results may or may not include the ids
       ids = nil
@@ -197,7 +199,7 @@ class KObjectStore
           end
         end
         # Iterative over results
-        col = res.num_fields - 1
+        col = data.num_fields - 1
         col -= 1 if sort_by == :relevance
         type_counts = Hash.new(0) # default zero for += 1
         data.each do |row|
@@ -231,8 +233,6 @@ class KObjectStore
           ids << row[0].to_i
         end
       end
-
-      data.clear
 
       Results.new(@store, ids, objects, type_counts, unfiltered_count)
     end
@@ -271,24 +271,25 @@ class KObjectStore
           sort_by = :date
         else
           # Generate extra SQL parts for relevancy ranking
+          fields = fields.dup
           fields << ",type_object_id"
           group_by = ' GROUP BY '+fields
-          fields << ",oxp_relevancy(o#{tbl_extra}.id)*os_type_relevancy(o#{tbl_extra}.type_object_id) AS relevance"
+          fields << ",oxp_relevancy(o#{tbl_extra}.id)*#{store._db_schema_name}.os_type_relevancy(o#{tbl_extra}.type_object_id) AS relevance"
         end
       elsif sort_by.is_a?(FieldSorter)
         # Pluggable sorters
         if sort_by.needs_group_by?
           group_by = ' GROUP BY '+fields
         end
-        fields << sort_by.fields_extra
-        tbl_extra = sort_by.table_definition_extra
+        fields = "#{fields}#{sort_by.fields_extra}"
+        tbl_extra = sort_by.table_definition_extra(@store)
         sort_spec = sort_by.sort_spec
       end
 
       # Generate sort spec now in case :relevance was changed to :date
       sort_spec = _sort_spec_for(sort_by) if sort_spec == nil
 
-      "SELECT #{fields} FROM os_objects AS o#{tbl_extra} WHERE o.id IN #{ids_subquery}#{label_filter_clause}#{time_sub_clause}#{group_by} ORDER BY #{sort_spec}#{(@maximum_results != nil) ? " LIMIT #{@maximum_results}" : ''}"
+      "SELECT #{fields} FROM #{@store._db_schema_name}.os_objects AS o#{tbl_extra} WHERE o.id IN #{ids_subquery}#{label_filter_clause}#{time_sub_clause}#{group_by} ORDER BY #{sort_spec}#{(@maximum_results != nil) ? " LIMIT #{@maximum_results}" : ''}"
     end
 
     def label_filter_clause
@@ -306,7 +307,7 @@ class KObjectStore
         end
         if @label_constraints
           # Use @> not && because must match *all* of them
-          label_filter_sql << " AND (labels @> '{#{@label_constraints.map { |l| l.to_i } .join(',')}}'::int[])"
+          label_filter_sql = "#{label_filter_sql} AND (labels @> '{#{@label_constraints.map { |l| l.to_i } .join(',')}}'::int[])"
         end
         label_filter_sql
       end
@@ -315,7 +316,7 @@ class KObjectStore
     def _fields_for(results, options)
       fields = (results == :all) ? 'o.id,o.object,labels' : 'o.id'
       # Need to collect types?
-      fields << ',o.type_object_id' if options[:with_type_counts]
+      fields = "#{fields},o.type_object_id" if options[:with_type_counts]
       fields
     end
 
@@ -381,13 +382,11 @@ class KObjectStore
       @objects ||= Array.new(@ids.length, nil) # init to same size as ids
       obj = @objects[index]
       if obj == nil
-        conn = @store.get_pgdb
-        res = conn.exec("SELECT object,labels FROM os_objects WHERE id=#{@ids[index]}")
-        data = res.result
-        raise "Bad search results" if data.length != 1
-        obj = KObjectStore._deserialize_object(data.first[0], data.first[1])
-        data.clear
-
+        KApp.with_pg_database do |db|
+          data = db.exec("SELECT object,labels FROM #{@store._db_schema_name}.os_objects WHERE id=#{@ids[index]}")
+          raise "Bad search results" if data.length != 1
+          obj = KObjectStore._deserialize_object(data.first[0], data.first[1])
+        end
         @objects[index] = obj
       end
       obj
@@ -406,30 +405,29 @@ class KObjectStore
       end_index = l - 1 if end_index >= l
       return if end_index < start_index
 
-      conn = @store.get_pgdb
+      KApp.with_pg_database do |db|
 
-      i = start_index
-      needed = Array.new
-      lookup = Hash.new
-      while i <= end_index
-        if @objects[i] == nil
-          needed << @ids[i]
-          lookup[@ids[i]] = i
-        end
-
-        if needed.length >= CHUNK_LOAD_SIZE || (i == end_index && needed.length > 0)
-          res = conn.exec("SELECT id,object,labels FROM os_objects WHERE id IN (#{needed.join(',')})")
-          data = res.result
-          raise "Unexpected load quantity" if data.length != needed.length
-          data.each do |row|
-            @objects[lookup[row[0].to_i]] = KObjectStore._deserialize_object(row[1],row[2])
+        i = start_index
+        needed = Array.new
+        lookup = Hash.new
+        while i <= end_index
+          if @objects[i] == nil
+            needed << @ids[i]
+            lookup[@ids[i]] = i
           end
-          data.clear
-          needed.clear
-          lookup.clear
-        end
 
-        i += 1
+          if needed.length >= CHUNK_LOAD_SIZE || (i == end_index && needed.length > 0)
+            data = db.exec("SELECT id,object,labels FROM #{@store._db_schema_name}.os_objects WHERE id IN (#{needed.join(',')})")
+            raise "Unexpected load quantity" if data.length != needed.length
+            data.each do |row|
+              @objects[lookup[row[0].to_i]] = KObjectStore._deserialize_object(row[1],row[2])
+            end
+            needed.clear
+            lookup.clear
+          end
+
+          i += 1
+        end
       end
 
       @objects_complete if start_index == 0 && end_index == (@objects.length - 1)
@@ -499,16 +497,12 @@ class KObjectStore
     end
 
     def time_sub_clause
-      c = ''
-      c << " AND creation_time >= '#{_time_sub_clause_date(@start_time)}'" if @start_time != nil
-      c << " AND creation_time < '#{_time_sub_clause_date(@end_time)}'" if @end_time != nil
-      c << " AND updated_at >= '#{_time_sub_clause_date(@start_time_updated)}'" if @start_time_updated != nil
-      c << " AND updated_at < '#{_time_sub_clause_date(@end_time_updated)}'" if @end_time_updated != nil
+      c = ''.dup
+      c << " AND creation_time >= #{PGconn.time_sql_value(@start_time)}" if @start_time != nil
+      c << " AND creation_time < #{PGconn.time_sql_value(@end_time)}" if @end_time != nil
+      c << " AND updated_at >= #{PGconn.time_sql_value(@start_time_updated)}" if @start_time_updated != nil
+      c << " AND updated_at < #{PGconn.time_sql_value(@end_time_updated)}" if @end_time_updated != nil
       c
-    end
-    def _time_sub_clause_date(date)
-      raise "Logic error" unless date.kind_of?(Date) || date.kind_of?(Time)
-      PGconn.escape_string(date.strftime(OBJECTSTORE_PG_TIMESTAMP_FORMAT))
     end
     def sub_query_constraints
       user_labels = store.get_viewing_user_labels
@@ -537,7 +531,7 @@ class KObjectStore
     def fields_extra
       ''
     end
-    def table_definition_extra
+    def table_definition_extra(store)
       ''
     end
     def needs_group_by?
@@ -558,9 +552,9 @@ class KObjectStore
       # If there are multiple date fields meeting the specification, use the latest one
       ',MAX(dt_sort.value) AS dt_sort_max'
     end
-    def table_definition_extra
+    def table_definition_extra(store)
       # Use inner join so only the objects which have sortable data are included
-      d = ' INNER JOIN os_index_datetime AS dt_sort ON dt_sort.id = o.id'
+      d = " INNER JOIN #{store._db_schema_name}.os_index_datetime AS dt_sort ON dt_sort.id = o.id".dup
       if @desc != nil
         d << " AND dt_sort.attr_desc = #{@desc.to_i}"
         if @qualifier != nil
@@ -617,8 +611,8 @@ class KObjectStore
       @end_time = end_time
     end
     def constrain_to_updated_time_interval(start_time, end_time=nil) # updated time
-      if (start_time != nil && start_time.class != DateTime) || (end_time != nil && end_time.class != DateTime)
-        raise "constrain_to_updated_time_interval() must be passed DateTime objects"
+      if (start_time != nil && start_time.class != Time) || (end_time != nil && end_time.class != Time)
+        raise "constrain_to_updated_time_interval() must be passed Time objects"
       end
       @start_time_updated = start_time
       @end_time_updated = end_time
@@ -854,18 +848,6 @@ class KObjectStore
 
   private
 
-    # Need to select the right bit from the search term
-    def to_oxp_search_term(w, prefix = nil)
-      raise "Bad term" unless w =~ /\A([^:]+):(.+?)(\*?)\z/
-      if $3 != nil && !$3.empty?
-        # Truncated search term - use unstemmed but processed version
-        "_#{prefix}#{$1}*"
-      else
-        # Normal search term - use stemmed form
-        $2
-      end
-    end
-
     def make_oxp_search_query(info)
       basic_prefix = ''
       use_stemmed = true
@@ -929,7 +911,7 @@ class KObjectStore
     def generate_subquery(query, store)
       objref = ((@obj_or_objref.class == KObject) ? @obj_or_objref.objref : @obj_or_objref)
       sqc = sub_query_constraints
-      "(SELECT id FROM os_index_link WHERE value @> ARRAY[#{objref.obj_id.to_i}]#{sqc})"
+      "(SELECT id FROM #{store._db_schema_name}.os_index_link WHERE value @> ARRAY[#{objref.obj_id.to_i}]#{sqc})"
     end
   end
 
@@ -941,7 +923,7 @@ class KObjectStore
 
     def generate_subquery(query, store)
       sqc = sub_query_constraints
-      "(SELECT id FROM os_index_link WHERE object_id=#{@objref.obj_id}#{sqc})"
+      "(SELECT id FROM #{store._db_schema_name}.os_index_link WHERE object_id=#{@objref.obj_id}#{sqc})"
     end
   end
 
@@ -953,11 +935,11 @@ class KObjectStore
     def generate_subquery(query, store)
       if @desc == nil
         # Must have a desc, otherwise it doesn't mean anything. If one is missing, return nothing
-        "(SELECT id FROM os_index_link WHERE false)"
+        "(SELECT id FROM #{store._db_schema_name}.os_index_link WHERE false)"
       else
         sqc = sub_query_constraints
         # Use 'true' because the sql will start with AND
-        "(SELECT id FROM os_index_link WHERE true #{sqc})"
+        "(SELECT id FROM #{store._db_schema_name}.os_index_link WHERE true #{sqc})"
       end
     end
   end
@@ -977,7 +959,7 @@ class KObjectStore
       end
       sqc = sub_query_constraints
       # Use output of to_identifier_index_str() on identifier, to match the string which goes in the index
-      "(SELECT id FROM os_index_identifier WHERE identifier_type=#{@identifier.k_typecode} AND value=#{PGconn.quote(@identifier_index_str)}#{sqc})"
+      "(SELECT id FROM #{store._db_schema_name}.os_index_identifier WHERE identifier_type=#{@identifier.k_typecode} AND value=#{PGconn.quote(@identifier_index_str)}#{sqc})"
     end
   end
 
@@ -988,7 +970,7 @@ class KObjectStore
     end
     def generate_subquery(query, store)
       sqc = sub_query_constraints
-      "(SELECT id FROM os_index_identifier WHERE identifier_type=#{@identifier_type}#{sqc})"
+      "(SELECT id FROM #{store._db_schema_name}.os_index_identifier WHERE identifier_type=#{@identifier_type}#{sqc})"
     end
   end
 
@@ -1000,7 +982,7 @@ class KObjectStore
     end
     def generate_subquery(query, store)
       # TODO: Query SQL generation needs more efficient way of implementing clause created by user constraints
-      "(SELECT id FROM os_objects WHERE created_by=#{@user_id})"
+      "(SELECT id FROM #{store._db_schema_name}.os_objects WHERE created_by=#{@user_id})"
     end
   end
 
@@ -1017,9 +999,9 @@ class KObjectStore
       end
       type_obj_ids.uniq!
       if type_obj_ids.length == 1
-        "(SELECT id FROM os_index_link WHERE object_id = #{type_obj_ids.first} AND attr_desc = #{KConstants::A_TYPE})"
+        "(SELECT id FROM #{store._db_schema_name}.os_index_link WHERE object_id = #{type_obj_ids.first} AND attr_desc = #{KConstants::A_TYPE})"
       else
-        "(SELECT id FROM os_index_link WHERE object_id IN (#{type_obj_ids.join(',')}) AND attr_desc = #{KConstants::A_TYPE})"
+        "(SELECT id FROM #{store._db_schema_name}.os_index_link WHERE object_id IN (#{type_obj_ids.join(',')}) AND attr_desc = #{KConstants::A_TYPE})"
       end
     end
   end
@@ -1043,10 +1025,10 @@ class KObjectStore
         id_col, linked_col, where_sql = generate_subquery_parts_non_empty(subquery_sql)
         lfc = label_filter_clause
         tables = if lfc.empty?
-          'os_index_link'
+          "#{store._db_schema_name}.os_index_link"
         else
           # TODO: Could Postgres views be used to make this cleaner/faster? (materialised if necessary)
-          "(SELECT os_index_link.*, os_objects.labels FROM os_index_link LEFT JOIN os_objects ON os_index_link.#{linked_col}=os_objects.id) AS os_index_link"
+          "(SELECT os_index_link.*, os_objects.labels FROM #{store._db_schema_name}.os_index_link LEFT JOIN #{store._db_schema_name}.os_objects ON os_index_link.#{linked_col}=os_objects.id) AS os_index_link"
         end
         "(SELECT #{id_col} FROM #{tables} WHERE #{where_sql}#{lfc}#{sub_query_constraints})"
       end
@@ -1086,7 +1068,7 @@ class KObjectStore
     end
     def generate_subquery(query, store)
       sqc = sub_query_constraints
-      "(SELECT id FROM os_objects WHERE sortas_title=#{PGconn.quote(KTextAnalyser.sort_as_normalise(@title))}#{sqc})"
+      "(SELECT id FROM #{store._db_schema_name}.os_objects WHERE sortas_title=#{PGconn.quote(KTextAnalyser.sort_as_normalise(@title))}#{sqc})"
     end
   end
 
@@ -1096,22 +1078,24 @@ class KObjectStore
       @date_min = date_min
       @date_max = date_max
       raise "At least one date must be specified" if date_min == nil && date_max == nil
+      raise "DateRangeClause min value must be Time object" unless @date_min.nil? || @date_min.kind_of?(Time)
+      raise "DateRangeClause max value must be Time object" unless @date_max.nil? || @date_max.kind_of?(Time)
     end
     def generate_subquery(query, store)
       sqc = sub_query_constraints
       where_clause = if @date_min != nil && @date_max != nil
         # Range (make sure the ranges overlap)
-        "(value, value2) OVERLAPS (TIMESTAMP '#{@date_min.to_s}', TIMESTAMP '#{@date_max.to_s}')"
+        "(value, value2) OVERLAPS (TIMESTAMP #{PGconn.time_sql_value(@date_min)}, TIMESTAMP #{PGconn.time_sql_value(@date_max)})"
       elsif @date_min != nil
         # Minimum (compare to latest value of the range)
-        "value2 > TIMESTAMP '#{@date_min.to_s}'"
+        "value2 > TIMESTAMP #{PGconn.time_sql_value(@date_min)}"
       elsif @date_max != nil
         # Maximum (compare to earliest value of the range)
-        "value < TIMESTAMP '#{@date_max.to_s}'"
+        "value < TIMESTAMP #{PGconn.time_sql_value(@date_max)}"
       else
         raise "Logic error in DateRangeClause"
       end
-      "(SELECT id FROM os_index_datetime WHERE #{where_clause}#{sqc})"
+      "(SELECT id FROM #{store._db_schema_name}.os_index_datetime WHERE #{where_clause}#{sqc})"
     end
   end
 
@@ -1127,7 +1111,7 @@ class KObjectStore
       end
     end
     def generate_subquery(query, store)
-      "(SELECT id FROM os_objects WHERE labels #{@operation} '{#{@labels.map { |l| l.to_i } .uniq.sort.join(',')}}'::int[])"
+      "(SELECT id FROM #{store._db_schema_name}.os_objects WHERE labels #{@operation} '{#{@labels.map { |l| l.to_i } .uniq.sort.join(',')}}'::int[])"
     end
   end
 
@@ -1136,7 +1120,7 @@ class KObjectStore
       super(parent, nil, nil)
     end
     def generate_subquery(query, store)
-      "(SELECT id FROM os_objects WHERE false)"
+      "(SELECT id FROM #{store._db_schema_name}.os_objects WHERE false)"
     end
   end
 end

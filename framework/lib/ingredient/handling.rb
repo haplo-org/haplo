@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # To use, in the base class:
@@ -68,7 +71,7 @@ module Ingredient
         # - the request is being resumed from suspension (it was checked the first time round and request body no longer available)
         uploads = exchange.annotations[:uploads]
         unless uploads != nil && uploads.getInstructionsRequired()
-          if params[:__] != csrf_get_token
+          if params['__'] != csrf_get_token
             if request.continuation.isInitial()
               raise KFramework::CSRFAttempt
             end

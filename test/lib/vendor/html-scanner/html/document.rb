@@ -1,7 +1,6 @@
 require 'html/tokenizer'
 require 'html/node'
 require 'html/selector'
-require 'html/sanitizer'
 
 module HTML #:nodoc:
   # A top-level HTMl document. You give it a body of text, and it will parse that

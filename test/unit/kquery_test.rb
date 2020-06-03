@@ -1,4 +1,3 @@
-# coding: utf-8
 
 # Haplo Platform                                     http://haplo.org
 # (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
@@ -443,8 +442,8 @@ class KQueryTest < Test::Unit::TestCase
       [2, O_TYPE_BOOK,          'Testing a study of nothing'],
       [3, O_TYPE_PERSON,        KTextPersonName.new(:first => "Test", :last => 'Person')],
       [4, O_TYPE_BOOK,          'Something nice',       'random notes'],
-      [5, O_TYPE_INTRANET_PAGE, 'P2',                   DateTime.new(2007,10,2)],
-      [6, O_TYPE_BOOK,          'B2',                   DateTime.new(2008,2,5)]
+      [5, O_TYPE_INTRANET_PAGE, 'P2',                   Time.new(2007,10,2)],
+      [6, O_TYPE_BOOK,          'B2',                   Time.new(2008,2,5)]
     ].each do |n, type, title, notes|
       o = KObject.new()
       o.add_attr(n, 1)
@@ -481,7 +480,7 @@ class KQueryTest < Test::Unit::TestCase
     # Do a manual search for those dates on the specific field and generally
     [nil,A_NOTES].each do |desc|
       q1 = KObjectStore.query_and
-      q1.date_range(DateTime.new(2007,10,01), DateTime.new(2009,10,02), desc)
+      q1.date_range(Time.new(2007,10,01), Time.new(2009,10,02), desc)
       assert_equal [6,5], q1.execute(:all,:any).map {|o| o.first_attr(1) }
     end
   end

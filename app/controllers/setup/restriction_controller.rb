@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Setup_RestrictionController < ApplicationController
@@ -20,7 +23,7 @@ class Setup_RestrictionController < ApplicationController
   end
 
   def handle_info
-    @restriction = KObjectStore.read(KObjRef.from_presentation(params[:id]))
+    @restriction = KObjectStore.read(KObjRef.from_presentation(params['id']))
     raise "Not a restriction" unless @restriction.first_attr(A_TYPE) == O_TYPE_RESTRICTION
   end
 

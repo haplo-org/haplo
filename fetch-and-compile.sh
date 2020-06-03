@@ -17,8 +17,8 @@ esac
 
 DEV_SUPPORT_DIR=~/haplo-dev-support
 
-JRUBY_VERSION=1.7.20
-JRUBY_DIGEST=3c11f01d38b9297cef2c281342f8bb799772e481
+JRUBY_VERSION=9.2.11.1
+JRUBY_DIGEST=cceb81635fe3cd39f895c7632428e94b503e8e3d
 JRUBY_DOWNLOAD_URL=https://s3.amazonaws.com/jruby.org/downloads/${JRUBY_VERSION}/jruby-bin-${JRUBY_VERSION}.tar.gz
 
 XAPIAN_VERSION=1.2.25
@@ -158,28 +158,11 @@ get_gem() {
 }
 
 get_gem "RedCloth" "4.2.9-java" "698688bb64b73a0477855902aaf0844cb1b0dd2c"
-get_gem "activemodel" "3.0.20" "80c7d881ed64ed7a66f4d82b12c2b98b43f6fbde"
-get_gem "activerecord" "3.0.20" "d8fc6e02bf46f9b5f86c3a954932d67da211302b"
-get_gem "activerecord-jdbc-adapter" "1.2.9.1" "6d99a31f82c77ca5858ed02fcfa7591e662d6adc"
-get_gem "activerecord-jdbcpostgresql-adapter" "1.2.9" "47ca944228ec52a32f0d032e34fcc13f99cd2015"
-get_gem "activeresource" "3.0.20" "e465e7d582c6d72c487d132e5fac3c3af4626353"
-get_gem "activesupport" "3.0.20" "5bc7b2f1ad70a2781c4a41a2f4eaa75b999750e4"
-get_gem "arel" "2.0.10" "758e4172108a517d91c526dcab90355a7d07c527"
-get_gem "builder" "2.1.2" "d0ea89ea793c75853abd636ab86a79b7b57d6993"
+get_gem "builder" "3.2.4" "3581f146308130f5b23b4f0348e68333288267f8"
+get_gem "rake" "10.5.0" "6ffffeadda619a727fe154272d5080f8dd85cf25"
 get_gem "hoe" "3.6.3" "7f2323e812efd292cdca7ebd0e44266c55814995"
-get_gem "i18n" "0.5.0" "74ec4aeb2c46d6d59864e5fceecd3cd496963a3f"
-get_gem "jdbc-postgres" "9.2.1002.1" "927e9e24f86d4d785ddb0fcf58bce3e89b3c87e4"
-get_gem "json" "1.8.0-java" "1288feae1fe8aa8e3b93a2d32bc232ba7ad0749c"
-get_gem "mail" "2.2.19" "d117d132cf6f28f914ee32eb1343d6ffcdca49ea"
-get_gem "mime-types" "1.21" "4a8ff499e52a92b0c3a7354717c6ac920fd8024d"
-get_gem "railties" "3.0.20" "42b0025e4cb483d491a809b9d9deb6fd182c2a57"
-get_gem "rdoc" "3.12.2" "687cd1bc56c2ad79fd9e2e3854d0a6db575e2aa2"
-get_gem "rmail" "1.0.0" "0c946e2e7daf5468a338ce42177f52bd4f89eb82"
+get_gem "rmail" "1.1.3" "c48a81f89db6af1e7c2afe91640dee86f95581d0"
 get_gem "test-unit" "1.2.3" "9ad7eefe7d289713a072130d51312ebe0529d48b"
-get_gem "thor" "0.14.6" "cb09bba64959b0ea470d1b8c266c42858a8f7e11"
-get_gem "tilt" "1.3.5" "ae2951246c258b60826de66256467d379acf363b"
-get_gem "tzinfo" "1.0.1" "fc4c6f1c140dcf2634726ed5dddb568aa07dfec2"
-get_gem "tzinfo-data" "1.2013.4" "84a532b59c313ab9b484ea84041c95ed9de434b8"
 
 if ! [ -f ${VENDOR_DIR}/.gems-installed ]; then
     echo "Installing gems..."
@@ -188,10 +171,6 @@ if ! [ -f ${VENDOR_DIR}/.gems-installed ]; then
     cd $VENDOR_DIR/archive
     jgem install --ignore-dependencies --force --local $ALL_GEMS
     PATH=$OLD_PATH
-    cd $CODE_DIR
-    GEM_PATCH_DIR=`pwd`/deploy/dependency-patches/gems
-    JRUBY_GEMS_DIR=${VENDOR_DIR}/jruby/lib/ruby/gems/shared/gems
-    . deploy/dependency-patches/gems/_patch.sh
     cd $CODE_DIR
     touch ${VENDOR_DIR}/.gems-installed
     echo "Gem patching complete."
@@ -299,7 +278,7 @@ g++ framework/support/haplo.cpp -O2 -o framework/haplo
 
 echo "Compiling Java sources with maven..."
 mvn package
-cp target/haplo-3.20200505.2018.d487fb8334.jar framework/haplo.jar
+cp target/haplo-3.20200531.1513.f9925c8431.jar framework/haplo.jar
 
 mvn -Dmdep.outputFile=target/classpath.txt dependency:build-classpath
 

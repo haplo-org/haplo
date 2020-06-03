@@ -31,20 +31,20 @@ class UserDataTest < Test::Unit::TestCase
     end
 
     # Check that the fixtures have the right constants
-    assert_equal User::KIND_USER, User.find(41).kind
-    assert_equal User::KIND_GROUP, User.find(21).kind
-    assert_equal 'ANONYMOUS', User.find(User::USER_ANONYMOUS).name
-    assert_equal 'Everyone', User.find(User::GROUP_EVERYONE).name
-    assert_equal 'Administrators', User.find(User::GROUP_ADMINISTRATORS).name
+    assert_equal User::KIND_USER, User.read(41).kind
+    assert_equal User::KIND_GROUP, User.read(21).kind
+    assert_equal 'ANONYMOUS', User.read(User::USER_ANONYMOUS).name
+    assert_equal 'Everyone', User.read(User::GROUP_EVERYONE).name
+    assert_equal 'Administrators', User.read(User::GROUP_ADMINISTRATORS).name
 
     # Check that membership IDs are returned in the right order
     # The groups 'closest' to the group are returned first
-    assert_equal [16,21,4], User.find(41).groups_ids
-    assert_equal [22,4], User.find(42).groups_ids
-    assert_equal [21,22], User.find(23).groups_ids    # doesn't have GROUP_EVERYONE added because it's a group
-    assert_equal [21,22], User.find(23).direct_groups_ids
-    assert_equal [16,23,21,22,4], User.find(43).groups_ids
-    assert_equal [16,23], User.find(43).direct_groups_ids
+    assert_equal [16,21,4], User.read(41).groups_ids
+    assert_equal [22,4], User.read(42).groups_ids
+    assert_equal [21,22], User.read(23).groups_ids    # doesn't have GROUP_EVERYONE added because it's a group
+    assert_equal [21,22], User.read(23).direct_groups_ids
+    assert_equal [16,23,21,22,4], User.read(43).groups_ids
+    assert_equal [16,23], User.read(43).direct_groups_ids
 
     # Simple set, retrieve, update
     assert_equal nil, UserData.get(41,TESTNAME_STRING_USER)
@@ -64,7 +64,7 @@ class UserDataTest < Test::Unit::TestCase
     UserData.set(42,TESTNAME_BOOL,false)
     assert_equal FalseClass, UserData.get(42,TESTNAME_BOOL).class
     UserData.set(42,TESTNAME_INT,12)
-    assert_equal Fixnum, UserData.get(42,TESTNAME_INT).class
+    assert_equal Integer, UserData.get(42,TESTNAME_INT).class
     assert_equal 12, UserData.get(42,TESTNAME_INT)
 
     # Basic test for inheritable values
@@ -76,7 +76,7 @@ class UserDataTest < Test::Unit::TestCase
     assert_equal nil, UserData.get(42,TESTNAME_STRING_USER)
 
     # Check with alternative access methods
-    user42 = User.find(42)
+    user42 = User.read(42)
     assert_equal 'h1', UserData.get(user42,TESTNAME_STRING_INHERIT)
     assert_equal nil, UserData.get(user42,TESTNAME_STRING_USER)
     assert_equal 'h1', user42.get_user_data(TESTNAME_STRING_INHERIT)
@@ -91,7 +91,7 @@ class UserDataTest < Test::Unit::TestCase
     assert_equal nil,UserData.get(42,TESTNAME_STRING_USER)
 
     # More complicated tests: chain of inherited data, with alternative access methods
-    user43 = User.find(43)
+    user43 = User.read(43)
     UserData.set(4,TESTNAME_STRING_INHERIT2,'h3')
     assert_equal 'h3', UserData.get(43,TESTNAME_STRING_INHERIT2)
     assert_equal 'h3', UserData.get(user43,TESTNAME_STRING_INHERIT2)

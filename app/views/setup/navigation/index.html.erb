@@ -8,7 +8,7 @@
 
 <ul>
   <li><i>Preview as...</i></li>
-  <% @groups.each do |group| %>
+  <% @groups_query.each do |group| %>
     <li><a href="/do/setup/navigation/preview/<%= group.id %>" target="workspace"><%= h(group.name) %></a></li>
   <% end %>
 </ul>

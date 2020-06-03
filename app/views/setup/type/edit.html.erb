@@ -13,9 +13,9 @@
 <%= sys_mng_header %>
 
 <%
-  if params.has_key?(:parent)
+  if params.has_key?('parent'.freeze)
     client_side_controller_js("parent_temp_action")
-    %><div id="z__parent_temp_action" data-ref="<%= params[:parent] %>"></div><%
+    %><div id="z__parent_temp_action" data-ref="<%= params['parent'.freeze] %>"></div><%
   end
 %>
 

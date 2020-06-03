@@ -1,15 +1,47 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-class HardwareOtpToken < ActiveRecord::Base
+class HardwareOtpToken < MiniORM::Record
 
   # Parameters for Feitian OTP tokens:
   #   Event based: '6:0:-1:0:0:30'
   #   Time based:  '6:0:-1:60:1:2'
+
+  # -------------------------------------------------------------------------------------------------
+
+  table :hardware_otp_tokens do |t|
+    t.column :timestamp,  :updated_at
+    t.column :text,       :identifier
+    t.column :text,       :algorithm
+    t.column :text,       :parameters
+    t.column :text,       :secret
+    t.column :int,        :counter
+
+    t.order 'identifier', :identifier
+  end
+
+  def initialize
+    # Set defaults matching SQL table definition
+    @counter = 0
+  end
+
+  def before_save
+    self.updated_at = Time.now
+  end
+
+  # -------------------------------------------------------------------------------------------------
+
+  def self.find_by_identifier(identifier)
+    self.where(:identifier => identifier).first()
+  end
+
+  # -------------------------------------------------------------------------------------------------
 
   def check_and_update(otp)
     algorithm = ALGORITHMS[self.algorithm]
@@ -47,7 +79,7 @@ class HardwareOtpToken < ActiveRecord::Base
           else
             # Update the counter value in the database
             @token.counter = c
-            @token.save!
+            @token.save
             # Tell the caller it matched
             return :pass
           end

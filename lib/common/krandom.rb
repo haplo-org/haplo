@@ -1,5 +1,7 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -15,7 +17,6 @@ module KRandom
   FILE_STATIC_SIGNATURE_KEY_LENGTH = 64 # long lived secret for static file URLs
   AUTOLOGIN_SECRET_LENGTH = 32 # = 64 chars when hex encoded
   TOKEN_FOR_EMAIL_LENGTH = 16 # 32 chars when hex encoded, use for tokens sent in email
-  LINK_COOKIE_LENGTH = 24 # link cookie for pairing devices, 48 chars when hex encoded
   API_KEY_LENGTH = 33 # api key length, base64 encoded (use 'odd' length to avoid having any padding characters at the end)
   TEMP_DATA_KEY_LENGTH = 18
 

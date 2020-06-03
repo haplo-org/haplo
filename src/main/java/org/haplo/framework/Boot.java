@@ -58,6 +58,9 @@ import org.haplo.appserver.Scheduler;
  *
  */
 public class Boot {
+    private final int JETTY_THREADS_MAX = 512;
+    private final int JETTY_THREADS_MIN = 16;
+
     /**
      * Starts the application.
      *
@@ -156,6 +159,8 @@ public class Boot {
         logger.info("Application loaded (took " + (System.currentTimeMillis() - bootTime) + "ms), logging started.");
         logger.info("JavaScript initialisation took " + org.haplo.javascript.Runtime.initializeSharedEnvironmentTimeTaken + "ms");
 
+        Database.start();
+
         Application.setDynamicFileFactory(framework.getDynamicFileFactory());
 
         Scheduler.start(framework);
@@ -174,9 +179,10 @@ public class Boot {
         }
 
         // Thread pool for Jetty
-        QueuedThreadPool jettyThreadPool = new QueuedThreadPool(128 /* maximum number of threads */);
-        jettyThreadPool.setMinThreads(16);
-        jettyThreadPool.setMaxThreads(128);
+        QueuedThreadPool jettyThreadPool = new QueuedThreadPool(
+            JETTY_THREADS_MAX,
+            JETTY_THREADS_MIN
+        );
 
         // Create the public facing HTTP server
         httpSrv = new Server(jettyThreadPool);
@@ -210,33 +216,35 @@ public class Boot {
         httpSrv.setConnectors(new Connector[]{http, https});
         httpSrv.setHandler(new RequestHandler(framework, inDevelopmentMode));
 
-	// If a valid port is configured, enable prometheus metrics
-	try {
-	    int metricport = Integer.valueOf(framework.getInstallProperty("prometheus_port", "0"));
-	    if(metricport > 0) {
-		// Expose prometheus metrics
-		Server metricServer = new Server(metricport);
-		ServletContextHandler context = new ServletContextHandler();
-		context.setContextPath("/");
-		metricServer.setHandler(context);
-		StatisticsHandler stats = new StatisticsHandler();
-		stats.setHandler(httpSrv.getHandler());
-		httpSrv.setHandler(stats);
-		// Standard JVM metrics
-		DefaultExports.initialize();
-		// Register collector
-		new JettyStatisticsCollector(stats).register();
-		// Monitor the haplo thread pool
-		new QueuedThreadPoolStatisticsCollector(jettyThreadPool, "haplo").register();
-		metricServer.start();
-		context.addServlet(new ServletHolder(new MetricsServlet()), "/metrics");
-		logger.info("Enabled prometheus monitoring on port " + metricport);
-	    }
-	} catch (Exception e) {
-	    logger.error("Invalid prometheus_port setting.");
-	}
+        // If a valid port is configured, enable prometheus metrics
+        try {
+            int metricport = Integer.valueOf(framework.getInstallProperty("prometheus_port", "0"));
+            if(metricport > 0) {
+                // Expose prometheus metrics
+                Server metricServer = new Server(metricport);
+                ServletContextHandler context = new ServletContextHandler();
+                context.setContextPath("/");
+                metricServer.setHandler(context);
+                StatisticsHandler stats = new StatisticsHandler();
+                stats.setHandler(httpSrv.getHandler());
+                httpSrv.setHandler(stats);
+                // Standard JVM metrics
+                DefaultExports.initialize();
+                // Register collector
+                new JettyStatisticsCollector(stats).register();
+                // Monitor the haplo thread pool
+                new QueuedThreadPoolStatisticsCollector(jettyThreadPool, "haplo").register();
+                // Monitor the database connection pool
+                Database.collectMetrics();
+                metricServer.start();
+                context.addServlet(new ServletHolder(new MetricsServlet()), "/metrics");
+                logger.info("Enabled prometheus monitoring on port " + metricport);
+            }
+        } catch (Exception e) {
+            logger.error("Invalid prometheus_port setting.");
+        }
 
-	// Start the http server now, in case prometheus modified it
+        // Start the http server now, in case prometheus modified it
         httpSrv.start();
 
         // Test mode?

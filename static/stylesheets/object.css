@@ -348,7 +348,7 @@ a.z__file_extra_action_link:before {
 .z__file_image_sidebar {
     position: absolute;
     width: 215px;
-    margin: 0px 0 0px 104%;
+    left: 800px;
     background: transparent;
     z-index: 1000;
 }

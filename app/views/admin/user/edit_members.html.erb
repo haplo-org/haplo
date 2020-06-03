@@ -11,7 +11,6 @@
     # Basic info
     uid = user.id
     ukind = user.kind
-    is_member = (user.is_member == 't')
     # only look at non-protected users and not this one
     if uid > User::USER_ID_MAX_PROTECTED && uid != this_uid
       # headings?
@@ -24,8 +23,7 @@
         end
       end
       # Checkbox
-      email = user.email
-      %><p><label><input type="checkbox" name="u[<%= uid %>]"<% if is_member %> checked<% end %>><span class="z__mng_user_edit_member_list_name"><%= h(user.name) %><% if email %></span><span class="z__mng_user_edit_member_list_email"><%= h(email) %></span><% end %></label></p><%
+      %><p><label><input type="checkbox" name="u[<%= uid %>]"<% if user.is_member %> checked<% end %>><span class="z__mng_user_edit_member_list_name"><%= h(user.name) %></label><% if user.email %></span><span class="z__mng_user_edit_member_list_email"><%= h(user.email) %></span><% end %></p><%
     end
   end
 %>

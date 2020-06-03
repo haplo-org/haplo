@@ -13,22 +13,25 @@ class AuthenticationControllerTest < IntegrationTest
     @_users ||= Hash.new
     KApp.in_application(app_id) do
       db_reset_test_data
-      KApp.get_pg_database.exec("SELECT setval('users_id_seq', 300);")
-      @_users[app_id] = User.new(
-        :name_first => 'first',
-        :name_last => "last#{app_id}",
-        :email => 'authtest@example.com')
+      KApp.with_pg_database { |db| db.exec("SELECT setval('#{KApp.db_schema_name}.users_id_seq', 300);") }
+      @_users[app_id] = User.new
+      @_users[app_id].name_first = 'first'
+      @_users[app_id].name_last = "last#{app_id}"
+      @_users[app_id].email = 'authtest@example.com'
       @_users[app_id].kind = User::KIND_USER
       @_users[app_id].password = 'pass1234'
-      @_users[app_id].save!
-      assert @_users[app_id].read_attribute('password').start_with?('$2a$13$') # check BCrypt rounds
+      @_users[app_id].save
+      assert @_users[app_id].password_encoded.start_with?('$2a$13$') # check BCrypt rounds
     end
   end
 
   def teardown_in_app(app_id)
     KApp.in_application(app_id) do
       u = @_users[app_id]
-      u.destroy if u != nil
+      if u != nil
+        Policy.where(:user_id => u.id).delete()
+        u.delete
+      end
     end
   end
 
@@ -166,7 +169,7 @@ class AuthenticationControllerTest < IntegrationTest
     assert_hsts_header
 
     # Check it doesn't work if you're not logged in
-    post_302 "/do/authentication/change-password", {:old => 'pass1234', :pw1 => 'pants9872', :pw2 => 'pants9872'}
+    post_302 "/do/authentication/change-password", {:password_old => 'pass1234', :password => 'pants9872', :password_2 => 'pants9872'}
     assert_redirected_to '/do/authentication/login?rdr=%2Fdo%2Fauthentication%2Fchange-password'
     assert_no_more_audit_entries_written
     assert_hsts_header
@@ -185,31 +188,31 @@ class AuthenticationControllerTest < IntegrationTest
     get "/do/authentication/change-password"
 
     # Try a bad old password
-    post "/do/authentication/change-password", {:old => 'pass5323', :pw1 => 'pants9872', :pw2 => 'pants9872'}
+    post "/do/authentication/change-password", {:password_old => 'pass5323', :password => 'pants9872', :password_2 => 'pants9872'}
     assert response.body =~ /Password not changed/
     assert response.body =~ /The old password entered was incorrect/
     assert_no_more_audit_entries_written
 
     # Try a password not matching
-    post "/do/authentication/change-password", {:old => 'pass1234', :pw1 => 'pants9872', :pw2 => 'pants9873'}
+    post "/do/authentication/change-password", {:password_old => 'pass1234', :password => 'pants9872', :password_2 => 'pants9873'}
     assert response.body =~ /Password not changed/
     assert response.body =~ /The new passwords entered did not match/
     assert_no_more_audit_entries_written
 
     # Rubbish password
-    post "/do/authentication/change-password", {:old => 'pass1234', :pw1 => 'password', :pw2 => 'password'}
+    post "/do/authentication/change-password", {:password_old => 'pass1234', :password => 'password', :password_2 => 'password'}
     assert response.body =~ /Password not changed/
     assert response.body =~ /The new password did not meet minimum security requirements/
     assert_no_more_audit_entries_written
 
     # Change password
-    post "/do/authentication/change-password", {:old => 'pass1234', :pw1 => 'pants9872', :pw2 => 'pants9872'}
+    post "/do/authentication/change-password", {:password_old => 'pass1234', :password => 'pants9872', :password_2 => 'pants9872'}
     assert_select 'h1', 'Password changed'
     assert_audit_entry(:kind => 'USER-CHANGE-PASS', :user_id => @_users[_TEST_APP_ID].id, :entity_id => @_users[_TEST_APP_ID].id, :displayable => false)
     # Check changed password
-    changed_user = User.find(@_users[_TEST_APP_ID].id)
-    assert changed_user.read_attribute('password') != @_users[_TEST_APP_ID].read_attribute('password')
-    assert changed_user.read_attribute('password').start_with?('$2a$13$') # check BCrypt rounds
+    changed_user = User.read(@_users[_TEST_APP_ID].id)
+    assert changed_user.password_encoded != @_users[_TEST_APP_ID].password_encoded
+    assert changed_user.password_encoded.start_with?('$2a$13$') # check BCrypt rounds
 
     # Log out
     get_a_page_to_refresh_csrf_token
@@ -228,7 +231,7 @@ class AuthenticationControllerTest < IntegrationTest
 
     # Check users with invalid password get a nice message, not an error
     @_users[_TEST_APP_ID].set_invalid_password
-    @_users[_TEST_APP_ID].save!
+    @_users[_TEST_APP_ID].save
     get "/do/authentication/change-password"
     assert_select 'h1', 'Password managed externally'
 
@@ -284,7 +287,7 @@ class AuthenticationControllerTest < IntegrationTest
         assert token.length > 16
 
         # User has token
-        assert nil != User.find(@_users[_TEST_APP_ID].id).recovery_token
+        assert nil != User.read(@_users[_TEST_APP_ID].id).recovery_token
 
         # Try welcome instead
         urlpath.gsub!('/r/', '/welcome/') if swap_for_welcome
@@ -300,9 +303,9 @@ class AuthenticationControllerTest < IntegrationTest
         # Check the right token
         get urlpath
         assert response.body.include?(swap_for_welcome ? 'Please choose a password' : 'Please choose a new password')
-        post urlpath, {:pw1 => 'pants23897324', :pw2 => 'carrots2387634'}
+        post urlpath, {:password => 'pants23897324', :password_2 => 'carrots2387634'}
         assert response.body.include?(swap_for_welcome ? 'Password not set' : 'Password not changed')
-        post urlpath, {:pw1 => 'ping1654ss'+swap_for_welcome.to_s, :pw2 => 'ping1654ss'+swap_for_welcome.to_s}
+        post urlpath, {:password => 'ping1654ss'+swap_for_welcome.to_s, :password_2 => 'ping1654ss'+swap_for_welcome.to_s}
         assert response.body.include?(swap_for_welcome ? 'Your password has been set' : 'Your password has been changed')
 
         # Check can login with new token
@@ -312,7 +315,7 @@ class AuthenticationControllerTest < IntegrationTest
         assert_redirected_to '/'
 
         # User doesn't have a recovery token any more
-        assert_equal nil, User.find(@_users[_TEST_APP_ID].id).recovery_token
+        assert_equal nil, User.read(@_users[_TEST_APP_ID].id).recovery_token
       end
 
       # Check that tokens in past or future don't work
@@ -342,10 +345,10 @@ class AuthenticationControllerTest < IntegrationTest
       without_application { setup_in_app(_TEST_APP_ID) }
 
       # Login as two different users, collecting cookie values
-      assert_login_as(User.find(41), 'password')
+      assert_login_as(User.read(41), 'password')
       cookie1 = session_cookie_value
       session_cookie_value_set('x') # new session
-      assert_login_as(User.find(42), 'password')
+      assert_login_as(User.read(42), 'password')
       cookie2 = session_cookie_value
       assert cookie2 != 'x'
       assert cookie1 != cookie2
@@ -384,7 +387,7 @@ class AuthenticationControllerTest < IntegrationTest
       # Check with a plugin installed that changes the logout URL
       begin
         raise "Failed to install plugin" unless KPlugin.install_plugin("authentication_controller_test/logout_user_interface_hook_test")
-        assert_login_as(User.find(41), 'password')
+        assert_login_as(User.read(41), 'password')
         get '/do/account/info'
         assert_select '#z__aep_tools_tab a', "User 1"
         post_302 '/do/authentication/logout'
@@ -414,7 +417,7 @@ class AuthenticationControllerTest < IntegrationTest
   def test_impersonation
     AUTHENTICATION_LOGIN_TEST_FAILURE_LOCK.synchronize do
       without_application { setup_in_app(_TEST_APP_ID) }
-      other_user = User.find(41)
+      other_user = User.read(41)
       assert_equal "User 1", other_user.name
 
       assert ! @_users[_TEST_APP_ID].policy.can_impersonate_user?
@@ -429,10 +432,11 @@ class AuthenticationControllerTest < IntegrationTest
       post_403 "/do/authentication/impersonate"
 
       # Add permission
-      policy = Policy.new(:user_id => @_users[_TEST_APP_ID].id,
-                          :perms_allow => KPolicyRegistry.to_bitmask(:impersonate_user),
-                          :perms_deny => 0)
-      policy.save!
+      policy = Policy.new
+      policy.user_id = @_users[_TEST_APP_ID].id
+      policy.perms_allow = KPolicyRegistry.to_bitmask(:impersonate_user)
+      policy.perms_deny = 0
+      policy.save
 
       # Will be able to login and impersonate
       impersonation_do_login_and_impersonation
@@ -452,26 +456,26 @@ class AuthenticationControllerTest < IntegrationTest
       # Disable the underlying account, check the impersonated account is logged out
       impersonation_do_login_and_impersonation
       @_users[_TEST_APP_ID].kind = User::KIND_USER_BLOCKED
-      @_users[_TEST_APP_ID].save!
+      @_users[_TEST_APP_ID].save
       get_302 '/do/account/info'
       assert_redirected_to '/do/authentication/login?rdr=%2Fdo%2Faccount%2Finfo'
       # Enable it again and check it works now
       @_users[_TEST_APP_ID].kind = User::KIND_USER
-      @_users[_TEST_APP_ID].save!
+      @_users[_TEST_APP_ID].save
       impersonation_do_login_and_impersonation
       get '/do/account/info'
       assert_select '#z__aep_tools_tab a', other_user.name
 
       # Remove permission from the underlying account, check impersonated account is logged out
       impersonation_do_login_and_impersonation
-      policy.destroy
+      policy.delete
       get_302 '/do/account/info'
       assert_redirected_to '/do/authentication/login?rdr=%2Fdo%2Faccount%2Finfo'
     end
   end
 
   def impersonation_do_login_and_impersonation
-    other_user = User.find(41)
+    other_user = User.read(41)
     # Log in, logging out first to be sure
     get_a_page_to_refresh_csrf_token
     post_302 "/do/authentication/logout"
@@ -499,8 +503,8 @@ class AuthenticationControllerTest < IntegrationTest
   end
 
   def impersonation_do_impersonate_while_impersonating
-    other_user = User.find(41)
-    another_user = User.find(42)
+    other_user = User.read(41)
+    another_user = User.read(42)
     # Post with UID but without redirect
     about_to_create_an_audit_entry
     post_302 "/do/authentication/impersonate", {:uid => another_user.id.to_s}
@@ -575,7 +579,7 @@ class AuthenticationControllerTest < IntegrationTest
       # Check the values against a sequence of OTPs generated by a real key
       token = HardwareOtpToken.find_by_identifier('test-3-event')
       token.counter = 36  # counter one *before* the beginning of this sequence of OTPs
-      token.save!
+      token.save
       assert_equal [false, :fail], otpres(KHardwareOTP.check_otp("test-3-event", "123456", "127.0.0.1"))
       assert_equal [true, :pass], otpres(KHardwareOTP.check_otp("test-3-event", "211172", "127.0.0.1"))
       assert_equal [false, :fail], otpres(KHardwareOTP.check_otp("test-3-event", "264532", "127.0.0.1"))
@@ -597,7 +601,7 @@ class AuthenticationControllerTest < IntegrationTest
       # Check the time based OTP, now we trust the generation of OTP codes
       time_token = HardwareOtpToken.find_by_identifier('test-1-time')
       time_token.counter = 12345
-      time_token.save! # reset counter
+      time_token.save # reset counter
       time_otp = Java::OrgOpenauthenticationOtp::OneTimePasswordAlgorithm.generateOTP(time_token.secret.unpack('m').first.to_java_bytes, (Time.new.to_i / 60), 6, false, -1)
       assert_equal [false, :fail], otpres(KHardwareOTP.check_otp("test-1-time", "123456", "127.0.0.1")) if time_otp != "123456" # don't fail test by chance
       assert_equal [true, :pass], otpres(KHardwareOTP.check_otp("test-1-time", time_otp, "127.0.0.1"))
@@ -611,7 +615,7 @@ class AuthenticationControllerTest < IntegrationTest
         assert_equal [false, :fail], otpres(KHardwareOTP.check_otp("test-1-time", "1234567", "127.0.0.1"))  # 7 digits to make sure it always fails
       end
       time_token.counter = 12323
-      time_token.save! # reset counter again
+      time_token.save # reset counter again
       assert_raises(KLoginAttemptThrottle::LoginThrottled) { KHardwareOTP.check_otp("test-1-time", time_otp, "127.0.0.1") }
       assert_equal [true, :pass], otpres(KHardwareOTP.check_otp("test-1-time", time_otp, "127.0.0.2")) # OK for another IP address
 
@@ -629,8 +633,11 @@ class AuthenticationControllerTest < IntegrationTest
 
       # User to test with & permission object
       user_obj = @_users[_TEST_APP_ID]
-      policy = Policy.new(:user_id => user_obj.id, :perms_allow => 0, :perms_deny => 0)
-      policy.save!
+      policy = Policy.new
+      policy.user_id = user_obj.id
+      policy.perms_allow = 0
+      policy.perms_deny = 0
+      policy.save
 
       # Accounting start
       KAccounting.setup_accounting
@@ -688,7 +695,7 @@ class AuthenticationControllerTest < IntegrationTest
 
       # Set token for user, check login sequence, with and without the "requires" policy set on the user
       user_obj.otp_identifier = "test-1-time"
-      user_obj.save!
+      user_obj.save
       assert_audit_entry({:kind => 'USER-OTP-TOKEN', :entity_id => user_obj.id})
       otp = nil
       token = HardwareOtpToken.find_by_identifier("test-1-time")
@@ -699,13 +706,13 @@ class AuthenticationControllerTest < IntegrationTest
         if require_token_policy
           # Set the policy for the user
           policy.perms_allow = KPolicyRegistry.to_bitmask(:require_token)
-          policy.save!
+          policy.save
         end
-        assert_equal require_token_policy, User.find(user_obj.id).policy.is_otp_token_required?
+        assert_equal require_token_policy, User.read(user_obj.id).policy.is_otp_token_required?
         # Reset the counter on the token?
         unless reusing_otp
           token.counter = 12345 + (require_token_policy ? 1 : 2) # so AR thinks there is a change worth saving
-          token.save!
+          token.save
         end
         # Login - wrong password
         get "/do/authentication/login"
@@ -728,14 +735,14 @@ class AuthenticationControllerTest < IntegrationTest
         assert_equal user_obj.id, session[:pending_uid]
         # Bad OTP
         get '/do/authentication/otp' # get CSRF token
-        post '/do/authentication/otp', {:password => '0000000'}
+        post '/do/authentication/otp', {:otp_session => '0000000'}
         assert_equal nil, session[:uid]
         assert_select('p.z__general_alert', 'Incorrect code, please try again.')
         assert_equal accounting_expected_login_count, KAccounting.get(:logins)
         assert_audit_entry(:kind => 'USER-AUTH-FAIL', :displayable => false, :data => {"otp" => 'test-1-time', "uid" => user_obj.id, "interactive" => true})
         # Provide OTP and check it works
         otp = TestHardwareOTP.next_otp_for("test-1-time") unless reusing_otp
-        post '/do/authentication/otp', {:password => otp}, {:expected_response_codes => [200, 302]}
+        post '/do/authentication/otp', {:otp_session => otp}, {:expected_response_codes => [200, 302]}
         unless reusing_otp
           assert_redirected_to('/')
           assert_equal user_obj.id, session[:uid]
@@ -762,10 +769,10 @@ class AuthenticationControllerTest < IntegrationTest
       post_302 "/do/authentication/login", {:email => 'authtest@example.com', :password => 'pass1234'}
       assert_redirected_to('/do/authentication/otp')
       get '/do/authentication/otp' # get CSRF token
-      post '/do/authentication/otp', {:password => '0000000'} # bad
+      post '/do/authentication/otp', {:otp_session => '0000000'} # bad
       assert_select('p.z__general_alert', 'Incorrect code, please try again.')
       assert_equal nil, session[:uid]
-      post_302 '/do/authentication/otp', {:password => '123456789'}
+      post_302 '/do/authentication/otp', {:otp_session => '123456789'}
       assert_redirected_to('/')
       assert_equal user_obj.id, session[:uid]
       assert_equal nil, session[:pending_uid]
@@ -776,15 +783,15 @@ class AuthenticationControllerTest < IntegrationTest
       post_302 "/do/authentication/login", {:email => 'authtest@example.com', :password => 'pass1234'}
       assert_redirected_to('/do/authentication/otp')
       get '/do/authentication/otp' # get CSRF token
-      post '/do/authentication/otp', {:password => '123456789'}
+      post '/do/authentication/otp', {:otp_session => '123456789'}
       assert_select('p.z__general_alert', 'Incorrect code, please try again.')
       assert_equal nil, session[:uid]
 
       # Leaving the requires_token policy set on the user, remove token, then check login fails
       user_obj.otp_identifier = nil
-      user_obj.save!
+      user_obj.save
       # Check policy is still set
-      assert_equal true, User.find(user_obj.id).policy.is_otp_token_required?
+      assert_equal true, User.read(user_obj.id).policy.is_otp_token_required?
       # Log in!
       get "/do/authentication/login"
       post_302 "/do/authentication/login", {:email => 'authtest@example.com', :password => 'pass1234'}
@@ -819,9 +826,12 @@ class AuthenticationControllerTest < IntegrationTest
 
       # Make an API Key
       key = 'M3pa44a8cozdJQobdu1u3jjq5c40DLm5PVlD5Ll5'
-      apikey = ApiKey.new(:user_id => user_obj.id, :path => '/api/', :name => 'TEST');
+      apikey = ApiKey.new
+      apikey.user_id = user_obj.id
+      apikey.path = '/api/'
+      apikey.name = 'TEST'
       apikey._set_api_key(key)
-      apikey.save!
+      apikey.save
 
       # Log into the application
       user_session = open_session
@@ -840,14 +850,14 @@ class AuthenticationControllerTest < IntegrationTest
         # Change the kind of user
         k = User.const_get(kind_of_user)
         user_obj.kind = k
-        user_obj.save!
+        user_obj.save
         User.invalidate_cached # changing types from group<->user needs special attention
         # Get account page to test to see whether it was allowed or not
         user_session.get "/do/account/info", nil, {:expected_response_codes => [200, 302]}
         # Only these three have identity
         if k == User::KIND_USER || k == User::KIND_SUPER_USER || k == User::KIND_SERVICE_USER
           # Got the account page OK?
-          user_session.assert_select 'h1', "first last#{_TEST_APP_ID}'s account information"
+          user_session.assert_select 'h1', "first last#{_TEST_APP_ID}&#39;s account information"
         else
           # Was redirected away
           user_session.assert_redirected_to "/do/authentication/login?rdr=%2Fdo%2Faccount%2Finfo"
@@ -874,7 +884,7 @@ class AuthenticationControllerTest < IntegrationTest
         
       end
 
-      ApiKey.destroy_all
+      destroy_all ApiKey
 
       without_application { teardown_in_app(_TEST_APP_ID) }
 

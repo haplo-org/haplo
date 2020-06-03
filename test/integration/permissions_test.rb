@@ -16,17 +16,18 @@ class PermissionsTest < IntegrationTest
   def setup
     restore_store_snapshot("basic")
     db_reset_test_data
-    FileCacheEntry.destroy_all()
-    StoredFile.destroy_all()
+    destroy_all FileCacheEntry
+    destroy_all StoredFile
   end
 
   def test_permissions_and_policies
     # Create a couple of users
     @user_joe = make_user('joe.bloggs@example.com')
     @user_joan = make_user('joan.ping@example.com')
-    common_group = User.new(:name => "common group")
+    common_group = User.new
+    common_group.name = "common group"
     common_group.kind = User::KIND_GROUP
-    common_group.save!
+    common_group.save
     common_group.update_members! [@user_joe.id, @user_joan.id]
     # Apply permissions
 
@@ -51,7 +52,7 @@ class PermissionsTest < IntegrationTest
     # Check file policy
     assert_equal false, @user_joe.policy.can_read_any_stored_file?
     assert_equal false, @user_joan.policy.can_read_any_stored_file?
-    assert_equal true, User.find(User::USER_SUPPORT).policy.can_read_any_stored_file?
+    assert_equal true, User.read(User::USER_SUPPORT).policy.can_read_any_stored_file?
 
     # Create some objects
     @objs = Hash.new
@@ -105,9 +106,12 @@ class PermissionsTest < IntegrationTest
     joe.assert_select '#z__page_name h1', obj_title(:p1)
     joe.get_403 obj_path(:p2)
     joe.assert_select '#z__page_name h1', 'Unauthorised'
-    api_key = ApiKey.new(:user => @user_joe, :path => '/', :name => 'test')
+    api_key = ApiKey.new
+    api_key.user_id = @user_joe.id
+    api_key.path = '/'
+    api_key.name = 'test'
     api_key_secret = api_key.set_random_api_key
-    api_key.save()
+    api_key.save
     get_403 obj_path(:p2), nil, {'X-ONEIS-Key' => api_key_secret}
     assert_equal("application/json; charset=utf-8", response['Content-Type'])
     api_response = JSON.parse(response.body)
@@ -115,7 +119,7 @@ class PermissionsTest < IntegrationTest
     assert_equal('Unauthorised: You are not permitted to perform that action', api_response['error']['message'])
     get obj_path(:p1), nil, {'X-ONEIS-Key' => api_key_secret}
     assert_select '#z__page_name h1', obj_title(:p1)
-    api_key.destroy
+    api_key.delete
 
     # Read some objects, and check the response is correct
     joe.get obj_path(:o1)
@@ -256,7 +260,7 @@ class PermissionsTest < IntegrationTest
     end
 
     # Now change the permissions!
-    PermissionRule.destroy_all(user_id: @user_joe.id)
+    PermissionRule.where(:user_id => @user_joe.id).each { |r| r.delete() }
 
     # Read some objects, and check the response is correct
     joe.get_403 obj_path(:o1)
@@ -284,7 +288,7 @@ class PermissionsTest < IntegrationTest
     end
 
     # Check the support user includes the everyone group
-    support_user = User.find(User::USER_SUPPORT)
+    support_user = User.read(User::USER_SUPPORT)
     assert support_user.id == 3
     assert support_user.groups_ids.include?(User::GROUP_EVERYONE)
 
@@ -294,7 +298,7 @@ class PermissionsTest < IntegrationTest
     assert joe.response.kind_of? Net::HTTPOK # not redirected
 
     # Set permissions so Joe can't read anything
-    PermissionRule.destroy_all
+    destroy_all PermissionRule
 
     assert !(joe.current_user.permissions.something_allowed?(:read))
     joe.get '/'
@@ -310,10 +314,13 @@ class PermissionsTest < IntegrationTest
 
   def make_user(email)
     raise "Bad email" unless email =~ /\A(\w+)\.(\w+)@/
-    u = User.new(:name_first => $1, :name_last => $2, :email => email)
+    u = User.new
+    u.name_first = $1
+    u.name_last = $2
+    u.email = email
     u.kind = User::KIND_USER
     u.password = 'pass1234'
-    u.save!
+    u.save
     u
   end
 

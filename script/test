@@ -45,8 +45,6 @@ else
     mkdir -p $HOME/haplo-dev-support/khq-test/textidx
     mkdir -p $HOME/haplo-dev-support/khq-test/textweighting
     mkdir -p $HOME/haplo-dev-support/khq-test/plugins
-    mkdir -p $HOME/haplo-dev-support/khq-test/messages/app_create
-    mkdir -p $HOME/haplo-dev-support/khq-test/messages/app_modify
     mkdir -p $HOME/haplo-dev-support/khq-test/messages/spool
     # Copy in test plugin (see test/integration/javascript_plugin_loading_test.rb)
     # Needs to be done before the app server starts, to test the fact it's registered by the

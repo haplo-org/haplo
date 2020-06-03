@@ -35,13 +35,13 @@ huwWg0oJ+xiUiy1FxS7cC/OreIULQLr4tEDQ8GUr0wFsISMcE2MeYmxz0Xfq0XLh
 eBl4A19/xqjLW/al9KOZpi/4PaoNwL1tscwwWuQ+zYBNQw==).freeze
 
   def teardown
-    KeychainCredential.destroy_all
+    delete_all KeychainCredential
   end
 
   # -------------------------------------------------------------------------
 
   def create_an_adfs_keychain_credential(sp_name, idp_url)
-    credential = KeychainCredential.new({
+    keychain_credential_create(
       :name => sp_name,
       :kind => ADFS_KEYCHAIN_CRED_KIND,
       :instance_kind => ADFS_KEYCHAIN_CRED_INSTANCE_KIND,
@@ -55,8 +55,7 @@ eBl4A19/xqjLW/al9KOZpi/4PaoNwL1tscwwWuQ+zYBNQw==).freeze
                     ADFS_KEYCHAIN_CRED_SP_X509CERT => "MIICnTCCAYWgAwIBAgIBATANBgkqhkiG9w0BAQsFADASMRAwDgYDVQQDDAdzcCB0 ZXN0MB4XDTE5MDIyNzIzMzA0NloXDTI5MDIyNDIzMzA0NlowEjEQMA4GA1UEAwwH c3AgdGVzdDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAJZP47vyYxqN Wcg8CyyQrYEj2DDm4XoaTrJLWQQxVHChG1i2S78btjI79f3Z5gSggpeIDFx9Fdfa GjudqUkk1NEk1a5mn64ndmUUQvS67D3kPTQPjUASRIWBpNJY+Z5EbXLq01wmyYEp 0Kr5te7Q6acIaBqSSHdV/opczvFRB7VQT6RlZ9DiOoxm9NbC3Omhp6yfhQsj0Z9h EfjOcxYCKwUlyAFtQeeYUZzsCF9CQ7nw/Cth6EJyjLDHsDF5I3x5QLKOF4UUaYxn uvM/cluBitAse2tpDMMH836++8yaAopucmzARu4tRNetvPN3wLvNLPyI/ozJvfRE 0GAXdt2PjisCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAh1auV8vZ2djFBa47Kij3 xU9UWO1pwIzIdNy5JhA4xFvBFjWWInsdyy3UxQcS6bZneL/mPH+v6KnGsJ4vTMgo yrsfvGGZXVZz3pP3k8Ctvoj1x7yB+4BvJyQl/gtoxb2oEbEw5JQaKm67Rq37SRHq xWc/1NoJj87rDl9LRhn5juXDvNTQEDKZJSGPEd91Hq15jYf5972vdWPJwQHSoFra +q5ZTHWGwycBSUdPLa+3iXJTjy8gIAMxXNiRrz7qRSDiF6mWXQ/hT2d8BRbI/+tD 1EZoh5URwFhbySa8fgHLe+UjKOdXFa83aNuaTLzIuYAqCgWeqHcqPFTmHdOLlbTs nA==",
                   },
       :secret => { ADFS_KEYCHAIN_CRED_SP_PRIVATEKEY => "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCWT+O78mMajVnI PAsskK2BI9gw5uF6Gk6yS1kEMVRwoRtYtku/G7YyO/X92eYEoIKXiAxcfRXX2ho7 nalJJNTRJNWuZp+uJ3ZlFEL0uuw95D00D41AEkSFgaTSWPmeRG1y6tNcJsmBKdCq +bXu0OmnCGgakkh3Vf6KXM7xUQe1UE+kZWfQ4jqMZvTWwtzpoaesn4ULI9GfYRH4 znMWAisFJcgBbUHnmFGc7AhfQkO58PwrYehCcoywx7AxeSN8eUCyjheFFGmMZ7rz P3JbgYrQLHtraQzDB/N+vvvMmgKKbnJswEbuLUTXrbzzd8C7zSz8iP6Myb30RNBg F3bdj44rAgMBAAECggEAWuxKapctYZNdWuUPMU721SY0kSgn/i9JqUowt3uLg3HA 1AG5ggmmRW7F119mZygctsLCD3ROsToqIiO1khwoa7anVw6WysbuNCh0dAtZ+fpF F2fM3pPuRP/uDptpq1XjCt+HKLgBrhL4OWRBrAtNOw+3wVL5aM5o4ZNQTuLgEclm sERblDt+uc2vSh4RsCWAhOwjb92fVYzj/GgHRfUJmnOrmaPdyTOPGqrGiCYiXgfh YQY0Q8mYoBPhX43WHNMjrcerWlYHOm2iSDG6PHs5HUAP2W81P4PacciIt16hVRBH vzcMkmqCZGYl8e5F5qUnsweMzAZ2TIcbnDPhzmu1AQKBgQD0rR+MIPx62n88YQAc IJKrmonhkhBclWaWCAzxTAkzGUTl6NAJh/5tWOb8KV7CPt3TYrjTFDiDjmjwU0NK QTk8UC1x209UTfMZXlFTK/smyH8RK2K2tQjgaxFs3jyRv8FacE9g8QmZv81Bk4Dh g6ci8A7UaNOFuV/SfgQ6tMs5gQKBgQCdRMH7OO2QFLRN5BSmaTg0tTM7SRN2XJbq uCD45m3n98cxwxEc1MkdR1ifAYT5wM2C1g5qAGxw+aHQyMG5G136MC4aND0K9eEO he3UFP55Gsp1+VUo+2+9uolzUaLPeBQ8e0A6hClW4T3m/abjhvAVX84OjmNt12Yr WxM6fcClqwKBgHpD7KjMbv5BIyWb3z8u87v2zIHAyJZLPeko+ra1ZT94mBo/PX4V zAj+TOajEawFWDnicjNgPmFXD49QPCbl8uD1u8/SZJDfJuR9YiwqpSUbOYvt3zUn v9jNB/ccEq5OYSN9Td1GdaKz2rCzMcr/S8zEotR30YNYP87ik+B2KbuBAoGAYaBs NrKJLnbb0rpyYzdQD9AoJHZhoYkqmjyBI2GP+n7i5a4s8lPZINbIWbSMwqmAKecN fZoTtzIP1Fa7g1hMx2GfTN7+wc4OzoAvOgdqTO1nn0KPLeif3gxtBOw5gEcPcNgl 7+1Y6Djcv4bYUcfTQ8F8XabgbDBZmTJpRlcH/w8CgYEAzJXMvpJOeHtQ4U5y79Bp +g0jGPq2MHvwIHo0+iyVrWnvj6gIlZj5Y169Uz2a5VkvYOUI1bH0CfnsMqBeO2De orT+iB/Mpn448UVn5/fASuFcpddSyuHV4sqg6hdLNhRpmvwyOG3CGijpCopQIfxU FOu7Fnb4eEAPVce4huq5iRk=" }
-    })
-    credential.save!
+    )
   end
 
   # -------------------------------------------------------------------------
@@ -70,7 +69,7 @@ eBl4A19/xqjLW/al9KOZpi/4PaoNwL1tscwwWuQ+zYBNQw==).freeze
 
     # Fetch the metadata and check it looks OK
     get '/do/saml2-sp/'+sp_name+'/metadata'
-    assert response.body.starts_with?('<?xml version="1.0"?><md:EntityDescriptor')
+    assert response.body.start_with?('<?xml version="1.0"?><md:EntityDescriptor')
     assert response.body =~ /AssertionConsumerService/
 
     # Fetch the local login URL, expecting it to redirect to the IDP.

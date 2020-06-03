@@ -92,7 +92,7 @@ public class KDateTime extends KScriptable {
     }
 
     public String jsFunction_toHTML() {
-        return this.datetime.toHtml();
+        return this.datetime.to_html();
     }
 
     // --------------------------------------------------------------------------------------------------------------

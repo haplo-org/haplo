@@ -13,7 +13,8 @@ class JavascriptTemplateTest < Test::Unit::TestCase
   def test_platform_template_functions
     db_reset_test_data
     restore_store_snapshot("basic")
-    StoredFile.destroy_all
+    destroy_all FileCacheEntry
+    destroy_all StoredFile
     pdf = StoredFile.from_upload(fixture_file_upload('files/example_3page.pdf', 'application/pdf'))
     run_all_jobs({})
     obj = KObject.new()

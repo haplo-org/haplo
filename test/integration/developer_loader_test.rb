@@ -1,5 +1,5 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -21,15 +21,24 @@ class DeveloperLoaderTest < IntegrationTest
     assert user42.policy.is_not_anonymous? && !(user42.policy.can_setup_system?)
 
     # Make keys
-    key41 = ApiKey.new(:user_id => 41, :path => '/api/development-plugin-loader/', :name => 'test41')
+    key41 = ApiKey.new
+    key41.user_id = 41
+    key41.path = '/api/development-plugin-loader/'
+    key41.name = 'test41'
     key41_secret = key41.set_random_api_key
-    key41.save!
-    key41b = ApiKey.new(:user_id => 41, :path => '/api/', :name => 'test41')
+    key41.save
+    key41b = ApiKey.new
+    key41b.user_id = 41
+    key41b.path = '/api/'
+    key41b.name = 'test41'
     key41b_secret = key41b.set_random_api_key
-    key41b.save!
-    key42 = ApiKey.new(:user_id => 42, :path => '/api/development-plugin-loader/', :name => 'test41')
+    key41b.save
+    key42 = ApiKey.new
+    key42.user_id = 42
+    key42.path = '/api/development-plugin-loader/'
+    key42.name = 'test41'
     key42_secret = key42.set_random_api_key
-    key42.save!
+    key42.save
 
     # Make some requests
     make_auth_test_request(key41_secret, true)
@@ -97,7 +106,7 @@ class DeveloperLoaderTest < IntegrationTest
 
   def check_upload_name(directory, filename)
     loader = DeveloperLoader::Controller.new
-    loader.instance_variable_set(:@exchange, FakeExchange.new({:directory => directory, :filename => filename}))
+    loader.instance_variable_set(:@exchange, FakeExchange.new({'directory' => directory, 'filename' => filename}))
     loader.__send__(:setup_file_path_info)
     r = CheckUploadName.new
     r.directory = loader.instance_variable_get(:@directory)

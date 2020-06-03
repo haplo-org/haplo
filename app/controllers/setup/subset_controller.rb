@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Setup_SubsetController < ApplicationController
@@ -22,7 +25,7 @@ class Setup_SubsetController < ApplicationController
       # Update the orderings
       lookup = Hash.new
       @subsets.each do |obj|
-        ordering_s = params[:pri][obj.objref.to_presentation]
+        ordering_s = params['pri'][obj.objref.to_presentation]
         if ordering_s != nil
           ordering = ordering_s.to_i
           # Save back to the store if different
@@ -46,10 +49,10 @@ class Setup_SubsetController < ApplicationController
 
   _GetAndPost
   def handle_edit
-    editing = (params[:id] != 'new')
+    editing = (params['id'] != 'new')
 
     @subset = if editing
-      KObjectStore.read(KObjRef.from_presentation(params[:id])).dup
+      KObjectStore.read(KObjRef.from_presentation(params['id'])).dup
     else
       # Find max ordering so far, but default to 90 + 10 =100
       max_ordering = 90
@@ -77,21 +80,21 @@ class Setup_SubsetController < ApplicationController
     if request.post?
       ok = true
 
-      title = params[:title]
+      title = params['title']
       title ||= ''
       ok = false unless title =~ /\S/
 
       @included_types = []
-      if params.has_key?(:type)
-        params[:type].each_key do |r|
+      if params.has_key?('type')
+        params['type'].each_key do |r|
           objref = KObjRef.from_presentation(r)
           if objref && KObjectStore.schema.type_descriptor(objref)
             @included_types << objref
           end
         end
       end
-      @included_labels = params[:included_labels].split(',').map { |r| KObjRef.from_presentation(r) } .compact
-      @excluded_labels = params[:excluded_labels].split(',').map { |r| KObjRef.from_presentation(r) } .compact
+      @included_labels = params['included_labels'].split(',').map { |r| KObjRef.from_presentation(r) } .compact
+      @excluded_labels = params['excluded_labels'].split(',').map { |r| KObjRef.from_presentation(r) } .compact
 
       # Update subset object
       @subset.delete_attr_if do |v,desc,q|
@@ -126,10 +129,10 @@ class Setup_SubsetController < ApplicationController
 
   _GetAndPost
   def handle_delete
-    @subset = KObjectStore.read(KObjRef.from_presentation(params[:id]))
-    if request.post?
+    @subset = KObjectStore.read(KObjRef.from_presentation(params['id']))
+    if request.post? && @subset && @subset.first_attr(A_TYPE) == O_TYPE_SUBSET_DESC
       KObjectStore.delete(@subset)
-      redirect_to '/do/setup/subset'
+      redirect_to '/do/system/blank'
     end
   end
 end

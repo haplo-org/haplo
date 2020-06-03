@@ -14,17 +14,17 @@ class JavaScriptDebugReportingTest < IntegrationTest
   def setup
     db_reset_test_data
     KPlugin.install_plugin("badly_coded_plugin")
-    @user = User.new(
-      :name_first => 'first',
-      :name_last => "last",
-      :email => 'authtest@example.com')
+    @user = User.new
+    @user.name_first = 'first'
+    @user.name_last = "last"
+    @user.email = 'authtest@example.com'
     @user.kind = User::KIND_USER
     @user.password = 'pass1234'
-    @user.save!
+    @user.save
   end
 
   def teardown
-    @user.destroy
+    @user.delete
     KPlugin.uninstall_plugin("syntax_error_plugin")
     KPlugin.uninstall_plugin("badly_coded_plugin")
     # Check in all the caches
@@ -128,11 +128,10 @@ class JavaScriptDebugReportingTest < IntegrationTest
       'Error: Bad DBTime creation',
       'badly_coded_plugin/js/badly_coded_plugin.js (line 19)'
     ],[
-# Disabled because interface changed to throw exception with more accurate message
-#      '/do/test_error/ar_notfound', # ActiveRecord::RecordNotFound
-#      "Attempt to read something which doesn't exist.",
-#      'badly_coded_plugin/js/badly_coded_plugin.js (line 23)'
-#    ],[
+      '/do/test_error/orm_notfound', # MiniORM::MiniORMRecordNotFoundException
+      "Attempt to read something which doesn&#39;t exist.",
+      'badly_coded_plugin/js/badly_coded_plugin.js (line 23)'
+    ],[
       '/do/test_error/stackoverflow', # java.lang.StackOverflowError
       "Stack overflow. Check for recursive calls of functions in the stack trace.",
       'badly_coded_plugin/js/badly_coded_plugin.js (line 28)'
@@ -142,11 +141,11 @@ class JavaScriptDebugReportingTest < IntegrationTest
       'badly_coded_plugin/js/badly_coded_plugin.js (line 35)'
     ],[
       '/do/test_error/bad_standard_layout',
-      "Unknown standard layout 'std:randomness'",
+      "Unknown standard layout &#39;std:randomness&#39;",
       '</pre>' # no error location
     ],[
       '/do/test_error/bad_schema_name',
-      "Nothing found when attempting to retrieve property 'test:type:which-does-not-exist' from TYPE",
+      "Nothing found when attempting to retrieve property &#39;test:type:which-does-not-exist&#39; from TYPE",
       'badly_coded_plugin/js/badly_coded_plugin.js (line 51)'
     ],[
       # MUST BE LAST TEST

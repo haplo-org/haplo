@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # TODO: unit testing for KTableExporter
@@ -242,7 +245,7 @@ class KTableExporter
     LINE_ENDING = "\r\n"
 
     def initialize
-      @tsv = ''
+      @tsv = ''.dup.force_encoding(Encoding::UTF_8)
     end
     def write_row(row)
       @tsv << row.map { |h| (h || BLANK_CELL).gsub(/\s+/,' ') } .join(CELL_SEPARATOR)
@@ -256,7 +259,7 @@ class KTableExporter
 
   class FormatCSV
     def initialize
-      @csv = ''.force_encoding(Encoding::UTF_8)
+      @csv = ''.dup.force_encoding(Encoding::UTF_8)
     end
     def write_row(row)
       @csv << row.to_csv

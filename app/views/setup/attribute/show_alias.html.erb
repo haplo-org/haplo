@@ -49,6 +49,6 @@
 
 <%= render :partial => 'type_behaviours_warning' %>
 
-<%= sys_mng_edit_button("/do/setup/attribute/edit_alias/#{params[:id].to_i}") %>
+<%= sys_mng_edit_button("/do/setup/attribute/edit_alias/#{params['id'.freeze].to_i}") %>
 
-<%= sys_mng_update_submenu_under(@title, "/do/setup/attribute/show_alias/#{params[:id].to_i}", "/do/setup/attribute/show/#{@alias_of}") %>
+<%= sys_mng_update_submenu_under(@title, "/do/setup/attribute/show_alias/#{params['id'.freeze].to_i}", "/do/setup/attribute/show/#{@alias_of}") %>

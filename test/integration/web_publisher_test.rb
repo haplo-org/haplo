@@ -11,7 +11,8 @@ class WebPublisherTest < IntegrationTest
 
   def test_web_publisher_response_handling
     restore_store_snapshot("basic")
-    StoredFile.destroy_all
+    destroy_all FileCacheEntry
+    destroy_all StoredFile
 
     raise "Failed to install plugin" unless KPlugin.install_plugin("web_publisher_test/web_publisher_test")
 
@@ -123,6 +124,11 @@ class WebPublisherTest < IntegrationTest
     get_404 "/thumbnail/#{stored_file.digest}/#{stored_file.size}"
     assert WebPublisherTestPlugin::CALLS[_TEST_APP_ID].empty?
 
+    # Can be downloaded if the publication sets it as a response body
+    get "/publication/response-kinds/stored-file"
+    assert_equal "application/pdf", response.header["Content-Type"]
+    assert_equal 'attachment; filename="example3.pdf"', response['content-disposition']
+
     # Add an object which gives permission for the service user to download it
     obj = KObject.new([O_TYPE_BOOK,O_LABEL_COMMON])
     obj.add_attr(KConstants::O_TYPE_BOOK, KConstants::A_TYPE)
@@ -136,7 +142,7 @@ class WebPublisherTest < IntegrationTest
     assert response.body =~ /example3\.pdf/
 
     # Check non-existent objects return a 404
-    get_404 "/testobject/#{123}/slug"
+    get_404 "/testobject/123/slug"
     assert_select 'h1.title-in-layout', 'Not found'
     assert_select 'div.haplo-error', 'The requested item was not found'
 
@@ -145,7 +151,7 @@ class WebPublisherTest < IntegrationTest
     get_404 "/testobject/#{obj.objref.to_presentation}/slug" # this object does exist
     assert_select 'h1.title-in-layout', 'Not found'
     assert_select 'div.haplo-error', 'The requested item was not found'
-    rule.destroy
+    rule.delete
     get "/testobject/#{obj.objref.to_presentation}/slug" # check it's visible again
 
     # Now the downloads work
@@ -205,7 +211,7 @@ __E
     KPlugin.uninstall_plugin("test_publication")
     KPlugin.uninstall_plugin("std_web_publisher")
     KPlugin.uninstall_plugin("web_publisher_test/web_publisher_test")
-    StoredFile.destroy_all
+    destroy_all StoredFile
   end
 
 

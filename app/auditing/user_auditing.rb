@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module KAuditing
@@ -75,8 +78,8 @@ module KAuditing
 
   # User creation and modification
 
-  VISIBLE_USER_ATTRIBUTES = ["name_first", "name_last", "email"]
-  VISIBLE_GROUP_ATTRIBUTES = ["name"]
+  VISIBLE_USER_ATTRIBUTES = [:name_first, :name_last, :email]
+  VISIBLE_GROUP_ATTRIBUTES = [:name]
 
   def self.write_user_modify_audit(user, kind, data = nil)
     AuditEntry.write(
@@ -90,6 +93,8 @@ module KAuditing
   USER_KIND_TO_ENTRY_KIND = {
     User::KIND_USER => 'USER-ENABLE',
     User::KIND_GROUP => 'GROUP-ENABLE',
+    User::KIND_SERVICE_USER => 'SERVICE-USER-ENABLE', # should never happen
+    User::KIND_SUPER_USER => 'SUPER-USER-ENABLE',     # should never happen
     User::KIND_USER_BLOCKED => 'USER-BLOCK',
     User::KIND_USER_DELETED => 'USER-DELETE',
     User::KIND_GROUP_DISABLED => 'GROUP-DISABLE'
@@ -97,53 +102,51 @@ module KAuditing
 
   KNotificationCentre.when(:user_modified) do |name, user_kind, user|
     changes = user.previous_changes
-    if changes.has_key?('id') && (changes['id'].first == nil)
+    unless changes[:is_update]
       # New user - audit basic details
       if user.kind == User::KIND_GROUP
         write_user_modify_audit(user, 'GROUP-NEW', {"name" => user.name})
       else
         data = {}
-        VISIBLE_USER_ATTRIBUTES.each { |a| data[a] = user.read_attribute(a) }
+        VISIBLE_USER_ATTRIBUTES.each { |a| data[a] = user.__send__(a) }
         write_user_modify_audit(user, 'USER-NEW', data)
       end
     else
       # Modification - could be all sorts
       # Password change or set by recovery link/welcome
-      if changes.has_key?('password')
-        if changes.has_key?('recovery_token') && user.recovery_token == nil
+      if changes.has_key?(:password_encoded)
+        if changes.has_key?(:recovery_token) && user.recovery_token == nil
           write_user_modify_audit(user, 'USER-SET-PASS')
         else
           write_user_modify_audit(user, 'USER-CHANGE-PASS')
         end
       end
       # Objref change
-      if changes.has_key?('obj_id')
+      if changes.has_key?(:objref)
         write_user_modify_audit(user, 'USER-REF', {"ref" => user.objref ? user.objref.to_presentation : nil})
       end
       # Tags change
-      if changes.has_key?('tags')
+      if changes.has_key?(:tags)
         write_user_modify_audit(user, 'USER-TAGS', {"tags" => PgHstore.parse_hstore(user.tags)})
       end
       # OTP token change
-      if changes.has_key?('otp_identifier')
+      if changes.has_key?(:otp_identifier)
         write_user_modify_audit(user, 'USER-OTP-TOKEN', {"identifier" => user.otp_identifier})
       end
       # Delete/block/disable etc
-      if changes.has_key?('kind')
+      if changes.has_key?(:kind)
         change_kind = USER_KIND_TO_ENTRY_KIND[user.kind]
         write_user_modify_audit(user, change_kind)
       end
       # Attributes
       visible_attrs, attrs_audit_kind = (user.is_group ? [VISIBLE_GROUP_ATTRIBUTES, 'GROUP-MODIFY'] : [VISIBLE_USER_ATTRIBUTES, 'USER-MODIFY'])
       data = {}
-      data_old = {}
       visible_attrs.each do |a|
         if changes.has_key?(a)
-          data_old[a], data[a] = changes[a]
+          data[a] = changes[a]
         end
       end
       unless data.length == 0
-        data[:old] = data_old
         write_user_modify_audit(user, attrs_audit_kind, data)
       end
     end
@@ -171,7 +174,7 @@ module KAuditing
     {:deduplicate => true, :start_buffering => true, :max_arguments => 3} # args = name,detail,user_id
   ) do |name, detail, user_id|
     # Make a compact summary of the policies
-    policies = Policy.find(:all, :conditions => ['user_id = ?', user_id])
+    policies = Policy.where(:user_id => user_id).select()
     data = case policies.length
     when 0
       {"allow" => 0, "deny" => 0}
@@ -197,7 +200,7 @@ module KAuditing
     {:deduplicate => true, :start_buffering => true, :max_arguments => 3} # args = name,detail,user_id
   ) do |name, detail, user_id|
     # Make a compact summary of the permssions
-    rules = PermissionRule.find(:all, :conditions => ['user_id = ?', user_id], :order => 'label_id') .map do |rule|
+    rules = PermissionRule.where(:user_id => user_id).order(:label_id).select().map do |rule|
       [rule.label_id, rule.statement, rule.permissions]
     end
     AuditEntry.write(

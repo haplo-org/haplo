@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # There is some potentially cultural specific assumptions in this code, regarding the end points of ranges.
@@ -107,8 +110,8 @@ class KDateTime
     _to_formatted(timezone, true)
   end
 
-  def range_pg
-    _make_range.map { |d| d.strftime(PG_TIMESTAMP_FORMAT) }
+  def range_for_objectstore
+    _make_range()
   end
 
   def start_datetime
@@ -119,6 +122,10 @@ class KDateTime
     range = _make_range # which does timezone conversion
     difference = range.last - range.first
     range.first + (difference / Rational(2,1)) # difference will be a Rational
+  end
+
+  def __test_range_value
+    _make_range.map { |d| d.strftime('%Y-%m-%d %H:%M:00') }
   end
 
   # --------------------------------------------------------------------------------------------------------------
@@ -164,8 +171,6 @@ private
     'm' => PFormat.new('%d %b %Y', '%H:%M', HTMLSTR_TO,           HTMLSTR_TO,        false, HTMLSTR_COMMA, HTMLSTR_COMMA_FROM)
   }
 
-  PG_TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:00"
-
   PRECISION_NEXT_UNIT = {
     'C' => [:>>, 1200], 'D' => [:>>, 120], 'Y' => [:>>, 12],
     'M' => [:>>, 1], 'd' => [:+, 1],
@@ -188,9 +193,11 @@ private
       value
     when String
       value.strip.split(/[\s\:\.\-]+/).map { |x| x.to_i }
-    when DateTime, Time
+    when Time
       [value.year, value.month, value.mday, value.hour, value.min]
-    when Date # Order of clauses is important - need to check Date *after* DateTime
+    when DateTime                                     # DateTime use is checked
+      raise "DateTime not supported by KDateTime"     # DateTime use is checked
+    when Date # Order of clauses is important - need to check Date last
       [value.year, value.month, value.mday]
     else
       raise "Invalid datetime passed to KDateTime (type not known)"
@@ -199,7 +206,7 @@ private
     raise "Invalid datetime passed to KDateTime (zero elements)" if i.length == 0
     i.each_with_index do |x, index|
       allowed_range = DEF_ALLOWED_RANGES[index]
-      raise "Invalid datetime passed to KDateTime (bad elements)" unless x.kind_of? Fixnum
+      raise "Invalid datetime passed to KDateTime (bad elements)" unless x.kind_of? Integer
       raise "Invalid datetime passed to KDateTime (too many elements)" if allowed_range == nil
       raise "Invalid datetime passed to KDateTime (out of range at index #{index})" unless allowed_range.include?(x)
     end
@@ -257,7 +264,7 @@ private
 
   def _internal_to_datetime(i)
     return nil if i == nil
-    DateTime.__send__(:new, *i)
+    Time.__send__(:new, *i)
   end
 
   # --------------------------------------------------------------------------------------------------------------
@@ -310,7 +317,7 @@ private
     #   2) The precision unit is culturally expected to refer to an instant in time.
     if @e == nil || !(PRECISION_HAS_INSTANTANEOUS_END_POINT[@p])
       d = PRECISION_NEXT_UNIT[@p]
-      r1 = r1.__send__(*d)
+      r1 = r1.to_datetime.__send__(*d).to_time
     end
     range = [r0, r1]
     # Apply timezone?

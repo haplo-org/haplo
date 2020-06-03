@@ -1,4 +1,3 @@
-# coding: utf-8
 
 # Haplo Platform                                     http://haplo.org
 # (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
@@ -24,7 +23,12 @@ class KTextTest < Test::Unit::TestCase
     assert_equal "Text stuff2", KTextFormattedLine.new(%Q!<fl><sup>Text\n stuff2</sup></fl>!).to_summary
 
     # Check behaviour of file identifier to_summary implementation
-    fileidentifier = KIdentifierFile.new(StoredFile.new(:digest => 'ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06', :size => 1, :upload_filename => 'x.pdf', :mime_type => 'application/pdf'))
+    stored_file = StoredFile.new
+    stored_file.digest = 'ff1003f5f8ba5c667415503669896c2940814fd64a846f08e879891864e06a06'
+    stored_file.size = 1
+    stored_file.upload_filename = 'x.pdf'
+    stored_file.mime_type = 'application/pdf'
+    fileidentifier = KIdentifierFile.new(stored_file)
     assert_equal nil, fileidentifier.to_summary
     assert_equal 'x.pdf', fileidentifier.to_s
     # While we're here, just check it raises if you try and get indexable text out of it
@@ -87,8 +91,7 @@ class KTextTest < Test::Unit::TestCase
     assert_equal "Family Given Mid Sf T", n4.to_sortas_form
     assert_equal "Lst Fst Md Sx Tl", n5.to_sortas_form
 
-    # Put the store back how it was
-    restore_store_snapshot("min")
+    delete_all_jobs
   end
 
   # ------------------------------------------------------------------------------------

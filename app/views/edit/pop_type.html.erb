@@ -2,8 +2,8 @@
   @page_title = T(:Edit_Title_Choose_type_of_new_item)
   # Make URL base
   url = '/do/edit?pop=1'
-  if params.has_key?(:data)
-    t = params[:data][KConstants::A_TITLE.to_s]
+  if params.has_key?('data'.freeze)
+    t = params['data'.freeze][KConstants::A_TITLE.to_s]
     url << "&data[#{KConstants::A_TITLE}]=#{url_encode(t)}" if t != nil
   end
   

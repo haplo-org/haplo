@@ -1,4 +1,4 @@
-# coding: utf-8
+# frozen_string_literal: true
 
 # Haplo Platform                                     http://haplo.org
 # (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
@@ -39,7 +39,7 @@ module KObjectLoader
         literal = nil if line == literal
       else
         # Normal line... remove comments first
-        line.gsub!(/(^|\s+)#.+$/,'')
+        line = line.gsub(/(^|\s+)#.+$/,'')
 
         # Process line
         if line =~ /^obj\s+(\[[^\]]*\])\s+(.+)\s*/

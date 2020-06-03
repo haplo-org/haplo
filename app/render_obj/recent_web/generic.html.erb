@@ -3,14 +3,10 @@
   obj.each(KConstants::A_FILE) do |value,d,q|
     num_files += 1 if value.k_typecode == KConstants::T_IDENTIFIER_FILE
   end
-  # Is there a date to display?
-  obj_date = obj.first_attr(A_DATE)
-  obj_date = nil unless obj_date.kind_of?(DateTime)
   # URL path of object
   objurl = object_urlpath(obj)
 %>
     <a class="z__recent_entry_title" href="<%= objurl %>" class="z__latest_web_title"><%= h(title_of_object(obj, :full)) %></a>
-    <% if obj_date != nil %><div class="z__recent_entry_date"><%= obj_date.strftime('%d %b %Y') %></div><% end %>
     <%
       if num_files > 0
         %><div class="z__recent_entry_files"><a href="<%= objurl %>"><%= html_for_icon(Application_IconHelper::ICON_SPECIAL_RECENT_OBJECT_HAS_FILES,:micro) %><%= num_files %> <% if num_files == 1 %>file<% else %>files<% end %></a></div><%

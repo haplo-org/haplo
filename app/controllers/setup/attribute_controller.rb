@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Setup_AttributeController < ApplicationController
@@ -26,12 +29,12 @@ class Setup_AttributeController < ApplicationController
   def handle_edit
     @schema = KObjectStore.schema
     # Get the object on which the editing is based
-    if params[:id] == 'new'
+    if params['id'] == 'new'
       @obj = KObject.new([O_LABEL_STRUCTURE])
       @obj.add_attr(O_TYPE_ATTR_DESC, A_TYPE)
       @obj.add_attr(KObjRef.from_desc(Q_NULL), A_ATTR_QUALIFIER) # by default don't use qualifiers on new attributes
     else
-      @attr_desc = params[:id].to_i
+      @attr_desc = params['id'].to_i
       @obj = KObjectStore.read(KObjRef.from_desc(@attr_desc)).dup
       @is_type_attr = (@attr_desc == A_TYPE)
       @is_parent_attr = (@attr_desc == A_PARENT)
@@ -68,32 +71,32 @@ class Setup_AttributeController < ApplicationController
       end
 
       # Add new data from the form
-      add_data_to_obj_in_order(@obj, A_TITLE, params[:title])
+      add_data_to_obj_in_order(@obj, A_TITLE, params['title'])
       ensure_obj_has_title(@obj)
       code_set_edited_value_in_object(@obj)
-      add_data_to_obj_in_order(@obj, A_ATTR_SHORT_NAME, params[:short_name], true)  # are short names
+      add_data_to_obj_in_order(@obj, A_ATTR_SHORT_NAME, params['short_name'], true)  # are short names
       # Weighting
-      if params[:weight] != ''
-        w = (params[:weight].to_f * RELEVANCY_WEIGHT_MULTIPLER).to_i
+      if params['weight'] != ''
+        w = (params['weight'].to_f * RELEVANCY_WEIGHT_MULTIPLER).to_i
         @obj.add_attr(w, A_RELEVANCY_WEIGHT)
       end
       # Data type
-      dt, dt_plugin_type = decode_data_type_from(params[:data_type])
+      dt, dt_plugin_type = decode_data_type_from(params['data_type'])
       @obj.add_attr(dt, A_ATTR_DATA_TYPE)
       # Control?
       if dt == T_OBJREF
-        if params.has_key?(:linktypes)
+        if params.has_key?('linktypes')
           # Add every checked type
-          read_linked_types(:linktypes, @obj, A_ATTR_CONTROL_BY_TYPE)
+          read_linked_types('linktypes', @obj, A_ATTR_CONTROL_BY_TYPE)
         end
-        if params[:control_relax_to_text] != nil
+        if params['control_relax_to_text'] != nil
           # Can only relax to normal text for now
           @obj.add_attr(T_TEXT, A_ATTR_CONTROL_RELAXED)
         end
         # Get UI options; different options have different form fields so they don't clash in the returned results
-        if params.has_key?(:data_type_objref_ui)
-          l = params[:data_type_objref_ui].length
-          @obj.add_attr(params[:data_type_objref_ui], A_ATTR_UI_OPTIONS) if l > 0 && l < 64
+        if params.has_key?('data_type_objref_ui')
+          l = params['data_type_objref_ui'].length
+          @obj.add_attr(params['data_type_objref_ui'], A_ATTR_UI_OPTIONS) if l > 0 && l < 64
         end
       end
       # Datetime?
@@ -106,8 +109,8 @@ class Setup_AttributeController < ApplicationController
       end
       # Attribute group
       if dt == T_ATTRIBUTE_GROUP
-        if params[:attr_group_type]
-          @obj.add_attr(KObjRef.from_presentation(params[:attr_group_type]), A_ATTR_GROUP_TYPE)
+        if params['attr_group_type']
+          @obj.add_attr(KObjRef.from_presentation(params['attr_group_type']), A_ATTR_GROUP_TYPE)
         end
       end
       # Plugin defined?
@@ -115,15 +118,15 @@ class Setup_AttributeController < ApplicationController
         @obj.add_attr(dt_plugin_type, A_ATTR_DATA_TYPE_OPTIONS)
       end
       # Qualifiers?
-      case params[:qual_allow]
+      case params['qual_allow']
       when 'none'; @obj.add_attr(KObjRef.from_desc(Q_NULL), A_ATTR_QUALIFIER)
       when 'any'; # add nothing
       when 'specified'
         # Add the specified qualifiers
-        params[:qual].keys.sort.each do |q|
+        params['qual'].keys.sort.each do |q|
           qual = q.to_i # params is a string
           @obj.add_attr(KObjRef.from_desc(qual), A_ATTR_QUALIFIER)
-          qw = params[:qual_weight][q]
+          qw = params['qual_weight'][q]
           if qw != nil && qw != ''
             w = (qw.to_f * RELEVANCY_WEIGHT_MULTIPLER).to_i
             @obj.add_attr(w, A_RELEVANCY_WEIGHT, qual)
@@ -133,7 +136,7 @@ class Setup_AttributeController < ApplicationController
 
       # TODO: Validate attribute properly
 
-      if params[:id] == 'new'
+      if params['id'] == 'new'
         KObjectStore.create(@obj)
       else
         KObjectStore.update(@obj)
@@ -200,14 +203,14 @@ class Setup_AttributeController < ApplicationController
     @schema = KObjectStore.schema
 
     # Get the object on which the editing is based
-    if params[:id] == 'new'
+    if params['id'] == 'new'
       @obj = KObject.new([O_LABEL_STRUCTURE])
       @obj.add_attr(O_TYPE_ATTR_ALIAS_DESC, A_TYPE)
-      alias_of = params[:for].to_i
+      alias_of = params['for'].to_i
       alias_of = A_TITLE if alias_of == 0
       @obj.add_attr(KObjRef.from_desc(alias_of), A_ATTR_ALIAS_OF)
     else
-      @aliased_attr_desc = params[:id].to_i
+      @aliased_attr_desc = params['id'].to_i
       @obj = KObjectStore.read(KObjRef.from_desc(@aliased_attr_desc)).dup
     end
     if @obj == nil
@@ -250,29 +253,29 @@ class Setup_AttributeController < ApplicationController
             A_ATTR_CONTROL_BY_TYPE; true else false end }
 
       # Add new data
-      @obj.add_attr(params[:title], A_TITLE)
+      @obj.add_attr(params['title'], A_TITLE)
       ensure_obj_has_title(@obj)
       code_set_edited_value_in_object(@obj)
-      short_name_processed = KSchemaApp.to_short_name_for_attr(params[:short_name])
+      short_name_processed = KSchemaApp.to_short_name_for_attr(params['short_name'])
       @obj.add_attr(short_name_processed, A_ATTR_SHORT_NAME) if short_name_processed != nil
       # Aliases of special attributes only allow minimal editing
       unless @is_minimally_editable_alias
         # Qualifiers?
-        if params.has_key?(:s_qualifier) && params.has_key?(:qual)
-          params[:qual].keys.sort.each do |q|
+        if params.has_key?('s_qualifier') && params.has_key?('qual')
+          params['qual'].keys.sort.each do |q|
             qual = q.to_i # params is a string
             @obj.add_attr(KObjRef.from_desc(qual), A_ATTR_QUALIFIER)
           end
         end
         # Type?
-        if params.has_key?(:s_type)
-          dt, dt_plugin_type = decode_data_type_from(params[:data_type])
+        if params.has_key?('s_type')
+          dt, dt_plugin_type = decode_data_type_from(params['data_type'])
           @obj.add_attr(dt, A_ATTR_DATA_TYPE)
           # Get UI options; different options have different form fields so they don't clash in the returned results
-          if dt == T_OBJREF && params.has_key?(:data_type_objref_ui)
+          if dt == T_OBJREF && params.has_key?('data_type_objref_ui')
             # Add UI option for objrefs
-            l = params[:data_type_objref_ui].length
-            @obj.add_attr(params[:data_type_objref_ui], A_ATTR_UI_OPTIONS) if l > 0 && l < 64
+            l = params['data_type_objref_ui'].length
+            @obj.add_attr(params['data_type_objref_ui'], A_ATTR_UI_OPTIONS) if l > 0 && l < 64
           end
           # Datetime?
           if dt == T_DATETIME
@@ -288,12 +291,12 @@ class Setup_AttributeController < ApplicationController
           end
         end
         # Linked types?
-        if params.has_key?(:s_linked_type) && params.has_key?(:linktypes)
-          read_linked_types(:linktypes, @obj, A_ATTR_CONTROL_BY_TYPE)
+        if params.has_key?('s_linked_type') && params.has_key?('linktypes')
+          read_linked_types('linktypes', @obj, A_ATTR_CONTROL_BY_TYPE)
         end
       end
 
-      if params[:id] == 'new'
+      if params['id'] == 'new'
         KObjectStore.create(@obj)
       else
         KObjectStore.update(@obj)
@@ -316,11 +319,11 @@ class Setup_AttributeController < ApplicationController
   def handle_edit_qual
     @schema = KObjectStore.schema
     # Get the object on which the editing is based
-    if params[:id] == 'new'
+    if params['id'] == 'new'
       @obj = KObject.new([O_LABEL_STRUCTURE])
       @obj.add_attr(O_TYPE_QUALIFIER_DESC, A_TYPE)
     else
-      @qual_desc = params[:id].to_i
+      @qual_desc = params['id'].to_i
       @obj = KObjectStore.read(KObjRef.from_desc(@qual_desc)).dup
     end
     if @obj == nil
@@ -337,13 +340,13 @@ class Setup_AttributeController < ApplicationController
       @obj.delete_attr_if { |v,desc,q| case desc; when A_TITLE, A_ATTR_SHORT_NAME; true else false end }
 
       # Add new data
-      @obj.add_attr(params[:title], A_TITLE)
+      @obj.add_attr(params['title'], A_TITLE)
       ensure_obj_has_title(@obj)
       code_set_edited_value_in_object(@obj)
-      short_name_processed = KSchemaApp.to_short_name_for_attr(params[:short_name])
+      short_name_processed = KSchemaApp.to_short_name_for_attr(params['short_name'])
       @obj.add_attr(short_name_processed, A_ATTR_SHORT_NAME) if short_name_processed != nil
 
-      if params[:id] == 'new'
+      if params['id'] == 'new'
         KObjectStore.create(@obj)
       else
         KObjectStore.update(@obj)
@@ -418,14 +421,14 @@ private
 
   # Encode options for the datetime type
   def read_datetime_type_options
-    unless params.has_key?(:datetime_precision) && KDateTime::PRECISION_OPTION_TO_NAME.has_key?(params[:datetime_precision])
+    unless params.has_key?('datetime_precision') && KDateTime::PRECISION_OPTION_TO_NAME.has_key?(params['datetime_precision'])
       return KConstants::DEFAULT_UI_OPTIONS_DATETIME
     end
-    @datetime_precision = params[:datetime_precision]
-    @datetime_user_precision = !!(params[:datetime_user_precision])
-    @datetime_range = !!(params[:datetime_range])
-    @datetime_use_tz = !!(params[:datetime_use_tz])
-    @datetime_display_local_tz = !!(params[:datetime_display_local_tz])
+    @datetime_precision = params['datetime_precision']
+    @datetime_user_precision = !!(params['datetime_user_precision'])
+    @datetime_range = !!(params['datetime_range'])
+    @datetime_use_tz = !!(params['datetime_use_tz'])
+    @datetime_display_local_tz = !!(params['datetime_display_local_tz'])
     "#{@datetime_precision},#{@datetime_user_precision ? 'y' : 'n'},#{@datetime_range ? 'y' : 'n'},#{@datetime_use_tz ? 'y' : 'n'},#{@datetime_display_local_tz ? 'y' : 'n'}"
   end
 
@@ -456,13 +459,13 @@ private
   def read_person_name_type_options
     # Enabled cultures
     cultures = Hash.new
-    if params.has_key?(:pn_culture)
-      params[:pn_culture].each_key { |k| cultures[k.to_sym] = true }
+    if params.has_key?('pn_culture')
+      params['pn_culture'].each_key { |k| cultures[k.to_sym] = true }
     end
     # Default culture
     def_culture = :western
-    if params.has_key?(:pn_def_culture)
-      def_culture = params[:pn_def_culture].to_sym
+    if params.has_key?('pn_def_culture')
+      def_culture = params['pn_def_culture'].to_sym
     end
     cultures.delete(def_culture)  # don't include the default culture in this hash
     # Make the cultures element
@@ -471,9 +474,9 @@ private
     # Now make the default fields for each culture
     KTextPersonName::CULTURES_IN_UI_ORDER.each do |culture|
       output << ",#{KTextPersonName::SYMBOL_TO_CULTURE[culture]}="
-      fields = ''
-      if params.has_key?(:pn_field) && params[:pn_field].has_key?(culture)
-        params[:pn_field][culture].each do |fname,on|
+      fields = ''.dup
+      if params.has_key?('pn_field') && params['pn_field'].has_key?(culture.to_s)
+        params['pn_field'][culture.to_s].each do |fname,on|
           fields << KTextPersonName::SYMBOL_TO_FIELD[fname.to_sym]
         end
       end

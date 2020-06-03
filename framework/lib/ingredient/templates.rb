@@ -1,5 +1,4 @@
-# coding: utf-8
-# IMPORTANT ^^ -- sets the default encoding for templates
+# frozen_string_literal: true
 
 # Haplo Platform                                     http://haplo.org
 # (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com

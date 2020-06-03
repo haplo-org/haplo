@@ -18,7 +18,7 @@ class KTempDataStoreTest < Test::Unit::TestCase
 
   def test_temp_data_store
     TEST_LOCK.synchronize do
-      KApp.get_pg_database.perform('DELETE FROM public.temp_data_store')
+      KApp.with_pg_database { |db| db.perform('DELETE FROM public.temp_data_store') }
 
       # Check basic storing and retrieving
       key = KTempDataStore.set('testing', TEST_DATA_1)
@@ -72,13 +72,13 @@ class KTempDataStoreTest < Test::Unit::TestCase
 
       # Move a key back an hour and check it's still not deleted
       key11_id = get_id_for_key(key11)
-      KApp.get_pg_database.perform("UPDATE public.temp_data_store SET created_at = (NOW() - interval '1 hour') WHERE id=#{key11_id}")
+      KApp.with_pg_database { |db| db.perform("UPDATE public.temp_data_store SET created_at = (NOW() - interval '1 hour') WHERE id=#{key11_id}") }
       KTempDataStore.delete_old_data
       assert_equal all_1, get_all_temp_data
 
       # Move a key back a day, and see if it's deleted
       key12_id = get_id_for_key(key12)
-      KApp.get_pg_database.perform("UPDATE public.temp_data_store SET created_at = (NOW() - interval '24 hours') WHERE id=#{key12_id}")
+      KApp.with_pg_database { |db| db.perform("UPDATE public.temp_data_store SET created_at = (NOW() - interval '24 hours') WHERE id=#{key12_id}") }
       KTempDataStore.delete_old_data
       all_2 = [
           [key10, 'p1', TEST_DATA_1],
@@ -88,23 +88,29 @@ class KTempDataStoreTest < Test::Unit::TestCase
       assert_equal all_2, get_all_temp_data
 
       assert_equal TEST_DATA_1, KTempDataStore.get(key10, :p1)
+      assert_equal nil, KTempDataStore.get(key10, :p1)
+
       assert_equal TEST_DATA_2, KTempDataStore.get(key11, :p2)
+      assert_equal nil, KTempDataStore.get(key11, :p2)
+
       assert_equal nil, KTempDataStore.get(key12, :p3)
+
       assert_equal TEST_DATA_5, KTempDataStore.get(key13, 'p4')
+      assert_equal nil, KTempDataStore.get(key13, 'p4')
 
     end
   end
 
   def get_all_temp_data
-    o = Array.new
-    KApp.get_pg_database.exec('SELECT key,purpose,data FROM public.temp_data_store ORDER BY id').each do |key,purpose,data|
-      o << [key,purpose,PGconn.unescape_bytea(data)]
+    KApp.with_pg_database do |db|
+      db.exec('SELECT key,purpose,data FROM public.temp_data_store ORDER BY id').map do |key,purpose,data|
+        [key,purpose,PGconn.unescape_bytea(data)]
+      end
     end
-    o
   end
 
   def get_id_for_key(key)
-    KApp.get_pg_database.exec('SELECT id FROM public.temp_data_store WHERE key=$1',key).first.first.to_i
+    KApp.with_pg_database { |db| db.exec('SELECT id FROM public.temp_data_store WHERE key=$1',key).first.first.to_i }
   end
 
 end

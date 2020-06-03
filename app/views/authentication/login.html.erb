@@ -2,21 +2,21 @@
   @breadcrumbs = [:login]
   @page_title = @locale.text(:Authentication_Title_Log_in_to_your_account)
   
-  entered_email = (params[:email] || '').strip
+  entered_email = (params['email'.freeze] || '').strip
 %>
 
 <% if @login_attempted %>
   <p class="z__general_alert"><%= @locale.text(:Authentication_View_Incorrect_login_please_try_again) %></p>
 <% end %>
 
-<% if params.has_key?(:rdr) -%>
+<% if params.has_key?('rdr'.freeze) -%>
   <p><%= @locale.text(:Authentication_View_You_are_not_currently_logged_in__To___) %></p>
 <% end -%>
 
 <form method="POST" action="/do/authentication/login"><%= form_csrf_token %>
 
-<% if params.has_key?(:rdr) -%>
-  <input type="hidden" name="rdr" value="<%= h(params[:rdr]) %>">
+<% if params.has_key?('rdr'.freeze) -%>
+  <input type="hidden" name="rdr" value="<%= h(params['rdr'.freeze]) %>">
 <% end -%>
 
 <p><label for="email"><%= @locale.text(:Authentication_View_Email) %></label><br>

@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 # Haplo Platform                                    https://haplo.org
-# (c) Haplo Services Ltd 2006 - 2019            https://www.haplo.com
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Provides a subset of the API of the TZInfo gem, implemented using Java.
@@ -52,13 +55,10 @@ module TZInfo
     end
 
     def _adjust(time, direction)
+      raise "Only Time supported (not Date/DateTime)" unless time.kind_of?(Time) # DateTime use is checked
       offset_ms = @java_tz.getOffset(time.to_i * 1000)
       adjust_s = direction * (offset_ms/1000)
-      if time.kind_of?(Date)
-        (time.to_time + adjust_s).to_datetime
-      else
-        time + adjust_s
-      end
+      time + adjust_s
     end
 
   end

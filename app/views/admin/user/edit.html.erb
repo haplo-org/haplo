@@ -4,4 +4,4 @@
 
 <%= sys_mng_header %>
 
-<%= render :partial => 'form', :data_for_template => {:form_url => "/do/admin/user/#{params[:action]}/#{@user.id}", :submit_button_label => 'Save changes' } %>
+<%= render :partial => 'form', :data_for_template => {:form_url => "/do/admin/user/#{params['action'.freeze]}/#{@user.id}", :submit_button_label => 'Save changes' } %>

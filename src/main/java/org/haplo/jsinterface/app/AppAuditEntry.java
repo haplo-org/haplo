@@ -9,7 +9,7 @@ package org.haplo.jsinterface.app;
 public interface AppAuditEntry {
     public int id();
 
-    public long jsGetCreationDate();
+    public Long created_at_milliseconds();
 
     public String remote_addr();
 
@@ -21,15 +21,13 @@ public interface AppAuditEntry {
 
     public String kind();
 
-    public int sec_id();
-
     public AppLabelList labels();
 
-    public Integer obj_id();
+    public Integer objref_obj_id();
 
     public Integer entity_id();
 
     public boolean displayable();
 
-    public String jsGetData();
+    public String data_json();
 }

@@ -13,7 +13,7 @@
   <p>&nbsp;</p>
   <div id="z__impersonate">
     <%
-      @users.each do |user|
+      @users_query.each do |user|
         if user.id != User::USER_ANONYMOUS
           %><a href="#" data-uid="<%= user.id %>"><%= h(user.name) %></a><%
         end

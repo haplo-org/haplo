@@ -10,6 +10,7 @@ import java.io.*;
 import java.util.Formatter;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 import javax.net.ssl.SSLSession;
 
@@ -496,7 +497,12 @@ public class RequestHandler extends AbstractHandler {
     private Response withPerApplicationRequestThrottle(Application app, ThrottledHandlingAction action) {
         // Don't allow too many concurrent requests on a single application
         // Get the app sempahore first, so lots of requests for an app don't use up the global ruby runtime permits
-        app.getRequestConcurrencySempahore().acquireUninterruptibly();
+        Semaphore semaphore = app.getRequestConcurrencySempahore();
+        int queueLength = semaphore.getQueueLength();
+        if(queueLength > 0) {
+            Logger.getLogger("org.haplo.app").warn("Request throttle is queuing requests: Application "+app.getApplicationID()+", queue length "+queueLength);
+        };
+        semaphore.acquireUninterruptibly();
         try {
             // The application caches data which is expensive to recreate, for example, user data and JavaScript runtimes.
             // If requests are made in parallel, multiple "caches" are created so that the caches and runtimes don't have
@@ -509,7 +515,11 @@ public class RequestHandler extends AbstractHandler {
                     break;
                 }
                 // Try waiting for a request to finish
-                app.waitForARequestToFinish(ConcurrencyLimits.APPLICATION_CONCURRENT_REQUESTS_MAX_WAIT_TIME);
+                // if true, then it was woken up because a request had finished
+                // so we know there's a free slot
+                if(app.waitForARequestToFinish(ConcurrencyLimits.APPLICATION_CONCURRENT_REQUESTS_MAX_WAIT_TIME)) {
+                    break;
+                }
                 // TODO: Monitor how many/much requests are getting delayed by request concurrency reduction code.
             }
 
@@ -523,7 +533,7 @@ public class RequestHandler extends AbstractHandler {
             }
         } finally {
             // Release app permit
-            app.getRequestConcurrencySempahore().release();
+            semaphore.release();
             // Notify other threads waiting to avoid concurrent requests 
             app.requestFinished();
         }

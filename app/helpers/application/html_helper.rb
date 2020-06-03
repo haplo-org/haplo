@@ -1,14 +1,17 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
+
 module Application_HtmlHelper
 
   def options_for_select(container, selected = nil)
-    html = ''
+    html = ''.dup
     if !container.empty? && container.first.respond_to?(:first) && !(container.first.kind_of?(String))
       # Separate values and text
       container.each do |option|
@@ -40,7 +43,7 @@ module Application_HtmlHelper
   end
 
   def form_country_select(name, selected_iso_code, no_selection_name = nil)
-    h = %Q!<select name="#{name}">!
+    h = %Q!<select name="#{name}">!.dup
     if no_selection_name != nil
       h << %Q!<option value="">#{no_selection_name}</option>!
     end
@@ -92,7 +95,7 @@ module Application_HtmlHelper
     def checkbox(name, label, options = nil)
       invalid, html_attrs = attribute_info(name, options)
       a = @object.read_attribute(name)
-      html = %Q!<label><input type="checkbox" name="#{@object_name}[#{name}]"#{html_attrs}!
+      html = %Q!<label><input type="checkbox" name="#{@object_name}[#{name}]"#{html_attrs}!.dup
       html << ' checked' if a && a != ''
       html << %Q!>#{label}</label>!
       annotated_field(html, invalid)
@@ -129,7 +132,7 @@ module Application_HtmlHelper
         # Yes, might get duplicate class defns in the HTML, but...
         invalid ? %Q! #{options} class="z__form_invalid_field"! : ' '+options
       else
-        x = ''
+        x = ''.dup
         if invalid
           options = options.dup
           if options.has_key? :class
@@ -149,107 +152,6 @@ module Application_HtmlHelper
     # Annotate it with an error marker?
     def annotated_field(html, invalid)
       invalid ? (html + (@options[:field_error_marker] || ' <span class="z__form_field_error_marker">*</span>')) : html
-    end
-  end
-
-  # --------------------------------------------------------------------------------------------------------------------------
-  # Compatible enough with an ActiveRecord object to work with the Form object above
-  class FormDataObject
-    def initialize(attrs = {})
-      @attrs = Hash.new
-      attrs.each do |name,value|
-        if value.kind_of?(Date) || value.kind_of?(Time)
-          @attrs["#{name}_d"] = value.mday.to_s
-          @attrs["#{name}_m"] = (value.month - 1).to_s
-          @attrs["#{name}_y"] = value.year.to_s
-        end
-        @attrs[name] = value
-      end
-      @errors = Hash.new
-    end
-
-    # To read data from a form:
-    #
-    #   @data = FormDataObject.new
-    #   @data.read(params[:reminder]) do |d|
-    #     d.attribute(:name, validation_option)
-    #   end
-    #
-    # The check with @data.valid?
-    def read(values)
-      @_values = values
-      yield self
-      @_values = nil
-    end
-    def attribute(name, validation = :present)  # for reading attributes during a read block
-      # Add errors for the attribute - must always have a value, even if it's an empty array for AR compatibility
-      @errors[name] = []
-      # Special handling for dates
-      if validation == :date
-        _attribute_date(name)
-        return
-      end
-      @attrs[name] = @_values[name]
-      case validation
-      when :present
-        @errors[name] << "#{name.to_s.capitalize} must not be empty" if @attrs[name] == nil || @attrs[name].empty?
-      when :none
-        # Do nothing
-      else
-        raise "Bad validation type"
-      end
-    end
-
-    def add_error(name, error)
-      self[name].push(error)
-    end
-
-    def valid?
-      valid = true
-      @errors.each do |name,errors|
-        valid = false unless errors.empty?
-      end
-      valid
-    end
-
-    # Access attributes by name (if set with symbols)
-    def method_missing(symbol, *args)
-      raise "No attribute for accessor #{symbol}" unless @attrs.has_key?(symbol)
-      @attrs[symbol]
-    end
-
-    # AR compatibility
-    def read_attribute(name)
-      @attrs[name]
-    end
-    def errors
-      self
-    end
-    def [](name)
-      @errors[name] ||= []
-    end
-    def full_messages
-      @errors.values.select { |v| !v.empty? }.sort
-    end
-    def invalid?(name)
-      @errors.has_key?(name) && !(@errors[name].empty?)
-    end
-
-  private
-    def _attribute_date(name)
-      @attrs["#{name}_d"] = @_values["#{name}_d"]
-      @attrs["#{name}_m"] = @_values["#{name}_m"]
-      @attrs["#{name}_y"] = @_values["#{name}_y"]
-      date = nil
-      begin
-        date = Date.new(@_values["#{name}_y"].to_i, @_values["#{name}_m"].to_i + 1, @_values["#{name}_d"].to_i)
-      rescue => e
-      end
-      if date == nil
-        @errors[name] << "#{name.to_s.capitalize} is not a valid date"
-      else
-        @attrs[name] = date
-      end
     end
   end
 

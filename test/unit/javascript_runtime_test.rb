@@ -55,7 +55,7 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
   def test_permissions
     restore_store_snapshot("basic")
     db_reset_test_data
-    PermissionRule.delete_all
+    delete_all PermissionRule
 
     # Make books self-labelling
     book_type = KObjectStore.read(O_TYPE_BOOK).dup
@@ -67,13 +67,13 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
       runtime.host.setTestCallback(proc { |string|
         case string
           when /check delete audit (.*)/
-            ae = AuditEntry.order("id desc").first
+            ae = AuditEntry.where().order(:id_desc).first()
             assert_equal 42, ae.user_id
             assert_equal KObjRef.from_presentation($1), ae.objref
           when /([^ ]+) ([^ ]+) (.*)/
             PermissionRule.new_rule! $1.to_sym, User.cache[42], KObjRef.from_presentation($3).to_i, $2.to_sym
           when 'reset'
-            PermissionRule.destroy_all
+            destroy_all PermissionRule
           else
             raise "No javascript callback #{string}"
         end
@@ -99,9 +99,9 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     obj.add_attr(KTextParagraph.new("something\nelse"), 3948)
     obj.add_attr(6, 34)
     obj.add_attr(true, 235)
-    obj.add_attr(DateTime.civil(2011, 9, 26, 12, 10), 2389)
-    obj.add_attr(DateTime.civil(1880, 12, 2, 9, 55), 2390) # before 1970
-    obj.add_attr(DateTime.civil(3012, 2, 18, 23, 1), 2391) # after 2038
+    obj.add_attr(Time.new(2011, 9, 26, 12, 10), 2389)
+    obj.add_attr(Time.new(1880, 12, 2, 9, 55), 2390) # before 1970
+    obj.add_attr(Time.new(3012, 2, 18, 23, 1), 2391) # after 2038
     obj.add_attr(KIdentifierPostalAddress.new(["Main Street",nil,"London",nil,"A11 2BB","GB"]), 3002)
     obj.add_attr(KIdentifierFile.new(StoredFile.from_upload(fixture_file_upload('files/example3.pdf', 'application/pdf'))), 3070)
     obj.add_attr("With qual", 4059, 1029)
@@ -142,7 +142,7 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_object_retrieval.js', jsdefines)
 
     # Check a text reindex was requested for the test object
-    assert_equal 1, KApp.get_pg_database.exec("SELECT * FROM os_dirty_text WHERE app_id=#{_TEST_APP_ID} AND osobj_id=#{reindexobj.objref.obj_id}").result.length
+    assert_equal 1, KApp.with_pg_database { |db| db.exec("SELECT * FROM public.os_dirty_text WHERE app_id=#{_TEST_APP_ID} AND osobj_id=#{reindexobj.objref.obj_id}").length }
 
     run_outstanding_text_indexing
 
@@ -155,11 +155,11 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     assert_equal "SomethingXYZ", created.first_attr(A_TITLE).to_s
     assert_equal 4, created.first_attr(45, Q_ALTERNATIVE)
     assert_equal 56, created.first_attr(563)
-    assert created.first_attr(564).kind_of?(Fixnum)
+    assert created.first_attr(564).kind_of?(Integer)
     assert_equal 57, created.first_attr(564)
-    assert created.first_attr(565).kind_of?(Fixnum)
+    assert created.first_attr(565).kind_of?(Integer)
     assert_equal 58, created.first_attr(565)
-    assert created.first_attr(566).kind_of?(Fixnum) # output from parseInt() is a float, lovely JavaScript, etc.
+    assert created.first_attr(566).kind_of?(Integer) # output from parseInt() is a float, lovely JavaScript, etc.
     assert_equal 23, created.first_attr(566)
     assert created.first_attr(567).kind_of?(Float)
     assert_equal 23.5, created.first_attr(567)
@@ -204,13 +204,17 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     assert_equal "(United Kingdom) +44 7047 1111", v.to_s
 
     # Check a full reindex, using the link table to detect it did something
-    assert_equal 0, KApp.get_pg_database.exec("SELECT * FROM os_dirty_text WHERE app_id=#{_TEST_APP_ID} AND osobj_id=#{reindexobj.objref.obj_id}").result.length
-    KApp.get_pg_database.exec("DELETE FROM os_index_link WHERE id=#{reindexobj.objref.obj_id}")
-    # call reindex()
-    run_javascript_test(:inline, "TEST(function() { O.ref(OBJ_TO_REINDEX).load().reindex(); });", jsdefines);
-    assert_equal 1, KApp.get_pg_database.exec("SELECT * FROM os_dirty_text WHERE app_id=#{_TEST_APP_ID} AND osobj_id=#{reindexobj.objref.obj_id}").result.length
-    run_outstanding_text_indexing
-    assert 0 < KApp.get_pg_database.exec("SELECT COUNT(*) FROM os_index_link WHERE id=#{reindexobj.objref.obj_id}").result.first.first.to_i
+    KApp.with_pg_database do |db|
+      assert_equal 0, db.exec("SELECT * FROM public.os_dirty_text WHERE app_id=#{_TEST_APP_ID} AND osobj_id=#{reindexobj.objref.obj_id}").length
+      db.exec("DELETE FROM #{KApp.db_schema_name}.os_index_link WHERE id=#{reindexobj.objref.obj_id}")
+      # call reindex()
+      run_javascript_test(:inline, "TEST(function() { O.ref(OBJ_TO_REINDEX).load().reindex(); });", jsdefines);
+      assert_equal 1, db.exec("SELECT * FROM public.os_dirty_text WHERE app_id=#{_TEST_APP_ID} AND osobj_id=#{reindexobj.objref.obj_id}").length
+      run_outstanding_text_indexing
+      assert 0 < db.exec("SELECT COUNT(*) FROM #{KApp.db_schema_name}.os_index_link WHERE id=#{reindexobj.objref.obj_id}").first.first.to_i
+    end
+
+    delete_all_jobs
   end
 
   # ===============================================================================================
@@ -352,16 +356,16 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     tqg_query(queries, 'Carrots or pants and type:book or title:fish')
 
     # Date ranges
-    tqg_query(queries, KObjectStore.query_and.date_range(DateTime.new(2011,10,2), DateTime.new(2012,12,4)))
-    tqg_query(queries, KObjectStore.query_and.date_range(DateTime.new(2011,10,2), DateTime.new(2012,12,4), A_DATE))
-    tqg_query(queries, KObjectStore.query_and.date_range(DateTime.new(2011,10,2), DateTime.new(2012,12,4), 12, 345))
-    tqg_query(queries, KObjectStore.query_and.date_range(nil, DateTime.new(2015,8,23)))
-    tqg_query(queries, KObjectStore.query_and.date_range(DateTime.new(2015,2,23), nil, 36))
+    tqg_query(queries, KObjectStore.query_and.date_range(Time.new(2011,10,2), Time.new(2012,12,4)))
+    tqg_query(queries, KObjectStore.query_and.date_range(Time.new(2011,10,2), Time.new(2012,12,4), A_DATE))
+    tqg_query(queries, KObjectStore.query_and.date_range(Time.new(2011,10,2), Time.new(2012,12,4), 12, 345))
+    tqg_query(queries, KObjectStore.query_and.date_range(nil, Time.new(2015,8,23)))
+    tqg_query(queries, KObjectStore.query_and.date_range(Time.new(2015,2,23), nil, 36))
 
     # Updated date ranges
-    tqg_query(queries, KObjectStore.query_and.free_text("a").constrain_to_updated_time_interval(DateTime.new(2011,10,2), DateTime.new(2012,12,4)))
-    tqg_query(queries, KObjectStore.query_and.free_text("a").constrain_to_updated_time_interval(nil, DateTime.new(2015,8,23)))
-    tqg_query(queries, KObjectStore.query_and.free_text("a").constrain_to_updated_time_interval(DateTime.new(2015,2,23), nil))
+    tqg_query(queries, KObjectStore.query_and.free_text("a").constrain_to_updated_time_interval(Time.new(2011,10,2), Time.new(2012,12,4)))
+    tqg_query(queries, KObjectStore.query_and.free_text("a").constrain_to_updated_time_interval(nil, Time.new(2015,8,23)))
+    tqg_query(queries, KObjectStore.query_and.free_text("a").constrain_to_updated_time_interval(Time.new(2015,2,23), nil))
     tqg_query(queries, KObjectStore.query_and.free_text("a").constrain_to_updated_time_interval(nil, nil))
 
     # Link to any
@@ -446,30 +450,31 @@ __E
     restore_store_snapshot("basic")
     db_reset_test_data
     # Delete some users
-    user44 = User.find(44)
+    user44 = User.read(44)
     user44.kind = User::KIND_USER_BLOCKED
-    user44.save!
+    user44.save
     user44.set_groups_from_ids([22])
-    disabled_group = User.new(:name => 'Test disabled group')
+    disabled_group = User.new
+    disabled_group.name = 'Test disabled group'
     disabled_group.kind = User::KIND_GROUP_DISABLED
-    disabled_group.save!
+    disabled_group.save
     # Set a notification address on a group
-    group21 = User.find(21)
+    group21 = User.read(21)
     group21.email = 'user3@example.com' # duplicates one of the users
-    group21.save!
+    group21.save
     # Create an object which is then set as the representative object for a user
     obj = KObject.new()
     obj.add_attr("User 1", KConstants::A_TITLE)
     obj.add_attr(KIdentifierEmailAddress.new("user1.not.same@example.com"), KConstants::A_EMAIL_ADDRESS)
     KObjectStore.create(obj)
-    user41 = User.find(41)
+    user41 = User.read(41)
     user41.objref = obj.objref
     user41.otp_identifier = '200012345678X'
     user41.jsSetTagsAsJson('{"ping": "hello", "other":"23"}')
-    user41.save!
-    user43 = User.find(43)
+    user41.save
+    user43 = User.read(43)
     user43.jsSetTagsAsJson('{"other": "23"}')
-    user43.save!
+    user43.save
     run_outstanding_text_indexing
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_user.js', {
       'USER1_REF_OBJID' => obj.objref.obj_id, 'DISABLED_GROUP_ID' => disabled_group.id
@@ -490,7 +495,7 @@ __E
     begin
       run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_workunit.js')
     ensure
-      WorkUnit.delete_all() # allows cleanup of fixtures
+      delete_all WorkUnit
     end
   end
 
@@ -499,7 +504,7 @@ __E
     begin
       run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_workunit_tags.js')
     ensure
-      WorkUnit.delete_all()
+      delete_all WorkUnit
     end
   end
 
@@ -517,20 +522,20 @@ __E
     begin
       run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_workunit_read_by_user.js', {:OBJECT1 => o1.objref.obj_id, :OBJECT2 => o2.objref.obj_id})
     ensure
-      WorkUnit.delete_all()
+      delete_all WorkUnit
     end
   end
 
   # ===============================================================================================
 
   def test_stored_files
-    FileCacheEntry.destroy_all
-    StoredFile.destroy_all
+    destroy_all FileCacheEntry
+    destroy_all StoredFile
     restore_store_snapshot("basic")
     # PDF file to test dimensions & tags
     pdf_3page = StoredFile.from_upload(fixture_file_upload('files/example_3page.pdf', 'application/pdf'))
-    pdf_3page.__send__(:write_attribute, 'tags', PgHstore.generate_hstore({"test-tag"=>"test-value"}))
-    pdf_3page.save!
+    pdf_3page.jsUpdateTags(%q!{"test-tag":"test-value"}!)
+    assert_equal %q!{"test-tag":"test-value"}!, pdf_3page.jsGetTagsAsJson
     # Create a file with a few versions
     stored_file = StoredFile.from_upload(fixture_file_upload('files/example.doc', 'application/msword'))
     # Make an object so the plugin can find it
@@ -569,8 +574,8 @@ __E
   end
 
   def test_stored_file_copy_between_applications
-    FileCacheEntry.destroy_all
-    StoredFile.destroy_all
+    destroy_all FileCacheEntry
+    destroy_all StoredFile
     restore_store_snapshot("basic")
     # Options for generating URLs
     url_options = Java::OrgHaploJsinterface::KStoredFile::FileRenderOptions.new
@@ -616,6 +621,7 @@ __E
     ensure
       uninstall_grant_privileges_plugin
     end
+    run_all_jobs({})
     # Check it arrived in this application
     copied_file = StoredFile.from_digest('977ff9a79dfb38cbac1a3d5994962b9632a4589f021308f35f2c408aa796fdac')
     assert copied_file != nil
@@ -631,9 +637,10 @@ __E
   # ===============================================================================================
 
   def test_binary_data
-    FileCacheEntry.destroy_all
-    StoredFile.destroy_all
+    destroy_all FileCacheEntry
+    destroy_all StoredFile
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_binary_data.js');
+    delete_all_jobs
   end
 
   # ===============================================================================================
@@ -865,7 +872,7 @@ __E
 
   def run_audit_test(filename)
     restore_store_snapshot("basic")
-    AuditEntry.delete_all
+    delete_all AuditEntry
     about_to_create_an_audit_entry
     run_javascript_test(:file, "unit/javascript/javascript_runtime/#{filename}.js") do |runtime|
       runtime.host.setTestCallback(proc { |string|
@@ -874,13 +881,13 @@ __E
           assert_audit_entry(:kind => 'test:kind0', :displayable => true)
         when "TWO"
           assert_audit_entry(:kind => 'test:ping4', :displayable => false,
-            :obj_id => 89, :objref => KObjRef.new(89), # two ways of reading the same thing
+            :objref => KObjRef.new(89),
             :entity_id => 997)
         when "resetAudit"
-          AuditEntry.delete_all
+          delete_all AuditEntry
         when "loadFixture"
-          AuditEntry.delete_all
-          db_load_table_fixtures :audit_entries
+          delete_all AuditEntry
+          KApp.with_pg_database { |db| db_load_table_fixtures(db, :audit_entries) }
         end
         ''
       })
@@ -925,11 +932,11 @@ __E
     PermissionRule.new_rule!(:allow, group2, KConstants::O_TYPE_LAPTOP, :read)
     PermissionRule.new_rule!(:allow, user1, KConstants::O_TYPE_LAPTOP, :read)
 
-    AuditEntry.delete_all
+    delete_all AuditEntry
     begin
       run_javascript_test(:file, "unit/javascript/javascript_runtime/test_audit_entry_permissions.js") do |runtime|
         runtime.host.setTestCallback(proc { |email|
-          u = User.find_first_by_email(email)
+          u = User.where_lower_email(email).first()
           AuthContext.set_user(u,u)
           ""
         })
@@ -938,23 +945,23 @@ __E
       end_test_request
     end
 
-    PermissionRule.delete_all
+    delete_all PermissionRule
   end
 
   # ===============================================================================================
 
   def test_create_and_update_user
     db_reset_test_data
-    u43 = User.find(43);
+    u43 = User.read(43);
     u43.objref = KObjRef.new(876543);
-    u43.save!
+    u43.save
     install_grant_privileges_plugin_with_privileges('pCreateUser', 'pUserActivation', 'pUserPasswordRecovery', 'pUserSetRef', 'pUserSetDetails', 'pUserModifyTags')
     begin
-      assert_equal nil, User.find_first_by_email('js@example.com')
-      assert User.find(43).objref
+      assert_equal nil, User.where_lower_email('js@example.com').first()
+      assert User.read(43).objref
       run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_create_and_update_user_no_priv.js')
       run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_create_and_update_user.js', nil, "grant_privileges_plugin")
-      jsuser = User.find_first_by_email('js@example.com')
+      jsuser = User.where_lower_email('js@example.com').first()
       assert nil != jsuser
       assert_equal 'Java', jsuser.name_first
       assert_equal 'Script', jsuser.name_last
@@ -962,16 +969,16 @@ __E
       assert_equal 'js@example.com', jsuser.email
       assert_equal [4,21,22], jsuser.groups_ids.sort
       assert_equal 987654, jsuser.objref.obj_id
-      assert_equal User::KIND_USER_BLOCKED, User.find(44).kind
-      assert_equal User::KIND_GROUP_DISABLED, User.find(23).kind
+      assert_equal User::KIND_USER_BLOCKED, User.read(44).kind
+      assert_equal User::KIND_GROUP_DISABLED, User.read(23).kind
       ['without-ref@example.com', 'without-ref2@example.com', 'without-ref3@example.com'].each do |email|
-        without_ref = User.find_first_by_email(email)
+        without_ref = User.where_lower_email(email).first()
         assert_equal nil, without_ref.objref
       end
-      with_ref = User.find_first_by_email('with-ref@example.com')
+      with_ref = User.where_lower_email('with-ref@example.com').first()
       assert_equal KObjRef.new(88332), with_ref.objref
-      assert !(User.find(43).objref)
-      user44 = User.find(44) # has been updated by test
+      assert !(User.read(43).objref)
+      user44 = User.read(44) # has been updated by test
       assert_equal "JSfirst", user44.name_first
       assert_equal "JSlast", user44.name_last
       assert_equal "js-email-44@example.com", user44.email
@@ -988,7 +995,7 @@ __E
     begin
       run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_create_user_api_key_no_priv.js')
       run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_create_user_api_key.js', nil, "grant_privileges_plugin")
-      api_keys = ApiKey.find(:all, :conditions => {:user_id => 41})
+      api_keys = ApiKey.where(:user_id => 41).select
       assert_equal 1, api_keys.length
       assert_equal "Test Key", api_keys[0].name
       assert_equal "/api/path/2", api_keys[0].path
@@ -1054,7 +1061,7 @@ __E
     install_grant_privileges_plugin_with_privileges('pDatabaseDynamicTable')
     restore_store_snapshot("basic")
     db_reset_test_data
-    StoredFile.destroy_all
+    destroy_all StoredFile
     # Clean up any old tables
     drop_all_javascript_db_tables
     # Create some test files
@@ -1074,44 +1081,45 @@ __E
         # Check the expected tables were created
         ['j_dbtest_employee','j_dbtest_department','j_dbtest_numbers'].each do |table|
           sql = "SELECT table_name FROM information_schema.tables WHERE table_schema='a#{KApp.current_application}' AND table_name='#{table}'"
-          r = KApp.get_pg_database.exec(sql)
+          r = KApp.with_pg_database { |db| db.exec(sql) }
           assert_equal 1, r.length
           r.each { |n| assert_equal table, n.first }
-          r.clear
         end
-        # Check that the index on the case insensitive field uses the lower() function
-        r = KApp.get_pg_database.exec("SELECT * FROM pg_catalog.pg_indexes WHERE schemaname='a#{KApp.current_application}' AND tablename='j_dbtest_employee' AND indexdef LIKE '%lower(caseinsensitivevalue)%'");
-        assert_equal 1, r.length
-        r.clear
-        # Check that a index isn't created twice, using the most complex one as an example
-        r = KApp.get_pg_database.exec("SELECT * FROM pg_catalog.pg_indexes WHERE schemaname='a#{KApp.current_application}' AND tablename='j_dbtest_files1' AND indexdef LIKE '%attachedfile%'");
-        assert_equal 1, r.length
-        r.clear
-        # Check that the labels index uses GIN
-        r = KApp.get_pg_database.exec("SELECT * FROM pg_catalog.pg_indexes WHERE schemaname='a#{KApp.current_application}' AND tablename='j_dbtest_labels2' AND indexdef LIKE '%USING gin (labels gin__int_ops)%'");
-        assert_equal 1, r.length
-        r.clear
+        KApp.with_pg_database do |db|
+          # Check that the index on the case insensitive field uses the lower() function
+          r = db.exec("SELECT * FROM pg_catalog.pg_indexes WHERE schemaname='a#{KApp.current_application}' AND tablename='j_dbtest_employee' AND indexdef LIKE '%lower(caseinsensitivevalue)%'");
+          assert_equal 1, r.length
+          # Check that a index isn't created twice, using the most complex one as an example
+          r = db.exec("SELECT * FROM pg_catalog.pg_indexes WHERE schemaname='a#{KApp.current_application}' AND tablename='j_dbtest_files1' AND indexdef LIKE '%attachedfile%'");
+          assert_equal 1, r.length
+          # Check that the labels index uses GIN
+          r = db.exec("SELECT * FROM pg_catalog.pg_indexes WHERE schemaname='a#{KApp.current_application}' AND tablename='j_dbtest_labels2' AND indexdef LIKE '%USING gin (labels gin__int_ops)%'");
+          assert_equal 1, r.length
+        end
         # Callback return must be a string
         ""
       })
     end
     # Test is split into two parts to avoid the function being too long
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_database2.js', nil, "grant_privileges_plugin")
-    # Check columns for the dynamic table
-    column_defns = KApp.get_pg_database.exec("SELECT column_name,data_type FROM information_schema.columns WHERE table_schema='a#{KApp.current_application}' AND table_name='j_dbtest_dyn1'").to_a.sort
-    assert_equal [ ["_name", "text"],
-                   ["_number", "integer"],
-                   ["add1", "text"],
-                   ["add2", "smallint"],
-                   ["id", "integer"]      # implicit ID column
-      ], column_defns
-    # Check definitions for the dynamic table
-    index_defns = KApp.get_pg_database.exec("SELECT indexdef FROM pg_catalog.pg_indexes WHERE schemaname='a#{KApp.current_application}' AND tablename='j_dbtest_dyn1'").to_a.map { |row| row.first } .sort
-    assert_equal ["CREATE INDEX j_dbtest_dyn1_i0 ON a#{_TEST_APP_ID}.j_dbtest_dyn1 USING btree (_name)",
-                  "CREATE INDEX j_dbtest_dyn1_i1 ON a#{_TEST_APP_ID}.j_dbtest_dyn1 USING btree (add1)",
-                  "CREATE UNIQUE INDEX j_dbtest_dyn1_pkey ON a#{_TEST_APP_ID}.j_dbtest_dyn1 USING btree (id)"], index_defns
+    KApp.with_pg_database do |db|
+      # Check columns for the dynamic table
+      column_defns = db.exec("SELECT column_name,data_type FROM information_schema.columns WHERE table_schema='a#{KApp.current_application}' AND table_name='j_dbtest_dyn1'").to_a.sort
+      assert_equal [ ["_name", "text"],
+                     ["_number", "integer"],
+                     ["add1", "text"],
+                     ["add2", "smallint"],
+                     ["id", "integer"]      # implicit ID column
+        ], column_defns
+      # Check definitions for the dynamic table
+      index_defns = db.exec("SELECT indexdef FROM pg_catalog.pg_indexes WHERE schemaname='a#{KApp.current_application}' AND tablename='j_dbtest_dyn1'").to_a.map { |row| row.first } .sort
+      assert_equal ["CREATE INDEX j_dbtest_dyn1_i0 ON a#{_TEST_APP_ID}.j_dbtest_dyn1 USING btree (_name)",
+                    "CREATE INDEX j_dbtest_dyn1_i1 ON a#{_TEST_APP_ID}.j_dbtest_dyn1 USING btree (add1)",
+                    "CREATE UNIQUE INDEX j_dbtest_dyn1_pkey ON a#{_TEST_APP_ID}.j_dbtest_dyn1 USING btree (id)"], index_defns
+    end
   ensure
-    StoredFile.destroy_all
+    destroy_all StoredFile
+    delete_all_jobs
     uninstall_grant_privileges_plugin
   end
 
@@ -1195,6 +1203,7 @@ __E
     assert_equal true, xlsx.haveData()
     xlsx_data = String.from_java_bytes(xlsx.getDataAsBytes())
     # File.open("test.xlsx", "w:BINARY") { |f| f.write xlsx_data }
+    delete_all_jobs
   end
 
   # ===============================================================================================
@@ -1206,16 +1215,16 @@ __E
   # ===============================================================================================
 
   def test_keychain_read
-    KeychainCredential.delete_all
-    KApp.get_pg_database.perform("SELECT setval('keychain_credentials_id_seq', 1)"); # as ID is tested in the tests
-    KeychainCredential.new({
+    delete_all KeychainCredential
+    KApp.with_pg_database { |db| db.perform("SELECT setval('#{KApp.db_schema_name}.keychain_credentials_id_seq', 1)"); } # as ID is tested in the tests
+    keychain_credential_create({
       :kind => 'other-test', :instance_kind => 'Test Two', :name => 'credential.test.TWO',
       :account_json => '{"x":"y123","d":"QWERTY"}', :secret_json => '{"s2":"confidential_2"}'
-    }).save!
-    KeychainCredential.new({
+    })
+    keychain_credential_create({
       :kind => 'test', :instance_kind => 'Test One', :name => 'credential.test.1',
       :account_json => '{"a":"b","c":"d","Username":"userone"}', :secret_json => '{"s1":"confidential1","Password":"example"}'
-    }).save!
+    })
     install_grant_privileges_plugin_with_privileges()
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_keychain_read1.js', nil, "grant_privileges_plugin")
     install_grant_privileges_plugin_with_privileges('pKeychainRead')
@@ -1224,7 +1233,7 @@ __E
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_keychain_read3.js', nil, "grant_privileges_plugin")
   ensure
     uninstall_grant_privileges_plugin
-    KeychainCredential.delete_all
+    delete_all KeychainCredential
   end
 
   # ===============================================================================================

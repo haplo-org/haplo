@@ -15,7 +15,7 @@
 <form method="POST"><%= form_csrf_token %>
 
 <p>Plugin name<br>
-  <input type="text" name="plugin" size="60" value=<%= h(params[:plugin]) %>>
+  <input type="text" name="plugin" size="60" value=<%= h(params['plugin'.freeze]) %>>
 </p>
 
 <% if @need_license_key || @bad_license_key %>

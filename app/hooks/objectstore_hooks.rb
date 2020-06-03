@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module KHooks
@@ -30,8 +33,8 @@ module KHooks
   define_hook :hLabelAttributeGroupObject do |h|
     h.argument    :container,   KObject,  "The object which contains this attribute group"
     h.argument    :object,      KObject,  "The temporary object containing the group of attributes"
-    h.argument    :desc,        Fixnum,   "Descriptor of group"
-    h.argument    :groupId,     Fixnum,   "Group ID of group"
+    h.argument    :desc,        Integer,  "Descriptor of group"
+    h.argument    :groupId,     Integer,  "Group ID of group"
     h.result      :changes,     KLabelChanges,  nil,  "Changes to apply to the label list"
   end
 

@@ -8,9 +8,9 @@ package org.haplo.jsinterface.app;
 
 public interface AppText {
     // Conversion to String done through Ruby support code in KText.java
-    public String toHtml();
+    public String to_html();
 
-    public int kTypecode();
+    public int k_typecode();
 
     // For KIdentifierFile -- JRuby doesn't allow a KText subclass to implement another interface
     public String digest();

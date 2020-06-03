@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Setup_PluginsController < ApplicationController
@@ -31,15 +34,15 @@ class Setup_PluginsController < ApplicationController
   end
 
   def handle_show
-    @plugin = KPlugin.get(params[:id])
+    @plugin = KPlugin.get(params['id'])
   end
 
   _GetAndPost
   def handle_install
     if request.post?
-      if params[:plugin].length > 0 && params[:plugin] =~ /\A[a-zA-Z0-9_]+\z/
+      if params['plugin'].length > 0 && params['plugin'] =~ /\A[a-zA-Z0-9_]+\z/
         # Get registered plugin
-        plugin = KPlugin.get_plugin_without_installation(params[:plugin])
+        plugin = KPlugin.get_plugin_without_installation(params['plugin'])
         if plugin == nil
           return render :action => 'plugin_install_error'
         end
@@ -48,8 +51,8 @@ class Setup_PluginsController < ApplicationController
         # If there's an installation secret, make sure it matches
         if install_secret != nil
           license_key = HMAC::SHA1.sign(install_secret, "application:#{KApp.current_application}")
-          if params.has_key?(:license)
-            if params[:license] != license_key
+          if params.has_key?('license')
+            if params['license'] != license_key
               @bad_license_key = true
               return
             end
@@ -61,9 +64,9 @@ class Setup_PluginsController < ApplicationController
         # License key checked, install plugin?
         install_success = false
         begin
-          @installation = KPlugin.install_plugin_returning_checks(params[:plugin])
+          @installation = KPlugin.install_plugin_returning_checks(params['plugin'])
           if @installation.success?
-            redirect_to "/do/setup/plugins/show/#{params[:plugin]}?update=1"
+            redirect_to "/do/setup/plugins/show/#{params['plugin']}?update=1"
             return
           end
         rescue => e
@@ -80,12 +83,12 @@ class Setup_PluginsController < ApplicationController
 
   _GetAndPost
   def handle_uninstall
-    @plugin = KPlugin.get(params[:id])
+    @plugin = KPlugin.get(params['id'])
     if request.post?
-      if params[:uninstall] != 'confirm'
+      if params['uninstall'] != 'confirm'
         @should_confirm = true
       else
-        KPlugin.uninstall_plugin(params[:id])
+        KPlugin.uninstall_plugin(params['id'])
         render :action => 'refresh_list'
       end
     end

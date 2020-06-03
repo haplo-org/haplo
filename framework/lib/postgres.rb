@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Make pg utilities available to java in a way matching the old interface
@@ -15,14 +18,18 @@ module PGconn
 
   def self.escape_bytea(s)
     return nil if s == nil
-    escaped = '\\\\x'
-    escaped << s.unpack(BYTEA_HEX_PACKING).first
+    '\\\\x' + s.unpack(BYTEA_HEX_PACKING).first
   end
 
   def self.unescape_bytea(s)
     return nil if s == nil
     raise "Trying to use unescape_bytea on a string which isn't using the hex encoding" unless s =~ /\A\\x/
     [s[2,s.length-2]].pack(BYTEA_HEX_PACKING)
+  end
+
+  def self.time_sql_value(time)
+    raise "Time expected for SQL value" unless time.kind_of?(Time)
+    quote(time.strftime('%Y-%m-%d %H:%M:%S.%L')) # includes seconds & milliseconds
   end
 end
 
@@ -33,15 +40,6 @@ class PostgresConnWrapper
 
   def initialize(jdbc_conn)
     @jdbc_conn = jdbc_conn
-  end
-
-  def close
-    @jdbc_conn.close()
-    @jdbc_conn = nil
-  end
-
-  def jdbc_connection
-    @jdbc_conn
   end
 
   def exec(sql, *inserts)
@@ -82,16 +80,6 @@ class PostgresConnWrapper
         @results << colrange.map { |i| result_set.getString(i) }
       end
       result_set.close()
-    end
-
-    # For compatibility with the existing interface
-    def result
-      self
-    end
-
-    # Release resources
-    def clear
-      @results = nil
     end
 
     def each
@@ -145,13 +133,10 @@ module PgHstore
 
   QUOTED_STRING = /(\\"|[^"])*/
   QUOTED_REPLACE = /\\(.)/
-  QUOTED_REPLACEMENT = '\1'.freeze
+  QUOTED_REPLACEMENT = '\1'
 
   SEPARATE_KEY_VALUE = /"\s*=>\s*"/
   NEXT_KEY_VALUE = /"(\s*,\s*")?/
-
-  WHERE_TAG = '(tags -> ?) = ?'.freeze
-  WHERE_TAG_IS_EMPTY_STRING_OR_NULL = "COALESCE((tags -> ?),'') = ''".freeze
 
   def self.parse_hstore(string)
     result = Hash.new
@@ -181,10 +166,10 @@ module PgHstore
 
   # -----------------------------------------------------------
 
-  GENERATE_JOIN = ','.freeze
+  GENERATE_JOIN = ','
 
   QUOTE_REPLACE = /("|\\)/
-  QUOTE_REPLACEMNENT = '\\\\\1'.freeze
+  QUOTE_REPLACEMNENT = '\\\\\1'
 
   def self.generate_hstore(hash)
     elements = []

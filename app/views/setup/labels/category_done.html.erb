@@ -1,5 +1,5 @@
 <%
-  was_create = !!(params[:create])
+  was_create = !!(params['create'.freeze])
   @page_title = was_create ? 'New label category created' : 'Label category name'
 %>
 <%= sys_mng_header %>

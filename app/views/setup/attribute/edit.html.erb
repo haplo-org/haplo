@@ -1,5 +1,5 @@
 <%
-  @page_title = (params[:id] == 'new') ? 'New Attribute' : 'Edit '+h(@titles.first)
+  @page_title = (params['id'.freeze] == 'new') ? 'New Attribute' : 'Edit '+h(@titles.first)
   client_side_controller_js('attredit')
 -%>
 

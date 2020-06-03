@@ -1,7 +1,7 @@
-# coding: utf-8
+# frozen_string_literal: true
 
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -187,7 +187,7 @@ module KCountry
       Country.new(true, 'OM', '968', '00', '0', 'Oman'),
       Country.new(true, 'PK', '92', '00', '0', 'Pakistan'),
       Country.new(true, 'PW', '680', '011', '0', 'Palau'),
-      Country.new(true, 'PS', nil, nil, nil, 'Palestinian Territory, Occupied'),
+      Country.new(true, 'PS', nil, nil, nil, 'Palestine'),
       Country.new(true, 'PA', '507', '00', '0', 'Panama'),
       Country.new(true, 'PG', '675', '05', '0', 'Papua New Guinea'),
       Country.new(true, 'PY', '595', '00', '0', 'Paraguay'),

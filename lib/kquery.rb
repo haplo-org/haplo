@@ -1,4 +1,4 @@
-# coding: utf-8
+# frozen_string_literal: true
 
 # Haplo Platform                                     http://haplo.org
 # (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
@@ -250,10 +250,10 @@ class KQuery
       else
         if x.length == 3
           y, m, d = x
-          [:day, DateTime.new(y, m, d)]
+          [:day, Time.new(y, m, d)]
         elsif x.length == 5
           y, m, d, hh, mm = x
-          [:min, DateTime.new(y, m, d, hh, mm)]
+          [:min, Time.new(y, m, d, hh, mm)]
         else
           raise "Logic error in date time parsing"
         end
@@ -262,7 +262,7 @@ class KQuery
     # Create clause
     if dx.length == 1
       precision, date = dx.first
-      q.date_range(date, (precision == :day) ? (date + 1) : (date + Rational(1,3600)), desc, qual)
+      q.date_range(date, (precision == :day) ? (date + KFramework::SECONDS_IN_DAY) : (date + 60), desc, qual)
     else
       # Expand right hand side of range to one day later to work as the user expects
       ignored_precsion, first_date = dx.first
@@ -400,7 +400,7 @@ class KQuery
     when :datetime
       kind, c_info, dates = token
       n = desc_qual_names_to_html(schema, c_info)
-      n = %Q!<span class="z__search_explanation_attr_name">#{n} :</span> !
+      n = %Q!<span class="z__search_explanation_attr_name">#{n} :</span> !.dup
       if dates.length == 1
         n << date_to_html(dates.first)
       elsif dates.length == 2
@@ -418,7 +418,7 @@ class KQuery
       kind, c_info, contained = token
       n = desc_qual_names_to_html(schema, c_info)
       arrow, text = (kind == :link_to) ? ['&darr;', 'TO'] : ['&uarr;', 'FROM']
-      h = %Q!<div class="#{alt ? 'z__search_explanation_box_b' : 'z__search_explanation_box_a'}">!
+      h = %Q!<div class="#{alt ? 'z__search_explanation_box_b' : 'z__search_explanation_box_a'}">!.dup
       h << %Q!<div class="z__search_explanation_linked_to_statement">#{arrow}<div><span>LINKED #{text}!
       h << " BY '#{n}'" unless n.empty?
       h << %Q!</span></div>#{arrow}</div>!
@@ -436,7 +436,7 @@ class KQuery
       if op_kind == :and
         # Some tokens don't get need AND between them
         last = nil
-        out = ''
+        out = ''.dup
         contained.each do |token|
           if last != nil
             if token_is_and_joinable?(last) && token_is_and_joinable?(token)
@@ -476,7 +476,7 @@ class KQuery
 
   def desc_qual_names_to_html(schema, c_info)
     a_name, q_name, desc, qual, a_kind, typecode, c_errors = c_info
-    n = ''
+    n = ''.dup
     if desc != nil
       n << ((a_kind == :attr) ?
         schema.attribute_descriptor(desc).printable_name.text :
@@ -590,7 +590,7 @@ class KQuery
 
   def mq_constraint(c_info, with_colon = true)
     a_name, q_name, desc, qual, a_kind, typecode, c_errors = c_info
-    n = ''
+    n = ''.dup
     if desc != nil
       n << a_name.downcase
       if qual != nil
@@ -976,7 +976,7 @@ class KQuery
             have_time = ($4 != nil && $4 != '')
             h = ($5 || 0).to_i; mn = ($6 || 0).to_i
             begin
-              DateTime.new(y, m, d, h, mn) # checks it's valid
+              Time.new(y, m, d, h, mn) # checks it's valid
               d = [y, m, d]
               if have_time
                 d << h ; d << mn

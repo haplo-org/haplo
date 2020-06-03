@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2017    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class WebPublisherController < ApplicationController
@@ -71,19 +74,12 @@ class WebPublisherController < ApplicationController
     # Support a limited set of binary data types as body
     # TODO: Refactor this to use the implemetation in JavascriptPluginController
     if body.kind_of?(KStoredFile)
-      # Stored file - probably from built-in /download handler
+      # Stored file - (note /download uses a different mechanism)
       stored_file = body.toRubyObject()
       exchange.response = KFramework::FileResponse.new(stored_file.disk_pathname, {
         :type => stored_file.mime_type,
         :filename => stored_file.upload_filename,
         :disposition => 'attachment'
-      })
-      return
-    elsif body.kind_of?(KBinaryDataStaticFile)
-      # Static file - probably thumbnail from built-in /thumbnail handler
-      exchange.response = KFramework::FileResponse.new(body.getDiskPathnameForResponse(), {
-        :type => body.jsGet_mimeType(),
-        :filename => body.jsGet_filename()
       })
       return
     elsif body.kind_of?(XmlDocument)
@@ -104,10 +100,10 @@ class WebPublisherController < ApplicationController
       else
         disk_pathname = body.getDiskPathnameForResponse()
         raise JavaScriptAPIError, "File not available" unless disk_pathname && File.exist?(disk_pathname)
-        render_send_file disk_pathname,
+        exchange.response = KFramework::FileResponse.new(disk_pathname, {
           :type => body.jsGet_mimeType() || 'application/octet-stream',
-          :filename => body.jsGet_filename() || 'data.bin',
-          :disposition => 'attachment'
+          :filename => body.jsGet_filename() || 'data.bin'
+        })
       end
       return
     elsif body.kind_of?(KZipFile)

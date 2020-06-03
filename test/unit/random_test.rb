@@ -32,4 +32,10 @@ class RandomTest < Test::Unit::TestCase
     end
   end
 
+  def test_encoding
+    assert_equal Encoding::UTF_8, KRandom.random_hex(16).encoding
+    assert_equal Encoding::UTF_8, KRandom.random_base64(16).encoding
+    assert_equal Encoding::UTF_8, KRandom.random_api_key.encoding
+  end
+
 end

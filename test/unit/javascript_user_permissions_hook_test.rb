@@ -14,7 +14,7 @@ class JavascriptUserPermissionsHookTest < Test::Unit::TestCase
   def setup
     db_reset_test_data
     KPlugin.install_plugin("test_user_permissions_plugin")
-    PermissionRule.delete_all
+    delete_all PermissionRule
   end
 
   def teardown
@@ -27,9 +27,12 @@ class JavascriptUserPermissionsHookTest < Test::Unit::TestCase
     make_user "unchanged" do |user|
       rule = PermissionRule.new_rule! :allow, user, O_LABEL_COMMON, *KPermissionRegistry.lookup.keys
       assert_equal [O_LABEL_COMMON], get_mapped_internal_states(user.permissions)[0][:create]
-      rules = PermissionRule.find :all
+      rules = PermissionRule.where().select()
       assert_equal 1, rules.length
-      assert_equal rule.attributes, rules[0].attributes
+      assert_equal user.id, rules[0].user_id
+      assert_equal O_LABEL_COMMON.obj_id, rules[0].label_id
+      assert_equal PermissionRule::ALLOW, rules[0].statement
+      assert_equal KPermissionRegistry.to_bitmask(*KPermissionRegistry.lookup.keys), rules[0].permissions
     end
   end
 
@@ -57,9 +60,9 @@ class JavascriptUserPermissionsHookTest < Test::Unit::TestCase
   end
 
   def test_user_permissions_include_rules
-    assert_equal 0, PermissionRule.find(:all).length
+    assert_equal 0, PermissionRule.where().count()
     make_user "deny-common" do |user|
-      assert_equal 0, PermissionRule.find(:all).length # Check the plugin rules aren't being persisted
+      assert_equal 0, PermissionRule.where().count() # Check the plugin rules aren't being persisted
       assert_permissions(
         :user => user,
         :allow => {},
@@ -162,16 +165,16 @@ class JavascriptUserPermissionsHookTest < Test::Unit::TestCase
   # -------------------------------------------------------------------------------------------------------------
 
   def make_user(name)
-    new_user = User.new(
-      :name_first => name,
-      :name_last => "permission-rules",
-      :email => name + '@example.com')
+    new_user = User.new
+    new_user.name_first = name
+    new_user.name_last = "permission-rules"
+    new_user.email = name + '@example.com'
     new_user.kind = User::KIND_USER
     new_user.password = 'pass1234'
-    new_user.save!
+    new_user.save
     yield new_user
-    PermissionRule.delete_all
-    new_user.destroy
+    delete_all PermissionRule
+    new_user.delete
   end
 
   def all_operations(*labels)

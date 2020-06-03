@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class GeneratedFileController < ApplicationController
@@ -115,7 +118,7 @@ class GeneratedFileController < ApplicationController
   # -------------------------------------------------------------------------
 
   def handle_file
-    identifier = params[:id]
+    identifier = params['id']
     info_pathname = GeneratedFileController.pathname_for_identifier(identifier, :info)
     file_pathname = GeneratedFileController.pathname_for_identifier(identifier, :file)
 
@@ -159,7 +162,7 @@ class GeneratedFileController < ApplicationController
   end
 
   def setup_for_waiting_view
-    identifier = params[:id]
+    identifier = params['id']
     info_pathname = GeneratedFileController.pathname_for_identifier(identifier, :info)
     return unless File.exist?(info_pathname)
     @info = JSON.parse(File.open(info_pathname) { |f| f.read })
@@ -175,7 +178,7 @@ class GeneratedFileController < ApplicationController
   # -------------------------------------------------------------------------
 
   def handle_availability_api
-    identifier = params[:id]
+    identifier = params['id']
     info_pathname = GeneratedFileController.pathname_for_identifier(identifier, :info)
     file_pathname = GeneratedFileController.pathname_for_identifier(identifier, :file)
     result = {}
@@ -188,14 +191,14 @@ class GeneratedFileController < ApplicationController
         if info['redirectTo']
           result['redirectTo'] = info['redirectTo']
         else
-          result['url'] = "/do/generated/file/#{params[:id]}/#{info['filename']}"
+          result['url'] = "/do/generated/file/#{params['id']}/#{info['filename']}"
         end
         result['mimeType'] = info['mimeType']
       else
         # Not available yet, suspend, if it's the first time
         continuation = request.continuation
         if continuation.isInitial()
-          timeout = (params[:timeout] || 0).to_i
+          timeout = (params['timeout'] || 0).to_i
           if timeout < 1 || timeout > GENERATION_DOWNLOAD_MAX_WAIT_TIME
             timeout = GENERATION_DOWNLOAD_MAX_WAIT_TIME
           end

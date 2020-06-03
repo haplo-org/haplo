@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # TODO: Proper test for authorisation based on policy, along with testing for verification correct policy application
@@ -83,7 +86,7 @@ class ApplicationController
       authorization_header_m = API_KEY_AUTHORIZATION_BASIC.match(authorization_header)
       api_key = authorization_header_m[1].unpack('m*').first if authorization_header_m
     else
-      api_key = params[:_ak] || request.headers[API_KEY_HEADER_NAME] # X-ONEIS-Key HTTP header
+      api_key = params['_ak'] || request.headers[API_KEY_HEADER_NAME] # X-ONEIS-Key HTTP header
     end
     if api_key != nil
       # ================ API Key authentication ================

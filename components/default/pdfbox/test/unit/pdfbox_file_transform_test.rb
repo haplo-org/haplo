@@ -8,9 +8,9 @@
 class ComponentPdfboxFileTransformTest < Test::Unit::TestCase
 
   def setup
-    FileCacheEntry.destroy_all # to delete files from disk
-    StoredFile.destroy_all # to delete files from disk
-    KApp.get_pg_database.perform("DELETE FROM jobs WHERE application_id=#{_TEST_APP_ID}")
+    destroy_all FileCacheEntry # to delete files from disk
+    destroy_all StoredFile # to delete files from disk
+    KApp.with_pg_database { |db| db.perform("DELETE FROM jobs WHERE application_id=#{_TEST_APP_ID}") }
   end
 
   def test_pdf_to_image
@@ -20,9 +20,8 @@ class ComponentPdfboxFileTransformTest < Test::Unit::TestCase
     file_transform5.operation.perform()
     file_transform5.operation_performed()
     assert File.exists?(file_transform5.result_pathname)
-    assert_equal 1, FileCacheEntry.count(:conditions => ['stored_file_id=?',stored_file2.id])
-    assert_equal 1, FileCacheEntry.count(:conditions => ['stored_file_id=? AND output_mime_type=? AND output_options=?',
-        stored_file2.id, 'image/png', 'h=200,w=100'])
+    assert_equal 1, FileCacheEntry.where(:stored_file_id => stored_file2.id).count
+    assert_equal 1, FileCacheEntry.where(:stored_file_id => stored_file2.id, :output_mime_type => 'image/png', :output_options => 'h=200,w=100').count
   end
 
   def test_pdf_to_plain_text
@@ -65,23 +64,21 @@ class ComponentPdfboxFileTransformTest < Test::Unit::TestCase
     pdf_stored_file = StoredFile.from_upload(fixture_file_upload('files/example3.pdf', 'application/pdf'))
     assert pdf_stored_file != nil
     run_all_jobs :expected_job_count => 1
-    assert_equal 0, FileCacheEntry.count # file cache entry not created
-    pdf_dims = pdf_stored_file
-    assert pdf_dims != nil
-    pdf_dims.reload   # because it'll have cached the old version
+    assert_equal 0, FileCacheEntry.where().count # file cache entry not created
+    pdf_dims = StoredFile.read(pdf_stored_file.id)
     assert_equal 612, pdf_dims.dimensions_w
     assert_equal 792, pdf_dims.dimensions_h
     assert_equal 'pt', pdf_dims.dimensions_units
     assert_equal 1, pdf_dims.dimensions_pages
     assert_equal 0640, (File.stat(pdf_dims.disk_pathname_thumbnail).mode & 0777)
-    assert pdf_stored_file.render_text_chars > 1
-    assert_equal "This is a test PDF file.\nKEYWORDTHREE\n", pdf_stored_file.render_text
+    assert pdf_dims.render_text_chars > 1
+    assert_equal "This is a test PDF file.\nKEYWORDTHREE\n", pdf_dims.render_text
   end
 
   def test_thumbnailing_and_misc_transforms_pdf
     pdf_stored_file = StoredFile.from_upload(fixture_file_upload('files/example3.pdf', 'application/pdf'))
     run_all_jobs :expected_job_count => 1
-    pdf_stored_file.reload
+    pdf_stored_file = StoredFile.read(pdf_stored_file.id)
     assert pdf_stored_file.thumbnail_format == StoredFile::THUMBNAIL_FORMAT_PNG
     assert pdf_stored_file.thumbnail_w <= 192
     assert pdf_stored_file.thumbnail_w >= 4
@@ -97,7 +94,7 @@ class ComponentPdfboxFileTransformTest < Test::Unit::TestCase
     # Check page count in a multi-page PDF
     pdf_stored_file2 = StoredFile.from_upload(fixture_file_upload('files/example_3page.pdf', 'application/pdf'))
     run_all_jobs :expected_job_count => 1
-    pdf_stored_file2.reload
+    pdf_stored_file2 = StoredFile.read(pdf_stored_file2.id)
     assert_equal 3, pdf_stored_file2.dimensions_pages
   end
 

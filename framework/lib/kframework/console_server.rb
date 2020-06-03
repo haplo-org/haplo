@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class KFramework
@@ -20,7 +23,10 @@ class KFramework
       end
     end
     def stop
-      @server.stop_service
+      # Calling @server.stop_service makes assumptions about which thread it's called from
+      # and tries to join the server thread itself. Use a hack to to be compatible with
+      # background tasks.
+      @server.instance_variable_get(:@protocol).shutdown
     end
     def description
       "Application Console"

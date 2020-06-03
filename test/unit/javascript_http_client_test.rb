@@ -12,22 +12,23 @@ class JavaScriptHTTPClientTest < Test::Unit::TestCase
   TEST_SERVER_PORT = 8192
 
   def test_httpclient
-    StoredFile.destroy_all
+    destroy_all StoredFile
     begin
       install_grant_privileges_plugin_with_privileges("pHTTPClient")
 
-      credential = KeychainCredential.new({:name => 'test-basic-http-auth', :kind => 'HTTP', :instance_kind => "Basic" })
-      credential.account = {"Username" => "bob"}
-      credential.secret = {"Password" => "fishcakes"}
-      credential.save
-
-      credential = KeychainCredential.new({:name => 'test-basic-http-auth-bad', :kind => 'HTTP', :instance_kind => "Basic" })
-      credential.account = {"Username" => "bob"}
-      credential.secret = {"Password" => "veggiecakes"}
-      credential.save
-
-      credential = KeychainCredential.new({:name => 'BadSSL client', :kind => 'X.509', :instance_kind => "Certificate and Key" })
-      credential.account = {"Certificate" => <<__E}
+      keychain_credential_create(
+        :name => 'test-basic-http-auth', :kind => 'HTTP', :instance_kind => "Basic",
+        :account => {"Username" => "bob"},
+        :secret => {"Password" => "fishcakes"}
+      )
+      keychain_credential_create(
+        :name => 'test-basic-http-auth-bad', :kind => 'HTTP', :instance_kind => "Basic",
+        :account => {"Username" => "bob"},
+        :secret => {"Password" => "veggiecakes"}
+      )
+      keychain_credential_create(
+        :name => 'BadSSL client', :kind => 'X.509', :instance_kind => "Certificate and Key",
+        :account => {"Certificate" => <<__E},
 -----BEGIN CERTIFICATE-----
 MIIEnTCCAoWgAwIBAgIJAPC7KMFjfslXMA0GCSqGSIb3DQEBCwUAMH4xCzAJBgNV
 BAYTAlVTMRMwEQYDVQQIDApDYWxpZm9ybmlhMRYwFAYDVQQHDA1TYW4gRnJhbmNp
@@ -56,7 +57,7 @@ xMCCNQdmKQt0WYmMS3Xj/AfAY2sjCWziDflvW5mGCUjSYdZ+r3JIIF4m/FNCIO1d
 Ioacp9qb0qL9duFlVHtFiPgoKrEdJaNVUL7NG9ppF8pR
 -----END CERTIFICATE-----
 __E
-      credential.secret = {"Key" => <<__E}
+        :secret => {"Key" => <<__E}
 -----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEAxzdfEeseTs/rukjly6MSLHM+Rh0enA3Ai4Mj2sdl31x3SbPo
 en08utVhjPmlxIUdkiMG4+ffe7N+JtDLG75CaxZp9CxytX7kywooRBJsRnQhmQPc
@@ -85,7 +86,7 @@ FTiwh2uh6l4gdO/dGC/P0Vrp7F05NnO7oE4T+ojDzVQMnFpCBeL7x08GfUQkphEG
 m0Wqhhi8/24Sy934t5Txgkfoltg8ahkx934WjP6WWRnSAu+cf+vW
 -----END RSA PRIVATE KEY-----
 __E
-      credential.save
+      )
 
       rt = run_javascript_test(:file,
                                'unit/javascript/javascript_http_client/test_httpclient.js',
@@ -109,7 +110,7 @@ __E
       assert_equal "No", scope.get("FAILED",scope)
       assert_equal scope.get("REQUESTS_TRIED"), scope.get("REQUESTS_REPLIED",scope)
     ensure
-      KeychainCredential.delete_all
+      delete_all KeychainCredential
     end
   end
 

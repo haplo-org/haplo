@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module KSchemaToJavaScript
@@ -15,7 +18,7 @@ module KSchemaToJavaScript
       next if constant =~ /\AT_PSEUDO_/
       types[constant] = KConstants.const_get(constant)
     end
-    js = "_.extend(O,{\n"
+    js = "_.extend(O,{\n".dup
     types.keys.sort.each do |constant|
       js << "  #{constant}:#{types[constant]},\n"
     end
@@ -25,7 +28,7 @@ module KSchemaToJavaScript
   end
 
   def self.schema_to_js(schema)
-    js = <<-__E
+    js = <<-__E .dup
       var TYPE = new $CheckingLookupObject("TYPE");
       var ATTR = new $CheckingLookupObject("ATTR");
       ATTR.Parent=#{KConstants::A_PARENT};
@@ -64,7 +67,7 @@ module KSchemaToJavaScript
       end
     end
     # Groups
-    User.find_all_by_kind(User::KIND_GROUP).each do |group|
+    User.where(:kind => User::KIND_GROUP).order(:id).each do |group|
       values << ['GROUP', group.code, group.id]
     end
 

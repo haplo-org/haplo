@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2017    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module JSMessageBus
@@ -82,24 +85,25 @@ module JSMessageBus
   # -------------------------------------------------------------------------
   # Reliability and database transactions
   def self.with_transaction_for_reliability(reliability)
-    db = KApp.get_pg_database
-    sql_begin = 'BEGIN'
-    if reliability < RELIABILITY__MIN_SYNC_COMMIT
-      sql_begin << '; SET LOCAL synchronous_commit TO OFF'
-    end
-    db.perform(sql_begin)
-    begin
-      yield db
-      db.perform('COMMIT')
-    rescue
-      db.perform('ROLLBACK')
-      raise
+    KApp.with_pg_database do |db|
+      sql_begin = 'BEGIN'.dup
+      if reliability < RELIABILITY__MIN_SYNC_COMMIT
+        sql_begin << '; SET LOCAL synchronous_commit TO OFF'
+      end
+      db.perform(sql_begin)
+      begin
+        yield db
+        db.perform('COMMIT')
+      rescue
+        db.perform('ROLLBACK')
+        raise
+      end
     end
   end
 
   # -------------------------------------------------------------------------
   # Adding to queues
-  INSERT_INTO_QUEUE = "INSERT INTO js_message_bus_queue(created_at,application_id,bus_id,is_send,reliability,body,transport_options) VALUES(NOW(),$1,$2,$3,$4,$5,$6)".freeze
+  INSERT_INTO_QUEUE = "INSERT INTO public.js_message_bus_queue(created_at,application_id,bus_id,is_send,reliability,body,transport_options) VALUES(NOW(),$1,$2,$3,$4,$5,$6)"
   def self.add_to_delivery_queue(app_id, bus_id, is_send, reliability, body, transport_options)
     with_transaction_for_reliability(reliability) do |db|
       db.perform(INSERT_INTO_QUEUE, app_id, bus_id, is_send, reliability, body, transport_options);
@@ -110,43 +114,43 @@ module JSMessageBus
   # -------------------------------------------------------------------------
   # Delivery of messages to JS runtime and external systems
   class DeliverMessages
-    SELECT_MESSAGES = "SELECT id,bus_id,is_send,reliability,body,transport_options FROM js_message_bus_queue WHERE application_id=$1 ORDER BY id LIMIT 20".freeze
-    DELETE_MESSAGE = "DELETE FROM js_message_bus_queue WHERE id=$1".freeze
+    SELECT_MESSAGES = "SELECT id,bus_id,is_send,reliability,body,transport_options FROM public.js_message_bus_queue WHERE application_id=$1 ORDER BY id LIMIT 20"
+    DELETE_MESSAGE = "DELETE FROM public.js_message_bus_queue WHERE id=$1"
     def initialize(application_id)
       @application_id = application_id
       @credentials = {}
     end
     def deliver_from_queue
       raise "In wrong application" unless @application_id == KApp.current_application
-      db = KApp.get_pg_database
-      results = db.exec(SELECT_MESSAGES, @application_id)
-      results.each do |id,bus_id,is_send_s,reliability,body,transport_options|
-        is_send = (is_send_s == 't')
-        credential = @credentials[bus_id.to_i] ||= begin
-          KeychainCredential.find(:first, :conditions => {:id => bus_id.to_i, :kind => 'Message Bus'})
-        end
-        if credential.nil?
-          KApp.logger.error("Dropping message for bus id #{bus_id} as no credential exists")
-        else
-          delivery = BUS_DELIVERY[credential.instance_kind]
-          if delivery.nil?
-            KApp.logger.error("Dropping message for bus id #{bus_id} as bus credential has unknown instance kind #{credential.instance_kind}")
-          else
-            delivery.call(is_send, credential, reliability.to_i, body, transport_options)
+      KApp.with_pg_database do |db|
+        results = db.exec(SELECT_MESSAGES, @application_id)
+        results.each do |id,bus_id,is_send_s,reliability,body,transport_options|
+          is_send = (is_send_s == 't')
+          credential = @credentials[bus_id.to_i] ||= begin
+            KeychainCredential.where_id_maybe(bus_id.to_i).where(:kind => 'Message Bus').first()
           end
-          JSMessageBus.with_transaction_for_reliability(reliability.to_i) do
-            db.perform(DELETE_MESSAGE, id.to_i)
+          if credential.nil?
+            KApp.logger.error("Dropping message for bus id #{bus_id} as no credential exists")
+          else
+            delivery = BUS_DELIVERY[credential.instance_kind]
+            if delivery.nil?
+              KApp.logger.error("Dropping message for bus id #{bus_id} as bus credential has unknown instance kind #{credential.instance_kind}")
+            else
+              delivery.call(is_send, credential, reliability.to_i, body, transport_options)
+            end
+            JSMessageBus.with_transaction_for_reliability(reliability.to_i) do
+              db.perform(DELETE_MESSAGE, id.to_i)
+            end
           end
         end
       end
-      results.clear
     end
   end
 
   # -------------------------------------------------------------------------
   # Task to deliver messages from the queue
   DELIVERY_WORK_FLAG = Java::OrgHaploCommonUtils::WaitingFlag.new
-  SELECT_APPLICATIONS_WITH_MESSAGES = 'SELECT application_id,count(id) FROM js_message_bus_queue GROUP BY application_id ORDER BY application_id'
+  SELECT_APPLICATIONS_WITH_MESSAGES = 'SELECT application_id,count(id) FROM public.js_message_bus_queue GROUP BY application_id ORDER BY application_id'
   class DeliveryTask < KFramework::BackgroundTask
     def initialize
       @do_delivery = true
@@ -223,9 +227,11 @@ module JSMessageBus
     def applications_with_messages_in_queue
       applications = []
       KApp.in_application(:no_app) do
-        KApp.get_pg_database.exec(SELECT_APPLICATIONS_WITH_MESSAGES).each do |application_id, count|
-          KApp.logger.info("Application #{application_id} has message queue length #{count}")
-          applications.push(application_id.to_i)
+        KApp.with_pg_database do |db|
+          db.exec(SELECT_APPLICATIONS_WITH_MESSAGES).each do |application_id, count|
+            KApp.logger.info("Application #{application_id} has message queue length #{count}")
+            applications.push(application_id.to_i)
+          end
         end
       end
       applications

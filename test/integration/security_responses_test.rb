@@ -50,9 +50,12 @@ class SecurityResponsesTest < IntegrationTest
 
   def test_http_method_checking
     # Make an API key to use
-    k = ApiKey.new(:user_id => 42, :path => '/api/test/', :name => 'test');
+    k = ApiKey.new
+    k.user_id = 42
+    k.path = '/api/test/'
+    k.name = 'test'
     k_secret = k.set_random_api_key
-    k.save!
+    k.save
 
     # GET to a GET only request
     get '/do/authentication/hidden-object', nil, NO_AUTO_METHOD_CHECK

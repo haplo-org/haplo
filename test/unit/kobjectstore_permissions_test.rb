@@ -215,10 +215,10 @@ class KObjectStorePermissionsTest < Test::Unit::TestCase
     assert_raises(KObjectStore::PermissionDenied) { KObjectStore.read_version(obj.objref, 2) }
     assert KObjectStore.read_version(obj.objref, 1).kind_of?(KObject)
     # Fake updated times in database and check with read at time
-    KApp.get_pg_database.perform "UPDATE os_objects_old SET updated_at=NOW() - (interval '1 day' * (3-version) * 2) WHERE id=#{obj.objref.to_i}"
-    assert KObjectStore.read_version_at_time(obj.objref, DateTime.now).kind_of?(KObject)
-    assert_raises(KObjectStore::PermissionDenied) { KObjectStore.read_version_at_time(obj.objref, DateTime.now - 1) }
-    assert KObjectStore.read_version_at_time(obj.objref, DateTime.now - 3).kind_of?(KObject)
+    KApp.with_pg_database { |db| db.perform "UPDATE #{KApp.db_schema_name}.os_objects_old SET updated_at=NOW() - (interval '1 day' * (3-version) * 2) WHERE id=#{obj.objref.to_i}" }
+    assert KObjectStore.read_version_at_time(obj.objref, Time.now).kind_of?(KObject)
+    assert_raises(KObjectStore::PermissionDenied) { KObjectStore.read_version_at_time(obj.objref, Time.now - 1) }
+    assert KObjectStore.read_version_at_time(obj.objref, Time.now - (3*KFramework::SECONDS_IN_DAY)).kind_of?(KObject)
     # Check that history can't be read if user can't read latest version
     no_read_perms = KLabelStatementsOps.new
     no_read_perms.statement(:read, KLabelList.new([ALLOW_READ1,ALLOW_READ2]), KLabelList.new([DENY_READ1,DENY_READ2,999]))
@@ -226,7 +226,7 @@ class KObjectStorePermissionsTest < Test::Unit::TestCase
     assert_raises(KObjectStore::PermissionDenied) { KObjectStore.read(obj.objref) }
     assert_raises(KObjectStore::PermissionDenied) { KObjectStore.history(obj.objref) }
     assert_raises(KObjectStore::PermissionDenied) { KObjectStore.read_version(obj.objref, 1) }
-    assert_raises(KObjectStore::PermissionDenied) { KObjectStore.read_version_at_time(obj.objref, DateTime.now - 3) }
+    assert_raises(KObjectStore::PermissionDenied) { KObjectStore.read_version_at_time(obj.objref, Time.now - (3*KFramework::SECONDS_IN_DAY)) }
   end
 
   def test_searching

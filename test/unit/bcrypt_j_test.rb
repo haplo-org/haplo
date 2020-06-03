@@ -1,4 +1,3 @@
-# coding: utf-8
 
 # Haplo Platform                                     http://haplo.org
 # (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
@@ -24,7 +23,7 @@ class BCryptJTest < Test::Unit::TestCase
     assert encode1.start_with?('$2a$13$') # 13 matches BCrypt::BCRYPT_ROUNDS
     assert encode1 != PASSWORD_BCRYPTED
     assert encode1 =~ /\A\$\w+\$/ # general form
-    time_to_check_two_passwords_in_ms = Benchmark.ms do
+    time_to_check_two_passwords_in_ms = KApp.execution_time_ms do
       assert   (BCrypt::Password.new(encode1) == 'hello123')
       assert ! (BCrypt::Password.new(encode1) == 'afd98fij')
     end
@@ -51,7 +50,7 @@ class BCryptJTest < Test::Unit::TestCase
 
     # Can create with smaller numbers of rounds, and it's quicker
     encode_lowrounds = BCrypt::Password.create('hello1234', 6).to_s
-    time_to_check_lowrounds_in_ms = Benchmark.ms do
+    time_to_check_lowrounds_in_ms = KApp.execution_time_ms do
       assert (BCrypt::Password.new(encode_lowrounds) == 'hello1234')
     end
     assert time_to_check_lowrounds_in_ms < 100

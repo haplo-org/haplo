@@ -1,5 +1,7 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -40,14 +42,14 @@ class StdMergeObjectsPlugin < KTrustedPlugin
     def handle_merge_tray
       return redirect_to "/" unless StdMergeObjectsPlugin.is_authorised?(@request_user)
       @objects = tray_contents.map { |r| KObjectStore.read(KObjRef.from_presentation(r)) }
-      @users = Hash.new { |h,k| h[k] = User.find_by_objref(k) }
+      @users = Hash.new { |h,k| h[k] = User.where(:objref => k).first() }
       if @objects.length < 2
         redirect_to "/do/tray"
         return
       end
 
-      if request.post? && params[:keep]
-        keep_ref = KObjRef.from_presentation(params[:keep])
+      if request.post? && params['keep']
+        keep_ref = KObjRef.from_presentation(params['keep'])
         if keep_ref && (kept_object = @objects.find { |o| o.objref == keep_ref })
 
           old_state = AuthContext.set_enforce_permissions(false)

@@ -7,7 +7,7 @@
 
 <%= sys_mng_header %>
 
-<% if params.has_key?(:update) %>
+<% if params.has_key?('update'.freeze) %>
 <p class="z__management_notice">A classification type and a matching attribute have been created.</p>
 <p>Add items to the List here, then add the attribute to Types.</p>
 <hr>

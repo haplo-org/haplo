@@ -16,17 +16,18 @@ class ElementsTest < IntegrationTest
   def setup
     db_reset_test_data
     # Create groups
-    @group = User.new(:name => 'Test group')
+    @group = User.new
+    @group.name = 'Test group'
     @group.kind = User::KIND_GROUP
-    @group.save!
+    @group.save
     # Create user
-    @user= User.new(
-      :name_first => 'first',
-      :name_last => "last",
-      :email => 'authtest@example.com')
+    @user = User.new
+    @user.name_first = 'first'
+    @user.name_last = "last"
+    @user.email = 'authtest@example.com'
     @user.kind = User::KIND_USER
     @user.password = 'pass1234'
-    @user.save!
+    @user.save
     @user.set_groups_from_ids([@group.id])
     # Reset home page elements to defaults
     KApp.set_global(:home_page_elements, '');

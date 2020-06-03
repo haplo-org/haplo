@@ -83,8 +83,7 @@
                 message = err.message.
                     replace(/^org\.haplo\.javascript\.OAPIException\: /,'').
                     replace(/^org\.haplo\.template\.html\.RenderException: /,'').
-                    replace(/^org\.jruby\.exceptions\.RaiseException\: \(JavaScriptAPIError\) /, '').
-                    replace(/^org\.jruby\.exceptions\.RaiseException\: \(PermissionDenied\) /, '');
+                    replace(/^org\.jruby\.exceptions\.\w+\: \(\w+\) /, '');
             }
             thrown = true;
         }

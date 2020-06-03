@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # NOTE: Initialisation of directory structure on disc performed by KFileStore.init_store_on_disc_for_app
@@ -155,20 +158,19 @@ class KFileTransform
     begin
       raise "KFileTransform conversion failed" unless File.exists?(@temp_disk_pathname) && success
       # Make cache entry
-      entry = FileCacheEntry.new(
-        :last_access => Time.now,
-        :stored_file_id => @stored_file_id,
-        :output_mime_type => @output_mime_type || '',
-        :output_options => @output_options_str || ''
-      )
-      entry.save!
+      entry = FileCacheEntry.new
+      entry.created_at = entry.last_access = Time.now
+      entry.stored_file_id = @stored_file_id
+      entry.output_mime_type = @output_mime_type || ''
+      entry.output_options = @output_options_str || ''
+      entry.save
       entry_pathname = entry.disk_pathname
       entry.ensure_target_directory_exists
       File.rename(@temp_disk_pathname, entry_pathname)
       @created_cache_entry = entry
       @result_pathname = entry_pathname
     rescue
-      entry.destroy if entry
+      entry.delete if entry
       clean_up_on_failure
       raise
     end
@@ -276,7 +278,7 @@ class KFileTransform
         end
         File.rename(temp_pathname, stored_file.disk_pathname_render_text)
         stored_file.render_text_chars = chars.length
-        stored_file.save!
+        stored_file.save
       rescue => e
         KApp.logger.error("Exception when attempting to generate and save rendering text for stored file #{stored_file.digest} (id #{stored_file.id})")
         KApp.logger.log_exception(e)
@@ -287,7 +289,7 @@ class KFileTransform
 
     # Plain text conversions probably won't be needed again. If a cache entry was created just now, delete it.
     entry = file_transform.created_cache_entry
-    entry.destroy() if entry
+    entry.delete if entry
   end
 
   # -----------------------------------------------------------------------------------------------------------------
@@ -399,28 +401,7 @@ class KFileTransform
     # Set permissions on any file which was created so the backup user can read it
     File.chmod(0640, thumbnail_pathname) if File.exists?(thumbnail_pathname)
 
-    stored_file.save! if stored_file.changed?
-  end
-
-  # -----------------------------------------------------------------------------------------------------------------
-
-  def self.transform_to_thumbnail(file_identifier)
-    info = get_thumbnail_info(file_identifier)
-    return nil if info == nil
-    output_file = transform(file_identifier, info.mime_type, {:w => info.width, :h => info.height})
-    if output_file != nil
-      [output_file, info.mime_type]
-    else
-      nil
-    end
-  end
-
-  # -----------------------------------------------------------------------------------------------------------------
-
-  def self.output_mime_type_if_thumbnailable(mime_type)
-    return 'image/png' if mime_type == 'application/pdf'  # turn PDFs into PNGs
-    return mime_type.dup if mime_type =~ /\Aimage\/(gif|jpeg|png|bmp|tiff)\z/      # same format for other images
-    nil
+    stored_file.save if stored_file.changed?
   end
 
   # -----------------------------------------------------------------------------------------------------------------

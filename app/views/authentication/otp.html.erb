@@ -9,8 +9,8 @@
 
 <form method="POST" action="/do/authentication/otp"><%= form_csrf_token %>
 
-<% if params.has_key?(:rdr) -%>
-  <input type="hidden" name="rdr" value="<%= h(params[:rdr]) %>">
+<% if params.has_key?('rdr'.freeze) -%>
+  <input type="hidden" name="rdr" value="<%= h(params['rdr'.freeze]) %>">
 <% end -%>
 
 <p><img src="/images/hardware-otp.png" width="113" height="30"></p>
@@ -19,7 +19,7 @@
   <li><%= @locale.text(:Authentication_View_Type_the_code_into_the_box_below) %></li>
 </ul>
 
-<p><input id="password" name="password" size="30" type="password" autocomplete="one-time-code" class="z__login_input_field z__focus_candidate"> <input type="submit" value="<%= @locale.text(:Authentication_View_Log_in) %>" class="z__login_button"></p>
+<p><input id="otp_session" name="otp_session" size="30" type="password" autocomplete="one-time-code" class="z__login_input_field z__focus_candidate"> <input type="submit" value="<%= @locale.text(:Authentication_View_Log_in) %>" class="z__login_button"></p>
 
 </form>
 

@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 class NavigationController < ApplicationController
   include KConstants
@@ -35,7 +38,7 @@ class NavigationController < ApplicationController
   def handle_left_api
     # Force locale to the locale in the URL, so changes of the locale in the session reflect in the navigation,
     # and the locale is part of the key in the browser's cache.
-    @locale = KLocale::ID_TO_LOCALE[params[:id]] || KLocale::DEFAULT_LOCALE
+    @locale = KLocale::ID_TO_LOCALE[params['id']] || KLocale::DEFAULT_LOCALE
 
     nav_groups = navigation_for_user(@request_user, :expand_plugin_positions)
 

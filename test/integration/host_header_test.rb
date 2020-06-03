@@ -9,7 +9,7 @@ class HostHeaderTest < IntegrationTest
   def test_port_number_in_host_header
     db_reset_test_data
     s = open_session(_testing_host+':443')
-    user = User.find_by_email("user1@example.com")
+    user = User.where_lower_email("user1@example.com").first()
     s.get "/do/authentication/login"  # for CSRF token
     s.post_302("/do/authentication/login", {:email => user.email, :password => 'password', :rdr => '/test-hostname-with-port'})
     s.assert_redirected_to("/test-hostname-with-port")

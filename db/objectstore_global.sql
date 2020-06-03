@@ -18,6 +18,7 @@ CREATE TABLE os_dirty_text (
 CREATE TABLE os_store_reindex (
     id SERIAL PRIMARY KEY,
     app_id INT NOT NULL,        -- which store this referes to
-    filter_by_attr TEXT NULL NULL, -- if not empty string, a comma separated list of attributes. Only reindex objs with these attributes
+    filter_by_attr TEXT NOT NULL, -- if not empty string, a comma separated list of attributes. Only reindex objs with these attributes
+    progress INT NOT NULL DEFAULT(0),
     requested_at TIMESTAMP NOT NULL DEFAULT(NOW())  -- when the reindex was requested
 );

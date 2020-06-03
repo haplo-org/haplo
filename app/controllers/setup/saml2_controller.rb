@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 # Haplo Platform                                    https://haplo.org
-# (c) Haplo Services Ltd 2006 - 2019            https://www.haplo.com
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Setup_SAML2Controller < ApplicationController
@@ -17,7 +20,7 @@ class Setup_SAML2Controller < ApplicationController
 
   _GetAndPost
   def handle_add
-    @name = params[:name] || ''
+    @name = params['name'] || ''
     if request.post? && @name =~ VALID_NAME
 
       gen = Java::SunSecurityToolsKeytool::CertAndKeyGen.new("RSA", "SHA256WithRSA", nil)
@@ -53,10 +56,10 @@ class Setup_SAML2Controller < ApplicationController
 
   _GetAndPost
   def handle_config_with_metadata_url
-    @credential = KeychainCredential.find(params[:id].to_i)
+    @credential = KeychainCredential.read(params['id'].to_i)
     raise "Bad credential ID" unless @credential && @credential.kind == Saml2ServiceProviderController::ADFS_KEYCHAIN_CRED_KIND
     if request.post?
-      @url = params[:url]
+      @url = params['url']
       begin
         if @url && @url =~ /\Ahttps/i
           settings = Java::ComOneloginSaml2Settings::IdPMetadataParser.parseRemoteXML(Java::JavaNet::URL.new(@url))

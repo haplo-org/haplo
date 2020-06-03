@@ -1,4 +1,3 @@
-# coding: utf-8
 
 # Haplo Platform                                     http://haplo.org
 # (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
@@ -15,9 +14,9 @@ class KObjectTest < Test::Unit::TestCase
     obj.add_attr('Pants', 1);
     obj.add_attr("a", 3)
     obj.freeze
-    assert_raises(RuntimeError) { obj.add_attr("b", 4) }
-    assert_raises(RuntimeError) { obj.delete_attrs!(4) }
-    assert_raises(RuntimeError) { obj.delete_attr_if { true } }
+    assert_raises(FrozenError) { obj.add_attr("b", 4) }
+    assert_raises(FrozenError) { obj.delete_attrs!(4) }
+    assert_raises(FrozenError) { obj.delete_attr_if { true } }
     assert_raises(RuntimeError) { obj.replace_values! {"x"} }
     obj_dup = obj.dup
     obj_dup.add_attr("b", 4)
@@ -38,7 +37,7 @@ class KObjectTest < Test::Unit::TestCase
     assert copy2 != obj
     # A clone of a frozen object is also frozen
     obj_clone = obj.clone
-    assert_raises(RuntimeError) { obj_clone.delete_attrs!(4) }
+    assert_raises(FrozenError) { obj_clone.delete_attrs!(4) }
   end
 
   def test_object_restrictions
@@ -201,6 +200,19 @@ class KObjectTest < Test::Unit::TestCase
     test_with_other_obj.call(obj_ag1, false, false, [ ["X", 1, nil, [13,23726527]], ["Y", 1, nil, [13,278262]], ["Z", 2], [7, 2] ]) # oen group ID is different
     test_with_other_obj.call(obj_ag1, false, true, [ ["X", 1, nil, [13,23726525]], ["Y", 1, nil, [13,278262]], ["Z", 2, nil, [2,37265]], [7, 2] ])
 
+  end
+
+  # --------------------------------------------------------------------------------------------------------
+
+  def test_datetime_not_allowed
+    obj = KObject.new
+    e = assert_raises(RuntimeError) { obj.add_attr(DateTime.new(2012,10,4), 4) }
+    assert_equal 'DateTime not supported as object value', e.message
+    # But Date is and gets turned into the right KDateTime
+    obj.add_attr(Date.new(2012,10,4), 5)
+    dt = obj.first_attr(5)
+    assert dt.kind_of?(KDateTime)
+    assert_equal ["2012 10 4", "", "d", ""], dt.keditor_values
   end
 
   # --------------------------------------------------------------------------------------------------------

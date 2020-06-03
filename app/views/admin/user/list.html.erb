@@ -19,7 +19,7 @@
     ]
   end
   
-  select_user = params[:select].to_i
+  select_user = params['select'.freeze].to_i
   
   # Use a different action for groups to allow section of help pages
   show_action = @showing_users ? 'show' : 'group'
@@ -41,7 +41,7 @@
 -->
 
 <ul>
-<% @users.each do |user| -%>
+<% @users_query.each do |user| -%>
   <li><a href="/do/admin/user/<%= show_action %>/<%= user.id %>" target="workspace"<% if select_user == user.id %> class="z__selected"<% end %>><%= h(user.name) %></a></li>
 <% end -%>
 </ul>

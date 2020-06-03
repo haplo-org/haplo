@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # KApp is a singleton class which provides:
@@ -21,15 +24,15 @@ module KApp
 
   # Find all hostnames for the current application (uses database access)
   def self.all_hostnames_for_current_app
-    db = get_pg_database
-    r = db.exec("SELECT hostname FROM public.applications WHERE application_id=$1 ORDER BY hostname", current_application)
-    all_hostnames = Array.new
-    r.each do |a|
-      h = a[0].to_s
-      all_hostnames << h if h != '*'
+    KApp.with_pg_database do |db|
+      r = db.exec("SELECT hostname FROM public.applications WHERE application_id=$1 ORDER BY hostname", current_application)
+      all_hostnames = Array.new
+      r.each do |a|
+        h = a[0].to_s
+        all_hostnames << h if h != '*'
+      end
+      all_hostnames
     end
-    r.clear
-    all_hostnames
   end
 
   # SSL policy

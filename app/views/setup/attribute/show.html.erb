@@ -77,7 +77,7 @@
 <% if @is_type_attr || @is_parent_attr -%>
   <%= sys_mng_edit_button_disabled %>
 <% else -%>
-  <%= sys_mng_edit_button("/do/setup/attribute/edit/#{params[:id].to_i}") %>
+  <%= sys_mng_edit_button("/do/setup/attribute/edit/#{params['id'.freeze].to_i}") %>
 <% end -%>
 
-<%= sys_mng_update_submenu(@titles.first, "/do/setup/attribute/show/#{params[:id].to_i}") %>
+<%= sys_mng_update_submenu(@titles.first, "/do/setup/attribute/show/#{params['id'.freeze].to_i}") %>

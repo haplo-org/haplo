@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # This file defines the basic constants for generic object store use
@@ -99,10 +102,7 @@ class Object
 end
 
 # Add k_typecode to built in objects
-class Fixnum
-  def k_typecode; KConstants::T_INTEGER end
-end
-class Bignum
+class Integer
   def k_typecode; KConstants::T_INTEGER end
 end
 class Float

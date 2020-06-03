@@ -1,8 +1,11 @@
+# frozen_string_literal: true
+
 # Haplo Platform                                    https://haplo.org
 # (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module JSMessageBus
@@ -89,7 +92,7 @@ module JSMessageBus
 
     def self.send_message(busId, reliability, body)
       # Check there's all the valid details at the point the message is sent
-      ks = KeychainCredential.find(:first, :conditions => {:id=>busId, :instance_kind=>'Amazon SNS Topic'})
+      ks = KeychainCredential.where_id_maybe(busId).where(:instance_kind=>'Amazon SNS Topic').first()
       raise JavaScriptAPIError, "Couldn't load SNS topic details" if ks.nil?
       JSMessageBus.add_to_delivery_queue(KApp.current_application, busId, true, reliability, body, '{}')
     end

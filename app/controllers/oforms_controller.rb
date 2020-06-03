@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # TODO: Document that oForms bundles are not protected and published to anyone who can read URLs.
@@ -45,10 +48,10 @@ class OFormsController < ApplicationController
   # Implement the server side of the object lookup data source
   def handle_src_objects_api
     # Make a search with truncated words everywhere
-    given_text = (params[:q] || '').strip.downcase
+    given_text = (params['q'] || '').strip.downcase
     text = given_text.split(/\s+/).map { |e| e + '*' } .join(' ')
     # Decode types argument
-    types = (params[:t] || '').strip.split(',').map { |t| KObjRef.from_presentation(t) } .compact
+    types = (params['t'] || '').strip.split(',').map { |t| KObjRef.from_presentation(t) } .compact
     if types.empty?
       return data_source_message_response("Bad configuration")
     end

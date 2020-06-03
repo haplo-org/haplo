@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module KFileUrls
@@ -34,7 +37,7 @@ module KFileUrls
     if transform == :thumbnail
       p = "/_t/#{file.digest}/#{file.size}"
     else
-      p = "/file/#{file.digest}/#{file.size}/"
+      p = "/file/#{file.digest}/#{file.size}/".dup
       p << "#{transform}/" if transform
       p << ERB::Util.url_encode(file.presentation_filename)
     end

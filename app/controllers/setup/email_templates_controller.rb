@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 class Setup_EmailTemplatesController < ApplicationController
   policies_required :setup_system, :not_anonymous
@@ -14,40 +17,47 @@ class Setup_EmailTemplatesController < ApplicationController
   end
 
   def handle_index
-    @templates = EmailTemplate.find(:all, :order => 'name')
+    @templates = EmailTemplate.where().order(:name).select()
   end
 
   _GetAndPost
   def handle_new
     if request.post?
-      @email_template = EmailTemplate.new(params[:email_template])
-      if @email_template.save()
+      @email_template = EmailTemplate.new
+      @transfer = EmailTemplate::EditTransfer.new(@email_template).from_params(params['email_template'])
+      if @transfer.errors.empty?
+        @transfer.apply!
+        @email_template.save
         redirect_to "/do/setup/email_templates/show/#{@email_template.id}?update=1"
       end
     else
       generic = EmailTemplate.where(:code => 'std:email-template:generic').first
-      @email_template = EmailTemplate.new(
-        :from_name => KApp.global(:product_name),
-        :from_email_address => generic.from_email_address,
-        :header => '<p>Dear %%RECIPIENT_NAME%%,</p>'
-      )
+      @email_template = EmailTemplate.new
+      @email_template.from_name = KApp.global(:product_name)
+      @email_template.from_email_address = generic.from_email_address
+      @email_template.header = '<p>Dear %%RECIPIENT_NAME%%,</p>'
+      @transfer = EmailTemplate::EditTransfer.new(@email_template).as_new_record
     end
   end
 
   def handle_show
-    @email_template = EmailTemplate.find(params[:id])
+    @email_template = EmailTemplate.read(params['id'].to_i)
   end
 
   def handle_show_preview
-    template = EmailTemplate.find(params[:id])
+    template = EmailTemplate.read(params['id'].to_i)
     render :layout => false, :text => template.generate_email_html(preview_message_for(template))
   end
 
   _GetAndPost
   def handle_edit
-    @email_template = EmailTemplate.find(params[:id])
+    @email_template = EmailTemplate.read(params['id'].to_i)
+    @transfer = EmailTemplate::EditTransfer.new(@email_template)
     if request.post?
-      if @email_template.update_attributes(params[:email_template])
+      @transfer.from_params(params['email_template'])
+      if @transfer.errors.empty?
+        @transfer.apply!
+        @email_template.save
         redirect_to "/do/setup/email_templates/show/#{@email_template.id}?update=1"
       end
     end
@@ -55,23 +65,26 @@ class Setup_EmailTemplatesController < ApplicationController
 
   _PostOnly
   def handle_remove_menu
-    email_template = EmailTemplate.find(params[:id])
-    email_template.update_attribute(:in_menu, false)
-    redirect_to "/do/setup/email_templates/show/#{h(params[:id])}"
+    email_template = EmailTemplate.read(params['id'].to_i)
+    email_template.in_menu = false
+    email_template.save
+    redirect_to "/do/setup/email_templates/show/#{h(params['id'])}"
   end
 
   _PostOnly
   def handle_restore_menu
-    email_template = EmailTemplate.find(params[:id])
-    email_template.update_attribute(:in_menu, true)
-    redirect_to "/do/setup/email_templates/show/#{h(params[:id])}"
+    email_template = EmailTemplate.read(params['id'].to_i)
+    email_template.in_menu = true
+    email_template.save
+    redirect_to "/do/setup/email_templates/show/#{h(params['id'])}"
   end
 
   # replace the 'preview' iframe with an iframe containing a preview of the email
   _GetAndPost
   def handle_preview
-    template = EmailTemplate.new(params[:email_template])
-    if params.has_key?(:html)
+    template = EmailTemplate.new
+    transfer = EmailTemplate::EditTransfer.new(template).from_params(params['email_template']).apply_without_validation!
+    if params.has_key?('html')
       render :layout => false, :text => template.generate_email_html(preview_message_for(template))
     else
       @plain_text = template.generate_email_plain_body(preview_message_for(template))
@@ -81,7 +94,8 @@ class Setup_EmailTemplatesController < ApplicationController
 
   _PostOnly
   def handle_preview_email
-    template = EmailTemplate.new(params[:email_template])
+    template = EmailTemplate.new
+    transfer = EmailTemplate::EditTransfer.new(template).from_params(params['email_template']).apply_without_validation!
     template.deliver(preview_message_for(template))
     render :layout => false, :text => "Preview email sent."
   end
@@ -98,7 +112,7 @@ private
       :subject => "Preview email template '#{template.name}'",
       :message => (PREVIEW_MESSAGE_BY_PURPOSE[template.purpose] || PREVIEW_MESSAGE).gsub('!PRODUCT_NAME!', KApp.global(:product_name)),
       :interpolate => interpolate,
-      :user_obj => User.find(@request_user.id)  # need to fill this in, but normal sending doesn't.
+      :user_obj => @request_user  # need to fill this in, but normal sending doesn't.
     }
   end
 

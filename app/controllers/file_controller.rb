@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Implements URLs of the form
@@ -75,7 +78,7 @@ class FileController < ApplicationController
     request_path = exchange.annotations[:request_path]
     if 2 == request_path.length
       fvid = $1.to_i
-      stored_file = StoredFile.find_by_digest_and_size(request_path[0], request_path[1])
+      stored_file = StoredFile.from_digest_and_size(request_path[0], request_path[1])
       if stored_file && stored_file.thumbnail_format != nil
         # Security and client side caching
         return unless security_checks_for stored_file
@@ -120,7 +123,7 @@ class FileController < ApplicationController
       @requested_filename = ''
     end
 
-    stored_file = StoredFile.find_by_digest_and_size(stored_file_digest, stored_file_size)
+    stored_file = StoredFile.from_digest_and_size(stored_file_digest, stored_file_size)
 
     # Bad digest/filename?
     return render(:action => 'not_found', :status => 404) if stored_file.nil?
@@ -145,7 +148,7 @@ class FileController < ApplicationController
     zipped_default_filename = nil;
     zipped_dir_name = nil;
 
-    as_attachment = true if params.has_key?(:attachment)
+    as_attachment = true if params.has_key?('attachment')
 
     return if call_pre_file_download_hook(stored_file, filespec.join('/'))
 
@@ -345,7 +348,7 @@ private
   def special_pdf_preview_handling(stored_file)
     # Special handling of PDF previews
     @pages = stored_file.dimensions_pages || 1
-    @current_page = params[:page].to_i  # might not be present, so nil -> 0
+    @current_page = params['page'].to_i  # might not be present, so nil -> 0
     @current_page = 1 if @current_page < 1
     @current_page = @pages if @current_page > @pages
     @stored_file = stored_file
@@ -558,7 +561,7 @@ private
     # Check the request for a session-specific signature which authenticates the user
     # Do this *first*, so that requests which override the filename don't rewrite that filename
     unless permitted
-      signature = params[:s]
+      signature = params['s']
       if signature
         if file_request_check_signature(signature, request.path, session)
           permitted = true

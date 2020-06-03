@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class OneisUsageReportPlugin < KTrustedPlugin
@@ -27,14 +30,14 @@ class OneisUsageReportPlugin < KTrustedPlugin
 
     def handle_actions
       # Get sanitised day and month
-      @year = (params[:year] || Date.today.year).to_i
-      @month = (params[:month] || Date.today.month).to_i
+      @year = (params['year'] || Date.today.year).to_i
+      @month = (params['month'] || Date.today.month).to_i
       # Generate ends of date range
       date_begin = Date.new(@year, @month, 1)
       date_end = date_begin.next_month
       # Run database query to build report
-      sql = "SELECT users.name,audit_entries.kind,COUNT(*) FROM audit_entries LEFT JOIN users ON audit_entries.user_id=users.id WHERE audit_entries.created_at >= '#{date_begin.strftime}' AND audit_entries.created_at < '#{date_end.strftime}' AND audit_entries.kind IN ('DISPLAY','SEARCH','CREATE','UPDATE','USER-LOGIN','FILE-DOWNLOAD') AND users.kind IN (#{User::KIND_USER},#{User::KIND_USER_BLOCKED},#{User::KIND_USER_DELETED}) AND users.id <> #{User::USER_ANONYMOUS} GROUP BY audit_entries.kind,audit_entries.user_id,users.name ORDER BY users.name,audit_entries.kind"
-      @results = KApp.get_pg_database.exec(sql)
+      sql = "SELECT users.name,audit_entries.kind,COUNT(*) FROM #{KApp.db_schema_name}.audit_entries LEFT JOIN #{KApp.db_schema_name}.users ON audit_entries.user_id=users.id WHERE audit_entries.created_at >= '#{date_begin.strftime}' AND audit_entries.created_at < '#{date_end.strftime}' AND audit_entries.kind IN ('DISPLAY','SEARCH','CREATE','UPDATE','USER-LOGIN','FILE-DOWNLOAD') AND users.kind IN (#{User::KIND_USER},#{User::KIND_USER_BLOCKED},#{User::KIND_USER_DELETED}) AND users.id <> #{User::USER_ANONYMOUS} GROUP BY audit_entries.kind,audit_entries.user_id,users.name ORDER BY users.name,audit_entries.kind"
+      @results = KApp.with_pg_database { |db| db.exec(sql) }
     end
   end
 

@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Tray code in other controllers:
@@ -21,8 +24,8 @@ class TrayController < ApplicationController
   policies_required :not_anonymous
 
   def handle_index
-    if params[:clear] != nil
-      clear = params[:clear]
+    if params['clear'] != nil
+      clear = params['clear']
       if clear == 'all'
         tray_clear()
       else
@@ -61,7 +64,7 @@ class TrayController < ApplicationController
     end
 
     # Make a document which contains references to all the objects
-    document = "<doc><h1>#{T(:Tray_Tray_contents)}</h1>"
+    document = "<doc><h1>#{T(:Tray_Tray_contents)}</h1>".dup
     tray_contents.each do |r|
       objref = KObjRef.from_presentation(r)
       obj = (objref == nil) ? nil : KObjectStore.read(objref)
@@ -82,13 +85,13 @@ class TrayController < ApplicationController
 
   # API for adding/removing stuff to the session's tray
   def handle_change_api
-    objref = KObjRef.from_presentation(params[:id])
+    objref = KObjRef.from_presentation(params['id'])
     if objref != nil
       # Try to load it, to make sure it exists
       obj = KObjectStore.read(objref)
       if(obj != nil)
         # OK, add/remove to the tray
-        if params.has_key?(:remove)
+        if params.has_key?('remove')
           tray_remove_object(obj)
         else
           tray_add_object(obj)

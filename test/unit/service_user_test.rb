@@ -12,20 +12,22 @@ class ServiceUserTest < Test::Unit::TestCase
     db_reset_test_data
   end
   def teardown
-    ApiKey.destroy_all
+    destroy_all ApiKey
   end
 
   def test_service_user
-    srv0 = User.new(:name => 'Service user 0', :code => 'test:service-user:test')
+    srv0 = User.new
+    srv0.name = 'Service user 0'
+    srv0.code = 'test:service-user:test'
     srv0.kind = User::KIND_SERVICE_USER
-    srv0.save!
+    srv0.save
 
     # Service users aren't members of GROUP_EVERYONE because that would make service user
     # permissions harder to define & too fragile for a security interface. Some internal
     # user permissions would have to be undone on them, and you'd have to remember to
     # add extra permissions to this as they were added to normal users.
     assert_equal [], srv0.groups_ids
-    assert_equal [], User.find(srv0.id).groups_ids
+    assert_equal [], User.read(srv0.id).groups_ids
 
     # User cache
     assert_equal 'test:service-user:test', User.cache[srv0.id].code

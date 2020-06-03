@@ -10,6 +10,7 @@ import org.mozilla.javascript.Scriptable;
 
 import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
+import org.haplo.javascript.JsConvert;
 
 import org.haplo.jsinterface.app.AppAuditEntry;
 
@@ -58,7 +59,7 @@ public class KAuditEntry extends KScriptable {
     }
 
     public Scriptable jsGet_creationDate() {
-        return Runtime.createHostObjectInCurrentRuntime("Date", this.auditEntry.jsGetCreationDate());
+        return JsConvert.millisecondsToJsDate(this.auditEntry.created_at_milliseconds());
     }
 
     public String jsGet_remoteAddress() {
@@ -82,7 +83,7 @@ public class KAuditEntry extends KScriptable {
     }
 
     public Scriptable jsGet_ref() {
-        Integer objId = this.auditEntry.obj_id();
+        Integer objId = this.auditEntry.objref_obj_id();
         if(objId == null) {
             return null;
         }
@@ -101,7 +102,7 @@ public class KAuditEntry extends KScriptable {
         if(this.data != null) {
             return this.data;
         }
-        String json = this.auditEntry.jsGetData();
+        String json = this.auditEntry.data_json();
         if(json == null) {
             return null;
         }

@@ -27,7 +27,7 @@ class NavigationTest < IntegrationTest
     KObjectStore.create(obj1)
     obj1_url = "/#{obj1.objref.to_presentation}/object1"
 
-    assert_login_as(User.find(41), 'password')
+    assert_login_as(User.read(41), 'password')
 
     set_navigation([
         [4,"obj",obj1.objref.to_presentation,"O1"],

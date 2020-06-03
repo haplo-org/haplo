@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class KFramework
@@ -15,12 +18,12 @@ class KFramework
 
   # Register a simple database check
   health_check_register('DATABASE', proc do
-    # To make sure the same database connection isn't repeatedly used for the check, choose an application at random.
     h = KApp.all_hostnames
     app_id = h[rand(h.length)].first
     KApp.in_application(app_id) do
-      db = KApp.get_pg_database
-      r = db.exec("SELECT value_string FROM app_globals WHERE key='url_hostname'")
+      r = KApp.with_pg_database do |db|
+        db.exec("SELECT value_string FROM #{KApp.db_schema_name}.app_globals WHERE key='url_hostname'")
+      end
       return "DATABASE #{app_id}" unless r.length == 1 && r.first.first.length > 1
     end
     nil
@@ -46,17 +49,13 @@ class KFramework
     # Reporting exceptions via email
     def log_and_report_exception(exception, event_title = nil)
       event_title ||= 'Exception thrown'
-      event_title = ''
-      handle_info = nil
       if exception
         event_text = "#{exception.inspect}\n  #{exception.backtrace.join("\n  ")}"
-        # Was the exception thrown while handling a request?
-        handle_info = exception.instance_variable_get(:@__handle_info);
       end
-      self.log_and_report_event(event_title, event_text, handle_info)
+      self.log_and_report_event(event_title, event_text)
     end
 
-    def log_and_report_event(event_title, event_text, handle_info = nil)
+    def log_and_report_event(event_title, event_text)
       begin
         event_title ||= 'Application health event'
         KApp.logger.error("EVENT: #{@name} - #{event_title}")
@@ -67,11 +66,7 @@ class KFramework
         KApp.logger.error("EVENT ID: #{event_id}") # for easy location of error
         path = nil
         method = nil
-        # Got any more info about the event?
-        if handle_info
-          app_id, app_hostname, method, path = handle_info
-        end
-        # Attempt to get it another way
+        # Attempt to get information about the active request from the request context
         rc = KFramework.request_context
         if rc
           begin

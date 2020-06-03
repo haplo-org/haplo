@@ -3,9 +3,9 @@
 
   link_start = "/do/edit?new=#{@object_to_edit.first_attr(KConstants::A_TYPE).to_presentation}"
   # Support pop up windows for new linked objects from fields in editors
-  link_start << '&pop=1' if params.has_key?(:pop)
-  if params.has_key?(:data)
-    t = params[:data][KConstants::A_TITLE.to_s]
+  link_start << '&pop=1' if params.has_key?('pop'.freeze)
+  if params.has_key?('data'.freeze)
+    t = params['data'.freeze][KConstants::A_TITLE.to_s]
     link_start << "&data[#{KConstants::A_TITLE}]=#{url_encode(t)}" if t != nil
   end
 

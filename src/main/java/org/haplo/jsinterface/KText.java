@@ -87,7 +87,7 @@ public class KText extends KScriptable {
     // HTML version of the text
     public String jsFunction_toHTML() {
         if(this.html == null) {
-            this.html = text.toHtml();
+            this.html = text.to_html();
         }
         return html;
     }
@@ -105,7 +105,7 @@ public class KText extends KScriptable {
 
     // Typecode
     public int jsGet_typecode() {
-        return text.kTypecode();
+        return text.k_typecode();
     }
 
     // Returns type of plugin defined text type, if this is one, or null
@@ -117,7 +117,7 @@ public class KText extends KScriptable {
     // Properties of file identifiers
     private AppText asFileIdentifier() {
         // Can't do something nice like if(this.text instanceof AppIdentifierFile) because of JRuby limitations
-        if((this.text != null) && (this.text.kTypecode() == 27)) {
+        if((this.text != null) && (this.text.k_typecode() == 27)) {
             return this.text;
         } else {
             throw new OAPIException("This Text object is not a File Identifier.");

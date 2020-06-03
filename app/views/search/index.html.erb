@@ -7,7 +7,7 @@
 <div id="z__search_form_container">
 <form method="GET" action="/search" id="z__search_form_id" role="search">
 <%
-  search_within = params[:w]
+  search_within = params['w'.freeze]
   search_within_html = nil
   if search_within != nil && search_within =~ /\S/
     search_within_html = h(search_within)
@@ -97,7 +97,7 @@
           end
         else
           type_counts_params = search_url_params(@search_results, :type)
-          selected_type = params[:type]
+          selected_type = params['type'.freeze]
           @type_counts.each do |count,type_desc|
             ref = type_desc.objref.to_presentation
             if selected_type == ref

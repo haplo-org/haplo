@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module KAppInit
@@ -25,38 +28,6 @@ module KAppInit
       def implement(app, app_title, additional_info)
         app.syscreate_path = self.syscreate_path()
         template(app, app_title, additional_info)
-        # Handle creating the initial user?
-        if additional_info != nil && additional_info.has_key?(:user)
-          begin
-            user_info = additional_info[:user]
-            # 1 - create user
-            initial_user = User.new(:name_first => user_info[:first], :name_last => user_info[:last], :email => user_info[:email])
-            initial_user.set_new_recovery_token(12) # days
-            initial_user.set_invalid_password
-            initial_user.save!
-            # 2 - make the user a member of both groups
-            initial_user.set_groups_from_ids([User::GROUP_CONFIDENTIAL, User::GROUP_ADMINISTRATORS])
-            # 3 - create object
-            staff_obj = KObject.new([O_LABEL_COMMON])
-            staff_obj.add_attr(O_TYPE_STAFF, A_TYPE)
-            staff_obj.add_attr(KTextPersonName.new(:first => user_info[:first], :last => user_info[:last]), A_TITLE)
-            staff_obj.add_attr(KIdentifierEmailAddress.new(user_info[:email]), A_EMAIL_ADDRESS)
-            staff_obj.add_attr(customer_org, A_WORKS_FOR)
-            KObjectStore.create(staff_obj)
-            # 4 - send set password email
-            # TODO: Password email sending in app init is a bit hacky. Refactor to run the same code everywhere, which should include the user creation.
-            template = EmailTemplate.find(EmailTemplate::ID_NEW_USER_WELCOME)
-            template.deliver(
-              :to => initial_user,
-              # IMPORTANT - this has a different subject to the normal user creation email - avoids confusing during sign up process
-              :subject => 'Please set your Haplo password',
-              :format => :plain,
-              :message => %Q!<p class="button"><a href="https://#{hostnames.first}/do/authentication/welcome/#{initial_user.id}?t=#{initial_user.recovery_token}">Click here to set your Haplo password</a></p>!
-            )
-          rescue => e
-            puts "IGNORING EXCEPTION ON INITIAL USER CREATION #{e.inspect}"
-          end
-        end
       end
 
       def load_dublincore_and_basic_app_objects(app)
@@ -133,7 +104,7 @@ module KAppInit
     class SME < Template
       def template(app, app_title, additional_info)
         # Make a new group for confidential stuff - use the DB directly to get a known ID
-        KApp.get_pg_database.perform("INSERT INTO users (id,kind,name) VALUES (#{User::GROUP_CONFIDENTIAL},#{User::KIND_GROUP},'Confidential access')")
+        KApp.with_pg_database { |db| db.perform("INSERT INTO #{KApp.db_schema_name}.users (id,kind,name) VALUES (#{User::GROUP_CONFIDENTIAL},#{User::KIND_GROUP},'Confidential access')") }
 
         app.permission_rules([
           # Confidential access

@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # NOTE: Import/export of entire apps is a bit icky. In particular, the db export is non-optimal and the creation of the schema is assumed.
@@ -15,7 +18,7 @@ class KAppImporter
     raise "Reached app limit on this zone" unless KAccounting.room_for_another_app
 
     raise "Bad new hostname" unless new_hostname.nil? || (new_hostname.kind_of?(String) && new_hostname.length > 0)
-    raise "Bad new app ID" unless new_application_id.nil? || (new_application_id.kind_of?(Fixnum) && new_application_id > 0)
+    raise "Bad new app ID" unless new_application_id.nil? || (new_application_id.kind_of?(Integer) && new_application_id > 0)
 
     # Remove any suffix from filename base, as auto-completion willl leave a '.'
     filename_base = filename_base.gsub(/\.+\z/,'')
@@ -69,27 +72,28 @@ class KAppImporter
     raise "Bad schema create in SQL file" unless sql_start =~ /CREATE SCHEMA a#{source_app_id};/
 
     KApp.in_application(:no_app) do
-      db = KApp.get_pg_database
+      KApp.with_pg_database do |db|
 
-      db.perform('BEGIN')
-      # Check the application ID hasn't been used
-      [source_app_id,app_id].each do |id|
-        r = db.exec("SELECT * FROM public.applications WHERE application_id=#{id.to_i}")
-        if r.length > 0
-          raise "Application ID #{id} is already in use"
+        db.perform('BEGIN')
+        # Check the application ID hasn't been used
+        [source_app_id,app_id].each do |id|
+          r = db.exec("SELECT * FROM public.applications WHERE application_id=#{id.to_i}")
+          if r.length > 0
+            raise "Application ID #{id} is already in use"
+          end
         end
-        r.clear
-      end
-      # Add the rows for each hostname
-      hostnames.each do |hostname|
-        db.update(%Q!INSERT INTO applications (hostname,application_id) VALUES($1,#{app_id})!, hostname)
-      end
-      db.perform('COMMIT')
+        # Add the rows for each hostname
+        hostnames.each do |hostname|
+          db.update(%Q!INSERT INTO public.applications (hostname,application_id) VALUES($1,#{app_id})!, hostname)
+        end
+        db.perform('COMMIT')
 
-      # Create the empty text indicies for the app
-      textidx_path = "#{KOBJECTSTORE_TEXTIDX_BASE}/#{app_id}"
-      KObjectStore::TEXT_INDEX_FOR_INIT.each do |name|
-        db.exec("SELECT oxp_w_init_empty_index($1)", "#{textidx_path}/#{name}")
+        # Create the empty text indicies for the app
+        textidx_path = "#{KOBJECTSTORE_TEXTIDX_BASE}/#{app_id}"
+        KObjectStore::TEXT_INDEX_FOR_INIT.each do |name|
+          db.exec("SELECT oxp_w_init_empty_index($1)", "#{textidx_path}/#{name}")
+        end
+
       end
 
       StoredFile.init_store_on_disc_for_app(app_id)
@@ -107,7 +111,7 @@ class KAppImporter
     # Rename the schema?
     if source_app_id != app_id
       KApp.in_application(:no_app) do
-        KApp.get_pg_database.perform("ALTER SCHEMA a#{source_app_id.to_i} RENAME TO a#{app_id.to_i}")
+        KApp.with_pg_database { |db| db.perform("ALTER SCHEMA a#{source_app_id.to_i} RENAME TO a#{app_id.to_i}") }
       end
     end
 
@@ -120,7 +124,7 @@ class KAppImporter
 
       remote_process.remote_system "cd #{StoredFile.disk_root}; gunzip --stdout #{File.expand_path(filename_base)}.tgz | tar xf - "
 
-      FileCacheEntry.delete_all
+      FileCacheEntry.where().delete()
 
       # Change secrets on app import, so values created by clones can't be used in the originals
       KApp.set_global(:file_secret_key, KRandom.random_hex(KRandom::FILE_SECRET_KEY_LENGTH))
@@ -129,6 +133,8 @@ class KAppImporter
       KAccounting.set_counters_for_current_app
 
       KObjectStore.schema_weighting_rebuild
+
+      KObjectStore.reindex_all_objects
     end
 
     KApp.clear_all_cached_data_for_app(app_id)

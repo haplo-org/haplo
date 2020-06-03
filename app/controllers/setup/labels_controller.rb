@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Setup_LabelsController < ApplicationController
@@ -31,7 +34,7 @@ class Setup_LabelsController < ApplicationController
   # -----------------------------------------------------------------------------------------------------------
 
   def handle_info
-    @label = KObjectStore.read(KObjRef.from_presentation(params[:id]))
+    @label = KObjectStore.read(KObjRef.from_presentation(params['id']))
     @code = @label.first_attr(A_CODE)
     @category = KObjectStore.read(@label.first_attr(A_LABEL_CATEGORY))
     # Determine which types are configured to use this label (root types only)
@@ -50,9 +53,9 @@ class Setup_LabelsController < ApplicationController
 
   _GetAndPost
   def handle_category
-    @cat_ref = KObjRef.from_presentation(params[:id])
+    @cat_ref = KObjRef.from_presentation(params['id'])
     if request.post?
-      @title = params[:title].to_s.strip
+      @title = params['title'].to_s.strip
       if @title.length > 0
         if @cat_ref
           # Edit existing
@@ -87,7 +90,7 @@ class Setup_LabelsController < ApplicationController
 
   _GetAndPost
   def handle_edit
-    @label_ref = KObjRef.from_presentation(params[:id])
+    @label_ref = KObjRef.from_presentation(params['id'])
 
     @categories = label_edit_categories()
     @category_choices = [[' --- choose category ---','']]
@@ -98,9 +101,9 @@ class Setup_LabelsController < ApplicationController
     end
 
     if request.post?
-      @title = params[:title].strip
-      @category = KObjRef.from_presentation(params[:category])
-      @notes = params[:notes].strip
+      @title = params['title'].strip
+      @category = KObjRef.from_presentation(params['category'])
+      @notes = params['notes'].strip
       if @title.length > 0 && @category
         l = nil
         if @label_ref

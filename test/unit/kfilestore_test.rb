@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 class KFileStoreTest < Test::Unit::TestCase
   include KConstants
@@ -46,6 +49,7 @@ class KFileStoreTest < Test::Unit::TestCase
     assert_equal 'application/octet-stream', KMIMETypes.correct_mime_type('pants')
     assert_equal 'application/pdf', KMIMETypes.correct_mime_type('application/pdf')
     assert_equal 'application/rtf', KMIMETypes.correct_mime_type('application/rtf')
+    assert_equal true, KMIMETypes.correct_mime_type('application/rtf').frozen?
     assert_equal 'application/rtf', KMIMETypes.correct_mime_type('text/rtf')
     assert_equal 'application/msword', KMIMETypes.correct_mime_type('application/doc')
     assert_equal 'application/msword', KMIMETypes.correct_mime_type('application/doc; option=1')
@@ -68,6 +72,9 @@ class KFileStoreTest < Test::Unit::TestCase
     assert_equal 'image/jpeg', KMIMETypes.correct_mime_type('image/pjpeg')
     assert_equal 'image/jpeg', KMIMETypes.correct_mime_type('image/pants', 'P1200.JPG')
 
+    assert_equal true, KMIMETypes.type_from_extension('davmount').frozen? # exists
+    assert_equal true, KMIMETypes.type_from_extension('not-exists').frozen?
+
     assert KMIMETypes.is_msoffice_type?('application/msword')
     assert KMIMETypes.is_msoffice_type?('application/x-msaccess')
     assert KMIMETypes.is_msoffice_type?('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
@@ -87,9 +94,9 @@ class KFileStoreTest < Test::Unit::TestCase
   def test_stored_file_creation
     run_all_jobs({}) # clean up any previous jobs
     restore_store_snapshot("min")
-    AuditEntry.delete_all
-    FileCacheEntry.destroy_all
-    StoredFile.destroy_all
+    delete_all AuditEntry
+    destroy_all FileCacheEntry
+    destroy_all StoredFile
     KAccounting.setup_accounting
     KAccounting.set_counters_for_current_app
     beginning_storage_used = KAccounting.get(:storage)
@@ -146,7 +153,7 @@ class KFileStoreTest < Test::Unit::TestCase
     KObjectStore.create(obj1)
 
     # Check the length and the hash are right
-    stored_file2 = StoredFile.find(stored_file.id)
+    stored_file2 = StoredFile.read(stored_file.id)
     assert_equal 611, stored_file2.size
     assert_equal 'feed2644bd4834c2b7f9b3ed845f6f1ab4f4b7f3fc45ee3bbc55e71e2a507369', stored_file2.digest
 
@@ -165,13 +172,13 @@ class KFileStoreTest < Test::Unit::TestCase
     stored_file_filenames = [stored_file, stored_file2, stored_file_also].map {|v| v.disk_pathname }
     assert_equal true, File.exist?(stored_file.disk_pathname_render_text)
     # Check destruction deletes the file
-    StoredFile.find(stored_file.id).destroy
+    StoredFile.read(stored_file.id).delete
     assert_equal false, File.exist?(stored_file_filenames.first)
     assert_equal false, File.exist?(stored_file.disk_pathname_render_text)
 
     # Check the other file survived
-    assert_equal 1, StoredFile.find(:all, :conditions => ['id = ?', stored_file_also.id]).length
-    stored_file_also.reload
+    stored_file_also = StoredFile.read(stored_file_also.id)
+    assert stored_file_also != nil
     assert_equal true, File.exist?(stored_file_also.disk_pathname)
 
     # Make sure RTF files uploaded with dodgy MIME types from Windows get corrected
@@ -179,9 +186,10 @@ class KFileStoreTest < Test::Unit::TestCase
     assert_equal "application/rtf", rtf_file.mime_type
 
     # Check thumbnail is deleted
-    assert_equal true, File.exist?(stored_file_also.disk_pathname_thumbnail)
-    stored_file_also.destroy
-    assert_equal false, File.exist?(stored_file_also.disk_pathname_thumbnail)
+    stored_file_also__disk_pathname_thumbnail = stored_file_also.disk_pathname_thumbnail
+    assert_equal true, File.exist?(stored_file_also__disk_pathname_thumbnail)
+    stored_file_also.delete
+    assert_equal false, File.exist?(stored_file_also__disk_pathname_thumbnail)
   end
 
 end

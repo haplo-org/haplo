@@ -9,6 +9,7 @@ package org.haplo.jsinterface;
 import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
 import org.haplo.javascript.JsJavaInterface;
+import org.haplo.javascript.JsConvert;
 import org.haplo.jsinterface.util.HstoreBackedTags;
 import org.mozilla.javascript.*;
 
@@ -87,7 +88,7 @@ public class KWorkUnit extends KScriptable {
     }
 
     public void jsSet_visible(boolean visible) {
-        this.workUnit.jsset_visible(visible);
+        this.workUnit.setVisible(visible);
     }
 
     public boolean jsGet_autoVisible() {
@@ -95,14 +96,12 @@ public class KWorkUnit extends KScriptable {
     }
 
     public void jsSet_autoVisible(boolean autoVisible) {
-        this.workUnit.jsset_auto_visible(autoVisible);
+        this.workUnit.setAutoVisible(autoVisible);
     }
 
     // ---- createdAt
     public Object jsGet_createdAt() {
-        Date d = this.workUnit.created_at();
-        // Need to create a JavaScript Date object - automatic conversion doesn't work for these
-        return (d == null) ? null : Runtime.createHostObjectInCurrentRuntime("Date", d.getTime());
+        return JsConvert.millisecondsToJsDate(this.workUnit.created_at_milliseconds());
     }
 
     public void jsSet_createdAt(Object dummy) {
@@ -111,31 +110,25 @@ public class KWorkUnit extends KScriptable {
 
     // ---- openedAt
     public Object jsGet_openedAt() {
-        Date d = this.workUnit.opened_at();
-        // Need to create a JavaScript Date object - automatic conversion doesn't work for these
-        return (d == null) ? null : Runtime.createHostObjectInCurrentRuntime("Date", d.getTime());
+        return JsConvert.millisecondsToJsDate(this.workUnit.opened_at_milliseconds());
     }
 
     public void jsSet_openedAt(Object date) {
-        this.workUnit.jsSetOpenedAt(convertAndCheckDate(date, true, "openedAt"));
+        this.workUnit.opened_at_milliseconds_set(convertAndCheckDate(date, true, "openedAt"));
     }
 
     // ---- deadline
     public Object jsGet_deadline() {
-        Date d = this.workUnit.deadline();
-        // Need to create a JavaScript Date object - automatic conversion doesn't work for these
-        return (d == null) ? null : Runtime.createHostObjectInCurrentRuntime("Date", d.getTime());
+        return JsConvert.millisecondsToJsDate(this.workUnit.deadline_milliseconds());
     }
 
     public void jsSet_deadline(Object date) {
-        this.workUnit.jsSetDeadline(convertAndCheckDate(date, false, "deadline"));
+        this.workUnit.deadline_milliseconds_set(convertAndCheckDate(date, false, "deadline"));
     }
 
     // ---- closing (and reopening)
     public Object jsGet_closedAt() {
-        Date d = this.workUnit.closed_at();
-        // Need to create a JavaScript Date object - automatic conversion doesn't work for these
-        return (d == null) ? null : Runtime.createHostObjectInCurrentRuntime("Date", d.getTime());
+        return JsConvert.millisecondsToJsDate(this.workUnit.closed_at_milliseconds());
     }
 
     public void jsSet_closedAt(Object date) {
@@ -151,7 +144,7 @@ public class KWorkUnit extends KScriptable {
     }
 
     public boolean jsGet_closed() {
-        return this.workUnit.closed_at() != null;
+        return this.workUnit.closed_at_milliseconds() != null;
     }
 
     public Scriptable jsFunction_reopen() {
@@ -166,7 +159,7 @@ public class KWorkUnit extends KScriptable {
     }
 
     public void jsSet_createdBy(Object value) {
-        this.workUnit.jsset_created_by_id(valueToRequiredUserId(value, "createdBy"));
+        this.workUnit.setCreatedById(valueToRequiredUserId(value, "createdBy"));
     }
 
     // ---- actionableBy
@@ -176,7 +169,7 @@ public class KWorkUnit extends KScriptable {
     }
 
     public void jsSet_actionableBy(Object value) {
-        this.workUnit.jsset_actionable_by_id(valueToRequiredUserId(value, "actionableBy"));
+        this.workUnit.setActionableById(valueToRequiredUserId(value, "actionableBy"));
     }
 
     // ---- closedBy
@@ -190,7 +183,7 @@ public class KWorkUnit extends KScriptable {
     }
 
     public Scriptable jsGet_ref() {
-        Integer objId = this.workUnit.obj_id();
+        Integer objId = this.workUnit.objref_obj_id();
         if(objId == null) {
             return null;
         }
@@ -200,22 +193,21 @@ public class KWorkUnit extends KScriptable {
     public void jsSet_ref(Object value) {
         if(value == null) {
             // Value is null
-            this.workUnit.jsset_obj_id(null);
+            this.workUnit.objref_obj_id_set(null);
             return;
         } else if(!(value instanceof KObjRef)) {
             // Not an objref
             throw new OAPIException("Bad type for setting ref property");
         }
         KObjRef ref = (KObjRef)value;
-        Integer objId = this.workUnit.obj_id();
-        this.workUnit.jsset_obj_id(ref.jsGet_objId());
+        this.workUnit.objref_obj_id_set(ref.jsGet_objId());
     }
 
     // ---- data
     public Object jsGet_data() {
         if(!this.gotData) {
             Runtime runtime = Runtime.getCurrentRuntime();
-            this.data = runtime.jsonEncodedValueToObject(this.workUnit.jsGetDataRaw(), "work unit data");
+            this.data = runtime.jsonEncodedValueToObject(this.workUnit.data_json(), "work unit data");
             this.gotData = true;
         }
         return this.data;
@@ -255,9 +247,7 @@ public class KWorkUnit extends KScriptable {
     // --------------------------------------------------------------------------------------------------------------
     public KWorkUnit jsFunction_save() {
         updateWorkUnit(this);
-        if(!this.workUnit.save()) {
-            throw new OAPIException("Failed to save work unit");
-        }
+        this.workUnit.save();
         return this;
     }
 
@@ -265,10 +255,10 @@ public class KWorkUnit extends KScriptable {
         if(workUnit.gotData) {
             // Data needs updating
             if(workUnit.data == null) {
-                workUnit.workUnit.jsSetDataRaw(null);
+                workUnit.workUnit.setDataJson(null);
             } else {
                 Runtime runtime = Runtime.getCurrentRuntime();
-                workUnit.workUnit.jsSetDataRaw(runtime.jsonStringify(workUnit.data));
+                workUnit.workUnit.setDataJson(runtime.jsonStringify(workUnit.data));
             }
         }
         if(workUnit.gotTags) {
@@ -284,7 +274,7 @@ public class KWorkUnit extends KScriptable {
 
     // --------------------------------------------------------------------------------------------------------------
     public void jsFunction_deleteObject() {
-        this.workUnit.destroy();
+        this.workUnit.delete();
     }
 
     // --------------------------------------------------------------------------------------------------------------
@@ -299,14 +289,14 @@ public class KWorkUnit extends KScriptable {
         return id;
     }
 
-    private Date convertAndCheckDate(Object date, boolean required, String property) {
+    private Long convertAndCheckDate(Object date, boolean required, String property) {
         if(date != null) {
             date = Context.jsToJava(Runtime.getCurrentRuntime().convertIfJavaScriptLibraryDate(date), Date.class);
         }
         if(required && date == null) {
             throw new OAPIException(property + " must be set to a Date");
         }
-        return (date == null) ? null : (Date)date;
+        return (date == null) ? null : ((Date)date).getTime();
     }
 
     // --------------------------------------------------------------------------------------------------------------

@@ -9,7 +9,7 @@ package org.haplo.jsinterface.app;
 public interface AppStoredFile {
     public int id();
 
-    public long jsGetCreatedAt();
+    public Long created_at_milliseconds();
 
     public String digest();
 

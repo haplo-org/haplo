@@ -15,7 +15,7 @@
   <li>%%IMG:...%% - URL of the image (in static files) with 'filename'. Current files:</li>
   <ul>
     <%
-      AppStaticFile.find_all_without_data().each do |file|
+      AppStaticFile.select_all_without_data().each do |file|
         ext = (file.filename =~ /(\.\w+)\z/) ? $1 : ''
         %><li>%%IMG:<%= file.id %><%= ext %><%= %>%% (<%= h(file.filename) %>)</li><%
       end

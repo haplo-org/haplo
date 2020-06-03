@@ -19,7 +19,7 @@
       <td><%= h(file.filename) %></td>
       <td><%= h(file.mime_type) %></td>
       <td><%= pathname %></td>
-      <td><a href="<%= pathname %>" target="_new">View</a></td>
+      <td><a href="<%= pathname %>" target="_blank" rel="noopener">View</a></td>
       <td>
         <a class="z__setup_static_files_delete" href="/do/setup/application/delete_file/<%= file.id %>">Delete</a>
     </tr>

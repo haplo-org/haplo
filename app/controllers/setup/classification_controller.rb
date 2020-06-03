@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Setup_ClassificationController < ApplicationController
@@ -58,7 +61,7 @@ class Setup_ClassificationController < ApplicationController
   _GetAndPost
   def handle_new_list
     if request.post?
-      name = params[:name].strip
+      name = params['name'].strip
       if name =~ /\S/
         schema = KObjectStore.schema
 
@@ -92,12 +95,12 @@ class Setup_ClassificationController < ApplicationController
   end
 
   def handle_attr
-    load_attr_info(:id)
+    load_attr_info('id')
   end
 
   def handle_objects
     @schema = KObjectStore.schema
-    @type_objref = KObjRef.from_presentation(params[:id])
+    @type_objref = KObjRef.from_presentation(params['id'])
     @type_desc = @schema.type_descriptor(@type_objref)
 
     @objects = Array.new
@@ -105,18 +108,18 @@ class Setup_ClassificationController < ApplicationController
       @objects << obj_to_array(obj)
     end
 
-    load_attr_info(:attr) if params.has_key?(:attr)
+    load_attr_info('attr') if params.has_key?('attr')
   end
 
   _PostOnly
   def handle_quick_add
-    @type_objref = KObjRef.from_presentation(params[:type])
+    @type_objref = KObjRef.from_presentation(params['type'])
     @type_desc = KObjectStore.schema.type_descriptor(@type_objref)
 
     # Gather titles
-    title = params[:title].strip
+    title = params['title'].strip
     alts = Array.new
-    [:alt0,:alt1,:alt2].each do |k|
+    ['alt0','alt1','alt2'].each do |k|
       if params.has_key?(k)
         v = params[k].strip
         alts << v unless v.empty?
@@ -160,7 +163,7 @@ class Setup_ClassificationController < ApplicationController
 
   _PostOnly
   def handle_delete
-    @objref_to_del = KObjRef.from_presentation(params[:id])
+    @objref_to_del = KObjRef.from_presentation(params['id'])
     @obj = KObjectStore.read(@objref_to_del)
 
     error = nil

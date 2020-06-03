@@ -2,7 +2,7 @@
 
 <h1>Home page</h1>
 
-<% if params.has_key?(:show) %>
+<% if params.has_key?('show'.freeze) %>
 <% unless @elements =~ /\S/ %><p><i>(no elements set for home page)</i></p><% else %>
 <pre>
 <%= h(@elements) %>

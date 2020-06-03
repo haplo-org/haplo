@@ -11,13 +11,13 @@ class EmailTemplatesTest < Test::Unit::TestCase
   # invalid HTML
   def test_invalid_HTML
     t = create_template(:branding_html => "<p>WOOF")
-    t.valid?
-    assert_equal ["is not valid HTML"], t.errors[:branding_html]
+    transfer = EmailTemplate::EditTransfer.new(t)
+    assert_equal ["is not valid HTML"], transfer.errors[:branding_html]
 
     # But skip this check if the branding HTML is a global template which doesn't use any of the built in generation
     t = create_template(:branding_html => "%%USER_HTML_ONLY%%<p>WOOF")
-    t.valid?
-    assert_equal [], t.errors[:branding_html]
+    transfer = EmailTemplate::EditTransfer.new(t)
+    assert_equal [], transfer.errors[:branding_html]
 
     # Check it's tweaked OK so that HTML passes the XML parser
     assert_equal '<img src="x" /><hr /><br /><br /><br /><hr /><p>test</p>', EmailTemplate.tweak_html('<img src="x"><hr><br><br ><br/><hr /><p>test</p>')
@@ -27,19 +27,20 @@ class EmailTemplatesTest < Test::Unit::TestCase
   # unrecognised interpolations
   def test_unrecognised_interpolations
     t = create_template(:header => "Dear %%WOOF%%")
-    t.valid?
-    assert_equal ["contains an invalid interpolation string (WOOF)"], t.errors[:header]
+    transfer = EmailTemplate::EditTransfer.new(t)
+    assert_equal ["contains an invalid interpolation string (WOOF)"], transfer.errors[:header]
   end
 
   # ----------------------------------------------------------------------------------------------------------------
   # Basic sending and conversion
   def test_basic_send
+    db_reset_test_data
     basic_send()
     basic_send(:plain)
     assert EmailTemplate::MAX_PLAIN_EQUIVALENT_LENGTH > (16*1024) # make sure it's a minimum lenght
     basic_send(:plain, EmailTemplate::MAX_PLAIN_EQUIVALENT_LENGTH * 2)
 
-    # Test minimal template works
+    # Test minimal template works sending to string email address
     t = create_template({})
     d_before = EmailTemplate.test_deliveries.size
     t.deliver(
@@ -48,6 +49,16 @@ class EmailTemplatesTest < Test::Unit::TestCase
       :message => '<p>Message</p>'
     )
     assert_equal d_before + 1, EmailTemplate.test_deliveries.size
+    assert_equal ['test@example.com'], EmailTemplate.test_deliveries.last.header.to
+
+    # Test sending to user object
+    t.deliver(
+      :to => User.cache[41],
+      :subject => 'Test Subject',
+      :message => '<p>Message</p>'
+    )
+    assert_equal d_before + 2, EmailTemplate.test_deliveries.size
+    assert_equal [RMail::Address.new('User 1 <user1@example.com>')], EmailTemplate.test_deliveries.last.header.to
   end
 
   def basic_send(format = :html, msg_size = 128, template_spec = {}, &check_body_block)
@@ -291,15 +302,19 @@ __E
   # ----------------------------------------------------------------------------------------------------------------
 
   def create_template(params)
-    t = EmailTemplate.new({
-      :name => "t1",
-      :code => "test:email-template:t1",
-      :description => "d1",
-      :from_email_address => "bob@example.com",
-      :from_name => "Bob",
-      :in_menu => true
-    })
-    t.update_attributes(params)
+    t = EmailTemplate.new
+    t.name = params[:name] || "t1"
+    t.code = params[:code] || "test:email-template:t1"
+    t.description = params[:description] || "d1"
+    t.purpose = params[:purpose]
+    t.from_email_address = params[:from_email_address] || "bob@example.com"
+    t.from_name = params[:from_name] || "Bob"
+    t.extra_css = params[:extra_css]
+    t.branding_plain = params[:branding_plain]
+    t.branding_html = params[:branding_html]
+    t.header = params[:header]
+    t.footer = params[:footer]
+    t.in_menu = params[:in_menu] || true
     t
   end
 

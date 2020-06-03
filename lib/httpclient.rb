@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 KNotificationCentre.when(:server, :starting) do
   KeychainCredential::MODELS.push({
@@ -122,7 +125,7 @@ class KHTTPClientJob < KJob
     # Authentication
     if @request_settings.has_key?("auth")
       name = @request_settings["auth"]
-      credential = KeychainCredential.find(:first, :conditions => {:kind => 'HTTP', :name => name}, :order => :id)
+      credential = KeychainCredential.where(:kind => 'HTTP', :name => name).order(:id).first()
       if credential
         if credential.instance_kind != "Basic"
           raise JavaScriptAPIError, "Can't attempt HTTP authentication with a login of kind '#{credential.instance_kind}'"
@@ -138,7 +141,7 @@ class KHTTPClientJob < KJob
     # Client certificate
     if @request_settings.has_key?("clientCertificate")
       name = @request_settings["clientCertificate"]
-      credential = KeychainCredential.find(:first, :conditions => {:kind => 'X.509', :instance_kind => 'Certificate and Key', :name => name}, :order => :id)
+      credential = KeychainCredential.where(:kind => 'X.509', :instance_kind => 'Certificate and Key', :name => name).order(:id).first()
       unless credential
         raise JavaScriptAPIError, "Can't find an X.509 Certificate and Key called '#{name}'"
       end

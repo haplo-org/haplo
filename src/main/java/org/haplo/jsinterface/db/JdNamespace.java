@@ -6,6 +6,7 @@
 
 package org.haplo.jsinterface.db;
 
+import org.haplo.framework.Database;
 import org.haplo.javascript.Runtime;
 import org.haplo.javascript.OAPIException;
 import org.haplo.javascript.JsGet;
@@ -81,7 +82,10 @@ public class JdNamespace extends KScriptable {
         JdDynamicTable table = (JdDynamicTable)Runtime.createHostObjectInCurrentRuntime("$DbDynamicTable", name, fields, methods);
         table.setNamespace(this);
         try {
-            table.setupStorage(Runtime.currentRuntimeHost().getSupportRoot().getJdbcConnection());
+            Database.withConnection((db) -> {
+                table.setupStorage(db);
+                return null;
+            });
         } catch(java.sql.SQLException e) {
             throw new OAPIException("Couldn't setup SQL storage: " + e.getMessage(), e);
         }
@@ -90,13 +94,13 @@ public class JdNamespace extends KScriptable {
 
     public void setupStorage() {
         try {
-            // Get the database
-            Connection db = Runtime.currentRuntimeHost().getSupportRoot().getJdbcConnection();
-
-            // Ask each table to make sure it's created
-            for(JdTable table : tables) {
-                table.setupStorage(db);
-            }
+            Database.withConnection((db) -> {
+                // Ask each table to make sure it's created
+                for(JdTable table : tables) {
+                    table.setupStorage(db);
+                }
+                return null;
+            });
         } catch(java.sql.SQLException e) {
             throw new RuntimeException("Couldn't setup SQL storage: " + e.getMessage(), e);
         }

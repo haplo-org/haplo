@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2017    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class Admin_RelabelController < ApplicationController
@@ -12,10 +15,10 @@ class Admin_RelabelController < ApplicationController
 
   _GetAndPost
   def handle_object
-    @objref = KObjRef.from_presentation(params[:id])
+    @objref = KObjRef.from_presentation(params['id'])
     @obj = KObjectStore.read(@objref)
     if request.post?
-      new_labels = params[:labels].split(',').map { |r| KObjRef.from_presentation(r) } .compact
+      new_labels = params['labels'].split(',').map { |r| KObjRef.from_presentation(r) } .compact
       changes = KLabelChanges.new(
         new_labels,
         KLabelChanges.new([], new_labels).change(@obj.labels)

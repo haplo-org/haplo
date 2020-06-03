@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Trusted plugins are implemented in Ruby.
@@ -27,9 +30,20 @@ class KTrustedPlugin < KPlugin
   # Plugin implementation
 
   def initialize
-    @_name = self.class.name.gsub(/Plugin\z/,'').underscore.freeze
+    @_name = plugin_name_from_ruby_class_name()
     @_plugin_display_name = (self.class.annotation_get_class(:plugin_display_name) || "UNKNOWN").dup.freeze
     @_plugin_description = (self.class.annotation_get_class(:plugin_description) || "UNKNOWN").dup.freeze
+  end
+
+  def plugin_name_from_ruby_class_name
+    n = self.class.name.dup
+    n.gsub!(/Plugin\z/,'')
+    n.gsub!(/::/, '/')
+    n.gsub!(/([A-Z]+)([A-Z][a-z])/,'\1_\2')
+    n.gsub!(/([a-z\d])([A-Z])/,'\1_\2')
+    n.tr!("-", "_")
+    n.downcase!
+    n.freeze
   end
 
   def name

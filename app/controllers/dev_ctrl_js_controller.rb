@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # A development only controller for making controller specific JavaScript files available.
@@ -13,8 +16,8 @@ class DevCtrlJSController < ApplicationController
   policies_required nil
 
   def handle_js
-    path = params[:p]
-    file = params[:f]
+    path = params['p']
+    file = params['f']
     # Verify the path and filename parameters look OK
     raise "Bad args" unless path =~ /\A[a-z_\/]+\z/
     raise "Bad args" unless file =~ /\A[a-z_]+\z/
@@ -25,7 +28,7 @@ class DevCtrlJSController < ApplicationController
   def handle_browser_text
     set_response_validity_time(3600*12)
     render :text => KLocale.browser_text_lookup_to_js(
-      (KLocale::ID_TO_LOCALE[params[:id]] || KLocale::DEFAULT_LOCALE).text_lookup_for_browser(KLocale::DEFAULT_LOCALE)
+      (KLocale::ID_TO_LOCALE[params['id']] || KLocale::DEFAULT_LOCALE).text_lookup_for_browser(KLocale::DEFAULT_LOCALE)
     ), :kind => :javascript
   end
 

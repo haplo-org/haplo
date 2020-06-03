@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 module ExportObjectsHelper
@@ -18,12 +21,12 @@ module ExportObjectsHelper
     if request.post?
       objects = yield
 
-      output_form = EXPORT_OUTPUTS[params[:output_form]]
+      output_form = EXPORT_OUTPUTS[params['output_form']]
       attrs = (output_form == nil) ? nil : output_form[1]
-      include_urls = (params[:urls] == '1')
+      include_urls = (params['urls'] == '1')
       exporter = KTableExporter.new(attrs, include_urls)
 
-      output_format = params[:output_format]
+      output_format = params['output_format']
       exported = exporter.export(objects, output_format)
       # output_format now known to be valid
       response.headers["Content-Disposition"] = "attachment; filename=export.#{output_format}"

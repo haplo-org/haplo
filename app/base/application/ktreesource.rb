@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 # Javascript definition generator for KTreeSource javascript class
@@ -116,11 +119,11 @@ class ApplicationController
   # ----------------------------------------------------------------
   # For controllers implementing fetch_api
   def ktreesource_fetch_api_implementation(include_types = false)
-    if params.has_key?(:q)
+    if params.has_key?('q')
       # Search query
       return ktreesource_fetch_api_implementation_search(include_types)
     end
-    children_for = params[:children_for]
+    children_for = params['children_for']
     objref = nil
     parent = nil
     children = Array.new
@@ -173,11 +176,11 @@ class ApplicationController
   end
 
   def ktreesource_fetch_api_implementation_search(include_types = false)
-    text = params[:q].strip.split(/\s+/).map { |e| e + '*' } .join(' ')
+    text = params['q'].strip.split(/\s+/).map { |e| e + '*' } .join(' ')
     results = []
-    if text.length > 0 && text =~ /\S/ && params.has_key?(:roots)
+    if text.length > 0 && text =~ /\S/ && params.has_key?('roots')
       # TODO: Handle TYPES in the roots of search lookups
-      roots = params[:roots].split(',').map { |r| KObjRef.from_presentation(r) }.compact
+      roots = params['roots'].split(',').map { |r| KObjRef.from_presentation(r) }.compact
       unless roots.empty?
         # Build query
         query = KObjectStore.query_and

@@ -60,10 +60,6 @@
     font-weight: bold;
     width: 90%;
 }
-.z__recent_entry_date {
-    font-style: italic;
-    color: $C_TEXT_GREY_DARK;
-}
 .z__recent_entry_contents {
     margin: 2px 0 0 32px;
 }

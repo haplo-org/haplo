@@ -1,21 +1,20 @@
-<%= form_error_messages_for(@user) %>
+<%= form_error_messages_for(@transfer) %>
 
 <form method="POST" action="<%= data_for_template[:form_url] %>"><%= form_csrf_token %>
-<% f = form_for(@user, :user) %>
-  <% if params.has_key?(:kind) %><input type="hidden" name="kind" value="<%= h(params[:kind]) %>"><% end %>
+<% f = form_for(@transfer, :user) %>
+  <% if params.has_key?('kind'.freeze) %><input type="hidden" name="kind" value="<%= h(params['kind'.freeze]) %>"><% end %>
   <% unless @hide_main -%>
   <% if @user.kind.to_i != User::KIND_USER -%>
-    <p>Name<br><%= f.text_field 'name' %></p>
-    <%= code_value_edit_ui(@user.code, 'user[code]') %>
-    <p>Notification email address <i>(optional)</i><br><%= f.text_field 'email', 'size="30"' %></p>
+    <p>Name<br><%= f.text_field :name %></p>
+    <%= code_value_edit_ui(@transfer.read_attribute(:code), 'user[code]') %>
+    <p>Notification email address <i>(optional)</i><br><%= f.text_field :email, 'size="30"' %></p>
   <% else -%>
-    <p>First name<br><%= f.text_field 'name_first', 'size="14"' %></p>
-    <p>Last name<br><%= f.text_field 'name_last', 'size="14"' %></p>
-    <p>Email address<br><%= f.text_field 'email', 'size="30"' %></p>
+    <p>First name<br><%= f.text_field :name_first, 'size="14"' %></p>
+    <p>Last name<br><%= f.text_field :name_last, 'size="14"' %></p>
+    <p>Email address<br><%= f.text_field :email, 'size="30"' %></p>
     <%
       if @is_new_user
-        templates = EmailTemplate.find(:all, :select => 'id,name',
-            :conditions => "purpose='New user welcome' AND in_menu", :order => 'name')
+        templates = EmailTemplate.where(:purpose => 'New user welcome', :in_menu => true).order(:name).select()
         client_side_resources(:basics)
 
         unless @no_template_choice
@@ -37,8 +36,7 @@
   <% unless @hide_main %><h2>Group membership</h2><% end -%>
   <%
     direct_groups = @user.direct_groups_ids
-    all_groups = User.find_all_by_kind(User::KIND_GROUP)
-    all_groups.each do |group|
+    User.where(:kind => User::KIND_GROUP).order(:lower_name).each do |group|
       # NOT ANONYMOUS AND EVERYONE
       gid = group.id
       case gid; when User::GROUP_EVERYONE, @user.id; else

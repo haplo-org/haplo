@@ -57,7 +57,7 @@ class SchemaRequirementsTest < Test::Unit::TestCase
   # ---------------------------------------------------------------------------------------------------------------
 
   class TestGroup < Struct.new(:code, :name)
-    def save!; @save_called = true; end
+    def save; @save_called = true; end
     attr_reader :save_called
   end
 
@@ -209,7 +209,7 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     group_two.kind = User::KIND_GROUP_DISABLED
     group_two.name = 'Group 2'
     group_two.code = 'test:group:test-group-two'
-    group_two.save!
+    group_two.save
 
     # Pre-existing archived objects should be found, and not recreated
     subject_for_notes = KObject.new([O_LABEL_ARCHIVED])
@@ -228,17 +228,17 @@ class SchemaRequirementsTest < Test::Unit::TestCase
         [4, 'obj', '8000', 'Hello there!']
       ]))
 
-    EmailTemplate.where(:code => 'test:email-template:test-remove').destroy_all
-    EmailTemplate.new({
-      :name => 'Test remove',
-      :code => 'test:email-template:test-remove',
-      :description => 'Description',
-      :purpose => 'Generic',
-      :in_menu => false,
-      :from_name => 'Test',
-      :from_email_address => 'test@example.com',
-      :header => 'INITIAL_VALUE'
-    }).save!
+    EmailTemplate.where(:code => 'test:email-template:test-remove').delete()
+    et0 = EmailTemplate.new
+    et0.name = 'Test remove'
+    et0.code = 'test:email-template:test-remove'
+    et0.description = 'Description'
+    et0.purpose = 'Generic'
+    et0.in_menu = false
+    et0.from_name = 'Test'
+    et0.from_email_address = 'test@example.com'
+    et0.header = 'INITIAL_VALUE'
+    et0.save
 
     assert nil != KObjectStore.read(O_TYPE_STAFF) # check standard sub-type exists for check in requirements below
 
@@ -436,11 +436,11 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     assert aliased_attr_desc != nil
     assert_equal 'Aliased 1', aliased_attr_desc.printable_name.to_s
     # Check group & service user creation
-    test_group = User.find(:first, :conditions => {:kind => User::KIND_GROUP, :code => 'test:group:test-group'})
-    test_service_user = User.find(:first, :conditions => {:kind => User::KIND_SERVICE_USER, :code => 'test:service-user:one'})
+    test_group = User.where(:kind => User::KIND_GROUP, :code => 'test:group:test-group').first()
+    test_service_user = User.where(:kind => User::KIND_SERVICE_USER, :code => 'test:service-user:one').first()
     assert test_group != nil
     assert_equal "Test Group", test_group.name
-    group_two_post_apply = User.find(:first, :conditions => {:code => 'test:group:test-group-two'})
+    group_two_post_apply = User.where(:code => 'test:group:test-group-two').first()
     assert_equal group_two.id, group_two_post_apply.id
     assert_equal "Group 2", group_two_post_apply.name
     assert_equal [test_group.id, test_service_user.id].sort, group_two_post_apply.direct_member_ids.sort
@@ -486,7 +486,7 @@ class SchemaRequirementsTest < Test::Unit::TestCase
         [4, 'plugin', 'test:nav:two_entry']
       ], YAML::load(KApp.global(:navigation))
     # Email templates
-    new_email_template = EmailTemplate.find(:first, :conditions => {:code => 'test:email-template:test'})
+    new_email_template = EmailTemplate.where(:code => 'test:email-template:test').first()
     assert_equal 'Test template', new_email_template.name
     assert_equal 'Template description', new_email_template.description
     assert_equal 'New user welcome', new_email_template.purpose
@@ -495,10 +495,10 @@ class SchemaRequirementsTest < Test::Unit::TestCase
     assert_equal 'HTML branding', new_email_template.branding_html
     assert_equal 'Header', new_email_template.header
     assert_equal 'Footer', new_email_template.footer
-    generic_template = EmailTemplate.find(EmailTemplate::ID_DEFAULT_TEMPLATE)
+    generic_template = EmailTemplate.read(EmailTemplate::ID_DEFAULT_TEMPLATE)
     assert_equal 'p { extra:css }', generic_template.extra_css
     assert generic_template.header != 'Header not replaced'
-    modified_email_template = EmailTemplate.find(:first, :conditions => {:code => 'test:email-template:test-remove'})
+    modified_email_template = EmailTemplate.where(:code => 'test:email-template:test-remove').first()
     assert_equal nil, modified_email_template.header  # should be removed
     # OPTIONAL objects
     # option1 was created, and got the title from the OPTIONAL declaraction because sort order overrides it

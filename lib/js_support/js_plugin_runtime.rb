@@ -1,8 +1,11 @@
-# Haplo Platform                                     http://haplo.org
-# (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+# frozen_string_literal: true
+
+# Haplo Platform                                    https://haplo.org
+# (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
 
 
 class KJSPluginRuntime
@@ -87,7 +90,7 @@ class KJSPluginRuntime
       @runtime.useOnThisThread(@support_root)
       begin
         unless @plugins_loaded
-          ms = Benchmark.ms do
+          ms = KApp.execution_time_ms do
             # Quick check that nothing has been loaded into this runtime yet
             unless 0 == @runtime.host.getNumberOfPluginsRegistered()
               raise "Runtime in bad state - already has plugins registered."

@@ -18,7 +18,7 @@ class Test::Unit::TestCase
       body = request.body
       params.merge!(Utils.parse_nested_query(body)) unless body.empty?
     end
-    exchange.params = HashWithIndifferentAccess.new(params)
+    exchange.params = params
     @_controller = ApplicationController.make_background_controller(user, exchange)
     context = KFramework::RequestHandlingContext.new(@_controller, exchange)
     Thread.current[:_frm_request_context] = context

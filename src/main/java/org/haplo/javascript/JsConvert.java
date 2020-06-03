@@ -6,6 +6,8 @@
 
 package org.haplo.javascript;
 
+import org.jruby.runtime.builtin.IRubyObject;
+
 import org.mozilla.javascript.*;
 
 import java.util.Date;
@@ -47,7 +49,13 @@ public class JsConvert {
     private static Class nativeDateClass;
 
 
-    public static Object convertJavaDateToRuby(Date dateObject) {
+    public static Scriptable millisecondsToJsDate(Long ms) {
+        if(ms == null) { return null; }
+        return Runtime.createHostObjectInCurrentRuntime("Date", ms);
+    }
+
+
+    public static IRubyObject convertJavaDateToRuby(Date dateObject) {
         return rubyInterface.convertJavaDateToRuby(dateObject);
     }
 
@@ -63,7 +71,8 @@ public class JsConvert {
     // --------------------------------------------------------------------------------------------------------------
     // Interface to Ruby functions
     public interface Ruby {
-        public Object convertJavaDateToRuby(Object value);
+        // Return value is IRubyObject so JRuby doesn't convert Time to java.util.Date
+        public IRubyObject convertJavaDateToRuby(Object value);
     }
     private static Ruby rubyInterface;
 

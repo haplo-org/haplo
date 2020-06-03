@@ -23,29 +23,29 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
   end
 
   def test_messagebus_loopback_keychain
-    KeychainCredential.delete_all
-    KeychainCredential.new({
+    delete_all KeychainCredential
+    keychain_credential_create(
       :kind => 'Message Bus', :instance_kind => 'Loopback', :name => 'Test Message Bus',
       :account_json => '{"API code":"test:loopback:from_keychain"}', :secret_json => '{}'
-    }).save!
+      )
     install_grant_privileges_plugin_with_privileges('pMessageBusRemote')
     begin
       run_javascript_test(:file, 'unit/javascript/javascript_messagebus/test_messagebus_loopback_keychain.js', nil, "grant_privileges_plugin")
     ensure
       uninstall_grant_privileges_plugin
-      KeychainCredential.delete_all
+      delete_all KeychainCredential
     end
   end
 
   def test_messagebus_interapp_single_app
-    KeychainCredential.delete_all
-    bus = KeychainCredential.new({
+    delete_all KeychainCredential
+    bus = keychain_credential_create(
       :kind => 'Message Bus', :instance_kind => 'Inter-application', :name => 'Test Inter App Bus',
       # Include the app ID in the name of the bus, otherwise tests run in parallel will interfere with each other
       :account_json => %Q!{"Bus":"https://example.org/name/#{_TEST_APP_ID}"}!,
       :secret_json => '{"Secret":"secret1234"}'
-    })
-    bus.save!
+      )
+    bus.save
     install_grant_privileges_plugin_with_privileges('pMessageBusRemote')
     assert KPlugin.install_plugin('messagebus_test1')
     # Check platform bus configuration
@@ -69,7 +69,7 @@ class JavascriptRuntimeTest < Test::Unit::TestCase
     ensure
       uninstall_grant_privileges_plugin
       KPlugin.uninstall_plugin('messagebus_test1')
-      KeychainCredential.delete_all
+      delete_all KeychainCredential
     end
   end
 
@@ -102,7 +102,7 @@ _
 
   def test_messagebus_amazonkinesis
     return unless KINESIS_CREDENTIALS
-    KeychainCredential.delete_all
+    delete_all KeychainCredential
     ks_account = {
       "Kinesis Stream Name" => KINESIS_CREDENTIALS['kinesis']['stream'],
       "Kinesis Stream Partition Key" => 'partition1',
@@ -110,10 +110,10 @@ _
       "AWS Access Key ID" => KINESIS_CREDENTIALS['aws']['id']
     }
     ks_secret = { "AWS Access Key Secret" => KINESIS_CREDENTIALS['aws']['secret'] }
-    KeychainCredential.new({
+    keychain_credential_create(
       :kind => 'Message Bus', :instance_kind => 'Amazon Kinesis Stream', :name => 'test-kinesis',
       :account_json => ks_account.to_json, :secret_json => ks_secret.to_json
-    }).save!
+    )
     assert KPlugin.install_plugin('messagebus_test_kinesis')
     install_grant_privileges_plugin_with_privileges('pMessageBusRemote')
     begin
@@ -130,7 +130,7 @@ _
     ensure
       uninstall_grant_privileges_plugin
       KPlugin.uninstall_plugin('messagebus_test_kinesis')
-      KeychainCredential.delete_all
+      delete_all KeychainCredential
     end
   end
 
@@ -164,7 +164,7 @@ _
 
   def test_messagebus_amazonsqs
     return unless SQS_CREDENTIALS
-    KeychainCredential.delete_all
+    delete_all KeychainCredential
     ks_account = {
       "SQS Queue Name" => SQS_CREDENTIALS['sqs']['queue'],
       "AWS Region" => SQS_CREDENTIALS['sqs']['region'],
@@ -172,10 +172,10 @@ _
       "AWS Assume Role" => SQS_CREDENTIALS['aws']['assumeRole'] || ''
     }
     ks_secret = { "AWS Access Key Secret" => SQS_CREDENTIALS['aws']['secret'] }
-    KeychainCredential.new({
+    keychain_credential_create(
       :kind => 'Message Bus', :instance_kind => 'Amazon SQS Queue', :name => 'test-sqs',
       :account_json => ks_account.to_json, :secret_json => ks_secret.to_json
-    }).save!
+    )
     assert KPlugin.install_plugin('messagebus_test_sqs')
     install_grant_privileges_plugin_with_privileges('pMessageBusRemote')
     begin
@@ -192,7 +192,7 @@ _
     ensure
       uninstall_grant_privileges_plugin
       KPlugin.uninstall_plugin('messagebus_test_sqs')
-      KeychainCredential.delete_all
+      delete_all KeychainCredential
     end
   end
 
@@ -226,7 +226,7 @@ _
 
   def test_messagebus_amazonsns
     return unless SNS_CREDENTIALS
-    KeychainCredential.delete_all
+    delete_all KeychainCredential
     ks_account = {
       "SNS Topic ARN" => SNS_CREDENTIALS['sns']['topic'],
       "AWS Region" => SNS_CREDENTIALS['sns']['region'],
@@ -234,10 +234,10 @@ _
       "AWS Assume Role" => SNS_CREDENTIALS['aws']['assumeRole'] || ''
     }
     ks_secret = { "AWS Access Key Secret" => SNS_CREDENTIALS['aws']['secret'] }
-    KeychainCredential.new({
+    keychain_credential_create(
       :kind => 'Message Bus', :instance_kind => 'Amazon SNS Topic', :name => 'test-sns',
       :account_json => ks_account.to_json, :secret_json => ks_secret.to_json
-    }).save!
+    )
     assert KPlugin.install_plugin('messagebus_test_sns')
     install_grant_privileges_plugin_with_privileges('pMessageBusRemote')
     begin
@@ -254,7 +254,7 @@ _
     ensure
       uninstall_grant_privileges_plugin
       KPlugin.uninstall_plugin('messagebus_test_sns')
-      KeychainCredential.delete_all
+      delete_all KeychainCredential
     end
   end
 

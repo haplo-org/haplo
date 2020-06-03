@@ -1,4 +1,3 @@
-# coding: utf-8
 
 # Haplo Platform                                    https://haplo.org
 # (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com

@@ -12,6 +12,6 @@
 <p><img src="/images/hardware-otp.png" width="113" height="30"></p>
 
 <form method="POST"><%= form_csrf_token %>
-  <p><input id="password" name="password" autocomplete="one-time-code" size="20" type="password" class="z__focus_candidate"></p>
+  <p><input id="otp_auth_temp" name="otp_auth_temp" autocomplete="one-time-code" size="20" type="password" class="z__focus_candidate"></p>
   <p><input type="submit" value="Create temporary code for <%= h(@user.name) %>"></p>
 </form>

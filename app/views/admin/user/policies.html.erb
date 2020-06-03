@@ -4,7 +4,7 @@
 
 <%= sys_mng_header %>
 
-<form method="post" action="/do/admin/user/policies/<%= h(params[:id]) %>"><%= form_csrf_token %>
+<form method="post" action="/do/admin/user/policies/<%= h(params['id'.freeze]) %>"><%= form_csrf_token %>
 
 <table class="z__mng_permission_display">
   <tr><td></td><td class="z__mng_permission_allow">Allow</td><td class="z__mng_permission_deny">Deny</td></tr>
