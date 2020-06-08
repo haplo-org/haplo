@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.WeakHashMap;
+import java.util.ArrayList;
 
 /**
  * Main Javascript host object for Haplo
@@ -37,6 +38,7 @@ public class KHost extends KScriptable {
     private TemplatePlatformFunctions templatePlatformFunctions;
     private String userTimeZone;
     private LinkedHashMap<String, Scriptable> plugins; // use LinkedHashMap so iterator is plugin load order
+    private HashMap<String, PluginHookCallCacheEntry[]> pluginHookCallCache;
     private String nextPluginToBeRegistered;
     private boolean nextPluginToBeRegisteredUsesDatabase;
     private String nextPluginDatabaseNamespace;
@@ -160,8 +162,51 @@ public class KHost extends KScriptable {
         Runtime.getCurrentRuntime().callSharedScopeJSClassFunction("$Plugin", "$callOnInstall", new Object[]{});
     }
 
-    public void callHookInAllPlugins(Object[] args) {
-        Runtime.getCurrentRuntime().callSharedScopeJSClassFunction("$Plugin", "$callAllHooks", args);
+    // Calling hooks in plugins needs to be a fast because it's in the hot path for
+    // some applications. Cache the plugins which respond and their functions to
+    // minimise lookups.
+    public void callHookInAllPlugins(String hookName, Object[] args) {
+        // Setup with runtime & hook information
+        Runtime runtime = Runtime.getCurrentRuntime();
+        Context context = runtime.getContext();
+        Scriptable scope = runtime.getJavaScriptScope();
+        if(args.length < 1 || !(args[0] instanceof KPluginResponse)) {
+            throw new RuntimeException("Bad use of callHookInAllPlugins(), first element of args must be a KPluginResponse");
+        }
+        KPluginResponse response = (KPluginResponse)args[0];
+
+        // Cached list of plugins which response to this hook
+        if(this.pluginHookCallCache == null) {
+            this.pluginHookCallCache = new HashMap<String, PluginHookCallCacheEntry[]>(32);
+        }
+        PluginHookCallCacheEntry[] pluginsWithThisHook = this.pluginHookCallCache.get(hookName);
+        if(pluginsWithThisHook == null) {
+            ArrayList<PluginHookCallCacheEntry> hookCalls = new ArrayList<PluginHookCallCacheEntry>(16);
+            for(Scriptable plugin : this.plugins.values()) {
+                Object hookFn = plugin.get(hookName, plugin); // ConsString is checked
+                if(hookFn instanceof Callable) {
+                    PluginHookCallCacheEntry p = new PluginHookCallCacheEntry();
+                    p.plugin = plugin;
+                    p.hookFn = (Callable)hookFn;
+                    hookCalls.add(p);
+                }
+            }
+            pluginsWithThisHook = hookCalls.toArray(new PluginHookCallCacheEntry[hookCalls.size()]);
+            this.pluginHookCallCache.put(hookName, pluginsWithThisHook);
+        }
+
+        // Call all the hooks using the cached entry
+        for(PluginHookCallCacheEntry p : pluginsWithThisHook) {
+            p.hookFn.call(context, scope, p.plugin, args);
+            if(response.jsFunction_shouldStopChain()) {
+                break;
+            }
+        }
+    }
+
+    private static class PluginHookCallCacheEntry {
+        public Scriptable plugin;
+        public Callable hookFn;
     }
 
     public void setupDatabaseStorage(String pluginName) {

@@ -21,6 +21,7 @@ class JavascriptTemplateTest < Test::Unit::TestCase
     obj.add_attr(O_TYPE_BOOK, A_TYPE)
     obj.add_attr("Test book<", A_TITLE)
     obj.add_attr("TB&", A_TITLE)
+    obj.add_attr(KDateTime.new("2011 10 10", "2011 10 08"), 8888);
     KObjectStore.create(obj)
     with_request(nil, User.cache[User::USER_SYSTEM]) do
       run_javascript_test(:file, 'unit/javascript/javascript_template/test_platform_template_functions.js', {

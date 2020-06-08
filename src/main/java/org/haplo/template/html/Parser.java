@@ -267,6 +267,8 @@ final public class Parser {
             case "unsafeAttributeValue": return new NodeFunctionUnsafeAttributeValue();
             case "yield":       return new NodeFunctionYield(Node.BLOCK_ANONYMOUS);
             case "ifHasBlock":  return new NodeFunctionConditionalHasBlock(Node.BLOCK_ANONYMOUS);
+            case "ifContent":   return new NodeFunctionIfContent();
+            case "markContent": return new NodeFunctionMarkContent();
             default: break;
         }
         if(functionName.startsWith("i:")) {

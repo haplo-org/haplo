@@ -42,6 +42,8 @@ TEST(function() {
         TEST.assert_exceptions(function() { o5.ref.load(); }, new RegExp(message));
         message = "Operation read not permitted for object " + o100.ref.toString() + " with labels \\[[\\d,]+\\]";
         TEST.assert_exceptions(function() { o100.ref.load(); }, new RegExp(message));
+        // Object title via ref returns null, rather than exceptions
+        TEST.assert_equal(null, o5.ref.loadObjectTitleMaybe());
 
         $host._testCallback("allow create " + LABEL["std:label:common"]);
 

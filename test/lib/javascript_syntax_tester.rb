@@ -6,7 +6,7 @@
 
 
 require 'java'
-require 'framework/haplo.jar'
+require './framework/haplo.jar'
 
 require 'rubygems'
 gem 'json'

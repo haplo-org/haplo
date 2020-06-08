@@ -32,7 +32,7 @@ private
 
   # Check redirect is an internal path (and doesn't start with // which is an protocol relative URL)
   # Match regexp in framework.js
-  SAFE_REDIRECT_URL_PATH = /\A\/[a-zA-Z0-9]\S*\z/ # match regexp in framework.js
+  SAFE_REDIRECT_URL_PATH = /\A\/([a-zA-Z0-9]\S*)?\z/ # match regexp in framework.js
 
   SAFE_EXPLICIT_EXTERNAL_URL = /\Ahttps:\/\/[a-zA-Z0-9][a-zA-Z0-9-]*\.[a-zA-Z0-9]/i
 

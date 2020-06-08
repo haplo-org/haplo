@@ -207,9 +207,9 @@ class KJSPluginRuntime
   end
   alias kapp_cache_invalidated kapp_cache_checkin
 
-  def call_all_hooks(args)
+  def call_all_hooks(hook_name, args)
     using_runtime do
-      @runtime.host.callHookInAllPlugins(args)
+      @runtime.host.callHookInAllPlugins(hook_name, args)
     end
   end
 

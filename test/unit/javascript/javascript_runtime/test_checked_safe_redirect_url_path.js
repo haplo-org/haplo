@@ -9,7 +9,9 @@ TEST(function() {
 
     TEST.assert_equal("/do/path", O.checkedSafeRedirectURLPath("/do/path"));
     TEST.assert_equal("/do/path?a=b&c=d&x=%20hello", O.checkedSafeRedirectURLPath("/do/path?a=b&c=d&x=%20hello"));
+    TEST.assert_equal("/", O.checkedSafeRedirectURLPath("/"));
     TEST.assert_equal(null, O.checkedSafeRedirectURLPath("do/path"));
+    TEST.assert_equal(null, O.checkedSafeRedirectURLPath("do/path/"));
     TEST.assert_equal(null, O.checkedSafeRedirectURLPath("//example.org/do/path"));
     TEST.assert_equal(null, O.checkedSafeRedirectURLPath("/\\example.org/do/path")); // exploit browser flexibility
     TEST.assert_equal(null, O.checkedSafeRedirectURLPath("\\\\example.org/do/path"));

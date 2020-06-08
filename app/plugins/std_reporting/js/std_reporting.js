@@ -504,10 +504,11 @@ FactUpdater.prototype._updateFactsWithAdditionalKeys = function(object) {
             q.where(factName,"=",keys[factName]);
         });
         var existingRow = q.length ? q[0] : undefined;
-        if(updater._conditionalUpdateOfRow(row, existingRow)) {
+        var changesInRow = updater._conditionalUpdateOfRow(row, existingRow);
+        if(changesInRow) {
             changes = true;
         }
-        currentRowIds.push((existingRow && !changes) ? existingRow.id : row.id);
+        currentRowIds.push((existingRow && !changesInRow) ? existingRow.id : row.id);
     });
 
     // Invalidate any rows that weren't updated or created.

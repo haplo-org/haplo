@@ -27,6 +27,18 @@ module JSObjRefSupport
     objref ? objref.obj_id : nil
   end
 
+  def self.loadObjectTitleMaybe(objId)
+    object = nil
+    begin
+      object = KObjectStore.read(KObjRef.new(objId))
+    rescue KObjectStore::PermissionDenied => e
+      nil # ignore and just return nil if the object isn't readable
+    end
+    return nil if object.nil?
+    title = object.first_attr(KConstants::A_TITLE)
+    title.kind_of?(KText) ? title.to_plain_text : title.to_s
+  end
+
 end
 
 Java::OrgHaploJsinterface::KObjRef.setRubyInterface(JSObjRefSupport)

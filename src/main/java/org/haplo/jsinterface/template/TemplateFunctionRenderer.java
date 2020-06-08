@@ -28,6 +28,7 @@ import org.mozilla.javascript.EvaluatorException;
 
 import java.util.regex.Pattern;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.TimeZone;
 import java.util.Date;
 import java.text.SimpleDateFormat;
@@ -49,6 +50,8 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
             case "std:text:paragraph": std_text_paragraph(builder, b); break;
             case "std:text:document": std_text_document(builder, b); break;
             case "std:text:document:widgets": std_text_document_widgets(builder, b); break;
+            case "std:text:object-value": std_text_object_value(builder, b); break;
+            case "std:text:list:readable": std_text_list_readable(builder, b); break;
 
             case "std:date":            std_date(builder, b, true,  0); break;
             case "std:date:long":       std_date(builder, b, true,  1); break;
@@ -97,6 +100,11 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
             // Needs to be implemented by platform as plugin may not be installed.
             // No std: prefix to match if() template function.
             case "ifRenderingForWebPublisher": ifRenderingForWebPublisher(builder, b); break;
+
+            // Template functions for very specific optimisations
+            case "__OPTIMISE__:text:object-first-value:desc-int-as-string":
+                optimise_text_object_first_value_desc_in_as_string(builder, b);
+                break;
 
             default:
                 handled = false;
@@ -168,6 +176,77 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
     public void std_text_document_widgets(StringBuilder builder, FunctionBinding b) throws RenderException {
         String document = b.nextUnescapedStringArgument(ArgumentRequirement.REQUIRED);
         builder.append(inTextContext(b).stdtmpl_document_text_display(document));
+    }
+
+    public void std_text_object_value(StringBuilder builder, FunctionBinding b) throws RenderException {
+        Object value = b.nextViewObjectArgument(ArgumentRequirement.REQUIRED);
+        appendObjectValue(builder, b, value);
+    }
+
+    public void optimise_text_object_first_value_desc_in_as_string(StringBuilder builder, FunctionBinding b) throws RenderException {
+        KObject o = jsObjectArg(b);
+        String descAsString = b.nextLiteralStringArgument(ArgumentRequirement.REQUIRED);
+        int desc = Integer.valueOf(descAsString);
+        appendObjectValue(builder, b, o.jsFunction_first(desc, null));
+    }
+
+    private void appendObjectValue(StringBuilder builder, FunctionBinding b, Object value) {
+        // TODO: Consider delegating this to the web publisher if that's currently rendering things
+        if((value == null) || (value instanceof org.mozilla.javascript.Undefined)) {
+            return;
+        }
+        String string = null;
+        if(value instanceof KObject) {
+            string = ((KObject)value).jsGet_title();
+        } else if(value instanceof KObjRef) {
+            string = ((KObjRef)value).jsFunction_loadObjectTitleMaybe();
+        } else if(value instanceof KText) {
+            string = ((KText)value).jsFunction_toString(null);
+        } else {
+            Object converted = KObject.jsToAttr(value);
+            if(converted != null) {
+                // Converted is a RubyObject or a small number of Java types.
+                // toString() on a RubyObject calls to_s(), and is correct behaviour on Java type.
+                string = converted.toString();
+            }
+        }
+        if(string != null) {
+            Escape.escape(string, builder, b.getContext());
+        }
+    }
+
+    public void std_text_list_readable(StringBuilder builder, FunctionBinding b) throws RenderException {
+        Object list = b.nextViewObjectArgument(ArgumentRequirement.REQUIRED);
+        // TODO I18N: Require second arg is a default style so it can be localised properly later without breaking existing uses.
+        String style = b.nextLiteralStringArgument(ArgumentRequirement.REQUIRED);
+        if(!"en:default".equals(style)) {
+            throw new OAPIException("Second argument to std:text:list:readable() must be \"en:default\"");
+        }
+        Node block = b.getFunction().getBlock(Node.BLOCK_ANONYMOUS);
+        if(block == null) {
+            throw new OAPIException("std:text:list:readable() must have an anonymous block");
+        }
+        // Render all the list elements to an array, only including them when they render something
+        ArrayList<StringBuilder> entries = new ArrayList<StringBuilder>(16);
+        Driver driver = b.getDriver();
+        Context context = b.getContext();
+        driver.iterateOverValueAsArray(list, (value) -> {
+            StringBuilder valueBuilder = new StringBuilder(64); // not expecting long list entry names
+            block.render(valueBuilder, driver, value, context);
+            if(0 != valueBuilder.length()) {
+                entries.add(valueBuilder);
+            }
+        });
+        // Output them with the various separators: X, Y, Z and Q
+        int length = entries.size();
+        for(int l = 0; l < length; ++l) {
+            builder.append(entries.get(l));
+            if(l < (length - 2)) {
+                builder.append(", ");
+            } else if(l == (length - 2)) {
+                builder.append(" and ");    // TODO I18N: Add ability to localise lists
+            }
+        }
     }
 
     public void std_icon_type(StringBuilder builder, FunctionBinding b) throws RenderException {

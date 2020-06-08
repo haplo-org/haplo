@@ -123,7 +123,7 @@ module KHooks
       @response_fields.finishDescription()
       @runner.instance_variable_set(:@_RESPONSE_FIELDS, @response_fields)
       # Define JavaScript argument conversion method
-      @runner.module_eval(%Q!def jsargs(hook_name, response, args); [hook_name, response #{@js_call_args}]; end!, "#{@name}-jsargs")
+      @runner.module_eval(%Q!def jsargs(response, args); [response #{@js_call_args}]; end!, "#{@name}-jsargs")
       # Define initialiser for response, if it has any default values
       unless @response_init.empty?
         @response.module_eval("def initialize\n#{@response_init}\nend", "#{@name}-init")

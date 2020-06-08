@@ -188,7 +188,7 @@ class KJavaScriptPlugin < KPlugin
   def self.call_javascript_hooks(hook_name, runner, response, args)
     jsplugins = KJSPluginRuntime.current
     jsresponse = jsplugins.make_response(response, runner)
-    jsplugins.call_all_hooks(runner.jsargs(hook_name, jsresponse, args))
+    jsplugins.call_all_hooks(hook_name, runner.jsargs(jsresponse, args))
     jsplugins.retrieve_response(response, jsresponse, runner)
   end
 

@@ -185,6 +185,34 @@ TEST(function() {
     TEST.assert_equal(template.render({doc:'<doc><p>a<b>b</b>c</p><h1>x3</h1></doc>'}), 'START<div class="z__document"><p>a<b>b</b>c</p><h1>x3</h1></div>END');
     TEST.assert_equal(template.render({doc:O.text(O.T_TEXT_DOCUMENT, '<doc><p>a<b>b</b>c</p><h1>x4</h1></doc>')}), 'START<div class="z__document"><p>a<b>b</b>c</p><h1>x4</h1></div>END');
 
+    // std:text:list:readable()
+    TEST.assert_exceptions(function() {
+        new $HaploTemplate('<p> std:text:list:readable(list "something") </p>').render({list:[1,2,3]});
+    }, 'Second argument to std:text:list:readable() must be "en:default"');
+    template = new $HaploTemplate('<p> std:text:list:readable(list "en:default") { ifContent() { markContent() {.} "!" } } </p>');
+    TEST.assert_equal(template.render({list:[1,"hello","","something"]}), "<p>1!, hello! and something!</p>"); // omits the empty element
+    TEST.assert_equal(template.render({list:["a"]}), "<p>a!</p>");
+    TEST.assert_equal(template.render({list:["a","b"]}), "<p>a! and b!</p>");
+    TEST.assert_equal(template.render({list:["a","b","C"]}), "<p>a!, b! and C!</p>");
+    TEST.assert_equal(template.render({list:["a","b","C","D"]}), "<p>a!, b!, C! and D!</p>");
+
+    // std:text:object-value()
+    template = new $HaploTemplate('<p> std:text:object-value(x) </p>');
+    TEST.assert_equal(template.render({x:object}), '<p>Test book&lt;</p>'); // object
+    TEST.assert_equal(template.render({x:O.ref(TEST_BOOK)}), '<p>Test book&lt;</p>'); // ref
+    TEST.assert_equal(template.render({x:O.text(O.T_TEXT, "<Text>")}), '<p>&lt;Text&gt;</p>'); // KText
+    TEST.assert_equal(template.render({x:"Plain string"}), '<p>Plain string</p>'); // String
+    TEST.assert_equal(template.render({x:1234}), '<p>1234</p>'); // Number
+    TEST.assert_equal(template.render({x:new Date(2016, 05, 23)}), '<p>23 Jun 2016</p>'); // Date which is converted into KDateTime
+    TEST.assert_equal(template.render({x:object.first(8888)}), '<p>08 to end of 10 Oct 2011</p>'); // KDateTime created in Ruby
+    TEST.assert_equal(template.render({x:null}), '<p></p>');
+    TEST.assert_equal(template.render({x:undefined}), '<p></p>');
+    // and related __OPTIMISE__:text:object-first-value:desc-int-as-string()
+    template = new $HaploTemplate('<span> __OPTIMISE__:text:object-first-value:desc-int-as-string(obj "8888") </span>');
+    TEST.assert_equal(template.render({obj:object}), '<span>08 to end of 10 Oct 2011</span>'); // KDateTime created in Ruby
+    template = new $HaploTemplate('<span> __OPTIMISE__:text:object-first-value:desc-int-as-string(obj "8272625") </span>');
+    TEST.assert_equal(template.render({obj:object}), '<span></span>'); // no attribute
+
     // std:ui:notice
     template = new $HaploTemplate('<div> std:ui:notice(a b c) </div>');
     TEST.assert(-1 != template.render({a:"Test Message"}).indexOf("Test Message"));

@@ -13,6 +13,9 @@ class KSafeRedirectTest < Test::Unit::TestCase
     assert_equal true,  KSafeRedirect.is_safe?("/do/something?a=b&c=e")
     assert_equal false, KSafeRedirect.is_safe?(5)
 
+    # Home page is safe too
+    assert_equal true,  KSafeRedirect.is_safe?("/")
+
     # Allowing paths starting with // would allow an open redirect using protocol relative URLs
     assert_equal false, KSafeRedirect.is_safe?("//example.org/hello")
     assert_equal false, KSafeRedirect.is_safe?("/\\example.org/hello")
@@ -33,11 +36,14 @@ class KSafeRedirectTest < Test::Unit::TestCase
     assert_equal false, KSafeRedirect.is_safe_or_explicit_external?('http://example.org')
 
     assert_equal nil,   KSafeRedirect.checked("ping/pong")
+    assert_equal nil,   KSafeRedirect.checked("ping/pong/")
     assert_equal nil,   KSafeRedirect.checked(nil)
     assert_equal "/default", KSafeRedirect.checked("ping/pong", "/default")
     assert_equal "/default", KSafeRedirect.checked(nil, "/default")
     assert_equal "/do/something", KSafeRedirect.checked("/do/something")
     assert_equal "/do/something", KSafeRedirect.checked("/do/something", '/default')
+    assert_equal "/",   KSafeRedirect.checked("/")
+    assert_equal "/",   KSafeRedirect.checked("/", "/default")
   end
 
   MockHookResponse = Struct.new(:redirectPath)

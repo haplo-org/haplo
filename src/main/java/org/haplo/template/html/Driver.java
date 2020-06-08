@@ -171,6 +171,7 @@ abstract public class Driver {
         driver.parentDriver = this;
         driver.nestingDepth = newNestingDepth;
         driver.rememberedViews = this.rememberedViews;
+        driver.contentMark = this.contentMark;
         driver.includedTemplateRenderer = this.includedTemplateRenderer;
         driver.functionRenderer = this.functionRenderer;
         driver.textTranslator = this.textTranslator;
@@ -187,6 +188,7 @@ abstract public class Driver {
     private Driver parentDriver;
     private Object[] rememberedViews;
     private FunctionBinding bindingForYield;
+    private ContentMark contentMark;
 
     final public void setupForRender(Template template) {
         if(this.template != null) {
@@ -216,5 +218,17 @@ abstract public class Driver {
             throw new RuntimeException("Unexpected setBindingForYield(), logic error");
         }
         this.bindingForYield = bindingForYield;
+    }
+
+    final public ContentMark getContentMark() {
+        return this.contentMark;
+    }
+
+    final public void setContentMark(ContentMark contentMark) {
+        this.contentMark = contentMark;
+    }
+
+    public interface ContentMark {
+        public void mark();
     }
 }

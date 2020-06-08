@@ -110,6 +110,10 @@ public class KObjRef extends KScriptable {
         return idToString(objId);
     }
 
+    public String jsFunction_loadObjectTitleMaybe() {
+        return rubyInterface.loadObjectTitleMaybe(objId);
+    }
+
     // --------------------------------------------------------------------------------------------------------------
 
     // Behaviours are cached because there shouldn't be very many refs with behaviours in the code, and it is
@@ -228,6 +232,8 @@ public class KObjRef extends KScriptable {
         public String exactBehaviourOfObjRef(Integer objID);
 
         public Integer refOfBehaviour(String behaviour);
+
+        public String loadObjectTitleMaybe(Integer objID);
     }
     private static Ruby rubyInterface;
 

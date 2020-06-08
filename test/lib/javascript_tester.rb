@@ -5,7 +5,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 
-require 'test/lib/javascript_syntax_tester'
+require './test/lib/javascript_syntax_tester'
 
 tester = JavaScriptSyntaxTester.new
 

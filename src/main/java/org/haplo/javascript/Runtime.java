@@ -15,6 +15,7 @@ import org.mozilla.javascript.json.JsonParser;
 
 import org.apache.commons.io.IOUtils;
 
+import org.haplo.javascript.profiler.JSProfiler;
 import org.haplo.jsinterface.*;
 import org.haplo.jsinterface.i18n.KPluginStrings;
 import org.haplo.jsinterface.app.*;
@@ -87,7 +88,7 @@ public class Runtime {
             throw new RuntimeException("JavaScript Runtime can't find the initialiser function");
         } else {
             Function f = (Function)initialiser;
-            Object result = f.call(cx, scope, scope, null); // ConsString is checked
+            Object result = f.call(cx, scope, scope, new Object[0]); // ConsString is checked
             if(!(result instanceof KHost)) {
                 throw new RuntimeException("JavaScript Runtime initialiser returned something unexpected");
             }
@@ -114,12 +115,22 @@ public class Runtime {
         currentContext = Runtime.enterContext();
         threadRuntime.set(this);
         host.setSupportRoot(supportRoot);
+        if(JSProfiler.isEnabled()) {
+            currentContext.setDebugger(new JSProfiler(), new Object());
+        }
     }
 
     /**
      * Stop using this runtime on this Thread
      */
     public void stopUsingOnThisThread() {
+        if(JSProfiler.isEnabled()) {
+            JSProfiler profiler = (JSProfiler)currentContext.getDebugger();
+            if(profiler != null) {
+                profiler.finish();
+                System.out.println(profiler.report());
+            }
+        }
         if(currentContext == null || currentContext != Context.getCurrentContext() || threadRuntime.get() != this) {
             throw new RuntimeException("JavaScript Runtime is not in the right state for stopUsingOnThisThread()");
         }

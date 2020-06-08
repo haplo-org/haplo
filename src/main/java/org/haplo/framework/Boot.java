@@ -49,6 +49,8 @@ import org.haplo.common.utils.SSLCipherSuites;
 
 import org.haplo.utils.ProcessStartupFlag;
 
+import org.haplo.javascript.profiler.JSProfiler;
+
 import org.haplo.appserver.Scheduler;
 
 /**
@@ -114,6 +116,12 @@ public class Boot {
         System.out.println("             Licensed under the Mozilla Public License Version 2.0");
         System.out.println("===============================================================================");
         System.out.println("Starting framework in " + rootDir + " with environment " + envName);
+
+        // JavaScript profiler is set using an environment var which specifies the minimum run time report percentage
+        String enableJSProfiler = System.getenv().get("HAPLO_ENABLE_JS_PROFILER");
+        if(enableJSProfiler != null) {
+            JSProfiler.enableProfiler(Double.valueOf(enableJSProfiler));
+        }
 
         // Get a ruby runtime
         RubyInstanceConfig rubyConfig = new RubyInstanceConfig();

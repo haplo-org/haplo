@@ -62,6 +62,10 @@ TEST(function() {
     TEST.assert_equal(null, obj.first(838883));
     TEST.assert_equal(OBJ_OBJID, obj.ref.objId);
 
+    // Title via Ref
+    TEST.assert_equal("Hello there", O.ref(OBJ_OBJID).loadObjectTitleMaybe());
+    TEST.assert_equal(null, O.ref(9999999).loadObjectTitleMaybe()); // just returns null
+
     // Rendering object
     TEST.assert(-1 !== obj.render().indexOf("Hello there"));
 
