@@ -55,7 +55,7 @@ DocumentInstance.prototype.__defineGetter__("committedDocumentIsComplete", funct
         where("keyId","=",this.keyId).
         order("version", true).
         limit(1);
-    var key = this.key;
+    var instance = this;
     if(committed.length > 0) {
         var record = committed[0];
         var document = JSON.parse(record.json);
@@ -63,7 +63,7 @@ DocumentInstance.prototype.__defineGetter__("committedDocumentIsComplete", funct
         var forms = this._editForms(document);
         _.each(forms, function(form) {
             var formInstance = form.instance(document);
-            formInstance.externalData({"std_document_store:key":key});
+            formInstance.externalData(instance._formExternalData());
             if(!formInstance.documentWouldValidate()) {
                 isComplete = false;
             }
@@ -89,6 +89,14 @@ DocumentInstance.prototype._notifyDelegate = function(fn) {
         functionArguments[0] = this;
         delegate[fn].apply(delegate, functionArguments);
     }
+};
+
+DocumentInstance.prototype._formExternalData = function() {
+    return {
+        "std_document_store:store": this.store,
+        "std_document_store:instance": this,
+        "std_document_store:key": this.key
+    };
 };
 
 // ----------------------------------------------------------------------------
@@ -208,13 +216,14 @@ DocumentInstance.prototype._editForms = function(document) {
 DocumentInstance.prototype._renderDocument = function(document, deferred, idPrefix, requiresUNames) {
     var html = [];
     var delegate = this.store.delegate;
+    var dsInstance = this;
     var key = this.key;
     var sections = [];
     var forms = this._displayForms(document);
     idPrefix = idPrefix || '';
     _.each(forms, function(form) {
         var instance = form.instance(document);
-        instance.externalData({"std_document_store:key":key});
+        instance.externalData(dsInstance._formExternalData());
         if(requiresUNames) { instance.setIncludeUniqueElementNamesInHTML(true); }
         if(delegate.prepareFormInstance) {
             delegate.prepareFormInstance(key, form, instance, "document");
@@ -241,7 +250,7 @@ DocumentInstance.prototype._selectedFormInfo = function(document, selectedFormId
     }
     if(!form) { form = forms[0]; }
     var instance = form.instance(document);
-    instance.externalData({"std_document_store:key":key});
+    instance.externalData(this._formExternalData());
     if(delegate.prepareFormInstance) {
         delegate.prepareFormInstance(key, form, instance, "document");
     }
@@ -296,7 +305,7 @@ DocumentInstance.prototype.handleEditDocument = function(E, actions) {
         for(var i = 0; i < forms.length; ++i) {
             var form = forms[i],
                 formInstance = form.instance(cdocument);
-            formInstance.externalData({"std_document_store:key":instance.key});
+            formInstance.externalData(instance._formExternalData());
             if(requiresUNames) { formInstance.setIncludeUniqueElementNamesInHTML(true); }
             if(delegate.prepareFormInstance) {
                 delegate.prepareFormInstance(instance.key, form, formInstance, "form");

@@ -11,4 +11,11 @@ TEST(function() {
     TEST.assert(_.isEqual(["test_provide_feature","no_privileges_plugin","test_plugin"], O.application.plugins)); // proper typed test
     // NOTE: Ruby plugins are not included
 
+    var tpf = O.getPluginInstance("test_provide_feature");
+    TEST.assert(tpf instanceof $Plugin);
+    TEST.assert_equal("test_provide_feature", tpf.pluginName);
+    TEST.assert_exceptions(function() {
+        O.getPluginInstance("std_document_store");
+    }, "Unknown plugin: std_document_store");
+
 });

@@ -34,3 +34,19 @@ P.implementService("std:serialiser:discover-sources", function(source) {
     });
 });
 
+P.implementService("std:serialiser:discover-sources", function(source) {
+    source({
+        name: "std:username",
+        sort: 2000,
+        setup(serialiser) {
+            serialiser.expandValue(O.T_REF, function(value, valueSerialised) {
+                let user = O.user(value);
+                if(user && user.tags.username) {
+                    valueSerialised.username = user.tags.username;
+                }
+            });
+        },
+        apply(serialiser, object, serialised) {
+        }
+    });
+});
