@@ -37,8 +37,36 @@ esac
 rm -fr /tmp/haplo-sslcerts
 mkdir -p /tmp/haplo-sslcerts
 
-openssl genrsa -out /tmp/haplo-sslcerts/server.key 1024
+#
+# See
+# https://support.apple.com/en-us/HT210176
+# for certificate requirements
+#
 
-openssl req -new -batch -subj "/CN=${SITENAME}" -key /tmp/haplo-sslcerts/server.key -out /tmp/haplo-sslcerts/server.crt.csr
+cat > /tmp/haplo-sslcerts/ssl.cnf <<EOF
+[ req ]
+default_bits       = 2048
+distinguished_name = req_distinguished_name
+req_extensions     = req_ext
+[ req_distinguished_name ]
+commonName                 = ${SITENAME}
+[ req_ext ]
+subjectAltName = @alt_names
+[alt_names]
+DNS.1   = ${SITENAME}
+EOF
 
-openssl x509 -req -sha1 -days 3650 -in /tmp/haplo-sslcerts/server.crt.csr -out /tmp/haplo-sslcerts/server.crt -signkey /tmp/haplo-sslcerts/server.key
+openssl genrsa -out /tmp/haplo-sslcerts/server.key 2048
+
+openssl req -new -batch -subj "/CN=${SITENAME}" -config /tmp/haplo-sslcerts/ssl.cnf -key /tmp/haplo-sslcerts/server.key -out /tmp/haplo-sslcerts/server.crt.csr
+
+cat > /tmp/haplo-sslcerts/ssl.cnf <<EOF
+extendedKeyUsage = serverAuth
+subjectAltName = @alt_names
+[alt_names]
+DNS.1   = ${SITENAME}
+EOF
+
+openssl x509 -req -sha256 -days 800 -extfile /tmp/haplo-sslcerts/ssl.cnf -in /tmp/haplo-sslcerts/server.crt.csr -out /tmp/haplo-sslcerts/server.crt -signkey /tmp/haplo-sslcerts/server.key
+
+rm -f /tmp/haplo-sslcerts/ssl.cnf
