@@ -196,7 +196,7 @@ fi
 if [ -f haplo/fetch-and-compile.sh ]; then
     cd haplo
     echo " *** Building Haplo ***"
-    ./fetch-and-compile.sh
+    ./fetch-and-compile.sh -n
     echo " *** Haplo build done ***"
 else
     echo "ERROR: unable to find haplo"
