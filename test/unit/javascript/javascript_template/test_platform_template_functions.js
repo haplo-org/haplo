@@ -213,6 +213,16 @@ TEST(function() {
     template = new $HaploTemplate('<span> __OPTIMISE__:text:object-first-value:desc-int-as-string(obj "8272625") </span>');
     TEST.assert_equal(template.render({obj:object}), '<span></span>'); // no attribute
 
+    // std:security:user-controlled-url-is-valid
+    template = new $HaploTemplate('<div> std:security:user-controlled-url-is-valid(href) { <a href=href> href </a> } not-valid { "NOT VALID" } </div>');
+    TEST.assert_equal(template.render({href:"x"}), '<div>NOT VALID</div>');
+    TEST.assert_equal(template.render({href:"https://example.com/hello"}), '<div><a href="https://example.com/hello">https://example.com/hello</a></div>');
+    TEST.assert_equal(template.render({href:null}), '<div>NOT VALID</div>');
+    TEST.assert_equal(template.render({href:undefined}), '<div>NOT VALID</div>');
+    TEST.assert_equal(template.render({href:"/hello"}), '<div>NOT VALID</div>');
+    TEST.assert_equal(template.render({href:"http://example.com"}), '<div><a href="http://example.com">http://example.com</a></div>');
+    TEST.assert_equal(template.render({href:'javascript:window.alert("hello!")'}), '<div>NOT VALID</div>');
+
     // std:ui:notice
     template = new $HaploTemplate('<div> std:ui:notice(a b c) </div>');
     TEST.assert(-1 != template.render({a:"Test Message"}).indexOf("Test Message"));

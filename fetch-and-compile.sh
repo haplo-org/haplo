@@ -17,8 +17,8 @@ esac
 
 DEV_SUPPORT_DIR=~/haplo-dev-support
 
-JRUBY_VERSION=9.2.11.1
-JRUBY_DIGEST=cceb81635fe3cd39f895c7632428e94b503e8e3d
+JRUBY_VERSION=9.2.14.0
+JRUBY_DIGEST=7946d572d3c04cf4457566b9a58688410e468da5
 JRUBY_DOWNLOAD_URL=https://s3.amazonaws.com/jruby.org/downloads/${JRUBY_VERSION}/jruby-bin-${JRUBY_VERSION}.tar.gz
 
 XAPIAN_VERSION=1.2.25
@@ -278,7 +278,7 @@ g++ framework/support/haplo.cpp -O2 -o framework/haplo
 
 echo "Compiling Java sources with maven..."
 mvn package
-cp target/haplo-3.20200618.1555.c289984b73.jar framework/haplo.jar
+cp target/haplo-3.20210121.1601.02d414190e.jar framework/haplo.jar
 
 mvn -Dmdep.outputFile=target/classpath.txt dependency:build-classpath
 

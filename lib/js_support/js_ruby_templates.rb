@@ -163,4 +163,11 @@ module JSRubyTemplateControllerSupport
     stdtmpl_icon_type(object.first_attr(KConstants::A_TYPE), size)
   end
 
+  # ------------------------------------------------------------------------------------------
+
+  def stdtmpl_test_user_controlled_url_is_valid(url)
+    return false if url.nil?
+    !!(K_LINKABLE_URL_WHITELIST =~ url)
+  end
+
 end

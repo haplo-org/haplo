@@ -25,12 +25,12 @@ class ApplicationControllerTest < IntegrationTest
 
     # no mapping for www.eximple.com
     @testing_host = "www.eximple.com"
-    get("/")
+    get_404("/")
     check_hostname_rejected
 
     # no mapping for something a bit dodgy
     @testing_host = "www.pants' AND '' = '"
-    get("/")
+    get_404("/")
     check_hostname_rejected
   end
 

@@ -40,3 +40,4 @@ lib/javascript/lib/ui_panel.js
 lib/javascript/lib/message_bus.js
 lib/javascript/lib/http_client.js
 lib/javascript/lib/xml.js
+lib/javascript/lib/developer_support.js

@@ -291,6 +291,8 @@ public class JdSelect extends JdSelectClause {
     }
 
     protected String generateOrderSql(String tableAlias) {
+        // The behaviour of silently ignoring use of stableOrder() if order() used as well
+        // is relied upon by several consumers of this API, in particular std_workflow.
         if(this.orderBy != null) {
             StringBuilder clause = new StringBuilder();
             for(Ordering o : this.orderBy) {

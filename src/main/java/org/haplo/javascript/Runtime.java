@@ -9,11 +9,10 @@ package org.haplo.javascript;
 import java.io.LineNumberReader;
 import java.io.FileReader;
 import java.util.HashSet;
+import java.util.HashMap;
 
 import org.mozilla.javascript.*;
 import org.mozilla.javascript.json.JsonParser;
-
-import org.apache.commons.io.IOUtils;
 
 import org.haplo.javascript.profiler.JSProfiler;
 import org.haplo.jsinterface.*;
@@ -42,11 +41,26 @@ public class Runtime {
     // How to find the current Runtime
     static private ThreadLocal<Runtime> threadRuntime = new ThreadLocal<Runtime>();
 
+    // Application scopes
+    static private HashMap<Integer,ApplicationScope> applicationScopes = new HashMap<Integer,ApplicationScope>();
+
     // Information for the current runtime
     private Context currentContext;
     private Scriptable runtimeScope;
     private KHost host;
     private PluginTestingSupport testingSupport;
+
+    private static class ApplicationScope {
+        public int applicationId;
+        public Scriptable scope;
+        ApplicationScope(int applicationId) {
+            this.applicationId = applicationId;
+        }
+    }
+
+    public static interface ApplicationScopeLoader {
+        void load(JsLoader loader);
+    }
 
     // Interface to load standard templates
     public interface StandardTemplateLoader {
@@ -58,19 +72,58 @@ public class Runtime {
         standardTemplateLoader = loader;
     }
 
+    public static void discardApplicationScope(int applicationId) {
+        synchronized(applicationScopes) {
+            applicationScopes.remove(applicationId);
+        }
+    }
+
     /**
      * Construct a new runtime, backed by the shared scope
      */
     public Runtime() {
+    }
+
+    public void prepareAndMaybeLoadApplicationScope(int applicationId, ApplicationScopeLoader loader) {
         if(sharedScope == null) {
             throw new RuntimeException("Runtime.initializeSharedEnvironment() not called yet");
         }
 
         Context cx = Runtime.enterContext();
         try {
-            // Generate a new scope for the runtime, which borrows the objects in the main shared scope
-            ScriptableObject scope = (ScriptableObject)cx.newObject(sharedScope);
-            scope.setPrototype(sharedScope);
+            // Ensure application runtime is set up
+            ApplicationScope appScope = null;
+            synchronized(applicationScopes) {
+                appScope = applicationScopes.get(applicationId);
+                if(appScope == null) {
+                    appScope = new ApplicationScope(applicationId);
+                    applicationScopes.put(applicationId, appScope);
+                }
+            }
+
+            // Maybe need to load plugins into the application scope?
+            if(appScope.scope == null) {
+                synchronized(appScope) {
+                    // Check inside lock in case another thread loaded it while waiting for lock
+                    if(appScope.scope == null) {
+                        ScriptableObject pendingAppScope = (ScriptableObject)cx.newObject(sharedScope);
+                        pendingAppScope.setPrototype(sharedScope);
+                        pendingAppScope.setParentScope(null);
+                        loader.load(new JsLoader(cx, pendingAppScope));
+
+                        // Seal the application scope to prevent accidental modification
+                        HashSet<Object> sealedObjects = new HashSet<Object>();
+                        sealedObjects.add(sharedScope); // don't seal the shared scope, it's already done
+                        recursiveSealObjects(pendingAppScope, pendingAppScope, sealedObjects, true /* seal the root scope object */);
+
+                        appScope.scope = pendingAppScope;
+                    }
+                }
+            }
+
+            // Generate a new scope for the runtime, which shares the objects in the main shared scope & the application scope
+            ScriptableObject scope = (ScriptableObject)cx.newObject(appScope.scope);
+            scope.setPrototype(appScope.scope);
             scope.setParentScope(null);
 
             callFrameworkInitialiser(cx, scope);
@@ -163,25 +216,8 @@ public class Runtime {
      */
     public void loadScript(String scriptPathname, String givenFilename, String prefix, String suffix) throws java.io.IOException {
         checkContext();
-        FileReader script = new FileReader(scriptPathname);
-        try {
-            if(prefix != null || suffix != null) {
-                // TODO: Is it worth loading JS files with prefix+suffix using a fancy Reader which concatenates other readers?
-                StringBuilder builder = new StringBuilder();
-                if(prefix != null) {
-                    builder.append(prefix);
-                }
-                builder.append(IOUtils.toString(script));
-                if(suffix != null) {
-                    builder.append(suffix);
-                }
-                currentContext.evaluateString(runtimeScope, builder.toString(), givenFilename, 1, null /* no security domain */);
-            } else {
-                currentContext.evaluateReader(runtimeScope, script, givenFilename, 1, null /* no security domain */);
-            }
-        } finally {
-            script.close();
-        }
+        JsLoader loader = new JsLoader(this.currentContext, this.runtimeScope);
+        loader.loadScript(scriptPathname, givenFilename, prefix, suffix);
     }
 
     /**
@@ -328,25 +364,29 @@ public class Runtime {
         }
     }
 
-    // Don't use the default ContextFactory
-    static {
-        ContextFactory.initGlobal(new OContextFactory());
+    public interface SharedJavaScriptInitialiser {
+        void load(JsLoader loader);
     }
 
     /**
      * Initialize the shared JavaScript environment. Loads libraries and removes
      * methods of escaping the sandbox.
      */
-    public static void initializeSharedEnvironment(String frameworkRoot, String sharedJavaScript, boolean pluginDebuggingEnabled) throws java.io.IOException {
+    public static void initializeSharedEnvironment(String frameworkRoot, SharedJavaScriptInitialiser sharedJavaScript, boolean pluginDebuggingEnabled, int optimisationLevel) throws java.io.IOException {
         // Don't allow this to be called twice
         if(sharedScope != null) {
             return;
         }
 
+        // Don't use the default ContextFactory
+        ContextFactory.initGlobal(new OContextFactory(optimisationLevel));
+
         long startTime = System.currentTimeMillis();
 
         final Context cx = Runtime.enterContext();
         try {
+            cx.setOptimizationLevel(9); // do as much optimisation as possible on the shared scope
+
             final ScriptableObject scope = cx.initStandardObjects(null, false /* don't seal the standard objects yet */);
 
             if(!scope.has("JSON", scope)) {
@@ -363,7 +403,8 @@ public class Runtime {
             defineSealedHostClass(scope, HaploTemplate.class);
 
             // Load shared initialiser code dynamically generated on startup
-            cx.evaluateString(scope, sharedJavaScript, "<shared-init>", 1, null /* no security domain */);
+            JsLoader loader = new JsLoader(cx, scope);
+            sharedJavaScript.load(loader);
 
             // Load the library code
             try(FileReader bootScriptsFile = new FileReader(frameworkRoot + "/lib/javascript/bootscripts.txt")) {
@@ -460,6 +501,7 @@ public class Runtime {
             defineSealedHostClass(scope, KAuditEntryQuery.class);
             defineSealedHostClass(scope, KUser.class);
             defineSealedHostClass(scope, KUserData.class);
+            defineSealedHostClass(scope, KTimeZone.class);
             defineSealedHostClass(scope, KWorkUnit.class);
             defineSealedHostClass(scope, KWorkUnitQuery.class);
             defineSealedHostClass(scope, KEmailTemplate.class);

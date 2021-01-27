@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.SheetVisibility;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellType;
@@ -59,26 +60,30 @@ public class ExcelToJSON extends Operation {
                         add("name", sheet.getSheetName());
                     JsonArrayBuilder jsonRows = factory.createArrayBuilder();
 
-                    int lastRow = sheet.getLastRowNum();
-                    for(int r = 0; r <= lastRow; ++r) {
-                        Row row = sheet.getRow(r);
-                        JsonArrayBuilder jsonRow = factory.createArrayBuilder();
+                    if(wb.getSheetVisibility(wb.getSheetIndex(sheet)) != SheetVisibility.VISIBLE) {
+                        jsonSheet.add("hidden", true);
+                    } else {
+                        int lastRow = sheet.getLastRowNum();
+                        for(int r = 0; r <= lastRow; ++r) {
+                            Row row = sheet.getRow(r);
+                            JsonArrayBuilder jsonRow = factory.createArrayBuilder();
 
-                        if(row != null) {
-                            int lastCell = row.getLastCellNum();
-                            for(int c = 0; c < lastCell; ++c) {
-                                Cell cell = row.getCell(c);
-                                if(cell == null) {
-                                    jsonRow.addNull();
-                                } else {
-                                    JsonObjectBuilder jsonCell = factory.createObjectBuilder();
-                                    cell(jsonCell, cell, defaultFormatter);
-                                    jsonRow.add(jsonCell);
+                            if(row != null) {
+                                int lastCell = row.getLastCellNum();
+                                for(int c = 0; c < lastCell; ++c) {
+                                    Cell cell = row.getCell(c);
+                                    if(cell == null) {
+                                        jsonRow.addNull();
+                                    } else {
+                                        JsonObjectBuilder jsonCell = factory.createObjectBuilder();
+                                        cell(jsonCell, cell, defaultFormatter);
+                                        jsonRow.add(jsonCell);
+                                    }
                                 }
                             }
-                        }
 
-                        jsonRows.add(jsonRow);
+                            jsonRows.add(jsonRow);
+                        }
                     }
 
                     jsonSheet.add("rows", jsonRows);

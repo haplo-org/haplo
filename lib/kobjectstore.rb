@@ -173,7 +173,7 @@ class KObjectStore
     # PERM TODO: Remove KObjectStore::PermissionDenied#initialize for logging of permission denied errors when no longer needed (trying to keep dependencies on KApp away from KObjectStore)
     def initialize(*args)
       super
-      KApp.logger.info("%%%% KObjectStore::PermissionDenied exception thrown by\n  #{caller.join("\n  ")}")
+      KApp.logger.info("%%%% KObjectStore::PermissionDenied exception (#{self.message}) thrown by\n  #{caller.join("\n  ")}")
     end
   end
 

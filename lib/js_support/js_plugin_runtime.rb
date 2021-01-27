@@ -29,6 +29,7 @@ class KJSPluginRuntime
     [:user_modified,     :group]
   ], {:deduplicate => true, :max_arguments => 0}) do # max arguments set to zero so every notification counts the same
     KApp.cache_invalidate(RUNTIME_CACHE)
+    Runtime.discardApplicationScope(KApp.current_application)
   end
 
   def self.invalidate_all_runtimes
@@ -72,10 +73,6 @@ class KJSPluginRuntime
     @runtime.makeJsonParser()
   end
 
-  def ensure_java_js_runtime
-    @runtime ||= Runtime.new
-  end
-
   def kapp_cache_checkout
     raise "Bad state for KJSPluginRuntime" if @support_root != nil
     # Set the SYSTEM user as active during code loading (which could do things like making queries),
@@ -84,7 +81,23 @@ class KJSPluginRuntime
     # all the objects it needs.
     AuthContext.with_system_user do
       AuthContext.lock_current_state
-      ensure_java_js_runtime()
+      unless @runtime
+        loading_runtime = Runtime.new
+        loading_runtime.prepareAndMaybeLoadApplicationScope(KApp.current_application) do |loader|
+          ms = KApp.execution_time_ms do
+            # Load basic schema information into runtime
+            loader.evaluateString(KSchemaToJavaScript.schema_to_js(KObjectStore.schema), "<schema>")
+            # Parse the plugin schema requirements so it can be passed to the plugins when loading
+            schema_for_js_runtime = SchemaRequirements::SchemaForJavaScriptRuntime.new()
+            # Load plugin code in application scope, but don't initialize them
+            KPlugin.get_plugins_for_current_app.each do |plugin|
+              plugin.javascript_load(loader, schema_for_js_runtime)
+            end
+          end
+          KApp.logger.info("Initialised application shared JS scope, took #{ms.to_i}ms for application #{KApp.current_application}\n")
+        end
+        @runtime = loading_runtime
+      end
       # JSSupportRoot implementation requires that a new object is created every time the runtime is checked out
       @support_root = JSSupportRoot.new
       @runtime.useOnThisThread(@support_root)
@@ -103,22 +116,29 @@ class KJSPluginRuntime
                 @runtime.host.enableI18nDebugging()
               end
             end
-            # Load basic schema information into runtime
-            @runtime.evaluateString(KSchemaToJavaScript.schema_to_js(KObjectStore.schema), "<schema>")
-            # Parse the plugin schema requirements so it can be passed to the plugins when loading
-            schema_for_js_runtime = SchemaRequirements::SchemaForJavaScriptRuntime.new()
             db_namespaces = DatabaseNamespaces.new
             using_runtime do
-              # Go through each plugin, and ask it to load the JavaScript code
-              KPlugin.get_plugins_for_current_app.each do |plugin|
-                database_namespace = nil
-                if plugin.uses_database
-                  database_namespace = db_namespaces[plugin.name]
-                  raise "Logic error; plugin db namespace should have been allocated" unless database_namespace
+              # Use the Rhino interpreter for any code run during plugin initialisation
+              # to avoid creating unnecessary JVM classes from compliation.
+              @runtime.getContext().setOptimizationLevel(-1)
+              # Setup application schema
+              @runtime.evaluateString('$schema__runtimeinit__(this);', '<schema-runtimeinit>')
+              begin
+                # Go through each plugin, and ask it to load the JavaScript code
+                KPlugin.get_plugins_for_current_app.each do |plugin|
+                  database_namespace = nil
+                  if plugin.uses_database
+                    database_namespace = db_namespaces[plugin.name]
+                    raise "Logic error; plugin db namespace should have been allocated" unless database_namespace
+                  end
+                  # This check prevents unexpected registrations by plugin code, and sets the database namespace for the plugin.
+                  @runtime.host.setNextPluginToBeRegistered(plugin.name, database_namespace)
+                  plugin.javascript_init(@runtime)
+                  @runtime.host.setNextPluginToBeRegistered(nil, nil)
                 end
-                load_plugin_into_runtime(plugin, schema_for_js_runtime, database_namespace)
+              ensure
+                @runtime.getContext().setOptimizationLevel(0)
               end
-              finalise_plugin_load(db_namespaces)
               @runtime.host.callAllPluginOnLoad()
             end
             @plugins_loaded = true
@@ -135,16 +155,6 @@ class KJSPluginRuntime
         raise
       end
     end
-  end
-
-  def load_plugin_into_runtime(plugin, schema_for_js_runtime, database_namespace)
-    # This check prevents unexpected registrations by plugin code, and sets the database namespace for the plugin.
-    @runtime.host.setNextPluginToBeRegistered(plugin.name, database_namespace)
-    plugin.javascript_load(@runtime, schema_for_js_runtime)
-    @runtime.host.setNextPluginToBeRegistered(nil, nil)
-  end
-
-  def finalise_plugin_load(db_namespaces)
   end
 
   def finalise_runtime_checkout()

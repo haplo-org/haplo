@@ -116,7 +116,9 @@
                         $('#z__no_comments_warning').show();
                     }
                     if(!filterOn) {
-                        $('div[data-uname]').show();
+                        if(isViewer) {
+                            $('div[data-uname]').show();
+                        }
                     } else {
                         var containers = [];
                         $('div[data-uname]').each(function() {

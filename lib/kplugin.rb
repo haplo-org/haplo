@@ -62,7 +62,11 @@ class KPlugin
     end
   end
 
-  def javascript_load(runtime, schema_for_js_runtime)
+  def javascript_load(loader, schema_for_js_runtime)
+    # Do nothing for non-JavaScript plugins
+  end
+
+  def javascript_init(runtime)
     # Do nothing for non-JavaScript plugins
   end
 

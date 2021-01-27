@@ -19,7 +19,24 @@ class TasksController < ApplicationController
     @workunits_deadline_near = Array.new
     @workunits_normal = Array.new
     @now = true
-    @work_units = WorkUnit.where_actionable_by_user_when(@request_user, :now).select()
+    q = WorkUnit.where_actionable_by_user_when(@request_user, :now)
+
+    # NOTE: This is a temporary interface which will be removed
+    if params.has_key?("__worktype")
+      q.where(:work_type => params["__worktype"])
+    end
+    if params.has_key?("__tag") && params["__tag"].kind_of?(Hash)
+      params["__tag"].each do |tag,value|
+        q.where_tag(tag, value)
+      end
+    end
+    # NOTE: This is a temporary interface which will be removed - using Elements would be a better interface?
+    call_hook(:hTempTaskListDisplay) do |hooks|
+      h = hooks.run
+      in_right_column(h.sidebarHTML) if h.sidebarHTML != nil
+    end
+
+    @work_units = q.select()
     prioritise_workunits
   end
 

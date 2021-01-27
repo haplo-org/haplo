@@ -44,6 +44,10 @@ class IdentifierTest < Test::Unit::TestCase
     assert_equal '<a href="http://www.example.com/hello">http://www.example.com/hello</a>', url1.to_html # simple HTML rendering
     url2 = KIdentifierURL.new('http://www.example<h2>.com/hello"')
     assert_equal '<a href="http://www.example&lt;h2&gt;.com/hello&quot;">http://www.example&lt;h2&gt;.com/hello&quot;</a>', url2.to_html # HTML escaping
+    url3 = KIdentifierURL.new('https://www.example.com/ping')
+    assert_equal '<a href="https://www.example.com/ping">https://www.example.com/ping</a>', url3.to_html # also HTTPS gets a link
+    url4 = KIdentifierURL.new('javascript:hello("<abc>")') # non-http(s) links don't get hyperlinked to prevent XSS
+    assert_equal 'javascript:hello(&quot;&lt;abc&gt;&quot;)', url4.to_html # with escaping
 
     # TODO: HTML rendering tests for other identifier types
   end

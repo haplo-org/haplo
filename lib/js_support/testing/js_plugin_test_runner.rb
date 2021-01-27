@@ -52,6 +52,23 @@ private
     raise "Plugin not installed" if plugin == nil
     plugin_path = plugin.plugin_path
 
+    @output = ''.dup
+
+    # Apply requirements?
+    test_requirements_path = "#{plugin_path}/test/test.schema"
+    if File.exist?(test_requirements_path)
+      parser = SchemaRequirements::Parser.new()
+      File.open(test_requirements_path) do |file|
+        parser.parse("TEST", file)
+      end
+      applier = SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new(parser))
+      if 0 != applier.errors.length
+        @output << "Errors applying schema requirements:\n#{applier.errors.join("\n")}"
+      else
+        applier.apply.commit
+      end
+    end
+
     # JavaScript file prefix and suffix
     schema_for_js_runtime = SchemaRequirements::SchemaForJavaScriptRuntime.new()
     prefix, suffix = plugin.javascript_file_wrappers(schema_for_js_runtime)
@@ -64,7 +81,6 @@ private
     @asserts = 0
     @errors = 0
     @assert_fails = 0
-    @output = ''.dup
 
     tests = {}
     Dir.glob("#{plugin_path}/test/**/*.js").sort.each do |path|

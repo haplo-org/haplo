@@ -11,6 +11,8 @@
 # TODO: Is this the best place for this regex?
 K_EMAIL_VALIDATION_REGEX = /\A[a-zA-Z0-9!\#$%*\/?\|\^{}`~&'+=_\.-]+\@[a-zA-Z0-9-]+\.[a-zA-Z0-9\.-]+\z/
 
+K_LINKABLE_URL_WHITELIST = /\Ahttps?:\/\//i
+
 
 class KFramework
   # Copied from Rack, most deleted, choice bits retained

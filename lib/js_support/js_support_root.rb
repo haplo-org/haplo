@@ -12,6 +12,7 @@
 require 'js_support/js_schema'
 require 'js_support/js_plugin_runtime'
 require 'js_support/kjavascript_plugin'
+require 'js_support/kjavascript_plugin_builtin'
 require 'js_support/javascript_api_version'
 require 'js_support/js_template'
 require 'js_support/js_ruby_templates'

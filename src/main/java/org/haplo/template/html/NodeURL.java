@@ -114,7 +114,8 @@ final class NodeURL extends NodeListBase {
         if(this.fragmentsHead != null) {
             StringBuilder fragmentBuilder = new StringBuilder(64);
             this.fragmentsHead.renderWithNextNodes(fragmentBuilder, driver, view, Context.URL_PATH);
-            if(fragmentBuilder.length() > 0) {
+            // Check for node and parameters so that plain # is output if it's the only thing in the URL
+            if((fragmentBuilder.length() > 0) || ((getListHeadMaybe() == null) && (this.parametersHead == null))) {
                 builder.append('#').append(fragmentBuilder);
             }
         }

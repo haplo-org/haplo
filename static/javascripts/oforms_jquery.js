@@ -840,6 +840,24 @@ onCreateNewRepeatingSectionRow.push(function(newRow, rowsParent) {
 
 paragraphUpdateCountAll(oform);
 
+/////////////////////////////// element_support/boolean.js ///////////////////////////////
+
+var booleanUpdateShowHide = function() {
+    var expectedValue = this.getAttribute('data-shownextwhen');
+    var row = $(this).parents('.oforms-row').first();
+    var show = false;
+    var checked = $(':checked', row);
+    if(checked.length && (checked.val() === expectedValue)) { show = true; }
+    var nextRow = row.next('.oforms-row');
+    if(show) { nextRow.show(); } else { nextRow.hide(); }
+};
+
+// Set initial state
+$('[data-shownextwhen]', oform).each(booleanUpdateShowHide);
+
+// Update status whenever relevant buttons clicked
+oform.on('click', '[data-shownextwhen]', booleanUpdateShowHide);
+
 /////////////////////////////// element_support/guidance_note_events.js ///////////////////////////////
 
 // Apply event handlers defined in guidance_note_impl.js

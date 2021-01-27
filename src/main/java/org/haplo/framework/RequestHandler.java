@@ -40,6 +40,7 @@ public class RequestHandler extends AbstractHandler {
 
     private static final String HEALTH_URL = "/-health/"+System.getProperty("org.haplo.healthurl");
 
+    private int serverIndex;
     private Framework framework;
     private boolean inDevelopmentMode;
     private long lastReloadCheck;
@@ -53,7 +54,8 @@ public class RequestHandler extends AbstractHandler {
      * @param inDevelopmentMode Whether or not the app server is running in
      * development mode; reloads code, serves static files differently, etc
      */
-    public RequestHandler(Framework framework, boolean inDevelopmentMode) {
+    public RequestHandler(int serverIndex, Framework framework, boolean inDevelopmentMode) {
+        this.serverIndex = serverIndex;
         this.framework = framework;
         this.inDevelopmentMode = inDevelopmentMode;
         this.logger = Logger.getLogger("org.haplo.http");
@@ -380,7 +382,7 @@ public class RequestHandler extends AbstractHandler {
         String queryString = request.getQueryString();
         String requestURI = (queryString == null) ? request.getRequestURI() : String.format("%s?%s", request.getRequestURI(), queryString);
 
-        String logMessage = String.format("%s %s %s %s %d %d %d %s %d %d %s \"%s\" \"%s\"",
+        String logMessage = String.format("%s %s %s %s %d %d %d %s %d %d %s \"%s\" \"%s\" %d",
                 baseRequest.getHttpChannel().getRemoteAddress().getAddress().getHostAddress(), // Remote address (convoluted to avoid reverse DNS lookup)
                 StringUtils.escapeForLogging(hostname), // Hostname
                 StringUtils.escapeForLogging(request.getMethod()), // Method
@@ -393,7 +395,8 @@ public class RequestHandler extends AbstractHandler {
                 frameworkHandleTime, // Time in milliseconds (may be 0 if framework not used)
                 cipher, // Which SSL cipher suite?
                 StringUtils.escapeForLogging(referer), // Referer URL
-                StringUtils.escapeForLogging(userAgent) // User agent
+                StringUtils.escapeForLogging(userAgent), // User agent
+                serverIndex
         );
         logger.info(logMessage);
         return logMessage;
@@ -467,12 +470,7 @@ public class RequestHandler extends AbstractHandler {
         }
 
         // If the concurrency semaphores don't have any permits left, the app will freeze. A semaphore running out is a bad sign.
-        String javaErrors = null;
-        if(ConcurrencyLimits.rubyRuntime.availablePermits() <= 0) {
-            javaErrors = "CONCURRENCY_RUNTIME";
-        } else {
-            javaErrors = Application.checkAllApplicationConcurrencyLimits();
-        }
+        String javaErrors = Application.checkAllApplicationConcurrencyLimits(this.serverIndex);
 
         if(javaErrors != null) {
             if(errors == null) {
@@ -497,7 +495,7 @@ public class RequestHandler extends AbstractHandler {
     private Response withPerApplicationRequestThrottle(Application app, ThrottledHandlingAction action) {
         // Don't allow too many concurrent requests on a single application
         // Get the app sempahore first, so lots of requests for an app don't use up the global ruby runtime permits
-        Semaphore semaphore = app.getRequestConcurrencySempahore();
+        Semaphore semaphore = app.getRequestConcurrencySempahore(this.serverIndex);
         int queueLength = semaphore.getQueueLength();
         if(queueLength > 0) {
             Logger.getLogger("org.haplo.app").warn("Request throttle is queuing requests: Application "+app.getApplicationID()+", queue length "+queueLength);
@@ -511,31 +509,24 @@ public class RequestHandler extends AbstractHandler {
             // which, if the requests are processed fast enough, limits unnecessary concurrency.
             // The loop increases the chances of a successfully avoiding currency.
             for(int i = ConcurrencyLimits.APPLICATION_CONCURRENT_REQUESTS_MAX_SPINS; i > 0; --i) {
-                if(!app.isAnotherRequestBeingProcessed()) {
+                if(!app.isAnotherRequestBeingProcessed(this.serverIndex)) {
                     break;
                 }
                 // Try waiting for a request to finish
                 // if true, then it was woken up because a request had finished
                 // so we know there's a free slot
-                if(app.waitForARequestToFinish(ConcurrencyLimits.APPLICATION_CONCURRENT_REQUESTS_MAX_WAIT_TIME)) {
+                if(app.waitForARequestToFinish(this.serverIndex, ConcurrencyLimits.APPLICATION_CONCURRENT_REQUESTS_MAX_WAIT_TIME)) {
                     break;
                 }
                 // TODO: Monitor how many/much requests are getting delayed by request concurrency reduction code.
             }
 
-            // Don't allow too many threads to go use the Ruby runtime at any one time
-            ConcurrencyLimits.rubyRuntime.acquireUninterruptibly();
-            try {
-                return action.respond();
-            } finally {
-                // Always release the semaphore permit
-                ConcurrencyLimits.rubyRuntime.release();
-            }
+            return action.respond();
         } finally {
             // Release app permit
             semaphore.release();
             // Notify other threads waiting to avoid concurrent requests 
-            app.requestFinished();
+            app.requestFinished(this.serverIndex);
         }
     }
 
@@ -668,16 +659,8 @@ public class RequestHandler extends AbstractHandler {
             // Call the Ruby framework to see if a reload is necessary
             boolean r = framework.devmodeCheckReload();
             if(r == true) {
-                // A reload is required, get the locks and do it!
-                try {
-                    // Get all the permits from the concurrency lock, so reloads don't happen during requests
-                    ConcurrencyLimits.rubyRuntime.acquireUninterruptibly(ConcurrencyLimits.RUBY_RUNTIME_PERMITS);
-
-                    // Call the reload method with the object returned before
-                    framework.devmodeDoReload();
-                } finally {
-                    ConcurrencyLimits.rubyRuntime.release(ConcurrencyLimits.RUBY_RUNTIME_PERMITS);
-                }
+                // Call the reload method with the object returned before
+                framework.devmodeDoReload();
             }
         }
     }

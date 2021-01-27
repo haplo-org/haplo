@@ -693,6 +693,33 @@ __E
     obj
   end
 
+  # -------------------------------------------------------------------------------------------------------------
+
+  def test_standard_plugins_have_compatible_schema_requirements
+    # Compiling standard plugins into the shared scope requires that they have limited schema requirements
+    plugins = Dir.glob("app/plugins/*/plugin.json").sort.map { |p| File.dirname(p) }
+    # Check the found plugins look convincing
+    assert plugins.length > 8
+    assert plugins.include?('app/plugins/std_workflow')
+    # Check the plugins only define kinds which are supported
+    found_requirements = 0
+    allowed_requirement_kinds = ["attribute", "group", "email-template"]
+    plugins.each do |pathname|
+      requirements_schema_file = "#{pathname}/requirements.schema"
+      if File.exist?(requirements_schema_file)
+        found_requirements += 1
+        File.open(requirements_schema_file) do |file|
+          parser = SchemaRequirements::Parser.new
+          parser.parse("pathname", file)
+          parser.requirements.keys.sort.each do |kind|
+            assert allowed_requirement_kinds.include?(kind)
+          end
+        end
+      end
+    end
+    assert found_requirements >= 3
+  end
+
 end
 
 # Define the test hook

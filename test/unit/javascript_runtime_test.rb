@@ -462,6 +462,8 @@ __E
     group21 = User.read(21)
     group21.email = 'user3@example.com' # duplicates one of the users
     group21.save
+    # Set the timezone on another group
+    UserData.set(22, UserData::NAME_TIME_ZONE, "Pacific/Auckland")
     # Create an object which is then set as the representative object for a user
     obj = KObject.new()
     obj.add_attr("User 1", KConstants::A_TITLE)
@@ -854,6 +856,12 @@ __E
 
   def test_bigdecimal
     run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_bigdecimal.js')
+  end
+
+  # ===============================================================================================
+
+  def test_timezone
+    run_javascript_test(:file, 'unit/javascript/javascript_runtime/test_timezone.js')
   end
 
   # ===============================================================================================
@@ -1300,7 +1308,7 @@ __E
       'oForms'=>true, 'decodeURI'=>true, 'decodeURIComponent'=>true, 'encodeURI'=>true, 'encodeURIComponent'=>true,
       'escape'=>true, 'eval'=>true, 'isFinite'=>true, 'isNaN'=>true, 'parseFloat'=>true, 'parseInt'=>true,
       'unescape'=>true, 'uneval'=>true, '$i18n_defaults'=>true, '$i18n_locale_info'=>true,
-      '$i18n_platform_text'=>true
+      '$i18n_platform_text'=>true, "$stdplugin"=>true
     }
     symbols.each do |symbol|
       checks += 1
@@ -1312,6 +1320,10 @@ __E
       assert_raise Java::OrgMozillaJavascript::EvaluatorException do
         runtime.evaluateString(%Q!#{symbol}.testing_testing_addition = function() { return true; };!, nil)
       end
+    end
+    # Standard plugin's code
+    assert_raise Java::OrgMozillaJavascript::EvaluatorException do
+      runtime.evaluateString(%Q!$stdplugin.$std_action_panel__stdload__.testing_testing_addition = function() { return true; };!, nil)
     end
     assert checks > 20
     # Try and replace a function on an object

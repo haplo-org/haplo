@@ -39,6 +39,7 @@ public class KGenerateXLS extends KGenerateTable {
     private Sheet sheet;
     private CellStyle dateCellStyle;
     private CellStyle dateOnlyCellStyle;
+    private CellStyle notAFormulaCellStyle;
     private HashMap<Integer, Integer> columnMinWidths;
 
     private static final int DATE_AND_TIME_COLUMN_WIDTH = 4096;  // nice and big to give plenty of room for error on various MS platforms
@@ -106,7 +107,16 @@ public class KGenerateXLS extends KGenerateTable {
                 if(value instanceof Number) {
                     c.setCellValue(((Number)value).doubleValue());
                 } else if(value instanceof CharSequence) {
-                    c.setCellValue(((CharSequence)value).toString());
+                    String str = ((CharSequence)value).toString();
+                    // Prevent strings which look like formulas being interpreted as formulas by Excel
+                    if(str.startsWith("=")) {
+                        if(notAFormulaCellStyle == null) {
+                            notAFormulaCellStyle = workbook.createCellStyle();
+                            notAFormulaCellStyle.setQuotePrefixed(true);
+                        }
+                        c.setCellStyle(notAFormulaCellStyle);
+                    }
+                    c.setCellValue(str);
                 } else if(value instanceof Date) {
                     c.setCellValue((Date)value);
                     // Check to see if option is for dates only

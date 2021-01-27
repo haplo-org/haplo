@@ -20,4 +20,6 @@ public interface TemplatePlatformFunctions {
     String stdtmpl_icon_type(AppObjRef typeRef, String size);
     String stdtmpl_icon_object(AppObject object, String size);
     String stdtmpl_icon_description(String description, String size);
+
+    boolean stdtmpl_test_user_controlled_url_is_valid(String url);
 }

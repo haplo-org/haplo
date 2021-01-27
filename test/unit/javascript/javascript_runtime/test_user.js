@@ -85,6 +85,13 @@ TEST(function() {
     TEST.assert(null !== u1.data);
     TEST.assert(u1.data instanceof $UserData);
 
+    // User timezone
+    u1tz = u1.getTimeZone();
+    TEST.assert(u1tz instanceof $TimeZone);
+    TEST.assert_equal("Europe/London", u1tz.id); // platform default timezone
+    // Group timezone
+    TEST.assert_equal("Pacific/Auckland", O.group(22).getTimeZone().id);
+
     // Check integers and bad names aren't accepted
     TEST.assert_exceptions(function() { u1.data[0] = 1; });
     TEST.assert_exceptions(function() { u1.data[""] = 2; });

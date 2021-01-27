@@ -470,7 +470,7 @@ class JavaScriptControllerTest < IntegrationTest
       ['Randomness','Hello','There','(DELETED)'].each do |t|
         assert response.body.include?(t)
       end
-      # File.open("test.xls", "w") { |f| f.write response.body }
+      # File.open("test.xls", "wb") { |f| f.write response.body }
     end
 
     # Rewriting CSS and url of static files

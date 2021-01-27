@@ -1798,8 +1798,16 @@ body.z__minimal_layout {
     border-color: COLOUR[mix(:main,70,#fff,30)];
 }
 
+/* overrides for buttons used in template:std:ui:button:panel-style-submit() */
+.z__plugin_ui_action_panel button.z__plugin_ui_action_panel_entry {
+    width: 100%;
+    text-align: left;
+    font: inherit;
+    font-family: inherit;
+}
 
-.z__plugin_ui_action_panel a.z__plugin_ui_action_panel_entry:hover {
+.z__plugin_ui_action_panel a.z__plugin_ui_action_panel_entry:hover,
+.z__plugin_ui_action_panel button.z__plugin_ui_action_panel_entry:hover {
     color: #333;
     background: #bbb;
     text-decoration: none;

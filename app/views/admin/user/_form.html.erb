@@ -4,7 +4,7 @@
 <% f = form_for(@transfer, :user) %>
   <% if params.has_key?('kind'.freeze) %><input type="hidden" name="kind" value="<%= h(params['kind'.freeze]) %>"><% end %>
   <% unless @hide_main -%>
-  <% if @user.kind.to_i != User::KIND_USER -%>
+  <% if @user.is_group -%>
     <p>Name<br><%= f.text_field :name %></p>
     <%= code_value_edit_ui(@transfer.read_attribute(:code), 'user[code]') %>
     <p>Notification email address <i>(optional)</i><br><%= f.text_field :email, 'size="30"' %></p>

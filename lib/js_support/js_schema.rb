@@ -29,15 +29,16 @@ module KSchemaToJavaScript
 
   def self.schema_to_js(schema)
     js = <<-__E .dup
-      var TYPE = new $CheckingLookupObject("TYPE");
-      var ATTR = new $CheckingLookupObject("ATTR");
-      ATTR.Parent=#{KConstants::A_PARENT};
-      ATTR.Type=#{KConstants::A_TYPE};
-      ATTR.Title=#{KConstants::A_TITLE};
-      var ALIASED_ATTR = new $CheckingLookupObject("ALIASED_ATTR");
-      var QUAL = new $CheckingLookupObject("QUAL");
-      var LABEL = new $CheckingLookupObject("LABEL");
-      var GROUP = new $CheckingLookupObject("GROUP");
+    $schema__runtimeinit__ = function(global) {
+      global.TYPE = new $CheckingLookupObject("TYPE");
+      global.ATTR = new $CheckingLookupObject("ATTR");
+      global.ATTR.Parent=#{KConstants::A_PARENT};
+      global.ATTR.Type=#{KConstants::A_TYPE};
+      global.ATTR.Title=#{KConstants::A_TITLE};
+      global.ALIASED_ATTR = new $CheckingLookupObject("ALIASED_ATTR");
+      global.QUAL = new $CheckingLookupObject("QUAL");
+      global.LABEL = new $CheckingLookupObject("LABEL");
+      global.GROUP = new $CheckingLookupObject("GROUP");
     __E
     objrefs = [] # var name, code (untrusted), objref (trusted)
     values = [] # var name, code (untrusted), value (trusted)
@@ -74,29 +75,29 @@ module KSchemaToJavaScript
     # Write JavaScript to define schema
     objrefs.each do |var, code, objref|
       if code
-        js << "#{var}[#{code.to_json}]=(new $Ref(#{objref.obj_id}));\n"
+        js << "global.#{var}[#{code.to_json}]=(new $Ref(#{objref.obj_id}));\n"
       end
     end
     values.each do |var, code, value|
       if code
-        js << "#{var}[#{code.to_json}]=#{value};\n"
+        js << "global.#{var}[#{code.to_json}]=#{value};\n"
       end
     end
     # SCHEMA object
     js << <<-__E
-      var SCHEMA = new $CheckingLookupObject("SCHEMA");
+      global.SCHEMA = new $CheckingLookupObject("SCHEMA");
       O.$private.prepareSCHEMA(SCHEMA);
       _.extend(SCHEMA, {
-        TYPE: TYPE,
-        ATTR: ATTR,
-        ALIASED_ATTR: ALIASED_ATTR,
-        QUAL: QUAL,
-        LABEL: LABEL,
-        GROUP: GROUP
+        TYPE: global.TYPE,
+        ATTR: global.ATTR,
+        ALIASED_ATTR: global.ALIASED_ATTR,
+        QUAL: global.QUAL,
+        LABEL: global.LABEL,
+        GROUP: global.GROUP
       });
     __E
     # Plugin specific schema information from requirements files
-    js << "O.$private.preparePluginSchemaRequirements(#{KApp.global(:js_plugin_schema_requirements) || '{}'});\n"
+    js << "O.$private.preparePluginSchemaRequirements(#{KApp.global(:js_plugin_schema_requirements) || '{}'});\n};"
     js
   end
 

@@ -31,4 +31,10 @@ module KHooks
     h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of viewing the search results"
   end
 
+  # NOTE: This is a temporary interface which will be removed
+  define_hook :hTempTaskListDisplay do |h|
+    h.private_hook
+    h.result      :sidebarHTML, String,   nil,  "Extra HTML to display in the sidebar of the Task list."
+  end
+
 end

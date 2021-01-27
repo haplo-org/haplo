@@ -13,8 +13,10 @@ import org.haplo.javascript.profiler.JSProfiler;
 // See notes on sandboxing here: http://codeutopia.net/blog/2009/01/02/sandboxing-rhino-in-java/
 class OContextFactory extends ContextFactory {
     private static boolean warnedAboutInterpreterAndProfiler = false;
+    private int optimisationLevel = 0;
 
-    OContextFactory() {
+    OContextFactory(int optimisationLevel) {
+        this.optimisationLevel = optimisationLevel;
     }
 
     protected Context makeContext() {
@@ -34,6 +36,8 @@ class OContextFactory extends ContextFactory {
                 );
                 warnedAboutInterpreterAndProfiler = true;
             }
+        } else {
+            cx.setOptimizationLevel(optimisationLevel);
         }
         return cx;
     }

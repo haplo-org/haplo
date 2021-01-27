@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.haplo.appserver.Response;
 import org.haplo.appserver.FileUploads;
+import org.haplo.javascript.Runtime.SharedJavaScriptInitialiser;
 
 public interface Framework {
     // Application control
@@ -43,7 +44,7 @@ public interface Framework {
     boolean pluginDebuggingEnabled();
 
     // JavaScript runtime
-    String runtimeSharedJavaScriptInitialiser();
+    SharedJavaScriptInitialiser runtimeSharedJavaScriptInitialiser();
 
     // Development mode support
     boolean devmodeCheckReload();

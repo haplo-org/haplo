@@ -255,6 +255,12 @@ __E
     assert_equal %Q!<a href="http://www.example.com/0123456789#&lt;123456&gt;" class="z__url_value">http://www.<span>example.com</span>/0123456789#&lt;123456&gt;</a>!, URLRenderTester.test_url_value_rendering('http://www.example.com/0123456789#<123456>')
     # Bare domain beginning with www
     assert_equal %Q!<a href="http://wwwexample.com/hello" class="z__url_value">http://<span>wwwexample.com</span>/hello</a>!, URLRenderTester.test_url_value_rendering('http://wwwexample.com/hello')
+    # https: URLs get linked too
+    assert_equal %Q!<a href="https://wwwexample.com/ping" class="z__url_value">https://<span>wwwexample.com</span>/ping</a>!, URLRenderTester.test_url_value_rendering('https://wwwexample.com/ping')
+    # HTML gets escaped
+    assert_equal %Q!<a href="https://example.com/&lt;script&gt;" class="z__url_value">https://<span>example.com</span>/&lt;script&gt;</a>!, URLRenderTester.test_url_value_rendering('https://example.com/<script>')
+    # Don't link non-http(s) URLs
+    assert_equal 'javascript:window.alert(&quot;hello!&quot;)', URLRenderTester.test_url_value_rendering('javascript:window.alert("hello!")')
   end
   module URLRenderTester
     extend Application_RenderHelper

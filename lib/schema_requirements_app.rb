@@ -857,8 +857,8 @@ module SchemaRequirements
   end
 
   class SchemaForJavaScriptRuntime
-    def initialize
-      @requirements = JSON.parse(KApp.global(:js_plugin_schema_requirements) || '{}')
+    def initialize(reqs = nil)
+      @requirements = reqs || JSON.parse(KApp.global(:js_plugin_schema_requirements) || '{}')
     end
     def for_plugin(name)
       @requirements[name] || {}

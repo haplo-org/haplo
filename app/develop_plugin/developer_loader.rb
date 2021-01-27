@@ -380,7 +380,6 @@ class DeveloperLoader
       if need_apply
         apply_plugin_names = []
         name_to_id_update = {}
-        plugin_loader_version = java.lang.System.currentTimeMillis()
         plugin_loaded_ids.each do |loaded_plugin|
           return unless setup_plugin_id_info(loaded_plugin)
           load_info
@@ -389,7 +388,6 @@ class DeveloperLoader
           if missing_files.empty?
             # (Re-)register the plugin, mark it for installation
             plugin = KJavaScriptPlugin.new(@loaded_plugin_pathname)
-            plugin.__loader_version = plugin_loader_version
             KPlugin.register_plugin(plugin, KApp.current_application)
             apply_plugin_names << plugin.name
             # Store ID for update

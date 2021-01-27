@@ -504,6 +504,7 @@ final public class Parser {
             }
             if(inFragment) {
                 // Parse rest of arguments as a simple list of nodes
+                boolean haveAddedFragmentNode = false;
                 while(true) {
                     Node fragmentNode = parseOneValue(endOfListCharacter);
                     if(fragmentNode == null) {
@@ -512,7 +513,12 @@ final public class Parser {
                         break;
                     } else {
                         url.addFragmentNode(fragmentNode);
+                        haveAddedFragmentNode = true;
                     }
+                }
+                if(!haveAddedFragmentNode) {
+                    // Need at least one fragment node to trigger output of fragment, required so that one char # URLs are output
+                    url.addFragmentNode(new NodeLiteral(""));
                 }
                 break;
             }

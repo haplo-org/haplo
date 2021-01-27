@@ -65,6 +65,72 @@
 }
 
 
+/* Transition Steps UI */
+
+#z__workflow_steps_container {
+    margin: 0 0 24px 0;
+    text-align: right;
+}
+
+#z__workflow_steps_container form {
+    display: inline-block;
+    padding: 0;
+    margin: 0 0 6px 0;
+}
+
+#z__workflow_steps_container button {
+    padding: 4px 8px;
+    margin: 0;
+    font-family: Helvetica,Arial,sans-serif;
+    font-size: 12px;
+    line-height: 1em;
+    color: #222;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #eee;
+    max-width: 150px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+#z__workflow_steps_container form + form:before {
+    content: '\25B8';
+    margin: 0 4px;
+    color: #888;
+}
+
+#z__workflow_steps_container button.z__workflow_steps_current {
+    background: #fff;
+    border-color: #ccc;
+}
+
+#z__workflow_steps_container button.z__workflow_steps_first_incomplete:before {
+    display: inline-block;
+    content: '';
+    height: 8px;
+    width: 8px;
+    border-radius: 4px;
+    background: #6ec148;
+    margin-right: 4px;
+}
+
+#z__workflow_steps_container button.z__workflow_steps_complete_later,
+#z__workflow_steps_container button.z__workflow_steps_complete_later:disabled {
+    background: #fff;
+    color: #ccc;
+    border-color: #ddd;
+}
+
+#z__workflow_steps_container button:active {
+    color: #888;
+}
+
+#z__workflow_steps_container button:disabled {
+    color: #000;
+}
+
+
 /* Notes for workflow */
 
 .z__workflow_note_header {

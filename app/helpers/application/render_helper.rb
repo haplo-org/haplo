@@ -368,7 +368,9 @@ module Application_RenderHelper
       unless t.attributes.empty?
         h << %Q!<div class="z__object_attribute_group_attribute_name">#{ERB::Util.h(t.descriptor.printable_name.to_s)}</div>! unless first
         t.attributes.each do |v,d,q|
+          h << '<div>'
           h << render_value(v, obj, render_options, attr_desc)
+          h << '</div>'
         end
       end
       first = false # only omit the title on the first attribute in the type definition
@@ -424,6 +426,8 @@ module Application_RenderHelper
   def render_value_identifier_url(value, obj, render_options, attr_desc)
     # Don't use default to_html because it won't include the span to highlight the domain
     url = h(value.text)
+    # SECURITY: Only display a link for whitelisted URLs
+    return url unless url =~ K_LINKABLE_URL_WHITELIST
     # The label needs spaces inserted every so often to get it to line break reasonably, and the domain higlighted
     label = h(value.text).gsub(/(:\/\/([wW]+\.)?)([^\/]+)(\/|$)/,'\\1<span>\\3</span>\\4')
     %Q!<a href="#{url}" class="z__url_value">#{label}</a>!
@@ -596,25 +600,22 @@ module Application_RenderHelper
         next
       end
 
-      html << '<tr class="z__keyvalue_row">'
-      last_index = toa.attributes.length - 1
       toa.attributes.each_with_index do |vdq,index|
         value,desc,qualifier = vdq
-        # Descriptor name?
-        html << %Q!<td class="z__keyvalue_col1">#{h(toa.descriptor.printable_name.to_s)}</td>! if index == 0
-        if qualifier != nil
-          qual_descriptor = schema.qualifier_descriptor(qualifier)
-          if qual_descriptor != nil
-            if index == 0
-              # Start a new row for qualifiers, with special spacer.
-              html << '</tr>'
-            end
-            html << %Q!<tr class="z__keyvalue_row"><td class="z__keyvalue_col1_qualifer">#{h(qual_descriptor.printable_name)}</td>!
-          end
+        qual_descriptor = qualifier ? schema.qualifier_descriptor(qualifier) : nil
+        html << '<tr class="z__keyvalue_row">'
+        if index == 0
+          html << %Q!<td class="z__keyvalue_col1">#{h(toa.descriptor.printable_name.to_s)}</td>!
+          # On first row, qualifiers need to start another row.
+          html << '<td></td></tr><tr class="z__keyvalue_row">' if qual_descriptor
+        end
+        if qual_descriptor != nil
+          html << %Q!<td class="z__keyvalue_col1_qualifer">#{h(qual_descriptor.printable_name)}</td>!
+        elsif index != 0
+          html << '<td class="z__keyvalue_col1"></td>'
         end
         # Value and finish row
-        html << '<td class="z__keyvalue_col2'
-        html << %Q!">#{render_value(value, obj, render_options, desc)}</td></tr>\n!
+        html << %Q!<td class="z__keyvalue_col2">#{render_value(value, obj, render_options, desc)}</td></tr>\n!
       end
     end
     html << '</table>'

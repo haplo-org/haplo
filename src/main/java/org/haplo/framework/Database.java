@@ -34,7 +34,7 @@ public class Database {
         if(password != null) { p.setProperty("dataSource.password", password); }
         // Set size of pool to avoid using too many connection when reltively idle, but scale up under load
         p.setProperty("minimumIdle", "8");
-        p.setProperty("maximumPoolSize", "92");
+        p.setProperty("maximumPoolSize", "20");
         configProperties = p;
 
         // Long-running connections aren't in the pool

@@ -95,6 +95,8 @@ class KIdentifierURL < KIdentifier
   # Render as a simple link
   def to_html
     url = ERB::Util.h(self.text)
+    # SECURITY: Only display a link for whitelisted URLs
+    return url unless url =~ K_LINKABLE_URL_WHITELIST
     %Q!<a href="#{url}">#{url}</a>!
   end
 end

@@ -265,10 +265,31 @@ class KFramework
     Thread.current[:_frm_request_context] = nil
   end
 
+  INTERNAL_ERROR_RESPONSE = <<__E
+<!DOCTYPE html>
+<html>
+<head>
+<title>Error</title>
+<style type="text/css">
+  html { font-family:Helvetica,Arial,sans-serif; }
+  body { margin:32px; }
+  div { border:1px solid #888;max-width:460px;margin:64px auto;padding:16px 24px 8px 24px;box-shadow: 1px 1px 5px rgba(0,0,0,0.15), -1px 1px 5px rgba(0,0,0,0.15); }
+  h1 { margin:0;font-size:24px; }
+  p { margin:12px 0;font-size:14px;line-height:20px; }
+</style>
+</head>
+<body>
+  <div style="">
+    <h1>Error</h1>
+    <p>An error was encountered, and your request could not be completed.</p>
+    <p>A report has been sent automatically to our support team.</p>
+  </div>
+</body>
+</html>
+__E
+
   def make_error_response(exception, exchange)
-    # TODO: Make the default error message prettier
-    message = "<html><h1>Internal error</h1><p>An internal error has occurred. If the problem persists, please contact support.</p></html>"
-    KFramework::DataResponse.new(message, 'text/html; charset=utf-8', 500)
+    KFramework::DataResponse.new(INTERNAL_ERROR_RESPONSE, 'text/html; charset=utf-8', 500)
   end
 
   def make_csrf_response(exchange)

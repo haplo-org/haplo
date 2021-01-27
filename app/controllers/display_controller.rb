@@ -199,7 +199,7 @@ class DisplayController < ApplicationController
         # Make sure work units are rendered for non-anonymous users
         unless @request_user.policy.is_anonymous?
           unless @elements.has_element?('std:object_tasks')
-            @elements.insert_element(0, 'bottom', 'std:object_tasks')
+            @elements.insert_element(-1, 'bottom', 'std:object_tasks')
           end
         end
       end

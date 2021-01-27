@@ -105,7 +105,8 @@ class JavaScriptDebugReportingTest < IntegrationTest
         end
       end
       get path, nil, {:expected_response_codes => [500]}
-      assert_equal "<html><h1>Internal error</h1><p>An internal error has occurred. If the problem persists, please contact support.</p></html>", response.body
+      assert_equal KFramework::INTERNAL_ERROR_RESPONSE, response.body
+      assert_select 'h1', 'Error'
     end
   end
 

@@ -49,11 +49,12 @@ var defineTimelineDatabase = function(plugin, workflowName) {
 
 // --------------------------------------------------------------------------
 
-var Transition = P.Transition = function(M, name, destination, destinationTarget) {
+var Transition = P.Transition = function(M, name, destination, destinationTarget, isBypass) {
     this.M = M;
     this.name = name;
     this.destination = destination;
     this.destinationTarget = destinationTarget;
+    this.isBypass = isBypass;
 };
 Transition.prototype.__defineGetter__('destinationFinishesWorkflow', function() {
     return !!((this.M.$states[this.destination] || {}).finish);
@@ -93,9 +94,12 @@ var Transitions = P.Transitions = function(M) {
         if(-1 === d.indexOf(destination, 1)) {
             throw new Error("Bad workflow destination resolution");
         }
-        var filterResult = M._callHandler('$filterTransition', name);
+        var isBypass = M.isBypassTransition(name);
+        var filterResult = isBypass ?
+                M._callHandler('$filterBypassTransition', name) : //Bypass transitions can only be filtered via this feature
+                M._callHandler('$filterTransition', name);
         if((filterResult === undefined) || (filterResult === true)) {
-            this.list.push(new Transition(M, name, destination, destinationTarget));
+            this.list.push(new Transition(M, name, destination, destinationTarget, isBypass));
         }
     }
 };
@@ -125,6 +129,7 @@ var WorkflowInstanceBase = P.WorkflowInstanceBase = function() {
     });
     this.$textLookup = {};
     this.$notifications = {};
+    this.$bypassTransitions = [];
 };
 
 WorkflowInstanceBase.prototype = {
@@ -258,6 +263,19 @@ WorkflowInstanceBase.prototype = {
             O.service("std:workflow:notify:transition", this, transition, previousState);
         }
         return this;
+    },
+
+    isBypassTransition: function(transition) {
+        var bypass = this.$bypassTransitions;
+        return !!_.find(bypass, function(e) {
+            if(typeof(e) === "string") {
+                return e === transition;
+            } else if(e.test) {
+                return e.test(transition);
+            } else {
+                throw new Error("Unknown bypass transition specification: "+e);
+            }
+        });
     },
 
     _forceMoveToStateFromTimelineEntry: function(entry, forceTarget) {
@@ -468,9 +486,33 @@ WorkflowInstanceBase.prototype = {
     },
 
     timelineSelect: function() {
-        // order by ID rather than datetime to make sure always in sequence -- datetime could be equal
-        // TODO: Change platform so order("id") works, then use instead of stableOrder().
+        // Use stableOrder() to sort by id, which ensures timeline is always in sequence (datetime
+        // could be equal). Users of this API rely on the platform database interface ignoring
+        // stableOrder() if any order() clauses are added to the query.
         return this.$timeline.select().where("workUnitId","=",this.workUnit.id).stableOrder();
+    },
+
+    getLastTransitionFromState: function(state, target) {
+        var stateDefinition = this.$states[state];
+        if(!stateDefinition) { throw new Error("Unknown state: "+state); }
+        var transitions = _.map(stateDefinition.transitions||[], function(t) { return t[0]; });
+        var q = this.$timeline.select().
+                    where("workUnitId", "=", this.workUnit.id).
+                    where("previousState", "=", state).
+                    order("id", true). // descending to find last transition
+                    limit(1);
+        if(target) { q.where("target", "=", target); }
+        if(transitions.length === 0) {
+            return undefined;
+        } else if(transitions.length === 1) {
+            q.where("action", "=", transitions[0]);
+        } else {
+            var sq = q.or();
+            _.each(transitions, function(t) {
+                sq.where("action", "=", t);
+            });
+        }
+        return q.length ? q[0].action : undefined;
     },
 
     _findCurrentActionableByNameFromStateDefinitions: function() {
@@ -712,6 +754,11 @@ Workflow.prototype = {
         defn.transitions.push([transition, destination]);
     },
 
+    hasBypassTransition: function(test) {
+        this.$instanceClass.prototype.$bypassTransitions.push(test);
+        return this;
+    },
+
     // ----------------------------------------------------------------------
 
     text: function(text) {
@@ -811,9 +858,12 @@ implementHandlerList('currentlyWithDisplayName');
 implementHandlerList('resolveDispatchDestination');
 implementHandlerList('resolveTransitionDestination');
 implementHandlerList('filterTransition');
+implementHandlerList('filterBypassTransition');
+implementHandlerList('transitionStepsUI');
 implementHandlerList('transitionUI');
 implementHandlerList('transitionUIWithoutTransitionChoice');
 implementHandlerList('transitionFormSubmitted');
+implementHandlerList('bypassTransitionFormSubmitted');
 implementHandlerList('transitionFormPreTransition');
 implementHandlerList('transitionUIValidateTarget');
 implementHandlerList('transitionUIPostTransitionRedirectForActionableUser');

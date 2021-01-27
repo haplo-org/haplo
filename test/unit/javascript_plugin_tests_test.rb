@@ -6,6 +6,7 @@
 
 
 class JavascriptPluginTestsTest < Test::Unit::TestCase
+  include KConstants
 
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_plugin_tests/tested_plugin")
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/javascript_plugin_tests/tested_plugin_failures")
@@ -28,6 +29,8 @@ class JavascriptPluginTestsTest < Test::Unit::TestCase
       # Make sure something happened
       assert_equal 3, results[:tests]
       assert results[:asserts] > 10
+      # Check label in requirements was created
+      assert_equal 1, KObjectStore.query_and.link(O_TYPE_LABEL, A_TYPE).identifier(KIdentifierConfigurationName.new("test:label:something")).execute.length
     ensure
       KPlugin.uninstall_plugin("tested_plugin")
     end

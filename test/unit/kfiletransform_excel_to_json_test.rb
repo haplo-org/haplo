@@ -109,6 +109,11 @@ class KFileTransformExcelToJsonTest < Test::Unit::TestCase
       ]
     },
     {
+      "name": "Hidden sheet",
+      "hidden": true,
+      "rows": []
+    },
+    {
       "name": "Another sheet",
       "rows": [
         [

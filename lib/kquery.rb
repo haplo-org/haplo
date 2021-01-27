@@ -384,7 +384,7 @@ class KQuery
       %Q!(#{displayable_terms([a]).first} <i>within #{distance} of</i> #{displayable_terms([b]).first})!
 
     when :machine
-      '<i>#'+token.last+'#</i>'
+      '<i>#'+ERB::Util::h(token.last)+'#</i>'
 
     when :constraint
       kind, c_info, constrained = token
@@ -395,7 +395,7 @@ class KQuery
     when :types
       kind, types, rejects = token
       # TODO: Add icons for types
-      %Q!<span class="z__search_explanation_attr_name">Type :</span> #{types.map {|d| schema.type_descriptor(d).printable_name}.join(', ')} <strike>#{rejects}</strike>!
+      %Q!<span class="z__search_explanation_attr_name">Type :</span> #{types.map {|d| ERB::Util::h(schema.type_descriptor(d).printable_name)}.join(', ')} <strike>#{ERB::Util::h(rejects)}</strike>!
 
     when :datetime
       kind, c_info, dates = token
@@ -461,7 +461,7 @@ class KQuery
 
   def displayable_terms(terms)
     terms.map do |t|
-      (t =~ /\A([^:]+):.+?(\*?)\z/) ? "#{$1}#{$2}" : t
+      ERB::Util::h((t =~ /\A([^:]+):.+?(\*?)\z/) ? "#{$1}#{$2}" : t)
     end
   end
 

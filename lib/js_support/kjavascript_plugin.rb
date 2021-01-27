@@ -102,26 +102,35 @@ class KJavaScriptPlugin < KPlugin
     (@plugin_json["privilegesRequired"] || []).include?(privilege)
   end
 
-  SCHEMA_LOCALS = {
-    "type" => "T",
-    "attribute" => "A",
-    "aliased-attribute" => "AA",
-    "qualifier" => "Q",
-    "label" => "Label",
-    "group" => "Group"
-  }
+  SCHEMA_LOCALS = [
+    ["type", "T"],
+    ["attribute", "A"],
+    ["aliased-attribute", "AA"],
+    ["qualifier", "Q"],
+    ["label", "Label"],
+    ["group", "Group"]
+  ]
 
-  def javascript_load(runtime, schema_for_js_runtime)
-    global_javascript = javascript_generate_global_js()
-    runtime.evaluateString(global_javascript, "p/#{name}/global.js") if global_javascript.length > 0
-    prefix, suffix = javascript_file_wrappers(schema_for_js_runtime)
-    javascript_load_all_js(runtime, prefix, suffix)
+  def javascript_loader_symbol
+    return "$#{name}__load__"
   end
 
-  def javascript_generate_global_js()
-    # Load global.js file, if appropraite, set up prefix and suffix for wrapping loaded scripts.
+  def javascript_load(loader, schema_for_js_runtime)
+    loader.evaluateString("this.#{self.javascript_loader_symbol} = [];", "p/#{name}/<pre>")
+    prefix, suffix = javascript_file_wrappers(schema_for_js_runtime)
+    # Add wrappers to the wrappers to store in the load functions array.
+    prefix = "#{self.javascript_loader_symbol}.push(function(){#{prefix}"
+    suffix = "#{suffix}});"
+    @plugin_json["load"].each do |filename|
+      raise "Bad plugin script filename" if filename =~ /\.\./ || filename =~ /\A\//
+      loader.loadScript("#{@plugin_path}/#{filename}", "p/#{name}/#{filename}", prefix, suffix)
+    end
+  end
+
+  def javascript_init(runtime)
     name = self.name
     global_javascript = ''.dup
+    # Does the plugin specify the global JS for creating the plugin?
     global_js = "#{@plugin_path}/global.js"
     if File.exist?(global_js)
       global_javascript = File.read(global_js)
@@ -129,19 +138,14 @@ class KJavaScriptPlugin < KPlugin
     else
       global_javascript << "var #{name} = O.plugin('#{name}');\n"
     end
+    # Add any features specified in plugin.json
     use_features = @plugin_json['use']
     if use_features && !(use_features.empty?)
       global_javascript << "#{JSON.generate(use_features)}.forEach(function(f) { #{name}.use(f); });\n"
     end
-    global_javascript
-  end
-
-  def javascript_load_all_js(runtime, prefix, suffix)
-    # Load the JavaScript files
-    @plugin_json["load"].each do |filename|
-      raise "Bad plugin script filename" if filename =~ /\.\./ || filename =~ /\A\//
-      runtime.loadScript("#{@plugin_path}/#{filename}", "p/#{name}/#{filename}", prefix, suffix)
-    end
+    # Execute the plugin code which is compiled in the shared application scope
+    global_javascript << "$Plugin.__init__(#{self.javascript_loader_symbol});\n"
+    runtime.evaluateString(global_javascript, "p/#{name}/global.js")
   end
 
   def javascript_file_wrappers(schema_for_js_runtime)
@@ -155,11 +159,15 @@ class KJavaScriptPlugin < KPlugin
     end
     if self.api_version >= 4
       reqs = schema_for_js_runtime.for_plugin(name)
-      reqs.each do |kind, value|
-        locals_name = SCHEMA_LOCALS[kind]
-        next unless locals_name # ignore "_optional" key
-        prefix << ", #{locals_name}"
-        loadargs << ", $registry.pluginSchema.#{name}['#{kind}']"
+      # Process SCHEMA_LOCALS consistently in order so that:
+      #  1) standard plugins loaded into the shared scope have consistent argument order across all applications
+      #  2) ignore any extra keys (eg _optional)
+      SCHEMA_LOCALS.each do |kind, locals_name|
+        value = reqs[kind]
+        if value
+          prefix << ", #{locals_name}"
+          loadargs << ", $registry.pluginSchema.#{name}['#{kind}']"
+        end
       end
     end
     prefix << "){"
@@ -231,20 +239,6 @@ class KJavaScriptPlugin < KPlugin
     plugin = KJavaScriptPlugin.new(plugin_path)
     KPlugin.register_plugin(plugin, plugin.restrict_to_application_id)
     plugin.name
-  end
-
-  BUILT_IN_JAVASCRIPT_PLUGINS_DIR = "#{KFRAMEWORK_ROOT}/app/plugins"
-
-  # Register built in plugins
-  KPlugin::REGISTER_KNOWN_PLUGINS << Proc.new do
-    Dir.glob("#{BUILT_IN_JAVASCRIPT_PLUGINS_DIR}/*/plugin.json") do |filename|
-      begin
-        self.register_javascript_plugin(File.dirname(filename))
-      rescue => e
-        # Too early in the application boot process for logging
-        puts "\n\n*******\nWhile registering built-in JavaScript plugin #{filename}, got exception #{e}"; puts
-      end
-    end
   end
 
   def self.each_third_party_javascript_plugin
@@ -472,7 +466,7 @@ class KJavaScriptPlugin < KPlugin
       api_version = (plugin_json["apiVersion"] || 4).to_i
       if api_version >= 4
         # Can't use schema names for locals when using API 4 or later
-        KJavaScriptPlugin::SCHEMA_LOCALS.each_value do |k|
+        KJavaScriptPlugin::SCHEMA_LOCALS.each do |_, k|
           if plugin_json[self.name].has_key?(k)
             raise PluginJSONError, "plugin.json: in #{self.name}, using a local named #{k} conflicts with schema names"
           end

@@ -15,6 +15,8 @@ t.test(function() {
     t.assertThrows(P.willThrowException, "Error message");
     t.assertThrows(function() { P.willThrowException("New message"); }, "New message");
 
+    // See if test schema requirements were applied
+    t.assert("test:label:something" in LABEL);
 
     // Check the schema is available
     t.assert(T.TestingPerson == O.ref('20x0'));

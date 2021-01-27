@@ -127,6 +127,10 @@ module JSUserSupport
     user.set_user_data(UserData::NAME_LOCALE, locale_id)
   end
 
+  def self.getTimeZoneName(user)
+    user.get_user_data(UserData::NAME_TIME_ZONE) || KDisplayConfig::DEFAULT_TIME_ZONE
+  end
+
   def self.getUserDataJSON(user)
     user.get_user_data(UserData::NAME_JAVASCRIPT_JSON)
   end

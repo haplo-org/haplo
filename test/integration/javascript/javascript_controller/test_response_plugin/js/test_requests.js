@@ -340,7 +340,7 @@
     ], function(E, with_finish) {
         var xls = O.generate.table.xls("Excel Test"); // has character which will be filtered out
         xls.newSheet("Randomness");
-        xls.cell("Hello").cell("There");
+        xls.cell("Hello").cell("There").cell("=2+3"/* should display as text */);
         // Add a cell with a ref to something which does't exist in a section which does
         //  - checks that it doesn't go bang when the obj can't be loaded
         xls.cell(O.ref(39854));

@@ -88,6 +88,7 @@ class KFramework
         KApp.logger.info("Background task #{task.description} has stopped.")
         KApp.logger.flush_buffered
       end
+      task._thread.name = "bg:#{task.description}"
       # Wait a little while before starting the next task, to avoid rushing all at once
       sleep 0.2
     end

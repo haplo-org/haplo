@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.haplo</groupId>
   <artifactId>haplo</artifactId>
-  <version>3.20200618.1555.c289984b73</version>
+  <version>3.20210121.1601.02d414190e</version>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -62,17 +62,17 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.4.28.v20200408</version>
+      <version>9.4.30.v20200611</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-continuation</artifactId>
-      <version>9.4.28.v20200408</version>
+      <version>9.4.30.v20200611</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-client</artifactId>
-      <version>9.4.28.v20200408</version>
+      <version>9.4.30.v20200611</version>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>

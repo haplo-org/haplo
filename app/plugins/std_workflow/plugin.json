@@ -11,6 +11,7 @@
   "load": [
       "js/std_workflow.js",
       "js/std_workflow_ui.js",
+      "js/std_workflow_ui_transition_steps.js",
       "js/std_workflow_entities.js",
       "js/std_workflow_emails.js",
       "js/std_workflow_notifications.js",

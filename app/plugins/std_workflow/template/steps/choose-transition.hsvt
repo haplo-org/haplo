@@ -1,0 +1,19 @@
+std:plugin:resources("steps.js")
+
+std:workflow:transition-steps:navigation(M "std:workflow:transitions-choice")
+
+// TODO: Would be nicer if there was a version of std:ui:choose() which was <button> elements to make it easier to POST forms. But we'll use JS for now.
+
+unless(requestedTransition) {
+  <div id="z__workflow_steps_choose_transition_container">
+    template:std:ui:choose()
+  </div>
+}
+
+<form method="POST" id="z__workflow_steps_choose_transition_post"> std:form:token()
+  <input type="hidden" name="transition" value=requestedTransition>
+  if(requestedTransition) {
+    // Fall back, should never be seen as JS posts automatically
+    <p> <input type="submit" value="Continue"> </p>
+  }
+</form>

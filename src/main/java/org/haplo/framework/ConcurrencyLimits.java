@@ -16,16 +16,8 @@ public class ConcurrencyLimits {
     // How many requests can an application have in-flight at once?
     public static final int APPLICATION_CONCURRENT_REQUESTS_PERMITS = 8;
 
-    // How many active Ruby threads?
-    public static final int RUBY_RUNTIME_PERMITS = 96;
-
     // When another request is in progress, how many times should the handler wait to see if it can be the only request processed at once?
     public static final int APPLICATION_CONCURRENT_REQUESTS_MAX_SPINS = 4;
     // And how long should it wait?
     public static final int APPLICATION_CONCURRENT_REQUESTS_MAX_WAIT_TIME = 5;  /* ms */
-
-    /**
-     * acquire this semaphore when using the Ruby intepreter.
-     */
-    public static Semaphore rubyRuntime = new Semaphore(RUBY_RUNTIME_PERMITS, true /* semaphore is fair */);
 }

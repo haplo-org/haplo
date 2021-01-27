@@ -177,8 +177,12 @@ class KTableExporter
               tc = v.k_typecode
               # TODO: Proper handling of attribute groups in table exporter - this just outputs the first value
               if tc == T_ATTRIBUTE_GROUP
-                v = v.transformed.first.attributes.first.first
-                next if v.nil?
+                va = v.transformed.first.attributes
+                if va.empty?
+                  v = KText.new('')
+                else
+                  v = va.first.first || KText.new('')
+                end
                 tc = v.k_typecode
               end
               # Determine type of value, for the conversion

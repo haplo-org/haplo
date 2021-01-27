@@ -59,6 +59,8 @@ class KAppDelete
       end
     end
 
+    Java::OrgHaploJavascript::Runtime.discardApplicationScope(app_id)
+
     # Remove all the files
     filestore_path = "#{KFILESTORE_PATH}/#{app_id}"
     FileUtils.rm_r(filestore_path)

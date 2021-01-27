@@ -2220,17 +2220,22 @@ _.extend(KEdAttributeGroup.prototype, {
         var parentContainer = this.p__keditorValueControl.p__parentContainer;
         var keditor = parentContainer.p__keditor;
 
-        var initialValuesByDesc = {};
-        _.each(this.q__initialAttributeValues, function(v) {
-            KEditor.j__adjustAttribute(v);
-            initialValuesByDesc[v[0]] = v[1];
-        });
-
         if(attributes.length === 0) {
             // Make it very obvious when schema isn't set up correctly. This will generally only
             // happen when a plugin sets up an object incorrectly.
             html += '<div style="color:red">Schema not valid for attribute group with desc '+_.escape(''+groupDesc)+'</div>';
         }
+
+        var initialAttributeValues = this.q__initialAttributeValues;
+        if(initialAttributeValues === undefined) {
+            // If no initial values set, create empty list so pseudo attributes types are initialised properly.
+            initialAttributeValues = _.map(attributes, function(desc) { return [desc, []]; });
+        }
+        var initialValuesByDesc = {};
+        _.each(initialAttributeValues, function(v) {
+            KEditor.j__adjustAttribute(v);
+            initialValuesByDesc[v[0]] = v[1];
+        });
 
         var first = true;
         _.each(attributes, function(desc) {

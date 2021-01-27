@@ -39,9 +39,9 @@ public class Application {
     // Application data
     private long applicationID;
     private Object rubyObject;
-    private Semaphore requestConcurrencySempahore;
-    private Lock requestFinishedLock;
-    private Condition requestFinishedCondition;
+    private Semaphore requestConcurrencySempahore[];
+    private Lock requestFinishedLock[];
+    private Condition requestFinishedCondition[];
     private volatile HashMap<String, Response> dynamicFiles; // could probably get away with not being volatile
     private int numAppSpecificStaticFiles;   // the files uploaded by the user for use in styling. -1 means "not set"
     private Set<String> allowedPluginFilePaths;
@@ -93,9 +93,9 @@ public class Application {
     /**
      * Check applications for exceeded concurrency limits
      */
-    public static String checkAllApplicationConcurrencyLimits() {
+    public static String checkAllApplicationConcurrencyLimits(int serverIndex) {
         for(Application app : applications.values()) {
-            if(app.getRequestConcurrencySempahore().availablePermits() <= 0) {
+            if(app.getRequestConcurrencySempahore(serverIndex).availablePermits() <= 0) {
                 // Too much concurrency - all permits used
                 return String.format("CONCURRENCY_APP %d", app.getApplicationID());
             }
@@ -125,9 +125,18 @@ public class Application {
      */
     private Application(long applicationID) {
         this.applicationID = applicationID;
-        this.requestConcurrencySempahore = new Semaphore(ConcurrencyLimits.APPLICATION_CONCURRENT_REQUESTS_PERMITS, true /* sempahore is fair */);
-        this.requestFinishedLock = new ReentrantLock(true);
-        this.requestFinishedCondition = requestFinishedLock.newCondition();
+        this.requestConcurrencySempahore = new Semaphore[] {
+            new Semaphore(ConcurrencyLimits.APPLICATION_CONCURRENT_REQUESTS_PERMITS, true /* sempahore is fair */),
+            new Semaphore(ConcurrencyLimits.APPLICATION_CONCURRENT_REQUESTS_PERMITS, true /* sempahore is fair */)
+        };
+        this.requestFinishedLock = new ReentrantLock[] {
+            new ReentrantLock(true),
+            new ReentrantLock(true)
+        };
+        this.requestFinishedCondition = new Condition[] {
+            this.requestFinishedLock[0].newCondition(),
+            this.requestFinishedLock[1].newCondition()
+        };
         this.numAppSpecificStaticFiles = -1;
     }
 
@@ -161,8 +170,8 @@ public class Application {
      * Returns the semaphore to stop too many concurrent requests for this
      * application.
      */
-    public Semaphore getRequestConcurrencySempahore() {
-        return requestConcurrencySempahore;
+    public Semaphore getRequestConcurrencySempahore(int serverIndex) {
+        return requestConcurrencySempahore[serverIndex];
     }
 
     /**
@@ -275,20 +284,20 @@ public class Application {
     /**
      * Is there another request in progress?
      */
-    public boolean isAnotherRequestBeingProcessed() {
+    public boolean isAnotherRequestBeingProcessed(int serverIndex) {
         // This is called by RequestHandler after it gains a semaphore, so if the count is more than total - 1, something else is working too.
-        return requestConcurrencySempahore.availablePermits() < (ConcurrencyLimits.APPLICATION_CONCURRENT_REQUESTS_PERMITS - 1);
+        return requestConcurrencySempahore[serverIndex].availablePermits() < (ConcurrencyLimits.APPLICATION_CONCURRENT_REQUESTS_PERMITS - 1);
     }
 
     /**
      * Call when a request has finished.
      */
-    public void requestFinished() {
-        requestFinishedLock.lock();
+    public void requestFinished(int serverIndex) {
+        requestFinishedLock[serverIndex].lock();
         try {
-            requestFinishedCondition.signal();
+            requestFinishedCondition[serverIndex].signal();
         } finally {
-            requestFinishedLock.unlock();
+            requestFinishedLock[serverIndex].unlock();
         }
     }
 
@@ -296,14 +305,14 @@ public class Application {
      * Wait for a request to finish
      * returns true if the wait finished early because a request finished
      */
-    public boolean waitForARequestToFinish(long timeout) {
-        requestFinishedLock.lock();
+    public boolean waitForARequestToFinish(int serverIndex, long timeout) {
+        requestFinishedLock[serverIndex].lock();
         try {
-            return requestFinishedCondition.await(timeout, TimeUnit.MILLISECONDS);
+            return requestFinishedCondition[serverIndex].await(timeout, TimeUnit.MILLISECONDS);
         } catch(InterruptedException e) {
             return false; // request didn't finish
         } finally {
-            requestFinishedLock.unlock();
+            requestFinishedLock[serverIndex].unlock();
         }
     }
 

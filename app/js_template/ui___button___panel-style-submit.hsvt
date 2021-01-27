@@ -1,0 +1,6 @@
+<div class="z__plugin_ui_action_panel">
+  <button type="submit" class="z__plugin_ui_action_panel_entry">
+    <span class="z__ui_indicator z__ui_indicate_primary"></span>
+    yield()
+  </button>
+</div>

@@ -335,6 +335,10 @@ var templateFunctionRenderList = function(t, items) {
 };
 
 
+P.globalTemplateFunction("M:person-name-title", function(object) {
+    return templateFunctionNamePart(this, "title", object);
+});
+
 P.globalTemplateFunction("M:first-name", function(object) {
     return templateFunctionNamePart(this, "first", object);
 });
@@ -346,6 +350,7 @@ P.globalTemplateFunction("M:last-name", function(object) {
 var templateFunctionNamePart = function(t, part, object) {
     if(!object) { return ""; }
     if(typeof(object) === "string") { object = t.view.M.entities[object]; }
+    if(O.isRef(object)) { object = object.load(); }
     var title = object.firstTitle();
     if(O.typecode(title) === O.T_TEXT_PERSON_NAME) {
         var f = title.toFields();

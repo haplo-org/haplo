@@ -112,7 +112,7 @@ public class Boot {
         }
 
         System.out.println("===============================================================================");
-        System.out.println("               Haplo Platform (c) Haplo Services Ltd 2006 - 2020");
+        System.out.println("               Haplo Platform (c) Haplo Services Ltd 2006 - 2021");
         System.out.println("             Licensed under the Mozilla Public License Version 2.0");
         System.out.println("===============================================================================");
         System.out.println("Starting framework in " + rootDir + " with environment " + envName);
@@ -145,7 +145,13 @@ public class Boot {
         framework = (Framework)iro;
 
         // Initialise the shared JavaScript environment
-        org.haplo.javascript.Runtime.initializeSharedEnvironment(rootDir, framework.runtimeSharedJavaScriptInitialiser(), framework.pluginDebuggingEnabled());
+        int jsOptimisationLevel = Integer.valueOf(framework.getInstallProperty("rhino_optimisation_level", "0"));
+        org.haplo.javascript.Runtime.initializeSharedEnvironment(
+            rootDir,
+            framework.runtimeSharedJavaScriptInitialiser(),
+            framework.pluginDebuggingEnabled(),
+            jsOptimisationLevel
+        );
 
         // TODO: Pause unless the parent runner asks to start the servers
         // All looks good, continue...
@@ -166,6 +172,7 @@ public class Boot {
         Logger logger = Logger.getLogger("org.haplo.app");
         logger.info("Application loaded (took " + (System.currentTimeMillis() - bootTime) + "ms), logging started.");
         logger.info("JavaScript initialisation took " + org.haplo.javascript.Runtime.initializeSharedEnvironmentTimeTaken + "ms");
+        logger.info("JavaScript optimisation level " + jsOptimisationLevel);
 
         Database.start();
 
@@ -222,7 +229,7 @@ public class Boot {
 
         // Set the connectors and request handler
         httpSrv.setConnectors(new Connector[]{http, https});
-        httpSrv.setHandler(new RequestHandler(framework, inDevelopmentMode));
+        httpSrv.setHandler(new RequestHandler(0, framework, inDevelopmentMode));
 
         // If a valid port is configured, enable prometheus metrics
         try {

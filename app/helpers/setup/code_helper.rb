@@ -36,7 +36,7 @@ module Setup_CodeHelper
     obj.delete_attrs!(KConstants::A_CODE)
     code = params['code']
     if code
-      code = code.gsub(/[^a-z0-9:-]/,'')
+      code = code.gsub(/[^a-z0-9:_-]/,'')
       if code && code.length > 0 && code.length < 256
         obj.add_attr(KIdentifierConfigurationName.new(code), KConstants::A_CODE)
       end

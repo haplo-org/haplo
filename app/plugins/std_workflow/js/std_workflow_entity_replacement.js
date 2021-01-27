@@ -51,7 +51,7 @@ P.registerWorkflowFeature("std:entities:entity_replacement", function(workflow, 
                 var query = plugin.db[dbName].select().
                     where("workUnitId", "=", M.workUnit.id).
                     where("name", "=", unreplacedName).
-                    stableOrder();
+                    order("id");
                 _.each(query, function(row) {
                     if(row.replacement) {
                         replacements.set(row.entity, row.replacement);
@@ -150,11 +150,12 @@ var ensureDbRowsCreated = function(workflow, M) {
                     where("entity", "=", ref).
                     where("name", "=", unreplacedName);
             if(!dbQuery.count()) {
+                var defaultSelected = (typeof(info.defaultSelected) === "function") ? info.defaultSelected(M, unreplacedName, ref) : true;
                 workflow.plugin.db[dbName].create({
                     workUnitId: M.workUnit.id,
                     name: unreplacedName,
                     entity: ref,
-                    selected: true      // TODO: Default value in specification?
+                    selected: !!defaultSelected
                 }).save();
             }
         });

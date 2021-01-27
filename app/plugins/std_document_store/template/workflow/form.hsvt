@@ -1,6 +1,10 @@
 pageTitle(i("Edit {}: {instanceTitle}") {spec.title} instanceTitle {instance.key.title})
 backLink(instance.key.url)
 
+if(USE_TRANSITION_STEPS_UI) {
+  std:workflow:transition-steps:navigation(instance.key concat("std:document_store:" spec.path))
+}
+
 if(deferredPreForm) {
   render(deferredPreForm)
 }

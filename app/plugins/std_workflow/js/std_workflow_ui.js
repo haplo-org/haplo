@@ -101,6 +101,13 @@ _.extend(P.WorkflowInstanceBase.prototype.$fallbackImplementations, {
                 M._getText(['action-label'], [M.state]),
                 "primary"
             );
+            // Bypass transitions are always listed
+            M.transitions.list.forEach(function(t) {
+                if(t.isBypass) {
+                    // transition name in bypass parameter to get bypass UI
+                    builder.link("default", M.transitionUrl(t.name), t.label, t.indicator);
+                }
+            });
         }
     }}
 
@@ -222,6 +229,12 @@ _.extend(P.WorkflowInstanceBase.prototype, {
                 return P.template("timeline/hide").deferredRender({entry:entry,hide:true});
             case "UNHIDE":
                 return P.template("timeline/hide").deferredRender({entry:entry,hide:false});
+            case "SHARED-ROLE-ACTION":
+                return P.template("timeline/shared-role-action").deferredRender({
+                    entry: entry,
+                    previousUser: O.securityPrincipal(entry.data.previousActionableUser),
+                    newUser: O.securityPrincipal(entry.data.newActionableUser)
+                });
         }
         return O.serviceMaybe("__std:workflow:fallback-timeline-entry-deferrred__", this, entry);
     },
@@ -273,8 +286,28 @@ P.respond("GET,POST", "/do/workflow/transition", [
     if(!workflow) { O.stop("Workflow not implemented"); }
     var M = workflow.instance(workUnit);
 
-    if(M.transitions.list.length === 1) {
-        // If there is only one transition available, automatically select it to avoid
+    // Might be bypassing the usual UI?
+    var transitionIsBypass = transition ? (M.transitions.properties(transition)||{}).isBypass : false;
+
+    // Steps UI may need to redirect away if not complete
+    var stepsUI = M.transitionStepsUI;
+    if(!transitionIsBypass) {
+        if(!stepsUI._unused) {
+            // Set the requestedTransition for backwards compatibility reasons with directToTransitions
+            stepsUI.requestedTransition = transition || null;
+        }
+        var stepsUIrdr = O.checkedSafeRedirectURLPath(stepsUI.nextRequiredRedirect());
+        if(stepsUIrdr) {
+            return E.response.redirect(stepsUIrdr);
+        }
+    }
+
+    let transitionsWithoutBypass = _.filter(M.transitions.list, function(t) {
+        return !t.isBypass;
+    });
+
+    if(!transition && transitionsWithoutBypass.length === 1) {
+        // If there is only one non-bypass transition available, automatically select it to avoid
         // a confusing page with only one option.
         transition = M.transitions.list[0].name;
     }
@@ -289,7 +322,11 @@ P.respond("GET,POST", "/do/workflow/transition", [
         if(transition && M.transitions.has(transition)) {
 
             if(E.request.method === "POST") {
-                M._callHandler('$transitionFormSubmitted', E, ui);
+                if(transitionIsBypass) {
+                    M._callHandler('$bypassTransitionFormSubmitted', E, ui);
+                } else {
+                    M._callHandler('$transitionFormSubmitted', E, ui);
+                }
                 if(ui._preventTransition) {
                     // Feature doesn't want the transition to happen right now, maybe redirect?
                     if(ui._redirect) {
@@ -306,6 +343,7 @@ P.respond("GET,POST", "/do/workflow/transition", [
                     }
 
                     M._callHandler('$transitionFormPreTransition', E, ui);
+                    stepsUI._commit(transition);
                     M.transition(transition, ui._getTransitionDataMaybe(), overrideTarget);
                     var redirectTo = ui._redirect;
                     if(!redirectTo && M.workUnit.isActionableBy(O.currentUser)) {
@@ -325,18 +363,23 @@ P.respond("GET,POST", "/do/workflow/transition", [
 
             // Generate std:ui:choose template options from the transition
             var urlExtraParameters = ui._urlExtraParameters;
-            ui.options = _.map(M.transitions.list, function(transition) {
+            ui.options = _.compact(_.map(M.transitions.list, function(transition) {
+                if(transition.isBypass) { return; }
                 return {
                     action: M.transitionUrl(transition.name, urlExtraParameters),
                     label: transition.label,
                     notes: transition.notes,
                     indicator: transition.indicator
                 };
-            });
+            }));
         }
 
-        if(ui._redirect) {
+        if(!transitionIsBypass && ui._redirect) {
             return E.response.redirect(ui._redirect);
+        }
+
+        if(transitionIsBypass) {
+            ui.isBypassTransition = true;
         }
 
         E.render(ui);
@@ -350,7 +393,7 @@ P.respond("GET,POST", "/do/workflow/transition", [
 // --------------------------------------------------------------------------
 
 // Represents the built in UI, and act as the view for rendering.
-var TransitionUI = function(M, transition, target) {
+var TransitionUI = P.TransitionUI = function(M, transition, target) {
     this.M = M;
     this.requestedTransition = transition;
     if(target) {
@@ -383,6 +426,9 @@ TransitionUI.prototype = {
         return this._transitionData;
     }
 };
+TransitionUI.prototype.__defineGetter__('usingStepsUI', function() {
+    return !this.M.transitionStepsUI._unused;
+});
 TransitionUI.prototype.__defineGetter__('backLinkText', function() {
     let i = P.locale().text("template");
     return i["Cancel"];

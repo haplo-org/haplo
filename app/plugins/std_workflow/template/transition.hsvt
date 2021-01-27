@@ -1,6 +1,12 @@
 
 std:plugin:resources("w.css")
 
+unless(isBypassTransition) {
+  if(usingStepsUI) {
+    std:workflow:transition-steps:navigation(M "std:workflow:final-confirm-step")
+  }
+}
+
 unless(transition) {
 
   template:std:ui:choose()

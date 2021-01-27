@@ -204,6 +204,13 @@ public class KUser extends KScriptable {
         rubyInterface.setLocaleId(this.user, localeId);
     }
 
+    public Scriptable jsFunction_getTimeZone() {
+        String tzName = rubyInterface.getTimeZoneName(this.user);
+        KTimeZone tz = (KTimeZone)Runtime.createHostObjectInCurrentRuntime("$TimeZone");
+        tz.setTimeZone(tzName);
+        return tz;
+    }
+
     // --------------------------------------------------------------------------------------------------------------
     public Scriptable jsGet_data() {
         if(this.data == null) {
@@ -440,6 +447,8 @@ public class KUser extends KScriptable {
 
         public String getLocaleId(AppUser user);
         public void setLocaleId(AppUser user, String localeId);
+
+        public String getTimeZoneName(AppUser user);
 
         public String getUserDataJSON(AppUser user);
 

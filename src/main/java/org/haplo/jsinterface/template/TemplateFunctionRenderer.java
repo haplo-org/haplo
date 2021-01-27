@@ -53,6 +53,8 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
             case "std:text:object-value": std_text_object_value(builder, b); break;
             case "std:text:list:readable": std_text_list_readable(builder, b); break;
 
+            case "std:security:user-controlled-url-is-valid": std_security_user_controlled_url_is_valid(builder, b); break;
+
             case "std:date":            std_date(builder, b, true,  0); break;
             case "std:date:long":       std_date(builder, b, true,  1); break;
             case "std:date:time":       std_date(builder, b, true,  2); break;
@@ -247,6 +249,16 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
                 builder.append(" and ");    // TODO I18N: Add ability to localise lists
             }
         }
+    }
+
+    public void std_security_user_controlled_url_is_valid(StringBuilder builder, FunctionBinding b) throws RenderException {
+        String blockName = null;
+        if(inAnyContext(b).stdtmpl_test_user_controlled_url_is_valid(b.nextUnescapedStringArgument(ArgumentRequirement.REQUIRED))) {
+            blockName = Node.BLOCK_ANONYMOUS;
+        } else {
+            blockName = "not-valid";
+        }
+        b.renderBlock(blockName, builder, b.getView(), b.getContext());
     }
 
     public void std_icon_type(StringBuilder builder, FunctionBinding b) throws RenderException {
@@ -456,6 +468,10 @@ public class TemplateFunctionRenderer implements JSFunctionRenderer {
 
     private static TemplatePlatformFunctions inTextContext(FunctionBinding b) throws RenderException {
         checkContext(b, Context.TEXT);
+        return __platformTemplateFunctions();
+    }
+
+    private static TemplatePlatformFunctions inAnyContext(FunctionBinding b) throws RenderException {
         return __platformTemplateFunctions();
     }
 

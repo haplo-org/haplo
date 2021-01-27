@@ -53,6 +53,7 @@ public class ObjectPipe implements Waker {
 
     public void close() throws IOException {
         this.channel.socket().close();
+        this.selector.close();
     }
 
     public boolean isClosed() {

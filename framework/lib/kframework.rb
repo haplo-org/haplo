@@ -93,6 +93,7 @@ class KFramework
     # The 404app file needs special headers, so it's not cached by the browser to make retries later work properly
     app_file = jfrm.addStaticFile('404app.html', "#{KFRAMEWORK_ROOT}/static/special/404app.html", STATIC_MIME_TYPES['html'], true)
     app_file.addHeader('Cache-Control', 'private, no-cache')
+    app_file.setResponseCode(404)
     # The OPTIONS file needs to have no special headers but a 405 resposne code
     options_file = jfrm.addStaticFile('OPTIONS.html', "#{KFRAMEWORK_ROOT}/static/special/OPTIONS.html", STATIC_MIME_TYPES['html'], true)
     options_file.setResponseCode(405)
@@ -145,10 +146,14 @@ class KFramework
   end
 
   def runtimeSharedJavaScriptInitialiser
-    %Q!
-      $server_classification_tags = #{JSON.generate(KInstallProperties.server_classification_tags())};
-      #{KLocale._locale_initialiser_for_javascript(KLocale::DEFAULT_LOCALE, KLocale::LOCALES)}
-    !
+    Proc.new do |loader|
+      js = %Q!
+        $server_classification_tags = #{JSON.generate(KInstallProperties.server_classification_tags())};
+        #{KLocale._locale_initialiser_for_javascript(KLocale::DEFAULT_LOCALE, KLocale::LOCALES)}
+      !
+      loader.evaluateString(js, "<shared-init>")
+      KJavaScriptPluginBuiltin.load_builtins_into_shared_js_scope(loader)
+    end
   end
 
   def plugin_debugging_enabled
