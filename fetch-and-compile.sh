@@ -17,8 +17,8 @@ esac
 
 DEV_SUPPORT_DIR=~/haplo-dev-support
 
-JRUBY_VERSION=9.2.14.0
-JRUBY_DIGEST=7946d572d3c04cf4457566b9a58688410e468da5
+JRUBY_VERSION=9.2.17.0
+JRUBY_DIGEST=71932970f8ea6b9a1d226a3e833ec2b1bfb6fab3
 JRUBY_DOWNLOAD_URL=https://s3.amazonaws.com/jruby.org/downloads/${JRUBY_VERSION}/jruby-bin-${JRUBY_VERSION}.tar.gz
 
 XAPIAN_VERSION=1.2.25
@@ -161,7 +161,7 @@ get_gem "RedCloth" "4.2.9-java" "698688bb64b73a0477855902aaf0844cb1b0dd2c"
 get_gem "builder" "3.2.4" "3581f146308130f5b23b4f0348e68333288267f8"
 get_gem "rake" "10.5.0" "6ffffeadda619a727fe154272d5080f8dd85cf25"
 get_gem "hoe" "3.6.3" "7f2323e812efd292cdca7ebd0e44266c55814995"
-get_gem "rmail" "1.1.3" "c48a81f89db6af1e7c2afe91640dee86f95581d0"
+get_gem "rmail" "1.1.4" "6283a67858bd4b826fb384f7b4a79708e19fe45a"
 get_gem "test-unit" "1.2.3" "9ad7eefe7d289713a072130d51312ebe0529d48b"
 
 if ! [ -f ${VENDOR_DIR}/.gems-installed ]; then
@@ -278,7 +278,7 @@ g++ framework/support/haplo.cpp -O2 -o framework/haplo
 
 echo "Compiling Java sources with maven..."
 mvn package
-cp target/haplo-3.20210121.1601.02d414190e.jar framework/haplo.jar
+cp target/haplo-3.20210601.1554.1b11264943.jar framework/haplo.jar
 
 mvn -Dmdep.outputFile=target/classpath.txt dependency:build-classpath
 

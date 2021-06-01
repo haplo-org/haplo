@@ -1,0 +1,20 @@
+{
+  "Moved back: {}": "Retroceder: {}",
+  "This workflow has been moved back by {}.": "Esse fluxo de trabalho foi retrocedido por {}.",
+  "Full details...": "Detalhes completos...",
+  "Move back: {}": "Retroceder: {}",
+  "This workflow cannot be moved back": "Esse fluxo de trabalho não pode ser retrocedido",
+  "This workflow cannot be moved back because there isn't a previous state.": "Este fluxo de trabalho não pode ser retrocedido porque não há nenhum estado anterior.",
+  "This workflow cannot be moved back because it has been recently moved. Contact support for assistance.": "Esse fluxo de trabalho não pode ser retrocedido porque foi retrocedido recentemente. Contate o suporte para obter assistência.",
+  "This workflow cannot be moved back because it's not safe to do so.": "Esse fluxo de trabalho não pode ser retrocedido por questão de segurança.",
+  "Cancel": "Cancelar",
+  "Please provide a reason for moving this workflow back, and confirm you understand the implications of using this tool.": "Forneça uma razão para retroceder esse fluxo de trabalho e confirme que você entende as implicações de usar essa ferramenta.",
+  "Use this support tool with caution. Moving a workflow back may repeat actions or prevent the correct operation of this workflow.": "Use essa ferramenta de suporte com cuidado. Retroceder um fluxo de trabalho pode repetir ações ou interferir com a operação correta desse fluxo de trabalho.",
+  "Workflow": "Fluxo de trabalho",
+  "Currently": "Atualmente",
+  "Move back to": "Retroceder para",
+  "Move workflow back": "Retroceder fluxo de trabalho",
+  "{} moved the workflow back": "{} retrocedeu o fluxo de trabalho",
+  "Support tools": "Ferramentas de suporte",
+  "Move back...": "Retroceder..."
+}

@@ -259,10 +259,23 @@ class KObjectStoreTest < Test::Unit::TestCase
       KObjectStore.erase(obj)
     end
 
-    # Delete an object which doesn't exist
+    # Erase an object which doesn't exist
     assert_raises(RuntimeError) do
       KObjectStore.erase(KObjRef.new(199))
     end
+
+    # Erase history of an object
+    assert_equal 1, KObjectStore.history(obj3.objref).versions.length
+    assert_equal 1, KApp.with_pg_database { |db| db.exec("SELECT COUNT(*) FROM #{KApp.db_schema_name}.os_objects_old WHERE id=#{obj3.objref.to_i}").first.first.to_i }
+    set_mock_objectstore_user(91, KLabelStatementsOps.new.freeze)
+    assert_raises(KObjectStore::PermissionDenied) do
+      KObjectStore.erase_history(obj3)
+    end
+    set_mock_objectstore_user(0)
+    KObjectStore.erase_history(obj3)
+    assert_equal 0, KObjectStore.history(obj3.objref).versions.length
+    assert nil != KObjectStore.read(obj3.objref)
+    assert_equal 0, KApp.with_pg_database { |db| db.exec("SELECT COUNT(*) FROM #{KApp.db_schema_name}.os_objects_old WHERE id=#{obj3.objref.to_i}").first.first.to_i }
 
     # ----------------------------------------------------------------------------------------
     # Create a root parent object
@@ -1004,6 +1017,12 @@ __E
 
     history_r = KObjectStore.history(obj.objref)
     assert history_r.kind_of? KObjectStore::ObjectHistory
+    assert_equal 1, history_r.versions.length
+
+    KObjectStore.with_superuser_permissions do
+      assert_equal nil, KObjectStore.erase_history(obj)
+      assert_equal :erase_history, ListenForObjectChangeHookPlugin.last.operation
+    end
 
     KObjectStore.with_superuser_permissions do
       assert_equal nil, KObjectStore.erase(obj)

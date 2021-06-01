@@ -26,6 +26,11 @@ module KHooks
     h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of being shown the login page"
   end
 
+  define_hook :hPostLoginRedirect do |h|
+    h.argument    :destination, String,   "The requested destination to redirect to after a successful authentication"
+    h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path"
+  end
+
   define_hook :hLogoutUserInterface do |h|
     h.private_hook
     h.result      :redirectURL, String,   nil,  "If set, the user will be redirected to this URL instead of being shown the logout message page"

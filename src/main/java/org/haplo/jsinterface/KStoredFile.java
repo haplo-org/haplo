@@ -247,6 +247,14 @@ public class KStoredFile extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+    // Data retention
+
+    static public void jsStaticFunction__eraseFile(KStoredFile file) {
+        Runtime.privilegeRequired("pRetentionErase", "call O.retention.erase() for a file");
+        rubyInterface.eraseFile(file.toRubyObject());
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
 
     public static KStoredFile newStoredFileFromData(byte[] data, String filename, String mimeType) {
         AppStoredFile file = rubyInterface.newStoredFileFromData(data, filename, mimeType);
@@ -281,6 +289,8 @@ public class KStoredFile extends KScriptable {
 
         public void verifyFileTransformPipelineTransform(String name, String json);
         public void executeFileTransformPipeline(String json);
+
+        public void eraseFile(AppStoredFile storedFile);
     }
     private static Ruby rubyInterface;
 

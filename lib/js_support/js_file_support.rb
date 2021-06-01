@@ -189,7 +189,7 @@ module JSFileSupport
         # Generate the tag
         thumbnail_url = thumb_info.urlpath || file_url_path(stored_file, :thumbnail, url_path_options)
         thumbnail_url = KApp.url_base() + thumbnail_url if options.asFullURL
-        %Q!<img src="#{thumbnail_url}" width="#{thumb_info.scaled_width}" height="#{thumb_info.scaled_height}" alt="">!
+        %Q!<img src="#{thumbnail_url}" width="#{thumb_info.scaled_width}" height="#{thumb_info.scaled_height}" alt="" loading="lazy">!
       end
     end
     # Wrap it with the download link?
@@ -274,6 +274,15 @@ module JSFileSupport
       # Make sure the temporary hard link it's cleaned up, in case the file was already in the store
       File.unlink(hard_link_pathname) if File.exist?(hard_link_pathname)
     end
+  end
+
+  # ------------------------------------------------------------------------------------------------------------
+
+  def self.eraseFile(storedFile)
+    unless AuthContext.user.permissions.is_superuser?
+      raise JavaScriptAPIError, "Can only erase files when super-user permissions are in force"
+    end
+    storedFile.delete
   end
 
 end

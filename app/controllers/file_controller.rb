@@ -12,6 +12,7 @@
 #   /file/<StoredFile#digest>/<StoredFile#size>/[spec/]filename.ext
 # where spec is 'directories' formed of
 #   ext - output format, as file extension (see KMIMETypes::MIME_TYPE_FROM_EXTENSION), eg 'jpeg'
+#   webdisplay - convert image to format that will display on the web
 #   s, m, l - standard sizes, specified by width
 #   w<dimension> - width in pixels
 #   h<dimension> - height in pixels
@@ -191,6 +192,8 @@ class FileController < ApplicationController
           output_format = 'text/plain'
         elsif spec == 'pdfview'
           return special_pdf_preview_handling(stored_file) # and return to stop all other handling
+        elsif spec == 'webdisplay'
+          output_format = KMIMETypes.adjusted_mime_type_for_web_display(output_format || stored_file.mime_type) || output_format
         elsif spec.length >= 3 && KMIMETypes::MIME_TYPE_FROM_EXTENSION.has_key?(spec)
           # Output format - CHECK THIS LAST!!!
           spec_error = true if output_format != nil # only specify once!

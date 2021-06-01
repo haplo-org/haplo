@@ -94,7 +94,8 @@ abbr,acronym {
 /* Basic styling */
 
 html {
-    overflow-y: scroll; /* always display scroll bars so the left position doesn't jump around */
+    height: 100.1%;  /* always display scroll bars so the left position doesn't jump around */
+    /* used to use overflow-y:scroll but this broke jQuery UI sortable when page was scrolled */
 }
 
 body {

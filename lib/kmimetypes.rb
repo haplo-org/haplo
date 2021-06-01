@@ -74,6 +74,13 @@ module KMIMETypes
     'application/powerpoint' => 'application/vnd.ms-powerpoint'
   }
 
+  IMAGE_FILE_FORMATS_SUPPORTED_BY_WEB_BROWSERS = {
+    'image/png' => true,
+    'image/jpeg' => true,
+    'image/gif' => true
+  }
+  DEFAULT_WEB_BROWSER_IMAGE_FORMAT = 'image/png'
+
   # Load mime types from Apache defn
   extns = Hash.new
   File.open(File.dirname(__FILE__) + "/mime.types" ,"r") do |f|
@@ -247,4 +254,14 @@ module KMIMETypes
     return 'application/octet-stream' if type == nil
     (opts == nil) ? type : "#{type}; #{opts}".freeze
   end
+
+  def self.adjusted_mime_type_for_web_display(mime_type_in)
+    # Don't adjust formats unless the file is an image
+    return nil unless mime_type_in =~ /\Aimage\//
+    # Use the same format if it's known to have wide support in web browsers
+    return nil if IMAGE_FILE_FORMATS_SUPPORTED_BY_WEB_BROWSERS[mime_type_in]
+    # Otherwise use a format that is known to work
+    DEFAULT_WEB_BROWSER_IMAGE_FORMAT
+  end
+
 end

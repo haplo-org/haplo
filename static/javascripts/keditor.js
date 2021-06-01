@@ -58,7 +58,8 @@ var stripString = function(string) {
 
 var j__focusOnFirstInputBelow = function(i) {
     if(typeof i === 'string') { i = $('#'+i)[0]; }
-    $('input[type="text"]:not(.z__no_default_focus),[contenteditable=true]', i).first().each(function() { KApp.j__focusNicely(this); });
+    $('input[type="text"]:not(.z__no_default_focus),textarea:not(.z__no_default_focus),[contenteditable=true]', i).
+        first().each(function() { KApp.j__focusNicely(this); });
 };
 
 // ----------------------------------------------------------------------------------------------------
@@ -75,7 +76,7 @@ var KEditorSchemaTypeSpecifics = {}; // needs to be a dictionary, not an array, 
     KEditorSchemaTypeSpecifics[T_DATETIME] = ['p__uiOptions'];
     KEditorSchemaTypeSpecifics[T_TEXT_PERSON_NAME] = ['p__uiOptions'];
     KEditorSchemaTypeSpecifics[T_TEXT_PLUGIN_DEFINED] = ['p__pluginDataType'];
-    KEditorSchemaTypeSpecifics[T_ATTRIBUTE_GROUP] = ['p__groupType'];
+    KEditorSchemaTypeSpecifics[T_ATTRIBUTE_GROUP] = ['p__groupType','p__uiOptions'];
 
 /* global */ KEditorSchema = {
     // Properties:
@@ -2066,7 +2067,7 @@ j__makeValidatedKctrltext(T_IDENTIFIER_EMAIL_ADDRESS, {
         // Very simple regex should do the job well enough, don't want to be too strict
         var v = this.j__value();
         if(!(v.match(/\w/))) { return null; }   // don't complain about empty strings
-        return (v.match(/^[^\@\s]+\@[^\.\@\s]+\.[^\s\@]+$/)) ? null : KApp.j__text('EditorErrPhoneInvalidEmail');
+        return (v.match(/^[^\@\s]+\@[^\.\@\s]+\.[^\s\@]+$/)) ? null : KApp.j__text('EditorErrInvalidEmail');
     }
 });
 
@@ -2108,7 +2109,7 @@ j__makeValidatedKctrltext(T_IDENTIFIER_CONFIGURATION_NAME, {
     },
     j__validate: function() {
         var v = this.j__value();
-        return (!(v) || (v.match(/^[a-zA-Z0-9_-]+\:[:a-zA-Z0-9_-]+$/))) ? null : KApp.j__text('EditorErrPhoneInvalidConfigName');
+        return (!(v) || (v.match(/^[a-zA-Z0-9_-]+\:[:a-zA-Z0-9_-]+$/))) ? null : KApp.j__text('EditorErrInvalidConfigName');
     }
 });
 
@@ -2116,14 +2117,14 @@ j__makeValidatedKctrltext(T_IDENTIFIER_CONFIGURATION_NAME, {
 
 j__makeValidatedKctrltext(T_INTEGER,{
     j__processValue: function(value) {
-        var v = value.replace(/\D+/g,'');
+        var v = value.replace(/[^\d-]+/g,'');
         if(v === '') {return null;}
         return v;
     },
     j__validate: function() {
         var v = this.j__valueSuper();
-        if(!v || v.match(/^\s*\d*\s*$/)) {return null;}    // empty string, all whitespace, or valid number
-        return KApp.j__text('EditorErrPhoneInvalidNumber');
+        if(!v || v.match(/^\s*\-?\d*\s*$/)) {return null;}    // empty string, all whitespace, or valid number
+        return KApp.j__text('EditorErrInvalidNumber');
     }
 });
 
@@ -2131,13 +2132,13 @@ j__makeValidatedKctrltext(T_INTEGER,{
 
 j__makeValidatedKctrltext(T_NUMBER,{
     j__processValue: function(value) {
-        var v = value.replace(/[^\d\.]+/g,'');
+        var v = value.replace(/[^\d\.-]+/g,'');
         if(v === '') {return null;}
         return v;
     },
     j__validate: function() {
         var v = this.j__valueSuper();
-        if(!v || v.match(/^\s*\d*(\.\d+)?\s*$/)) {return null;}    // empty string, all whitespace, or valid number
+        if(!v || v.match(/^\s*\-?\d*(\.\d+)?\s*$/)) {return null;}    // empty string, all whitespace, or valid number
         return 'This is not a number. Do not use symbols.';
     }
 });
@@ -2237,7 +2238,7 @@ _.extend(KEdAttributeGroup.prototype, {
             initialValuesByDesc[v[0]] = v[1];
         });
 
-        var first = true;
+        var omitAttributeName = (this.p__keditorValueControl.q__defn.p__uiOptions !== 'all-labels');
         _.each(attributes, function(desc) {
             var defn = KEditorSchema.j__attrDefn(desc);
             var val = initialValuesByDesc[desc];
@@ -2246,9 +2247,9 @@ _.extend(KEdAttributeGroup.prototype, {
             }
             var nestedContainer = new KAttrContainer(keditor, desc, val);
             nestedContainer.p__singleValue = true;
-            if(first) {
+            if(omitAttributeName) {
                 nestedContainer.p__omitAttributeName = true;
-                first = false;
+                omitAttributeName = false;
             }
             controls.push(nestedContainer);
             html += nestedContainer.j__generateHtml();

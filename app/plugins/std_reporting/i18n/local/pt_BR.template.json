@@ -1,0 +1,9 @@
+{
+  "This dashboard does not include all data. Some rows are omitted.": "Esse painel não inclui todos os dados. Algumas linhas foram omitidas.",
+  "This dashboard is being updated. Some data may be out of date.": "O painel está sendo atualizado. Alguns dados podem estar desatualizados.",
+  "Invalid time requested, showing current data.": "Solicitação de período inválido. Exibindo dados atuais.",
+  "Export": "Exportar",
+  "Search": "Pesquisar",
+  "This dashboard cannot be displayed because the data which determines the rows and columns is missing.": "Esse painel não pode ser exibido porque os dados que determinam as linhas e colunas estão ausentes.",
+  "Cannot display dashboard": "Não é possível exibir o painel"
+}

@@ -51,7 +51,7 @@ class JSUserI18nTextSupport
 
   def self.load_strings_for_current_application_for_locale(locale_id)
     # security: check locale is not going to do path traversal
-    raise "Bad locale" unless locale_id =~ /\A[a-z]+\z/
+    raise "Bad locale" unless locale_id =~ /\A[a-z]+(_[A-Z]+)?\z/
     loader = RuntimeStringsLoader.new
     plugins = KPlugin.get_plugins_for_current_app
     plugins.each do |plugin|

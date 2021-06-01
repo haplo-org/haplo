@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.haplo</groupId>
   <artifactId>haplo</artifactId>
-  <version>3.20210121.1601.02d414190e</version>
+  <version>3.20210601.1554.1b11264943</version>
   <packaging>jar</packaging>
 
   <dependencies>
@@ -32,7 +32,7 @@
     <dependency>
       <groupId>org.mozilla</groupId>
       <artifactId>rhino</artifactId>
-      <version>1.7.12</version>
+      <version>1.7.13</version>
     </dependency>
     <dependency>
       <groupId>commons-codec</groupId>
@@ -62,17 +62,17 @@
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-servlet</artifactId>
-      <version>9.4.30.v20200611</version>
+      <version>9.4.40.v20210413</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-continuation</artifactId>
-      <version>9.4.30.v20200611</version>
+      <version>9.4.40.v20210413</version>
     </dependency>
     <dependency>
       <groupId>org.eclipse.jetty</groupId>
       <artifactId>jetty-client</artifactId>
-      <version>9.4.30.v20200611</version>
+      <version>9.4.40.v20210413</version>
     </dependency>
     <dependency>
       <groupId>org.bouncycastle</groupId>

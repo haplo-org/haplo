@@ -132,6 +132,7 @@ class User < MiniORM::Record
 
   # Kind testing functions
   def is_group; self.kind == KIND_GROUP || self.kind == KIND_GROUP_DISABLED; end
+  def is_service_user; self.kind == KIND_SERVICE_USER; end
   def is_active; self.kind <= KIND__MAX_ACTIVE; end
 
   USER_SYSTEM = 0       # SYSTEM full priv code

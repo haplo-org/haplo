@@ -153,6 +153,50 @@ class AuthenticationControllerTest < IntegrationTest
 
   # ===================================================================================================================
 
+  def test_post_login_redirect_hook
+    begin
+      without_application { setup_in_app(_TEST_APP_ID) }
+      raise "Failed to install plugin" unless KPlugin.install_plugin("authentication_controller_test/post_login_redirect_hook_test")
+
+      # Check default redirect to home
+      get "/do/authentication/login"
+      post_302 "/do/authentication/login", {:email => 'authtest@example.com', :password => 'pass1234'}
+      assert_redirected_to("/ping-#{@_users[_TEST_APP_ID].id}")
+      get_a_page_to_refresh_csrf_token
+      post_302 "/do/authentication/logout"
+
+      # Check with rdr
+      get "/do/authentication/login"
+      post_302 "/do/authentication/login", {:email => 'authtest@example.com', :password => 'pass1234', :rdr => '/some-place'}
+      assert_redirected_to("/some-placeping-#{@_users[_TEST_APP_ID].id}") # has suffix appended by plugin
+      get_a_page_to_refresh_csrf_token
+      post_302 "/do/authentication/logout"
+
+      # Check plugin doesn't send a redirect path
+      get "/do/authentication/login"
+      post_302 "/do/authentication/login", {:email => 'authtest@example.com', :password => 'pass1234', :rdr => '/plugin-should-not-set-redirectpath'}
+      assert_redirected_to('/plugin-should-not-set-redirectpath')
+      get_a_page_to_refresh_csrf_token
+      post_302 "/do/authentication/logout"
+
+    ensure
+      KPlugin.uninstall_plugin("authentication_controller_test/post_login_redirect_hook_test")
+    end
+  end
+
+  class PostLoginRedirectHookTestPlugin < KTrustedPlugin
+    _PluginName "Post Login Redirect Hook Test Plugin"
+    _PluginDescription "Test"
+    def hPostLoginRedirect(response, destination)
+      if destination != '/plugin-should-not-set-redirectpath'
+        # Get the user ID using the same mechanism as O.currentUser
+        response.redirectPath = "#{destination}ping-#{JSUserSupport.getCurrentUser().id}"
+      end
+    end
+  end
+
+  # ===================================================================================================================
+
   def test_change_password
     AUTHENTICATION_LOGIN_TEST_FAILURE_LOCK.synchronize { do_test_change_password }
   end

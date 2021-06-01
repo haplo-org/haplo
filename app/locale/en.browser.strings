@@ -25,9 +25,9 @@ EditorErrPhoneNum=A number must be entered, not just an extension.
 EditorErrPhoneNoPlus=Numbers should not contain + symbols. Use the drop down box to select the country.
 EditorErrPhoneChars=Phone numbers should only contain numbers and spaces.
 EditorErrPhoneInvalidExt=Extensions must only letters and digits.
-EditorErrPhoneInvalidEmail=This is not a valid email address.
-EditorErrPhoneInvalidConfigName=This is not a valid configuration name.
-EditorErrPhoneInvalidNumber=This is not a whole number. Do not use symbols or decimal points.
+EditorErrInvalidEmail=This is not a valid email address.
+EditorErrInvalidConfigName=This is not a valid configuration name.
+EditorErrInvalidNumber=This is not a whole number. Do not use symbols or decimal points.
 
 # Person's name data type (in editor)
 PNameCulture_w=Western

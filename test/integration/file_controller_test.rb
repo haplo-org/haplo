@@ -70,21 +70,16 @@ class FileControllerTest < IntegrationTest
 
   def test_previews
     assert_login_as("user1@example.com", "password")
-    can_do_pdf_previews = KFileTransform.can_transform?('application/pdf', 'image/png')
-    if can_do_pdf_previews
-      pdf_file = StoredFile.from_upload(fixture_file_upload('files/example3.pdf', 'application/pdf'))
-      make_object_for_file pdf_file
-    end
+    pdf_file = StoredFile.from_upload(fixture_file_upload('files/example3.pdf', 'application/pdf'))
+    make_object_for_file pdf_file
     html_file = StoredFile.from_upload(fixture_file_upload('files/example7.html', 'text/html'))
     make_object_for_file html_file
     run_all_jobs({})
 
-    if can_do_pdf_previews
-      expected_pdf_preview_url = "/file/#{pdf_file.digest}/#{pdf_file.size}/preview/pdfview/example3.pdf"
-      assert_equal expected_pdf_preview_url, file_url_path(pdf_file, :preview)
-      get expected_pdf_preview_url
-      assert response.body.include?(%Q!src="/file/#{pdf_file.digest}/#{pdf_file.size}/preview/png/l/example3.pdf"!) # contains img tag for a PDF rendering
-    end
+    expected_pdf_preview_url = "/file/#{pdf_file.digest}/#{pdf_file.size}/preview/pdfview/example3.pdf"
+    assert_equal expected_pdf_preview_url, file_url_path(pdf_file, :preview)
+    get expected_pdf_preview_url
+    assert response.body.include?(%Q!src="/file/#{pdf_file.digest}/#{pdf_file.size}/preview/png/l/example3.pdf"!) # contains img tag for a PDF rendering
 
     expected_html_preview_url = "/file/#{html_file.digest}/#{html_file.size}/preview/text/example7.html"
     assert_equal expected_html_preview_url, file_url_path(html_file, :preview)
@@ -112,6 +107,8 @@ class FileControllerTest < IntegrationTest
     # Store a file, attach it to an object so security checks pass for a user, and run the post upload processing
     file = StoredFile.from_upload(fixture_file_upload('files/example5.png', 'image/png'))
     make_object_for_file file
+    file2 = StoredFile.from_upload(fixture_file_upload('files/example10.tiff', 'image/tiff'))
+    make_object_for_file file2
     run_all_jobs({})
 
     # FileController does lots of stuff to suspect requests while transformations are in progress,
@@ -139,6 +136,14 @@ class FileControllerTest < IntegrationTest
     # Check actual cache entries
     assert_equal 1, FileCacheEntry.where(:stored_file_id => file.id, :output_mime_type => 'image/png', :output_options => 'h=180,w=90').count()
     assert_equal 1, FileCacheEntry.where(:stored_file_id => file.id, :output_mime_type => 'image/gif', :output_options => 'h=200,w=100').count()
+
+    # Check conversion to web compatible format
+    # TIFF not supported by Java by default (required ImageIO)
+    # get "/file/#{file2.digest}/#{file2.size}/webdisplay/example10.tiff"
+    # assert_equal 'image/png', response['Content-Type']
+    # get "/file/#{file2.digest}/#{file2.size}/webdisplay/w10/example10.tiff"
+    # assert_equal 'image/png', response['Content-Type']
+    # assert_equal 2, FileCacheEntry.where(:stored_file_id => file2.id, :output_mime_type => 'image/png').count()
 
     # Check clean error when transformation not possible
     get "/file/#{file.digest}/#{file.size}/html/preview", nil, {:expected_response_codes => [400]}

@@ -112,6 +112,9 @@ class Setup_AttributeController < ApplicationController
         if params['attr_group_type']
           @obj.add_attr(KObjRef.from_presentation(params['attr_group_type']), A_ATTR_GROUP_TYPE)
         end
+        if params['attr_group_all_labels']
+          @obj.add_attr('all-labels', A_ATTR_UI_OPTIONS)
+        end
       end
       # Plugin defined?
       if dt == T_TEXT_PLUGIN_DEFINED && dt_plugin_type

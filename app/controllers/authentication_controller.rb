@@ -107,7 +107,7 @@ class AuthenticationController < ApplicationController
       end
 
       # Got a page to redirect to?
-      do_redirect_to_destination
+      do_redirect_to_destination_for(@logged_in_user)
     end
   end
 
@@ -204,7 +204,7 @@ class AuthenticationController < ApplicationController
           @was_autologin = session[:pending_was_autologin]
           session.delete(:pending_uid)
           session.delete(:pending_was_autologin)
-          do_redirect_to_destination
+          do_redirect_to_destination_for(user)
           # Send notification of login
           KNotificationCentre.notify(:authentication, :login, user, {:autologin => @was_autologin, :otp => user.otp_identifier})
         else
@@ -450,7 +450,17 @@ class AuthenticationController < ApplicationController
   # ----------------------------------------------------------------------------------------------------------------------------
 
 private
-  def do_redirect_to_destination
-    redirect_to KSafeRedirect.checked(params['rdr'], '/')
+  def do_redirect_to_destination_for(user)
+    destination = KSafeRedirect.checked(params['rdr'], '/')
+    call_hook(:hPostLoginRedirect) do |hooks|
+      # Run the hook in the context of the logged in user, so that O.currentUser works
+      AuthContext.with_user(user) do
+        replacement_rdr = hooks.run(destination).redirectPath
+        if replacement_rdr
+          destination = KSafeRedirect.checked(replacement_rdr, destination)
+        end
+      end
+    end
+    redirect_to destination
   end
 end

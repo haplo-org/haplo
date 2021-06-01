@@ -25,6 +25,7 @@ if(requiresComments) {
         data-filter=currentParams.filter
         data-changes=currentParams.changes
         data-privatecommentsenabled=if(options.privateCommentsEnabled){"1"}
+        data-defaultcommentisprivate=if(options.defaultCommentIsPrivate){"1"}
         data-addprivatecommentlabel=options.addPrivateCommentLabel
         data-privatecommentmessage=options.privateCommentMessage
         data-addprivatecommentonly=if(options.addPrivateCommentOnly){"1"}

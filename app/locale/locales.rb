@@ -22,6 +22,7 @@ class KLocale
   LOCALES = [
     KLocaleEN.new("English", "English", "en", "#{LOCALE_DIR}/en.strings", "#{LOCALE_DIR}/en.browser.strings"),
     KLocale.new("Welsh", "Cymraeg", "cy", "#{LOCALE_DIR}/cy.strings", "#{LOCALE_DIR}/cy.browser.strings"),
+    KLocale.new("Portuguese (Brazil)", "Português (Brasileiro)", "pt_BR", "#{LOCALE_DIR}/pt_BR.strings", "#{LOCALE_DIR}/pt_BR.browser.strings"),
     KLocale.new("Spanish", "Español", "es", "#{LOCALE_DIR}/es.strings", "#{LOCALE_DIR}/es.browser.strings")
   ]
 

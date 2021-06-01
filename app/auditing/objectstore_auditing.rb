@@ -17,8 +17,11 @@ module KAuditing
     :create => 'CREATE',
     :update => 'UPDATE',
     :relabel => 'RELABEL',
+    :erase_history => 'ERASE-HISTORY',
     :erase => 'ERASE'
   }
+
+  DISPLAYABLE = [:create, :update, :relabel]
 
   AuditObjectChangeInfo = Struct.new(:previous, :modified, :data, :displayable)
 
@@ -38,7 +41,7 @@ module KAuditing
     end
 
     # Only display non-schema, non-classification objects in the recent listing
-    displayable = (!(is_schema) && !(modified_obj.labels.include?(KConstants::O_LABEL_STRUCTURE)))
+    displayable = DISPLAYABLE.include?(operation) && (!(is_schema) && !(modified_obj.labels.include?(KConstants::O_LABEL_STRUCTURE)))
     if displayable
       # Check it's not a classification object
       schema = KObjectStore.schema

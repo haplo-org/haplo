@@ -11,6 +11,10 @@ P.use("std:workflow");
 
 const USE_TRANSITION_STEPS_UI = !!O.application.config["std_document_store:use_transition_steps_ui"];
 
+// This is a global setting, because using different defaults for different parts of the application
+// could result in users making the wrong assumption about the default.
+const DEFAULT_COMMENT_IS_PRIVATE = !O.application.config["std_document_store:comments:default_to_visible"];
+
 
 // workflow.use("std:document_store", spec)
 //
@@ -262,6 +266,16 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
         });
     }
 
+    var documentStoreStepIsComplete = function(M, stepsUI) {
+        // Only mark as complete when there's been an interaction with the form.
+        // This prevents the form being skipped when a workflow is returned to the
+        // user for editing and the form is complete.
+        if(!(stepsUI.data["std:document_store:has_interaction"]||{})[spec.path]) {
+            return false;
+        }
+        var instance = docstore.instance(M);
+        return isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
+    };
     if(USE_TRANSITION_STEPS_UI) {
         var Step = {
             id: "std:document_store:"+spec.path,
@@ -272,16 +286,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             url: function(M, stepsUI) {
                 return spec.path+'/form/'+M.workUnit.id;
             },
-            complete: function(M, stepsUI) {
-                // Only mark as complete when there's been an interaction with the form.
-                // This prevents the form being skipped when a workflow is returned to the
-                // user for editing and the form is complete.
-                if(!(stepsUI.data["std:document_store:has_interaction"]||{})[spec.path]) {
-                    return false;
-                }
-                var instance = docstore.instance(M);
-                return isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
-            },
+            complete: documentStoreStepIsComplete,
             skipped: function(M, stepsUI) {
                 if(!stepsUI.requestedTransition) { return false; }
                 var transitionFiltered = false;
@@ -295,6 +300,10 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
                 return !transitionFiltered;
             }
         };
+
+        if("transitionStepsTransitionLabel" in spec) {
+            Step.transitionLabel = spec.transitionStepsTransitionLabel;
+        }
         workflow.transitionStepsUI({}, function(M, step) {
             if(can(M, O.currentUser, spec, 'edit')) {
                 step(Step);
@@ -311,8 +320,13 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             var isDone = isOptional(M, O.currentUser, spec.edit) || docstoreHasExpectedVersion(M, instance);
             var editUrl = spec.path+'/form/'+M.workUnit.id;
             if(USE_TRANSITION_STEPS_UI) {
-                var stepsReqRdr = M.transitionStepsUI.nextRequiredRedirect();
-                if(stepsReqRdr) { editUrl = stepsReqRdr; }
+                var stepsUI = M.transitionStepsUI;
+                if(!stepsUI.unused) {
+                    isDone = documentStoreStepIsComplete(M, stepsUI);
+                }
+                var stepsReqRdr = stepsUI.nextRequiredRedirect();
+                // Prevent using the document store to skip past steps
+                if(!isDone && stepsReqRdr) { editUrl = stepsReqRdr; }
             }
             // Allow other plugins to modify the URL needs to start the edit process
             editUrl = M.workflowServiceMaybe("std:workflow:modify-edit-url-for-transition-ui", editUrl, docstore, spec) || editUrl;
@@ -536,6 +550,7 @@ P.workflow.registerWorkflowFeature("std:document_store", function(workflow, spec
             showCurrent: canEdit,
             addComment: delegate.enablePerElementComments && can(M, O.currentUser, spec, 'addComment'),
             privateCommentsEnabled: !!spec.viewPrivateComments, // if someone can see private comments, others can leave private comments
+            defaultCommentIsPrivate: DEFAULT_COMMENT_IS_PRIVATE,
             addPrivateCommentOnly: can(M, O.currentUser, spec, 'addPrivateCommentOnly'),
             privateCommentMessage: spec.privateCommentMessage || NAME("hres:document_store:private_comment_message", i["This comment is private."]),
             addPrivateCommentLabel: spec.addPrivateCommentLabel || NAME("hres:document_store:add_private_comment_label", i["Private comment"]),

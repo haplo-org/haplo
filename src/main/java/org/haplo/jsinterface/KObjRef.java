@@ -145,6 +145,19 @@ public class KObjRef extends KScriptable {
     }
 
     // --------------------------------------------------------------------------------------------------------------
+    // Data retention
+
+    static public void jsStaticFunction__eraseObject(KObjRef ref) {
+        Runtime.privilegeRequired("pRetentionErase", "call O.retention.erase() for a store object");
+        rubyInterface.eraseObject(ref.jsGet_objId());
+    }
+
+    static public void jsStaticFunction__eraseObjectHistory(KObjRef ref) {
+        Runtime.privilegeRequired("pRetentionErase", "call O.retention.eraseHistory() for a store object");
+        rubyInterface.eraseObjectHistory(ref.jsGet_objId());
+    }
+
+    // --------------------------------------------------------------------------------------------------------------
     // Public utility functions for converting Integer Id <-> String representation
     static public String idToString(int id) {
         if(id < 0) // 0 is allowed
@@ -234,6 +247,9 @@ public class KObjRef extends KScriptable {
         public Integer refOfBehaviour(String behaviour);
 
         public String loadObjectTitleMaybe(Integer objID);
+
+        public void eraseObject(Integer objID);
+        public void eraseObjectHistory(Integer objID);
     }
     private static Ruby rubyInterface;
 

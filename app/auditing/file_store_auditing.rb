@@ -14,7 +14,10 @@ module KAuditing
   # File versions are part of an object history, and visibility is controlled by object labels.
 
   # StoredFile creations and duplicate uploads
-  KNotificationCentre.when(:file_store, :new_file) do |name, operation, stored_file, disposition|
+  KNotificationCentre.when_each([
+    [:file_store, :new_file],
+    [:file_store, :delete_file]
+  ]) do |name, operation, stored_file, disposition|
     data = {
       "digest" => stored_file.digest,
       "size" => stored_file.size,
@@ -22,7 +25,7 @@ module KAuditing
     }
     data["duplicate"] = true if disposition == :duplicate
     AuditEntry.write(
-      :kind => 'FILE-CREATE',
+      :kind => (operation == :delete_file) ? 'FILE-ERASE' : 'FILE-CREATE',
       :entity_id => stored_file.id,
       :data => data,
       :displayable => false

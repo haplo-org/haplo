@@ -49,6 +49,7 @@ __E
     def after_save; tc(:after_save); end
     def after_create; tc(:after_create); end
     def after_update; tc(:after_update); end
+    def before_delete; tc(:before_delete); end
     def after_delete
       tc(:after_delete)
       # Check this callback is called before values are wiped
@@ -320,7 +321,7 @@ __E
     assert_equal callbacks, [[:before_save, 1, 28], [:after_update, 1, 28], [:after_save, 1, 28]]
     callbacks.clear
     r1.delete
-    assert_equal callbacks, [[:after_delete, 1, 28]]
+    assert_equal callbacks, [[:before_delete, 1, 28], [:after_delete, 1, 28]]
   ensure
     Thread.current[:test_record_callbacks_made] = nil
     drop_miniorm_test_table

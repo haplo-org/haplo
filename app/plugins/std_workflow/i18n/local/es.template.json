@@ -19,8 +19,10 @@
   "list:last-two-entry-joiner": "y",
   "Edit note:": "Editar nota:",
   "New note:": "Nueva nota:",
-  "Save note": "Guardar nota",
   "Notes": "Notas",
+  "Save note": "Guardar nota",
+  "Work progress": "Progreso del trabajo",
+  "Your changes have not been saved. Do you want to discard your changes?": "Los cambios no se guardaron. ¿Desea desestimar los cambios?",
   "{} automatically sent workflow to updated user": "{} envió automáticamente el flujo de trabajo al usuario actualizado",
   "entity-replace:set-to": "para",
   "{} changed the selected roles for the workflow.": "{} cambió los roles seleccionados para el flujo de trabajo.",
@@ -28,6 +30,8 @@
   "{} made this task visible.": "{} hizo esta tarea visible.",
   "{} added a {kind}note:": "{} añadió una nota de {kind}:",
   "EDIT": "EDITAR",
+  "{} took the task over from {previous}": "{} tomó la tarea de {previous}",
+  "{} delegated the task to {current}": "{} delegó la tarea a {current}",
   "Please complete all the required fields.": "Complete todos los campos obligatorios.",
   "Action complete": "Acción completa",
   "You've already taken an action. Perhaps you clicked the Back button in your browser?": "Ya ha realizado una acción. Tal vez pulsó el botón Atrás de su navegador.",
@@ -56,5 +60,7 @@
   "Seen only by staff reviewing this application, not seen by the applicant.": "Vista solo por el personal que revisa esta postulación. El postulante no la ve.",
   "Currently with": "Actualmente con",
   "Status": "Estado",
+  "Confirm": "Confirmar",
+  "Decision": "Decisión",
   "user-name:system": "Sistema"
 }

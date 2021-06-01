@@ -362,18 +362,18 @@ module Application_RenderHelper
     if value.transformed.empty?
       return ''
     end
-    first = true
+    omit_label = value.descriptor.ui_options != 'all-labels'
     h = '<div class="z__object_attribute_group">'.dup
     value.transformed.each do |t|
       unless t.attributes.empty?
-        h << %Q!<div class="z__object_attribute_group_attribute_name">#{ERB::Util.h(t.descriptor.printable_name.to_s)}</div>! unless first
+        h << %Q!<div class="z__object_attribute_group_attribute_name">#{ERB::Util.h(t.descriptor.printable_name.to_s)}</div>! unless omit_label
         t.attributes.each do |v,d,q|
           h << '<div>'
           h << render_value(v, obj, render_options, attr_desc)
           h << '</div>'
         end
       end
-      first = false # only omit the title on the first attribute in the type definition
+      omit_label = false # only omit the attribute label once
     end
     h << '</div>'
     h
@@ -408,7 +408,7 @@ module Application_RenderHelper
       thumb_info = stored_file.thumbnail
       if thumb_info != nil
         thumb_urlpath = thumb_info.urlpath || file_url_path(value, :thumbnail, file_url_options)
-        %Q!<img src="#{thumb_urlpath}" width="#{thumb_info.scaled_width}" height="#{thumb_info.scaled_height}" alt="">!
+        %Q!<img src="#{thumb_urlpath}" width="#{thumb_info.scaled_width}" height="#{thumb_info.scaled_height}" alt="" loading="lazy">!
       else
         '<img src="/images/nothumbnail.gif" width="47" height="47" alt="Thumbnail not available">'
       end

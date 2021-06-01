@@ -21,6 +21,7 @@ class MiniORM::Record
   def after_create; end
   def after_update; end
   def after_save; end
+  def before_delete; end
   def after_delete; end
 
   # -------------------------------------------------------------------------
@@ -51,6 +52,7 @@ class MiniORM::Record
 
   def delete
     raise MiniORM::MiniORMException, "Row has not been committed to database" if @id.nil?
+    before_delete()
     KApp.with_jdbc_database do |db|
       statement = db.prepareStatement(self.class._sql_fragment(:DELETE_RECORD_SQL))
       statement.setInt(1, @id)

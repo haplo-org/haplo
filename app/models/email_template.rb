@@ -118,11 +118,14 @@ class EmailTemplate < MiniORM::Record
       to_addr_only = m[:user_obj].email
       "#{m[:user_obj].name.gsub(/[^a-zA-Z0-9._ -]/,'')} <#{m[:user_obj].email}>"
     end
+    to = sanitise_header_value(to)
+    # Subject needs to be sanitised because RMail doesn't do it
+    safe_subject = sanitise_header_value(m[:subject])
     # Generate the email text
     html = ((m[:format] == :plain) ? nil : generate_email_html(m))
     plain = generate_email_plain_body(m)
     # Log
-    KApp.logger.info("Sending email...\nTo: #{to}\nFrom: #{self.from_email_address}\nSubject: #{m[:subject]}\nPlain text version (only) follows")
+    KApp.logger.info("Sending email...\nTo: #{to}\nFrom: #{self.from_email_address}\nSubject: #{safe_subject}\nPlain text version (only) follows")
     KApp.logger.info(plain)
     KApp.logger.info("---------------------- END OF MESSAGE ----------------------")
     # Plain too big?
@@ -136,8 +139,8 @@ class EmailTemplate < MiniORM::Record
     # Assemble the email into a message
     message = RMail::Message.new
     message.header.to = to
-    message.header.from = "#{self.from_name} <#{self.from_email_address}>"
-    message.header.subject = m[:subject]
+    message.header.from = "#{sanitise_header_value(self.from_name)} <#{sanitise_header_value(self.from_email_address)}>"
+    message.header.subject = safe_subject
     message.header.date = Time.now
     if html != nil && plain == nil
       # HTML only
@@ -162,6 +165,10 @@ class EmailTemplate < MiniORM::Record
         end
       end
     end
+  end
+
+  def sanitise_header_value(v)
+    v.strip.gsub(/\s+/, ' ')
   end
 
   # Helper function to make an encoded part of a message

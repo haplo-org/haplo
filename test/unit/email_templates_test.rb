@@ -45,11 +45,15 @@ class EmailTemplatesTest < Test::Unit::TestCase
     d_before = EmailTemplate.test_deliveries.size
     t.deliver(
       :to => 'test@example.com',
-      :subject => 'Test Subject',
+      :subject => "  Test Subject\r\nBad: example  ",
       :message => '<p>Message</p>'
     )
     assert_equal d_before + 1, EmailTemplate.test_deliveries.size
     assert_equal ['test@example.com'], EmailTemplate.test_deliveries.last.header.to
+    assert_equal 'Test Subject Bad: example', EmailTemplate.test_deliveries.last.header.subject
+
+    # Header sanitisation
+    assert_equal 'abc def xyz', t.sanitise_header_value("   abc\r\ndef\t  xyz  ")
 
     # Test sending to user object
     t.deliver(

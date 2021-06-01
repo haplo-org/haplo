@@ -633,13 +633,13 @@ __E
     post_fid.call "url", '{"forceDownload":true}'
     assert_equal "/file/#{uploaded_stored_file.digest}/#{uploaded_stored_file.size}/example.pages?attachment=1", response.body
     post_fid.call "fileThumbnailHTML", "null"
-    assert_equal %Q!<img src="/_t/#{uploaded_stored_file.digest}/#{uploaded_stored_file.size}" width="49" height="64" alt="">!, response.body
+    assert_equal %Q!<img src="/_t/#{uploaded_stored_file.digest}/#{uploaded_stored_file.size}" width="49" height="64" alt="" loading="lazy">!, response.body
     post_fid.call "fileThumbnailHTML", %Q!{"linkToDownload":true}!
-    assert_equal %Q!<a href="/file/#{uploaded_stored_file.digest}/#{uploaded_stored_file.size}/example.pages"><img src="/_t/#{uploaded_stored_file.digest}/#{uploaded_stored_file.size}" width="49" height="64" alt=""></a>!, response.body
+    assert_equal %Q!<a href="/file/#{uploaded_stored_file.digest}/#{uploaded_stored_file.size}/example.pages"><img src="/_t/#{uploaded_stored_file.digest}/#{uploaded_stored_file.size}" width="49" height="64" alt="" loading="lazy"></a>!, response.body
     post_fid.call "fileThumbnailHTML", %Q!{"linkToDownload":true,"asFullURL":true}!
-    assert_equal %Q!<a href="http://www#{_TEST_APP_ID}.example.com#{KApp::SERVER_PORT_EXTERNAL_CLEAR_IN_URL}/file/#{uploaded_stored_file.digest}/#{uploaded_stored_file.size}/example.pages"><img src="http://www#{_TEST_APP_ID}.example.com#{KApp::SERVER_PORT_EXTERNAL_CLEAR_IN_URL}/_t/#{uploaded_stored_file.digest}/#{uploaded_stored_file.size}" width="49" height="64" alt=""></a>!, response.body
+    assert_equal %Q!<a href="http://www#{_TEST_APP_ID}.example.com#{KApp::SERVER_PORT_EXTERNAL_CLEAR_IN_URL}/file/#{uploaded_stored_file.digest}/#{uploaded_stored_file.size}/example.pages"><img src="http://www#{_TEST_APP_ID}.example.com#{KApp::SERVER_PORT_EXTERNAL_CLEAR_IN_URL}/_t/#{uploaded_stored_file.digest}/#{uploaded_stored_file.size}" width="49" height="64" alt="" loading="lazy"></a>!, response.body
     post_fid.call "fileThumbnailHTML", %Q!{"linkToDownload":true,"authenticationSignature":true}!
-    assert response.body =~ /\A<a href="(\/file\/#{uploaded_stored_file.digest}\/#{uploaded_stored_file.size}\/example\.pages\?s=([0-9a-f]+))"><img src="(\/_t\/#{uploaded_stored_file.digest}\/#{uploaded_stored_file.size}\?s=([0-9a-f]+))" width="49" height="64" alt=""><\/a>\z/
+    assert response.body =~ /\A<a href="(\/file\/#{uploaded_stored_file.digest}\/#{uploaded_stored_file.size}\/example\.pages\?s=([0-9a-f]+))"><img src="(\/_t\/#{uploaded_stored_file.digest}\/#{uploaded_stored_file.size}\?s=([0-9a-f]+))" width="49" height="64" alt="" loading="lazy"><\/a>\z/
     signed_file_url = $1
     signed_thumbnail_url = $3
     assert $2 != $4 # signatures are different
@@ -653,7 +653,7 @@ __E
 
     # Request HTML for a non-image file, returns a thumbnail
     post_fid.call "toHTML", '{}'
-    assert_equal %Q!<img src="/_t/#{uploaded_stored_file.digest}/#{uploaded_stored_file.size}" width="49" height="64" alt="">!, response.body
+    assert_equal %Q!<img src="/_t/#{uploaded_stored_file.digest}/#{uploaded_stored_file.size}" width="49" height="64" alt="" loading="lazy">!, response.body
 
     # Resizing images
     fileupload_obj.delete_attrs!(A_FILE)
@@ -674,7 +674,7 @@ __E
     assert_equal %Q!<img src="/file/#{png_stored_file.digest}/#{png_stored_file.size}/s/example5.png" width="128" height="256">!, response.body
     # Thumbnails
     post_fid.call "toHTML", '{"transform":"thumbnail"}'
-    assert_equal %Q!<img src="/_t/#{png_stored_file.digest}/#{png_stored_file.size}" width="32" height="64" alt="">!, response.body
+    assert_equal %Q!<img src="/_t/#{png_stored_file.digest}/#{png_stored_file.size}" width="32" height="64" alt="" loading="lazy">!, response.body
     # With signatures
     post_fid.call "toHTML", '{"transform":"w103","authenticationSignature":true}'
     assert response.body =~ /\A<img src="(\/file\/#{png_stored_file.digest}\/#{png_stored_file.size}\/w103\/example5\.png\?s=[0-9a-f]+)" width="103" height="206">\z/

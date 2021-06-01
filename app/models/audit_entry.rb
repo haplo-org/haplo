@@ -123,6 +123,13 @@ class AuditEntry < MiniORM::Record
       entry.user_id = state.user.id
       entry.auth_user_id = state.auth_user.id
     end
+    # Not displayable if the user is a service user
+    if entry.displayable && 
+      user = User.cache[entry.user_id]
+      if user && user.is_service_user
+        entry.displayable = false
+      end
+    end
     # Allow behaviour to be modified
     if block_given?
       yield entry

@@ -68,5 +68,8 @@
     if @data_type_attribute_group_type
       %><br>based on type <i><%= h(@schema.type_descriptor(@data_type_attribute_group_type).printable_name.to_s) %></i><%
     end
+    if @data_type_ui_options == 'all-labels'
+      %><br>Showing all attribute labels<%
+    end
   end
 %>

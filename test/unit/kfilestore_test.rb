@@ -89,6 +89,13 @@ class KFileStoreTest < Test::Unit::TestCase
     assert_equal "test.pdf", KMIMETypes.correct_filename_extension("image/pants", "test.pdf")
     assert_equal "test.pdf.doc", KMIMETypes.correct_filename_extension("application/msword", "test.pdf")
     assert_equal "test.pdf.doc", KMIMETypes.correct_filename_extension("application/msword; options=382", "test.pdf")
+
+    # Adjustment of formats for displaying images on the web
+    assert_equal nil, KMIMETypes.adjusted_mime_type_for_web_display("application/pdf")
+    assert_equal nil, KMIMETypes.adjusted_mime_type_for_web_display("image/png")
+    assert_equal nil, KMIMETypes.adjusted_mime_type_for_web_display("image/jpeg")
+    assert_equal nil, KMIMETypes.adjusted_mime_type_for_web_display("image/gif")
+    assert_equal "image/png", KMIMETypes.adjusted_mime_type_for_web_display("image/tiff")
   end
 
   def test_stored_file_creation
@@ -171,8 +178,15 @@ class KFileStoreTest < Test::Unit::TestCase
     # Check all the filenames are different
     stored_file_filenames = [stored_file, stored_file2, stored_file_also].map {|v| v.disk_pathname }
     assert_equal true, File.exist?(stored_file.disk_pathname_render_text)
-    # Check destruction deletes the file
+    # Check delete writes an audit trail entry
+    about_to_create_an_audit_entry
     StoredFile.read(stored_file.id).delete
+    assert_audit_entry(:kind => 'FILE-ERASE', :entity_id => stored_file.id, :data => {
+      "digest" => "feed2644bd4834c2b7f9b3ed845f6f1ab4f4b7f3fc45ee3bbc55e71e2a507369",
+      "size" => 611,
+      "filename" => "example7.html"
+    })
+    # Check destruction deletes the file
     assert_equal false, File.exist?(stored_file_filenames.first)
     assert_equal false, File.exist?(stored_file.disk_pathname_render_text)
 

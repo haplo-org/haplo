@@ -34,6 +34,12 @@ class StoredFile < MiniORM::Record
     send_create_notification
     do_background_thumbnailing
   end
+  def before_delete
+    KNotificationCentre.notify(:file_store, :delete_file, self, :before_delete)
+    FileCacheEntry.where(:stored_file_id => self.id).each do |cache_entry|
+      cache_entry.delete
+    end
+  end
   def after_delete
     delete_file_from_disk
   end

@@ -19,7 +19,7 @@ DescriptorAndAttrs = Struct.new(
 module KAttrAlias
   include KConstants
 
-  class AliasedGroups < Struct.new(:transformed, :group_id)
+  class AliasedGroups < Struct.new(:transformed, :group_id, :descriptor)
     # TODO: This feels a bit icky to be using the typecode here, but it makes rendering convenient
     def k_typecode; KConstants::T_ATTRIBUTE_GROUP end
   end
@@ -149,7 +149,7 @@ module KAttrAlias
       group_transformed = self.attr_aliasing_transform(group.object, schema, allow_aliasing)
       toa = transformed_lookup[group.desc]
       if toa
-        group_value = AliasedGroups.new(group_transformed, group.group_id)
+        group_value = AliasedGroups.new(group_transformed, group.group_id, schema.attribute_descriptor(group.desc))
         toa.attributes << [group_value, group.desc, KConstants::Q_NULL]
       end
     end

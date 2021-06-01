@@ -512,6 +512,10 @@
     margin-bottom: 24px;    /* add a bit of spacing before the next section */
 }
 
+.oform select {
+    max-width: 408px;
+}
+
 /* adjust position of remove button when not in a repeating section with multiple elements */
 .oform div.oforms-repetition:not(.oforms-has-multiple) div.oforms-row + .oforms-delete-btn {
     position: relative;

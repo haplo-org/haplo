@@ -491,10 +491,19 @@ class KObjectStore
   # Erase all existence of an object from the store, including history
   # Returns nil
   def erase(obj_or_objref)
+    _erase(obj_or_objref, :erase)
+  end
+
+  # Erase the history of an object
+  def erase_history(obj_or_objref)
+    _erase(obj_or_objref, :erase_history)
+  end
+
+  def _erase(obj_or_objref, operation)
     @statistics.inc_erase
 
     objref = if obj_or_objref.class == KObject then obj_or_objref.objref else obj_or_objref end
-    raise "Cannot use #{obj_or_objref.class} as parameter to KObjectStore#erase" unless objref.class == KObjRef
+    raise "Cannot use #{obj_or_objref.class} as parameter" unless objref.class == KObjRef
 
     obj_id = objref.obj_id
     @object_cache.delete(obj_id)
@@ -502,7 +511,7 @@ class KObjectStore
 
     KApp.with_pg_database do |pg|
 
-      # Check object is in the database, get it's ID and the serialized object data
+      # Check object is in the database, get serialized object data
       r = pg.exec("SELECT id,object,labels FROM #{@db_schema_name}.os_objects WHERE id=#{obj_id}")
       raise "Object did not exist" if r.length != 1
       obj = KObjectStore._deserialize_object(r.first[1], r.first[2])
@@ -512,19 +521,23 @@ class KObjectStore
 
       pg.perform('BEGIN')
       begin
-        # Remove all index entries
-        ALL_INDEX_TABLES.each do |type|
-          pg.update("DELETE FROM #{@db_schema_name}.os_index_#{type} WHERE id=#{obj_id}")
-        end
+        if operation == :erase
+          # Remove all index entries
+          ALL_INDEX_TABLES.each do |type|
+            pg.update("DELETE FROM #{@db_schema_name}.os_index_#{type} WHERE id=#{obj_id}")
+          end
 
-        # Delete from the current version
-        pg.update("DELETE FROM #{@db_schema_name}.os_objects WHERE id=#{obj_id}")
+          # Delete from the current version
+          pg.update("DELETE FROM #{@db_schema_name}.os_objects WHERE id=#{obj_id}")
+        end
 
         # Delete all old versions
         pg.update("DELETE FROM #{@db_schema_name}.os_objects_old WHERE id=#{obj_id}")
 
-        # Mark it as dirty so the text entry gets removed
-        pg.update("INSERT INTO public.os_dirty_text(app_id,osobj_id) VALUES(#{@application_id.to_i},#{obj_id})")
+        if operation == :erase
+          # Mark it as dirty so the text entry gets removed
+          pg.update("INSERT INTO public.os_dirty_text(app_id,osobj_id) VALUES(#{@application_id.to_i},#{obj_id})")
+        end
 
         pg.perform('COMMIT')
 
@@ -536,7 +549,7 @@ class KObjectStore
       end
     end
 
-    schema_update_and_inform_delegate(obj, obj, :erase)
+    schema_update_and_inform_delegate(obj, obj, operation)
 
     nil
   end

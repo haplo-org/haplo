@@ -294,13 +294,24 @@ class AuditEntryTest < Test::Unit::TestCase
       assert_equal KLabelList.new([5,10]), entry.labels
     end
 
+    # ERASE HISTORY
+    KObjectStore.erase_history(obj)
+    get_checked_next_entry() do |entry|
+      assert_equal "ERASE-HISTORY", entry.kind
+      assert_equal obj.objref, entry.objref
+      assert_equal 2, entry.version
+      assert_equal false, entry.displayable
+      assert_equal nil, entry.data_json
+      assert_equal KLabelList.new([5,10]), entry.labels
+    end
+
     # ERASE
     KObjectStore.erase(obj)
     get_checked_next_entry() do |entry|
       assert_equal "ERASE", entry.kind
       assert_equal obj.objref, entry.objref
       assert_equal 2, entry.version
-      assert_equal true, entry.displayable
+      assert_equal false, entry.displayable
       assert_equal nil, entry.data_json
       assert_equal KLabelList.new([5,10]), entry.labels
     end
@@ -382,6 +393,27 @@ class AuditEntryTest < Test::Unit::TestCase
     KObjectStore.update(obj_with_files)
     get_checked_next_entry() do |entry|
       assert_equal '{"filev":["TRACK_ID_0","TRACK_ID_1"]}', entry.data_json
+    end
+
+    # Audit trail entries by service user are not displayable
+    user_sr = User.new
+    user_sr.name = 'Service user 0'
+    user_sr.code = 'test:service-user:test'
+    user_sr.kind = User::KIND_SERVICE_USER
+    user_sr.save
+    PermissionRule.new_rule!(PermissionRule::ALLOW, user_sr, KConstants::O_LABEL_COMMON, :create)
+    @expected_entries += 1 # for setup of user
+    obj_sr = KObject.new()
+    obj_sr.add_attr('SR obj', A_TITLE)
+    obj_sr.add_attr(O_TYPE_BOOK, A_TYPE)
+    AuthContext.with_user(user_sr) do
+      KObjectStore.create(obj_sr)
+    end
+    get_checked_next_entry() do |entry|
+      assert_equal "CREATE", entry.kind
+      assert_equal obj_sr.objref, entry.objref
+      assert_equal user_sr.id, entry.user_id
+      assert_equal false, entry.displayable
     end
   end
 

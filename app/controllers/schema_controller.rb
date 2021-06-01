@@ -20,7 +20,7 @@ class SchemaController < ApplicationController
     T_PSEUDO_TAXONOMY_OBJREF => [:control_by_types],
     T_DATETIME => [:ui_options],
     T_TEXT_PERSON_NAME => [:ui_options],
-    T_ATTRIBUTE_GROUP => [:attribute_group_type],
+    T_ATTRIBUTE_GROUP => [:attribute_group_type,:ui_options],
     T_TEXT_PLUGIN_DEFINED => [:data_type_options] # type name of the plugin defined value type
   }
 

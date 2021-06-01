@@ -46,5 +46,6 @@
       )
     %>
   </p>
+  <p><label><input type="checkbox" name="attr_group_all_labels" value="1"<% if @data_type_ui_options == 'all-labels' %> checked="checked"<% end %>>Show all attribute labels</label></p>
 </div>
 <% client_side_controller_js('data_type') %>

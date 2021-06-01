@@ -39,6 +39,14 @@ module JSObjRefSupport
     title.kind_of?(KText) ? title.to_plain_text : title.to_s
   end
 
+  def self.eraseObject(objId)
+    KObjectStore.erase(KObjRef.new(objId));
+  end
+
+  def self.eraseObjectHistory(objId)
+    KObjectStore.erase_history(KObjRef.new(objId));
+  end
+
 end
 
 Java::OrgHaploJsinterface::KObjRef.setRubyInterface(JSObjRefSupport)

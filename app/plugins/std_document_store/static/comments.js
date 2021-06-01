@@ -22,6 +22,7 @@
             filterOn = configDiv.getAttribute('data-filter') === "1",
             showingChanges = configDiv.getAttribute('data-changes') === "1",
             privateCommentsEnabled = configDiv.getAttribute('data-privatecommentsenabled') === "1",
+            defaultCommentIsPrivate = configDiv.getAttribute('data-defaultcommentisprivate') === "1",
             addPrivateCommentLabel = configDiv.getAttribute('data-addprivatecommentlabel'),
             privateCommentMessage = configDiv.getAttribute('data-privatecommentmessage'),
             addPrivateCommentOnly = configDiv.getAttribute('data-addprivatecommentonly') === "1";
@@ -191,7 +192,7 @@
 
             $('#z__docstore_body').on('click', '.z__docstore_add_comment_button', function(evt) {
                 evt.preventDefault();
-                var commentBox = showAddComment(this);
+                var commentBox = showAddComment(this, undefined, undefined, defaultCommentIsPrivate);
                 $(this).hide(); // hide button to avoid
                 var element = $(this).parents('[data-uname]').first();
                 $(element).find(".z__docstore_comment_footer").hide();

@@ -74,7 +74,7 @@ module KEditor
       if replacementObject != nil && replacementObject.first_attr(A_TYPE) == object.first_attr(A_TYPE)
         # Copy in the attributes to the object to edit, so that the non-attribute metadata isn't lost
         object.delete_attr_if { true }
-        replacementObject.each { |v,d,q| object.add_attr(v,d,q) }
+        replacementObject.each { |v,d,q,x| object.add_attr(v,d,q,x) }
         # Update the copy with computed attributes
         object.compute_attrs_if_required!
       end

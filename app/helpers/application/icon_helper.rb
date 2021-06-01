@@ -54,7 +54,6 @@ module Application_IconHelper
   ICON_SPECIAL_LINKED_ITEMS = 'E008,1,f'
   ICON_SPECIAL_LINKED_ITEMS_SELECTED = 'E525,1,f E008,1,f'
   ICON_SPECIAL_RECENT_VERSION = 'E525,1,f,s E526,2,c'
-  ICON_SPECIAL_RECENT_ERASE_OBJ = 'E525,1,f,s E413,2,c'
   ICON_SPECIAL_HAS_FILES = 'E201,1,f,y E227,0,c'
 
   # Build Regexp for validating icon definitions
