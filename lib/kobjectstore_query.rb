@@ -289,7 +289,7 @@ class KObjectStore
       # Generate sort spec now in case :relevance was changed to :date
       sort_spec = _sort_spec_for(sort_by) if sort_spec == nil
 
-      "SELECT #{fields} FROM #{@store._db_schema_name}.os_objects AS o#{tbl_extra} WHERE o.id IN #{ids_subquery}#{label_filter_clause}#{time_sub_clause}#{group_by} ORDER BY #{sort_spec}#{(@maximum_results != nil) ? " LIMIT #{@maximum_results}" : ''}"
+      "SELECT #{fields} FROM #{@store._db_schema_name}.os_objects AS o#{tbl_extra} WHERE o.id IN #{ids_subquery}#{label_filter_clause}#{time_sub_clause}#{group_by} ORDER BY #{sort_spec}#{(@offset_start != nil) ? " OFFSET  #{@offset_start}" : ''}#{(@maximum_results != nil) ? " LIMIT #{@maximum_results}" : ''}"
     end
 
     def label_filter_clause
@@ -626,6 +626,16 @@ class KObjectStore
         @maximum_results = r
       else
         raise "Bad maximum_results for query"
+      end
+    end
+
+    # Offset the results returned
+    def offset(offset_start)
+      r = offset_start.to_i
+      if r > 0
+        @offset_start = r
+      else
+        raise "Bad offset_start for query"
       end
     end
 

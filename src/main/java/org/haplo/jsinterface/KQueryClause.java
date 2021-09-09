@@ -154,6 +154,13 @@ public class KQueryClause extends KScriptable {
         this.clause.created_by_user_id(userId);
     }
 
+    public void jsFunction_createdWithinDateRange(Object beginDate, Object endDate) {
+        this.clause.constrain_to_time_interval(
+                JsConvert.convertJavaDateToRuby(JsConvert.tryConvertJsDate(beginDate)),
+                JsConvert.convertJavaDateToRuby(JsConvert.tryConvertJsDate(endDate))
+        );
+    }
+
     public void jsFunction_lastUpdatedWithinDateRange(Object beginDate, Object endDate) {
         this.clause.constrain_to_updated_time_interval(
                 JsConvert.convertJavaDateToRuby(JsConvert.tryConvertJsDate(beginDate)),
@@ -194,6 +201,10 @@ public class KQueryClause extends KScriptable {
 
     public void jsFunction_limit(int maxResults) {
         this.clause.maximumResults(maxResults);
+    }
+
+    public void jsFunction_offset(int offsetStart) {
+        this.clause.offset(offsetStart);
     }
 
     // --------------------------------------------------------------------------------------------------------------

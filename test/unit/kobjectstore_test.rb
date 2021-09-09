@@ -2052,6 +2052,13 @@ __E
     q_over_limit = KObjectStore.query_and.free_text('FINDTHIS')
     q_over_limit.maximum_results(100)
     assert_equal 31, q_over_limit.execute(:ref, :any).length
+
+    # Test bad offset starts throw exception
+    test_for_badness_query = KObjectStore.query_and
+    assert_raises(RuntimeError) { test_for_badness_query.offset(0) }
+    assert_raises(RuntimeError) { test_for_badness_query.offset(-1) }
+    assert_raises(RuntimeError) { test_for_badness_query.offset("pants") }
+    assert_raises(RuntimeError) { test_for_badness_query.offset('0') }
   end
 
   def check_type_list_from_short_names(schema, list, expected_types, rejects)
