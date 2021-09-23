@@ -14,7 +14,7 @@ import java.util.HashMap;
 import org.mozilla.javascript.*;
 import org.mozilla.javascript.json.JsonParser;
 
-import org.haplo.javascript.profiler.JSProfiler;
+import org.haplo.javascript.debugger.Debug;
 import org.haplo.jsinterface.*;
 import org.haplo.jsinterface.i18n.KPluginStrings;
 import org.haplo.jsinterface.app.*;
@@ -45,6 +45,7 @@ public class Runtime {
     static private HashMap<Integer,ApplicationScope> applicationScopes = new HashMap<Integer,ApplicationScope>();
 
     // Information for the current runtime
+    private int applicationId;
     private Context currentContext;
     private Scriptable runtimeScope;
     private KHost host;
@@ -81,10 +82,15 @@ public class Runtime {
     /**
      * Construct a new runtime, backed by the shared scope
      */
-    public Runtime() {
+    public Runtime(int applicationId) {
+        this.applicationId = applicationId;
     }
 
-    public void prepareAndMaybeLoadApplicationScope(int applicationId, ApplicationScopeLoader loader) {
+    public int getApplicationId() {
+        return this.applicationId;
+    }
+
+    public void prepareAndMaybeLoadApplicationScope(ApplicationScopeLoader loader) {
         if(sharedScope == null) {
             throw new RuntimeException("Runtime.initializeSharedEnvironment() not called yet");
         }
@@ -94,10 +100,10 @@ public class Runtime {
             // Ensure application runtime is set up
             ApplicationScope appScope = null;
             synchronized(applicationScopes) {
-                appScope = applicationScopes.get(applicationId);
+                appScope = applicationScopes.get(this.applicationId);
                 if(appScope == null) {
-                    appScope = new ApplicationScope(applicationId);
-                    applicationScopes.put(applicationId, appScope);
+                    appScope = new ApplicationScope(this.applicationId);
+                    applicationScopes.put(this.applicationId, appScope);
                 }
             }
 
@@ -109,6 +115,12 @@ public class Runtime {
                         ScriptableObject pendingAppScope = (ScriptableObject)cx.newObject(sharedScope);
                         pendingAppScope.setPrototype(sharedScope);
                         pendingAppScope.setParentScope(null);
+
+                        // If debugger active, use the interpreter
+                        if(null != Debug.getFactoryForApplication(applicationId)) {
+                            cx.setOptimizationLevel(-1); // interpreter
+                        }
+
                         loader.load(new JsLoader(cx, pendingAppScope));
 
                         // Seal the application scope to prevent accidental modification
@@ -168,8 +180,12 @@ public class Runtime {
         currentContext = Runtime.enterContext();
         threadRuntime.set(this);
         host.setSupportRoot(supportRoot);
-        if(JSProfiler.isEnabled()) {
-            currentContext.setDebugger(new JSProfiler(), new Object());
+        Debug.Factory debuggerFactory = Debug.getFactoryForApplication(this.applicationId);
+        if(debuggerFactory != null) {
+            Debug.Implementation debugger = debuggerFactory.makeImplementation();
+            debugger.useOnThisThread();
+            currentContext.setOptimizationLevel(-1); // use interpreter for any evaluated strings, eg plugin tests
+            currentContext.setDebugger(debugger, null);
         }
     }
 
@@ -177,12 +193,10 @@ public class Runtime {
      * Stop using this runtime on this Thread
      */
     public void stopUsingOnThisThread() {
-        if(JSProfiler.isEnabled()) {
-            JSProfiler profiler = (JSProfiler)currentContext.getDebugger();
-            if(profiler != null) {
-                profiler.finish();
-                System.out.println(profiler.report());
-            }
+        Debug.Implementation debugger = (Debug.Implementation)currentContext.getDebugger();
+        if(debugger != null) {
+            debugger.stopUsingOnThisThread();
+            currentContext.setDebugger(null, null);
         }
         if(currentContext == null || currentContext != Context.getCurrentContext() || threadRuntime.get() != this) {
             throw new RuntimeException("JavaScript Runtime is not in the right state for stopUsingOnThisThread()");
@@ -281,11 +295,11 @@ public class Runtime {
      * Get current app ID, or exception
      */
     public static int currentApplicationId() {
-        int appId = Runtime.currentRuntimeHost().getSupportRoot().currentApplicationId();
-        if(appId == -1) {
-            throw new RuntimeException("No application is currently active");
+        Runtime runtime = threadRuntime.get();
+        if(runtime == null) {
+            throw new RuntimeException("No JavaScript runtime in use on this thread");
         }
-        return appId;
+        return runtime.getApplicationId();
     }
 
     /**
@@ -685,6 +699,9 @@ public class Runtime {
             PluginTestingSupport obj = (PluginTestingSupport)currentContext.newObject(runtimeScope, "$TESTSUPPORT");
             runtimeScope.put("$TEST", runtimeScope, obj);
             // TODO: Load plugin testing support more elegantly in JavaScript runtimes
+            if(null != currentContext.getDebugger()) {
+                currentContext.setOptimizationLevel(-1); // use interpreter
+            }
             this.loadScript("lib/javascript/lib/testing/testing_support.js", "testing/testing_support.js", null, null);
             testingSupport = obj;
         }

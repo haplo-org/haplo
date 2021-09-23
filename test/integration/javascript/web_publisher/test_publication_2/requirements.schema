@@ -1,0 +1,9 @@
+
+group test:group:second-publisher-service-group as ServiceGroup
+    title: Second Test Publisher Group
+
+service-user test:service-user:second-publisher
+    title: Second Test Publisher User
+    group test:group:second-publisher-service-group
+
+

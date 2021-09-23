@@ -131,6 +131,10 @@ class DeveloperLoader
     KNotificationCentre.when(:javascript_console_log) do |name, detail, text, currently_executing_plugin_name|
       broadcast_notification('log ', "#{currently_executing_plugin_name}:#{detail}: #{text}")
     end
+    # Send profiler reports
+    Java::OrgHaploJavascriptDebugger::Profiler.reporter() do |report|
+      broadcast_notification('prof', report)
+    end
     # Listen for audit trail entries being written
     KNotificationCentre.when(:audit_trail, :write) do |name, detail, entry|
       fields = [["id", entry.id], ["auditEntryType", entry.kind]]
@@ -521,6 +525,89 @@ class DeveloperLoader
     def handle_i18n_debugging_api
       KApp.set_global_bool(:debug_config_i18n_debugging, params['enable'] == '1')
       render :text => 'OK'
+    end
+
+    # -----------------------------------------------------------------------------------------------------------------------------
+    # Debuggers
+
+    _PostOnly
+    def handle_debugger_dap_start_api
+      plugin_locations = JSON.parse(params['plugin_locations'])
+      dap = DebugAdaptorProtocol.start_for_current_application(plugin_locations)
+      render :text => "TOKEN: #{dap.token}"
+    end
+
+    _PostOnly
+    def handle_debugger_dap_messages_api
+      recieved_messages = JSON.parse(params['messages'])
+      error = nil
+      messages = nil
+      unless recieved_messages.kind_of?(Array)
+        error = "Bad messages"
+      else
+        dap = DebugAdaptorProtocol.get_for_current_application
+        unless dap
+          error = "No debugger active"
+        else
+          unless params['token'] == dap.token
+            error = "Debugger token incorrect - has another debugger been started?"
+          else
+            messages = []
+            recieved_messages.each do |message|
+              messages.concat(dap.handle(message))
+            end
+          end
+        end
+      end
+      response = {}
+      response['error'] = error if error
+      response['messages'] = messages if messages
+      render :text => JSON.generate(response), :kind => :json
+    end
+
+    _PostOnly
+    def handle_debugger_dap_stop_api
+      DebugAdaptorProtocol.stop_for_current_application
+      render :text => 'OK'
+    end
+
+    _PostOnly
+    def handle_debugger_profile_start_api
+      min = (params['min'] || '2.0').to_f
+      min = 0 if min < 0
+      min = 99 if min > 99
+      org.haplo.javascript.debugger.Debug.setFactoryForApplication(KApp.current_application, Java::OrgHaploJavascriptDebugger::Profiler::Factory.new(min))
+      KJSPluginRuntime.invalidate_all_runtimes
+      render :text => 'OK'
+    end
+
+    _PostOnly
+    def handle_debugger_profile_stop_api
+      debugger = org.haplo.javascript.debugger.Debug.getFactoryForApplication(KApp.current_application)
+      if debugger.kind_of?(Java::OrgHaploJavascriptDebugger::Profiler::Factory)
+        org.haplo.javascript.debugger.Debug.setFactoryForApplication(KApp.current_application, nil)
+        KJSPluginRuntime.invalidate_all_runtimes
+      end
+      render :text => 'OK'
+    end
+
+    _PostOnly
+    def handle_debugger_coverage_start_api
+      org.haplo.javascript.debugger.Debug.setFactoryForApplication(KApp.current_application, Java::OrgHaploJavascriptDebugger::Coverage::Factory.new())
+      KJSPluginRuntime.invalidate_all_runtimes
+      render :text => 'OK'
+    end
+
+    _PostOnly
+    def handle_debugger_coverage_stop_api
+      debugger = org.haplo.javascript.debugger.Debug.getFactoryForApplication(KApp.current_application)
+      if debugger.kind_of?(Java::OrgHaploJavascriptDebugger::Coverage::Factory)
+        org.haplo.javascript.debugger.Debug.setFactoryForApplication(KApp.current_application, nil)
+        KJSPluginRuntime.invalidate_all_runtimes
+        render :text => debugger.reportAsString()
+      else
+        render :text => 'COVERAGE_NOT_ENABLED', :status => 400
+      end
     end
 
     # -----------------------------------------------------------------------------------------------------------------------------

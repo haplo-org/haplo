@@ -145,4 +145,11 @@ TEST(function() {
     TEST.assert("Group 1", g1.first(ATTR['std:attribute:notes']));
     TEST.assert("Group two", g2.first(ATTR['std:attribute:notes']));
 
+    // Test attribute group type retrieval
+    var exampleGroupInfo = SCHEMA.getAttributeInfo(ATTR["test:attribute:example-attribute-group"]);
+    TEST.assert_equal(O.T_ATTRIBUTE_GROUP, exampleGroupInfo.typecode);
+    TEST.assert(exampleGroupInfo.groupType);
+    TEST.assert(exampleGroupInfo.groupType instanceof $Ref);
+    TEST.assert(exampleGroupInfo.groupType == TYPE["test:type:group-of-attributes"])
+
 });

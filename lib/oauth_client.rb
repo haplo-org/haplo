@@ -134,18 +134,23 @@ class OAuthClient
       'hd' => @config['domain'],
       'max_auth_age' => @config['max_auth_age'].to_i
     })
-    "#{@config['auth_url']}?#{query}"
+    auth_url = @config['auth_url']
+    "#{auth_url}#{auth_url =~ /\?/ ? '&' : '?'}#{query}"
   end
 
   # TODO: Suspend the user's HTTP request while performing HTTP requests (probably in a new authentication scheme)
   def perform_https_request(method, url, data = nil, accept_header = nil)
+    uri = URI(url)
+    uri_data = {}
+    if uri.query
+      URI.decode_www_form(uri.query).each { |k,v| uri_data[k] = v }
+    end
+    uri_data.merge!(data) if data
     if method == :POST
-      uri = URI(url)
-      request = Net::HTTP::Post.new(uri.to_s)
-      request.form_data = data if data
+      request = Net::HTTP::Post.new(url)
+      request.form_data = uri_data unless uri_data.empty?
     else
-      uri = URI(url)
-      uri.query = URI.encode_www_form(data) if data
+      uri.query = URI.encode_www_form(uri_data) unless uri_data.empty?
       request = Net::HTTP::Get.new(uri.to_s)
     end
     if accept_header

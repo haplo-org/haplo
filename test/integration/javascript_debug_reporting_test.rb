@@ -94,6 +94,9 @@ class JavaScriptDebugReportingTest < IntegrationTest
     KPlugin.uninstall_plugin("syntax_error_plugin")
 
     do_test_generic_error_message()
+
+    # Turn the reporter back on so it doesn't affect other tests
+    KFramework.register_reportable_error_reporter(PluginDebugging::ErrorReporter.new)
   end
 
   def do_test_generic_error_message

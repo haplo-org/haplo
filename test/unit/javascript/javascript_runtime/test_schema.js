@@ -44,6 +44,7 @@ TEST(function() {
     TEST.assert_equal("title", titleInfo.shortName);
     TEST.assert_equal(O.T_TEXT, titleInfo.typecode);
     TEST.assert(_.isEqual([QUAL["std:qualifier:null"],QUAL["dc:qualifier:alternative"]], titleInfo.allowedQualifiers));
+    TEST.assert_equal(undefined, titleInfo.groupType);
     var clientInfo = SCHEMA.getAttributeInfo(ATTR["std:attribute:client"]);
     TEST.assert_equal("Client", clientInfo.name);
     TEST.assert_equal("std:attribute:client", clientInfo.code);

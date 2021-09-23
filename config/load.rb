@@ -138,6 +138,7 @@ require 'oauth_client'
 # Load plugin debugging support?
 PLUGIN_DEBUGGING_SUPPORT_LOADED = (KInstallProperties.get(:plugin_debugging_support).chomp == 'yes')
 if PLUGIN_DEBUGGING_SUPPORT_LOADED
+  org.haplo.javascript.debugger.Debug.enable()
   require 'lib/plugin_debugging/plugin_debugging'
 end
 

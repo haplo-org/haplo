@@ -7,12 +7,10 @@
 package org.haplo.javascript;
 
 import org.mozilla.javascript.*;
-import org.haplo.javascript.profiler.JSProfiler;
 
 
 // See notes on sandboxing here: http://codeutopia.net/blog/2009/01/02/sandboxing-rhino-in-java/
 class OContextFactory extends ContextFactory {
-    private static boolean warnedAboutInterpreterAndProfiler = false;
     private int optimisationLevel = 0;
 
     OContextFactory(int optimisationLevel) {
@@ -24,21 +22,7 @@ class OContextFactory extends ContextFactory {
         cx.setLanguageVersion(Context.VERSION_ES6);
         cx.setClassShutter(new OClassShutter());
         cx.setWrapFactory(new SandboxedWrapFactory());
-        if(JSProfiler.isEnabled()) {
-            cx.setOptimizationLevel(-1); // use interpreter
-            if(!warnedAboutInterpreterAndProfiler) {
-                System.out.println("\n\n\n\n"+
-                    "*********************************************************\n\n"+
-                    "WARNING: Enabling the JavaScript profiler will use\n"+
-                    "the Rhino interpreter, which is slower and has slightly\n"+
-                    "different behaviour with Java/JavaScript interfaces.\n\n"+
-                    "*********************************************************\n\n\n"
-                );
-                warnedAboutInterpreterAndProfiler = true;
-            }
-        } else {
-            cx.setOptimizationLevel(optimisationLevel);
-        }
+        cx.setOptimizationLevel(optimisationLevel);
         return cx;
     }
 

@@ -101,6 +101,12 @@ Publication.respondWithObject("/testobject", [T.Book],
     }
 );
 
+Publication.respondToExactPath("/duplicated",
+    function(E, context, object) {
+        E.render({});
+    }
+);
+
 // For testing robots.txt
 Publication.respondToDirectory("/testdir", function(E, context) {});
 Publication.addRobotsTxtDisallow("/test-disallow/1");

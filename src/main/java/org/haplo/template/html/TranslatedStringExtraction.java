@@ -14,7 +14,10 @@ class TranslatedStringExtraction {
         while(node != null) {
 
             if(node instanceof NodeFunctionTranslatedString) {
-                strings.add(((NodeFunctionTranslatedString)node).getOriginalString());
+                String str = ((NodeFunctionTranslatedString)node).getOriginalString();
+                if(null != str) {
+                    strings.add(str);
+                }
 
             } else if(node instanceof NodeListBase) {
                 extract(((NodeListBase)node).getListHeadMaybe(), strings);

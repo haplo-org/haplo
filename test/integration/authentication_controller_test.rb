@@ -475,6 +475,9 @@ class AuthenticationControllerTest < IntegrationTest
       get_a_page_to_refresh_csrf_token
       post_403 "/do/authentication/impersonate"
 
+      # Can't see the "impersonation not allowed" page
+      get_403 "/do/authentication/impersonate-not-allowed/41"
+
       # Add permission
       policy = Policy.new
       policy.user_id = @_users[_TEST_APP_ID].id
@@ -509,6 +512,20 @@ class AuthenticationControllerTest < IntegrationTest
       impersonation_do_login_and_impersonation
       get '/do/account/info'
       assert_select '#z__aep_tools_tab a', other_user.name
+
+      # Mark the other account as security sensitive, and check impersonation isn't allowed
+      policy2 = Policy.new
+      policy2.user_id = 41
+      policy2.perms_allow = KPolicyRegistry.to_bitmask(:security_sensitive)
+      policy2.perms_deny = 0
+      policy2.save
+      get_a_page_to_refresh_csrf_token
+      post_302 "/do/authentication/login", {:email => 'authtest@example.com', :password => 'pass1234'}
+      get_a_page_to_refresh_csrf_token
+      post_302 "/do/authentication/impersonate", {:uid => '41'}
+      assert_redirected_to '/do/authentication/impersonate-not-allowed/41'
+      assert_equal @_users[_TEST_APP_ID].id, session[:uid]
+      policy2.delete
 
       # Remove permission from the underlying account, check impersonated account is logged out
       impersonation_do_login_and_impersonation

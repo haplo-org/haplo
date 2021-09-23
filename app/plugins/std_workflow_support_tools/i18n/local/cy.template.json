@@ -1,0 +1,20 @@
+{
+  "Moved back: {}": "Symudwyd yn ôl: {}",
+  "This workflow has been moved back by {}.": "Mae'r llif gwaith hwn wedi ei symud yn ôl gan {}.",
+  "Full details...": "Manylion llawn...",
+  "Move back: {}": "Symud yn ôl: {}",
+  "This workflow cannot be moved back": "Ni ellir symud y llif gwaith hwn yn ei ôl",
+  "This workflow cannot be moved back because there isn't a previous state.": "Ni ellir symud y llif gwaith hwn yn ei ôl gan nad oes cyflwr blaenorol.",
+  "This workflow cannot be moved back because it has been recently moved. Contact support for assistance.": "Ni ellir symud y lif gwaith hwn yn ei ôl gan ei fod wedi ei symud yn ddiweddar. Cysylltwch â chymorth am help.",
+  "This workflow cannot be moved back because it's not safe to do so.": "Ni ellir symud y bllig gwaith hwn yn ei ôl gan nad yw'n ddiogel gwneud hynny.",
+  "Cancel": "Canslo",
+  "Please provide a reason for moving this workflow back, and confirm you understand the implications of using this tool.": "Rhowch reswm am symud y llif gwaith hwn yn ei ôl, a chadarnhewch eich bod yn deall goblygiadau defnyddio'r oferyn hwn.",
+  "Use this support tool with caution. Moving a workflow back may repeat actions or prevent the correct operation of this workflow.": "Defnyddiwch yr offeryn diogelwch hwn yn ofalus. Gall symud lif gwaith yn ei ôl ail-adrodd gweithrediadau neu atal gweithrediad cywir y llif gwaith hwn.",
+  "Workflow": "Llif gwaith",
+  "Currently": "Ar hyn o bryd",
+  "Move back to": "Symud yn ôl i",
+  "Move workflow back": "Symud y llif gwaith yn ôl",
+  "{} moved the workflow back": "Symudodd {} y llif gwaith yn ôl",
+  "Support tools": "Offer cymorth",
+  "Move back...": "Symud yn ôl..."
+}

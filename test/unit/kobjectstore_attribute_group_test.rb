@@ -124,6 +124,33 @@ __E
   # -------------------------------------------------------------------------
 
   def test_js_interface
+    restore_store_snapshot("basic")
+
+    parser = SchemaRequirements::Parser.new()
+    parser.parse("test_js_interface_schema", StringIO.new(<<__E))
+
+attribute test:attribute:example-attribute-group
+   title: Example group
+   search-name: example-group
+   qualifier std:qualifier:null
+   data-type attribute-group
+   group-type test:type:group-of-attributes
+
+type test:type:group-of-attributes
+   title: Test group
+   behaviour hide-from-browse
+   attribute std:attribute:job-title
+   attribute std:attribute:email
+   attribute std:attribute:notes
+   render-icon: E226,1,f
+   render-category 4
+   label-applicable std:label:common
+   label-default std:label:common
+   create-position normal
+
+__E
+    SchemaRequirements::Applier.new(SchemaRequirements::APPLY_APP, parser, SchemaRequirements::AppContext.new(parser)).apply.commit
+
     obj = KObject.new
     obj.add_attr(KObjRef.new(8765), A_TYPE)
     obj.add_attr("Test object", A_TITLE)

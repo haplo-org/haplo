@@ -22,13 +22,6 @@ final class NodeFunctionTranslatedString extends NodeFunction.ExactlyOneArgument
         return DEFAULT_CATEGORY.equals(this.category) ? "i" : "i:"+this.category;
     }
 
-    public void postParse(Parser parser, int functionStartPos) throws ParseException {
-        super.postParse(parser, functionStartPos);
-        if(!(getSingleArgument() instanceof NodeLiteral)) {
-            parser.error(this.getFunctionName()+"() must have a literal string as the argument", functionStartPos);
-        }
-    }
-
     protected Object valueForFunctionArgument(Driver driver, Object view) throws RenderException {
         StringBuilder builder = new StringBuilder(224);
         this.render(builder, driver, view, Context.UNSAFE);
@@ -36,8 +29,17 @@ final class NodeFunctionTranslatedString extends NodeFunction.ExactlyOneArgument
     }
 
     public void render(StringBuilder builder, Driver driver, Object view, Context context) throws RenderException {
-        NodeLiteral argument = (NodeLiteral)getSingleArgument();
-        String text = argument.getLiteralString();
+        String text = null;
+        Node argument = getSingleArgument();
+        if(argument instanceof NodeLiteral) {
+            text = ((NodeLiteral)argument).getLiteralString();
+        } else {
+            Object value = argument.valueForFunctionArgument(driver, view);
+            if(value == null) {
+                return; // don't render anything to match the expecation for null text values
+            }
+            text = value.toString();
+        }
         String translatedText = driver.translateText(this.category, text);
         if(this.hasAnyBlocks()) {
             // When there are blocks on this function, interpolate the string.
@@ -53,8 +55,9 @@ final class NodeFunctionTranslatedString extends NodeFunction.ExactlyOneArgument
     }
 
     protected String getOriginalString() {
-        NodeLiteral argument = (NodeLiteral)getSingleArgument();
-        return argument.getLiteralString();
+        Node argument = getSingleArgument();
+        if(!(argument instanceof NodeLiteral)) { return null; }
+        return ((NodeLiteral)argument).getLiteralString();
     }
 
     // ----------------------------------------------------------------------

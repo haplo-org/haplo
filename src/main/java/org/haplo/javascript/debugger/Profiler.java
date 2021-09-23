@@ -4,9 +4,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
 
-package org.haplo.javascript.profiler;
 
-import org.mozilla.javascript.debug.Debugger;
+package org.haplo.javascript.debugger;
+
 import org.mozilla.javascript.debug.DebuggableScript;
 import org.mozilla.javascript.debug.DebugFrame;
 import org.mozilla.javascript.Context;
@@ -14,39 +14,54 @@ import org.mozilla.javascript.Scriptable;
 
 import java.util.LinkedHashMap;
 
-/*
-    To enable the profiler, run the test or server process with the
-    HAPLO_ENABLE_JS_PROFILER environment variable set to the minimum
-    percentage of run time to report. For example:
 
-        env HAPLO_ENABLE_JS_PROFILER=2 script/server
+public class Profiler extends Debug.Implementation {
 
-        env HAPLO_ENABLE_JS_PROFILER=2 script/test --noinit test/unit/javascript_runtime_test.rb -t test_console
+    public static class Factory implements Debug.Factory {
+        private double minimumReportPercentage;
 
-    The profiler is not suitable for running in production.
-*/
+        public Factory(double minimumReportPercentage) {
+            this.minimumReportPercentage = minimumReportPercentage;
+        }
 
-public class JSProfiler implements Debugger {
-    public static boolean enabled = false;
-    public static double minimumReportPercentage = 1.0;
-
-    public static boolean isEnabled() { return enabled; }
-    public static void enableProfiler(double percent) {
-        enabled = true;
-        minimumReportPercentage = percent;
+        public Debug.Implementation makeImplementation() {
+            return new Profiler(this.minimumReportPercentage);
+        }
     }
 
+    // ----------------------------------------------------------------------
+
+    public static void reporter(Reporter impl) {
+        reporter = impl;
+    }
+
+    public interface Reporter {
+        void report(String report);
+    }
+
+    private static Reporter reporter;
+
+    // ----------------------------------------------------------------------
+
+    protected double minimumReportPercentage = 1.0;
+    private long startTime;
     private ProfilerDebugFrame rootFrame;
     private ProfilerDebugFrame currentFrame;
 
-    public JSProfiler() {
+    public Profiler(double minimumReportPercentage) {
+        this.minimumReportPercentage = minimumReportPercentage;
+        this.startTime = System.currentTimeMillis();
         this.rootFrame = new ProfilerDebugFrame(this, null, "<root>");
         this.currentFrame = this.rootFrame;
         this.rootFrame.recordEntry();
     }
 
-    public void finish() {
+    public void useOnThisThread() {
+    }
+
+    public void stopUsingOnThisThread() {
         this.rootFrame.recordExit();
+        if(reporter != null) { reporter.report(this.report()); }
     }
 
     protected void setCurrentProfilerFrame(ProfilerDebugFrame frame) {
@@ -55,9 +70,10 @@ public class JSProfiler implements Debugger {
 
     public String report() {
         StringBuilder report = new StringBuilder();
+        report.append("PROFILE\t"+this.startTime+"\n");
         double profileTotalTime = this.rootFrame.getTotalTime();
         if(profileTotalTime <= 0) { profileTotalTime = 1; } // avoid div by zero
-        this.rootFrame.report(report, profileTotalTime, "", false);
+        this.rootFrame.report(report, profileTotalTime, 0, false);
         return report.toString();
     }
 
@@ -74,14 +90,14 @@ public class JSProfiler implements Debugger {
     // ----------- Record frame timing and call tree
 
     private static class ProfilerDebugFrame implements DebugFrame {
-        private JSProfiler profiler;
+        private Profiler profiler;
         private ProfilerDebugFrame parent;
         private String location;
         private long totalTime, entryTime;
         private int entryCount;
         private LinkedHashMap<String,ProfilerDebugFrame> children;
 
-        ProfilerDebugFrame(JSProfiler profiler, ProfilerDebugFrame parent, String location) {
+        ProfilerDebugFrame(Profiler profiler, ProfilerDebugFrame parent, String location) {
             this.profiler = profiler;
             this.parent = parent;
             this.location = location;
@@ -113,19 +129,18 @@ public class JSProfiler implements Debugger {
             return this.totalTime;
         }
 
-        public boolean report(StringBuilder report, double profileTotalTime, String indent, boolean lastLineWasOmitChildren) {
+        public boolean report(StringBuilder report, double profileTotalTime, int depth, boolean lastLineWasOmitChildren) {
             double percent = (100.0 * (double)this.totalTime) / profileTotalTime;
-            if(percent >= JSProfiler.minimumReportPercentage) {
-                report.append(String.format("%s%2.1f %3d %s\n", indent, percent, this.entryCount, this.location));
+            if(percent >= this.profiler.minimumReportPercentage) {
+                report.append(String.format("%d\t%d\t%.1f\t%d\t%s\n", depth, this.totalTime, percent, this.entryCount, this.location));
                 boolean lastWasOmit = false; // to avoid writing multiple omit lines
                 for(ProfilerDebugFrame frame : this.children.values()) {
-                    lastWasOmit = frame.report(report, profileTotalTime, indent+"  ", lastWasOmit);
+                    lastWasOmit = frame.report(report, profileTotalTime, depth+1, lastWasOmit);
                 }
                 return false;
             } else {
                 if(!lastLineWasOmitChildren) {
-                    report.append(indent);
-                    report.append("... children omitted\n");
+                    report.append("OMIT\t"+depth+"\n");
                 }
                 return true;
             }

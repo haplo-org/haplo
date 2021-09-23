@@ -165,6 +165,7 @@ private
   end
 
   def testLogout()
+    AuthContext.set_as_system
     @plugin_runtime._test_get_support_root._test_set_fake_controller(nil);
   end
 

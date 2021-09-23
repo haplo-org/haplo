@@ -1,0 +1,9 @@
+<h1 class="title-in-layout"> context.pageTitle </h1>
+<div class="in-layout">
+    render(blocks.body)
+</div>
+if(blocks.sidebar) {
+    <div class="in-sidebar">
+        render(blocks.sidebar)
+    </div>
+}

@@ -34,11 +34,15 @@ P.globalTemplateFunction("std:web-publisher:platform-style-tag", function() {
 // If an anonymous block is given, it's rendered instead of the title.
 P.globalTemplateFunction("std:web-publisher:object:link", function(object, title) {
     var context = P.getRenderingContext();
-    this.render(P.template("object/link").deferredRender({
-        href: context ? context.publication._urlPathForObject(object) : undefined,
+    var view = {
         title: title ? title : object.title,
         block: this.deferredRenderBlock()
-    }));
+    };
+    if(context) {
+        view.href = context.publication._urlPathForObject(object) ||
+            context.publication._crossoverUrlForObject(object);
+    }
+    this.render(P.template("object/link").deferredRender(view));
 });
 
 // --------------------------------------------------------------------------
@@ -132,8 +136,10 @@ P.Publication.prototype.getReplaceableTemplate = function(code) {
 
 // For --turbo option in developer mode
 P.__removeCachedTemplates = function() {
-    _.each(P.allPublications, function(publication) {
-        delete publication._cachedReplaceableTemplates;
+    _.each(P.allPublications, function(publicationsOnHostname) {
+        _.each(publicationsOnHostname, function(publication) {
+            delete publication._cachedReplaceableTemplates;
+        });
     });
 };
 

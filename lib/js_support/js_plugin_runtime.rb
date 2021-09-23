@@ -82,8 +82,8 @@ class KJSPluginRuntime
     AuthContext.with_system_user do
       AuthContext.lock_current_state
       unless @runtime
-        loading_runtime = Runtime.new
-        loading_runtime.prepareAndMaybeLoadApplicationScope(KApp.current_application) do |loader|
+        loading_runtime = Runtime.new(KApp.current_application)
+        loading_runtime.prepareAndMaybeLoadApplicationScope() do |loader|
           ms = KApp.execution_time_ms do
             # Load basic schema information into runtime
             loader.evaluateString(KSchemaToJavaScript.schema_to_js(KObjectStore.schema), "<schema>")

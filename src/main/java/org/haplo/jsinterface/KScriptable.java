@@ -25,6 +25,15 @@ public class KScriptable extends ScriptableObject {
         return "";
     }
 
+    public static String getConsoleValueAsString(KScriptable object) {
+        String data = object.getConsoleData();
+        String className = object.getConsoleClassName();
+        if(className.charAt(0) == '$') {
+            className = className.substring(1); // remove leading $
+        }
+        return "[" + className + " " + data + "]";
+    }
+
     public static String jsStaticFunction_forConsole(Scriptable object) {
         String data;
         if(object == null) {
@@ -47,12 +56,7 @@ public class KScriptable extends ScriptableObject {
             }
             return result.toString();
         } else if(object instanceof KScriptable) {
-            data = ((KScriptable)object).getConsoleData();
-            String className = ((KScriptable)object).getConsoleClassName();
-            if(className.charAt(0) == '$') {
-                className = className.substring(1); // remove leading $
-            }
-            return "[" + className + " " + data + "]";
+            return getConsoleValueAsString((KScriptable)object);
         }
         return null;
     }

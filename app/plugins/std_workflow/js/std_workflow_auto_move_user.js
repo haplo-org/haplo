@@ -37,8 +37,10 @@ P.WorkflowInstanceBase.prototype._updateWorkUnitActionableBy = function(actionab
     this._removeEntityDependencyTags(tags);
     var thisRef = this.workUnit.ref;
     var entities = this.$entities;
-    if(thisRef && entities) { // object+entities might not be in use by this workflow
+    if(thisRef) { // object might not be in use by this workflow
         tags[thisRef.toString()+'.ABD'] = "t"; // object is a dependency to simplify querying later
+    }
+    if(entities) { // entities might not be in use by this workflow
         var saveDep = function(value) {
             if(O.isRef(value)) {
                 tags[value.toString()+'.ABD'] = "t";

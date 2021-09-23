@@ -20,9 +20,32 @@ var MAX_SLUG_LENGTH = 200;
 
 // --------------------------------------------------------------------------
 
+var generateRobotsTxtForHost = P.generateRobotsTxtForHost = function(host) {
+    var publicationsOnHost = publications[host.toLowerCase()];
+    if(!publicationsOnHost) { return null; }
+    var lines = [];
+    var endLines = [];
+    _.each(publicationsOnHost, function(publication) {
+        var [publicationLines, publicationEndLines] = publication._collateRobotsTxtLines();
+        lines = _.union(lines, publicationLines);
+        endLines = _.union(endLines, publicationEndLines);
+    });
+    endLines.push("");
+    return lines.concat(endLines).join("\n");
+};
+
 // Platform support
 P.$webPublisherHandle = function(host, method, path) {
-    var publication = publications[host.toLowerCase()] || publications[DEFAULT];
+    var publicationsOnHost = publications[host.toLowerCase()];
+    if(!publicationsOnHost) { return null; }
+    var publicationsWithHandler = _.filter(publicationsOnHost, function(publication) {
+        return publication._getHandlerForRequest(method, path);
+    });
+    if(!publicationsWithHandler.length) { return null; }
+    if(publicationsWithHandler.length > 1) {
+        throw new Error("Multiple publications attempting to handle the same request.");
+    }
+    var publication = publicationsWithHandler[0];
     if(!publication) { return null; }
     renderingContext = new RenderingContext(publication);
     try {
@@ -33,14 +56,16 @@ P.$webPublisherHandle = function(host, method, path) {
 };
 
 P.$generateRobotsTxt = function(host) {
-    var publication = publications[host.toLowerCase()] || publications[DEFAULT];
-    return publication ? publication._generateRobotsTxt() : null;
+    return generateRobotsTxtForHost(host);
 };
 
 P.$downloadFileChecksAndObserve = function(host, path, file, isThumbnail) {
-    var publication = publications[host.toLowerCase()] || publications[DEFAULT];
-    if(!publication) { return false; }
-    return publication._downloadFileChecksAndObserve(path, file, isThumbnail);
+    var publicationsOnHost = publications[host.toLowerCase()];
+    if(!publicationsOnHost) { return false; }
+    // Treating the publications as if they are on separate hosts here to enforce permissions sensibly
+    return _.any(publicationsOnHost, function(publication) {
+        return publication._downloadFileChecksAndObserve(path, file, isThumbnail);
+    });
 };
 
 P.$renderObjectValue = function(object, desc) {
@@ -48,7 +73,7 @@ P.$renderObjectValue = function(object, desc) {
     if(renderingContext) {
         var publication = renderingContext.publication;
         // Publication needs to determine URL
-        href = publication._urlPathForObject(object);
+        href = publication._urlPathForObject(object) || publication._crossoverUrlForObject(object);
         // Publication may want to render object values differently
         var customRenderers = publication._objectValueRenderers;
         if(customRenderers) {
@@ -76,8 +101,10 @@ P.$renderFileIdentifierValue = function(fileIdentifier) {
 };
 
 P.$isPublicationOnRootForHostname = function(host) {
-    var publication = publications[host.toLowerCase()] || publications[DEFAULT];
-    return !!(publication && (publication._homePageUrlPath === '/'));
+    var publicationsOnHost = publications[host.toLowerCase()];
+    return !!publicationsOnHost && _.any(publicationsOnHost, function(publication) {
+        return publication._homePageUrlPath === '/';
+    });
 };
 
 // --------------------------------------------------------------------------
@@ -92,7 +119,7 @@ var publisherFeatures = {}; // name -> function(publication)
 
 var publications = P.allPublications = {};
 
-var DEFAULT = "$default$";
+var DEFAULT = O.application.hostname;
 
 P.FEATURE = {
     DEFAULT: DEFAULT,
@@ -100,13 +127,11 @@ P.FEATURE = {
         if(typeof(name) !== "string") {
             throw new Error("Name passed to P.webPublication.register() must be a hostname or P.webPublication.DEFAULT");
         }
-        if(name in publications) {
-            throw new Error(
-                (name === DEFAULT) ? "Default publication already registered." : "Publication "+name+" already registered."
-            );
-        }
         var publication = new Publication(name, this.$plugin);
-        publications[name] = publication;
+        if(!(name in publications)) {
+            publications[name] = [];
+        }
+        publications[name].push(publication);
         return publication;
     },
     feature: function(name, feature) {
@@ -126,7 +151,7 @@ P.provideFeature("std:web-publisher", function(plugin) {
     consumerFeature.widget = new Widgets(plugin);
     plugin.webPublication = consumerFeature;
 });
-P.implementService("std:web_publisher:get_publication", function(name) {
+P.implementService("std:web_publisher:get_publications", function(name) {
     if(!(name in publications)) {
         throw new Error("No publiation registered for "+name);
     }
@@ -153,6 +178,7 @@ var Publication = P.Publication = function(name, plugin) {
     this.implementingPlugin = plugin;
     this._homePageUrlPath = null;
     this._pagePartOptions = {};
+    this._publicationCrossoverEnabledTypes = [];
     this._paths = [];
     this._urlPolicy = O.refdictHierarchical();
     this._objectTypeHandler = O.refdictHierarchical();
@@ -211,6 +237,42 @@ Publication.prototype.urlPolicyForTypes = function(types, policy) {
         urlPolicy.set(type, policy);
     });
     return this;
+};
+
+Publication.prototype.enablePublicationCrossoverForTypes = function(types) {
+    var crossoverTypes = this._publicationCrossoverEnabledTypes;
+    types.forEach(function(type) {
+        crossoverTypes.push(type);
+    });
+    return this;
+};
+
+Publication.prototype._crossoverUrlForObject = function(object) {
+    var crossoverEnabledForType = _.any(this._publicationCrossoverEnabledTypes, function(type) {
+        return object.isKindOf(type);
+    });
+    if(crossoverEnabledForType) {
+        var getCrossoverPublicationForHostMaybe = function(hostname) {
+            var publicationsOnHost = publications[hostname.toLowerCase()];
+            var [publication, secondPublication] = _.filter(publicationsOnHost, function(publication) {
+                return publication._urlPathForObject(object);
+            });
+            if(secondPublication) {
+                O.stop("Multiple publications attempting to handle the same request.");
+            } else if(publication) {
+                return publication;
+            }
+        };
+        for(var host in publications) {
+            var publication = getCrossoverPublicationForHostMaybe(host);
+            if(publication) {
+                var publicationPathForObject = publication._urlPathForObject(object);
+                if(publicationPathForObject) {
+                    return 'https://'+publication.urlHostname+publicationPathForObject;
+                }
+            }
+        }
+    }
 };
 
 Publication.prototype._respondToExactPath = function(allowPOST, path, handlerFunction) {
@@ -358,7 +420,7 @@ RenderingContext.prototype.publishedObjectUrl = function(object) {
     return this.publication.urlForObject(object);
 };
 RenderingContext.prototype.publishedObjectUrlPath = function(object) {
-    return this.publication._urlPathForObject(object);
+    return this.publication._urlPathForObject(object) || this.publication._crossoverUrlForObject(object);
 };
 
 // NOTE: Can also be set on the publication
@@ -371,6 +433,13 @@ RenderingContext.prototype.setPagePartOptions = function(pagePartName, options) 
 
 // In debug mode, call without exception handling so errors are reporting using the normal debug stacktraces etc
 var HANDLE_REQUESTS_WITHOUT_EXCEPTION_HANDLING = O.PLUGIN_DEBUGGING_ENABLED && O.application.config["std_web_publisher:show_debug_error_responses"];
+
+Publication.prototype._getHandlerForRequest = function(method, path) {
+    var handler = _.find(this._paths, function(h) {
+        return h.matches(path);
+    });
+    return ((method === "GET") || (handler && handler.allowPOST)) ? handler : null;
+};
 
 Publication.prototype._handleRequest = function(method, path) {
     if(!this._serviceUserCode) { throw new Error("serviceUser() must have been called during publication configuration to set a service user."); }
@@ -441,20 +510,8 @@ Publication.prototype._handleRequest = function(method, path) {
 
 Publication.prototype._handleRequest2 = function(method, path) {
     // Find handler from paths this publication responds to:
-    var handler;
-    for(var l = 0; l < this._paths.length; ++l) {
-        var h = this._paths[l];
-        if(h.matches(path)) {
-            handler = h;
-            break;
-        }
-    }
-    if(!handler) { return null; }
-    if(method !== "GET") {
-        if(!(handler.allowPOST)) {
-            return null; // TODO: Nicer error page
-        }
-    }
+    var handler = this._getHandlerForRequest(method, path);
+    if(!handler) { return null; } // TODO: Nicer error page for POST requests to a GET only handler
     // Set up exchange and call handler
     var pathElements = path.substring(handler.path.length+1).split('/');
     var E = new Exchange(this.implementingPlugin, handler.path, method, path, pathElements);
@@ -497,7 +554,7 @@ Publication.prototype.__defineGetter__("urlHostname", function() {
 
 Publication.prototype.urlForObject = function(object) {
     var path = this._urlPathForObject(object);
-    if(!path) { return; }
+    if(!path) { return this._crossoverUrlForObject(object); }
     return 'https://'+this.urlHostname+path;
 };
 
@@ -508,7 +565,7 @@ Publication.prototype.addRobotsTxtDisallow = function(path) {
     return this;
 };
 
-Publication.prototype._generateRobotsTxt = function() {
+Publication.prototype._collateRobotsTxtLines = function() {
     var lines = ["User-agent: *"];
     var endLines = [];
     if(this._homePageUrlPath === '/') {
@@ -538,6 +595,11 @@ Publication.prototype._generateRobotsTxt = function() {
             endLines.push("Disallow: "+p);
         });
     }
+    return [lines, endLines];
+};
+
+Publication.prototype._generateRobotsTxt = function() {
+    var [lines, endLines] = this._collateRobotsTxtLines();
     endLines.push("");
     return lines.concat(endLines).join("\n");
 };

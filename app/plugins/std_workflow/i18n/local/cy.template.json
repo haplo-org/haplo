@@ -19,8 +19,10 @@
   "list:last-two-entry-joiner": "a",
   "Edit note:": "Golygu nodyn:",
   "New note:": "Nodyn newydd:",
-  "Save note": "Cadw nodyn",
   "Notes": "Nodiadau",
+  "Save note": "Cadw nodyn",
+  "Work progress": "Hynt y gwaith",
+  "Your changes have not been saved. Do you want to discard your changes?": "Ni chadwyd eich newidiadau. Ydych chi eisiau gwaredu'ch newidiadau?",
   "{} automatically sent workflow to updated user": "Anfonodd {} lif gwaith yn awtomatig i'r defnyddiwr a ddiweddarwyd",
   "entity-replace:set-to": "at",
   "{} changed the selected roles for the workflow.": "Newidiodd {} y rolau a ddewiswyd ar gyfer y llif gwaith.",
@@ -28,6 +30,8 @@
   "{} made this task visible.": "Gwnaeth {} y dasg hon yn weladwy.",
   "{} added a {kind}note:": "Ychwanegodd {} nodyn o'r math {kind}:",
   "EDIT": "GOLYGU",
+  "{} took the task over from {previous}": "Cymerodd {} y dasg drosodd o {blaenorol}",
+  "{} delegated the task to {current}": "Dirprwyodd {} y dasg i {presennol}",
   "Please complete all the required fields.": "Cwblhewch bob un o'r meysydd gofynnol.",
   "Action complete": "Gweithred wedi ei gwblhau",
   "You've already taken an action. Perhaps you clicked the Back button in your browser?": "Rydych eisoes wedi gweithredu. Efallai eich bod wedi clicio'r botwn Yn ôl yn eich porwr?",
@@ -56,5 +60,7 @@
   "Seen only by staff reviewing this application, not seen by the applicant.": "Yn cael ei weld gan y staff sy'n adolygu'r cais hwn, nid yw'n cael ei weld gan y ceisydd.",
   "Currently with": "Ar hyn o bryd gyda/gydag",
   "Status": "Statws",
+  "Confirm": "Cadarnhau",
+  "Decision": "Penderfyniad",
   "user-name:system": "System"
 }

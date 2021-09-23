@@ -35,6 +35,7 @@ class UserPolicy
   alias is_not_anonymous? can_not_anonymous?
   def   is_anonymous? ; !(can_not_anonymous?); end
   alias is_otp_token_required? can_require_token?
+  alias is_security_sensitive? can_security_sensitive?
 
   # Check policy given a bitmask
   def check_policy_bitmask(bitmask)

@@ -1,0 +1,9 @@
+<%
+  @page_title = T(:Authentication_Title_Impersonate_not_allowed)
+  @breadcrumbs = [:menu]
+%>
+
+<div class="z__general_alert"><%= @locale.text_format(:Authentication_Title_Impersonate_not_allowed_Message, @impersonation_attempt_user.name) %></div>
+
+<p>&nbsp;</p>
+<%= workflow_buttons([[@locale.text(:Authentication_Title_Impersonate_not_allowed_Back), '/do/authentication/impersonate']]) %>

@@ -59,6 +59,7 @@ t.test(function() {
 
     t.logout();
     t.assert(!O.isHandlingRequest);
+    t.assertEqual(O.currentUser.id, 0); // SYSTEM
 
     // LAST THING!
     // Leave logged in, so next test can check it isn't still logged in

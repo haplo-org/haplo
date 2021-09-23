@@ -11,8 +11,8 @@ module JavaScriptTestHelper
 
   # Make a runtime which also loads in the testing framework
   def make_javascript_runtime
-    runtime = Runtime.new
-    runtime.prepareAndMaybeLoadApplicationScope(0) do |loader|
+    runtime = Runtime.new(_TEST_APP_ID)
+    runtime.prepareAndMaybeLoadApplicationScope() do |loader|
       # No application scope initialisation in fake application scope (id 0)
     end
     runtime.useOnThisThread(JSSupportRoot.new)

@@ -106,6 +106,7 @@ module KAppInit
       all_policies_admin.delete(:require_token) # This would stop people logging in without tokens defined, so remove this one
       all_policies_admin.delete(:impersonate_user) # Don't allow this by default
       all_policies_admin.delete(:use_testing_tools) # Not relevant for production applications
+      all_policies_admin.delete(:security_sensitive) # Don't allow mark as security sensitive by default
       Policy.delaying_update_notification do
         [
           [User::USER_ANONYMOUS,        0,      KPolicyRegistry.to_bitmask(all_policies)], # DENY all policies to the anonymous user

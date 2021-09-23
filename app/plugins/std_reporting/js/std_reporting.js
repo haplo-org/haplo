@@ -804,12 +804,14 @@ var rebuildAllToCheckFactsHaveBeenKeptUpToDate = function() {
     console.log("Rebuilding all collections to check that other plugins have been keeping their facts up to date.");
     P.ensureCollectionsDiscovered();
     _.each(P._collections, function(collection, name) {
-        P.db.rebuilds.create({
-            collection: name,
-            requested: new Date(),
-            object: null,
-            changesNotExpected: true    // because this is a scheduled update
-        }).save();
+        if(!O.application.config["std:reporting:disable-nightly-rebuild:"+name]) {
+            P.db.rebuilds.create({
+                collection: name,
+                requested: new Date(),
+                object: null,
+                changesNotExpected: true    // because this is a scheduled update
+            }).save();
+        }
     });
     $StdReporting.signalUpdatesRequired();
 };

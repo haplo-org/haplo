@@ -153,6 +153,7 @@ module KSchemaToJavaScript
       :allowedQualifiers => attr_desc.allowed_qualifiers.sort
     }
     info[:code] = attr_desc.code if attr_desc.code
+    info[:groupType] = attr_desc.attribute_group_type.obj_id if attr_desc.attribute_group_type
     info.to_json
   end
 

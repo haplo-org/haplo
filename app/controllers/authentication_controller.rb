@@ -286,6 +286,10 @@ class AuthenticationController < ApplicationController
         # Nothing selected
         redirect_to '/do/authentication/impersonate'
       else
+        impersonating_user = User.cache[impersonate_uid]
+        unless impersonating_user && (impersonating_user.kind == User::KIND_USER) && !impersonating_user.policy.is_security_sensitive?
+          return redirect_to "/do/authentication/impersonate-not-allowed/#{impersonate_uid.to_i}"
+        end
         KNotificationCentre.notify(:authentication, :impersonate, authenticated_user, impersonate_uid)
         session[:impersonate_uid] = impersonate_uid
         history = (session[:impersonate_history] ||= [])
@@ -297,6 +301,12 @@ class AuthenticationController < ApplicationController
     else
       @users_query = User.where(:kind => User::KIND_USER).order(:lower_name)
     end
+  end
+
+  _PoliciesRequired :not_anonymous, :impersonate_user
+  def handle_impersonate_not_allowed
+    @impersonation_attempt_user = User.cache[params['id'].to_i]
+    permission_denied unless @impersonation_attempt_user
   end
 
   _GetAndPost

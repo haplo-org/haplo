@@ -8,6 +8,7 @@
 class WebPublisherTest < IntegrationTest
 
   KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/web_publisher/test_publication")
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/web_publisher/test_publication_2")
 
   def test_web_publisher_response_handling
     restore_store_snapshot("basic")
@@ -198,6 +199,7 @@ Allow: /post-test-exact
 Allow: /post-test-directory/
 Allow: /publication/response-kinds/
 Allow: /testobject/
+Allow: /duplicated
 Allow: /testdir/
 Disallow: /
 Disallow: /test-disallow/1
@@ -207,13 +209,81 @@ __E
     get_200 "/robots.txt", nil, {"host"=>"test#{_TEST_APP_ID}.host"}
     assert_equal "User-agent: *\nAllow: /\nDisallow: /do/\nDisallow: /api/\nDisallow: /thumbnail/\nDisallow: /test-disallow/2\n", response.body
 
+    assert KPlugin.install_plugin("test_publication_2")
+
+    service_user_uid = User.cache.service_user_code_to_id_lookup["test:service-user:second-publisher"]
+    assert service_user_uid != nil
+    service_user = User.cache[service_user_uid]
+
+    get "/test-publication-2"
+    assert_equal "200", response.code
+    assert_equal "text/html; charset=utf-8", response.header["Content-Type"]
+    assert_equal %Q!<div class="test-publication" data-uid="#{service_user.id}"></div>!, response.body
+
+    get "/test-publication-2?test=something"
+    assert_equal %Q!<div class="test-publication" data-uid="#{service_user.id}">something</div>!, response.body
+
+    get "/test-publication-2?layout=1"
+    assert_equal %Q!<h1 class="title-in-layout">Test title</h1><div class="in-layout"><div class="test-publication" data-uid="#{service_user.id}"></div></div>!, response.body
+
+    get "/test-publication-2?layout=1&sidebar=1"
+    assert_equal %Q!<h1 class="title-in-layout">Test title</h1><div class="in-layout"><div class="test-publication" data-uid="#{service_user.id}"></div></div><div class="in-sidebar"><span>Sidebar</span></div>!, response.body
+
+    # Check exceptions on multiple publications serving same request
+    get_500 "/duplicated"
+    assert_equal "text/html; charset=utf-8", response.header["Content-Type"]
+    assert_select 'h1', 'Plugin error'
+    assert_select 'h2', 'Error: Multiple publications attempting to handle the same request.'
+
+    # Add an object with a file that the user shouldn't be able to download
+    undownloadable_stored_file = StoredFile.from_upload(fixture_file_upload('files/example9.pdf', 'application/pdf'))
+    obj = KObject.new([O_TYPE_PERSON,O_LABEL_COMMON])
+    obj.add_attr(KConstants::O_TYPE_PERSON, KConstants::A_TYPE)
+    obj.add_attr("Test file", KConstants::A_TITLE)
+    obj.add_attr(KIdentifierFile.new(undownloadable_stored_file), KConstants::A_FILE)
+    KObjectStore.create(obj)
+
+    get_404 "/download/#{undownloadable_stored_file.digest}/#{undownloadable_stored_file.size}/#{undownloadable_stored_file.upload_filename}"
+    get_404 "/thumbnail/#{undownloadable_stored_file.digest}/#{undownloadable_stored_file.size}"
+    assert WebPublisherTestPlugin::CALLS[_TEST_APP_ID].empty?
+
+    # Check downloading the file from above still works even though we're a different service user
+    get "/download/#{stored_file.digest}/#{stored_file.size}/#{stored_file.upload_filename}"
+    assert_equal "application/pdf", response.header["Content-Type"]
+    assert_equal [[stored_file.digest, '', false, true]], WebPublisherTestPlugin::CALLS[_TEST_APP_ID]
+    WebPublisherTestPlugin::CALLS[_TEST_APP_ID].clear
+
+    get "/thumbnail/#{stored_file.digest}/#{stored_file.size}"
+    assert_equal "image/png", response.header["Content-Type"]
+    assert_equal [[stored_file.digest, 'thumbnail', true, true]], WebPublisherTestPlugin::CALLS[_TEST_APP_ID]
+    WebPublisherTestPlugin::CALLS[_TEST_APP_ID].clear
+
+    # check robots.txt from both publications as combined
+    get_200 "/robots.txt"
+    assert_equal <<__E, response.body
+User-agent: *
+Allow: /download/
+Allow: /test-publication
+Allow: /test-publication/all-exchange
+Allow: /post-test-exact
+Allow: /post-test-directory/
+Allow: /publication/response-kinds/
+Allow: /testobject/
+Allow: /duplicated
+Allow: /testdir/
+Allow: /test-publication-2
+Disallow: /
+Disallow: /test-disallow/1
+Disallow: /test-disallow/2
+__E
+
   ensure
     KPlugin.uninstall_plugin("test_publication")
+    KPlugin.uninstall_plugin("test_publication_2")
     KPlugin.uninstall_plugin("std_web_publisher")
     KPlugin.uninstall_plugin("web_publisher_test/web_publisher_test")
     destroy_all StoredFile
   end
-
 
   class WebPublisherTestPlugin < KTrustedPlugin
     _PluginName "Web Publisher Test Hooks Plugin"
