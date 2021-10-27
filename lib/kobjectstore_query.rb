@@ -631,8 +631,8 @@ class KObjectStore
 
     # Offset the results returned
     def offset(offset_start)
-      r = offset_start.to_i
-      if r > 0
+      r = offset_start
+      if r.to_i > 0 || r === 0
         @offset_start = r
       else
         raise "Bad offset_start for query"

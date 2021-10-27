@@ -2052,13 +2052,47 @@ __E
     q_over_limit = KObjectStore.query_and.free_text('FINDTHIS')
     q_over_limit.maximum_results(100)
     assert_equal 31, q_over_limit.execute(:ref, :any).length
+  end
+
+  def test_offsetting
+    restore_store_snapshot("min")
+    # Make some test objects with sorting dates set at day spacing.
+    time_base = Time.utc(2006, 06, 01, 12, 00)
+    0.upto(30) do |day|
+      o = KObject.new()
+      o.add_attr(day, 4)
+      o.add_attr((time_base + day*86400), A_DATE)
+      o.add_attr('FINDTHIS',9) # something for the search to find
+      KObjectStore.create(o)
+    end
+
+    run_outstanding_text_indexing
 
     # Test bad offset starts throw exception
     test_for_badness_query = KObjectStore.query_and
-    assert_raises(RuntimeError) { test_for_badness_query.offset(0) }
     assert_raises(RuntimeError) { test_for_badness_query.offset(-1) }
     assert_raises(RuntimeError) { test_for_badness_query.offset("pants") }
     assert_raises(RuntimeError) { test_for_badness_query.offset('0') }
+
+    # Test offsetting the number of results
+    q_no_limit = KObjectStore.query_and.free_text('FINDTHIS').execute(:ref, :any).length
+    [0, 1, 3, 5, 6, 20].each do |num|
+      query = KObjectStore.query_and.free_text('FINDTHIS')
+      query.offset(num)
+      results = query.execute(:all, :date_asc)
+      # Check number and order
+      x = num
+      results.each do |o|
+        assert_equal x, o.first_attr(4)
+        x += 1
+      end
+      assert_equal num, q_no_limit - results.length
+    end
+
+    # Test an offset which is more than the results to return
+    q_over_limit = KObjectStore.query_and.free_text('FINDTHIS')
+    q_over_limit.offset(100)
+    assert_equal 0, q_over_limit.execute(:ref, :any).length
   end
 
   def check_type_list_from_short_names(schema, list, expected_types, rejects)
