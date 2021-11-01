@@ -21,6 +21,14 @@ class TasksController < ApplicationController
     @now = true
     q = WorkUnit.where_actionable_by_user_when(@request_user, :now)
 
+    # Does a plugin want to override the default task list?
+    call_hook(:hTaskList) do |hooks|
+      result = hooks.run()
+      if result.redirectPath
+        redirect_to result.redirectPath
+      end
+    end
+
     # NOTE: This is a temporary interface which will be removed
     if params.has_key?("__worktype")
       q.where(:work_type => params["__worktype"])
