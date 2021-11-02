@@ -1,0 +1,9 @@
+{
+  "pluginName": "test_help_page_hook",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 10,
+  "displayName": "Test Help Page Hook",
+  "displayDescription": "Test Help Page Hooks",
+  "apiVersion": 4,
+  "load": ["js/test_help_page_hook.js"]
+}

@@ -16,13 +16,13 @@ class ApplicationControllerTest < IntegrationTest
   def test_task_list_hook_redirect
     db_reset_test_data
     restore_store_snapshot("basic")
-    KPlugin.install_plugin('test_task_list_hook')
+    KPlugin.install_plugin('test_help_page_hook')
     assert_login_as('user1@example.com', 'password')
     begin
-      get "/do/tasks"
-      assert_redirected_to "/test"
+      get "/do/help"
+      assert_redirected_to "/help-test"
     end
-    KPlugin.uninstall_plugin('test_task_list_hook')
+    KPlugin.uninstall_plugin('test_help_page_hook')
   end
 
 end
