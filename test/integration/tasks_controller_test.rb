@@ -6,20 +6,16 @@
 
 
 # tests the application controller is working as expected
-class ApplicationControllerTest < IntegrationTest
-  include KHooks
-  include KConstants
-  include KObjectURLs
-  include Application_TextHelper
-  include Application_RenderHelper
-
+class TasksControllerTest < IntegrationTest
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/elements/test_task_list_hook")
+  
   def test_task_list_hook_redirect
     db_reset_test_data
     restore_store_snapshot("basic")
     KPlugin.install_plugin('test_task_list_hook')
     assert_login_as('user1@example.com', 'password')
     begin
-      get "/do/tasks"
+      get_302 "/do/tasks"
       assert_redirected_to "/test"
     end
     KPlugin.uninstall_plugin('test_task_list_hook')
