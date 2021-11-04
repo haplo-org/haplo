@@ -29,7 +29,7 @@ class HelpControllerTest < IntegrationTest
   def test_help
     begin
       get "/do/help/pop"
-      assert_select('title', 'Help')
+      assert_select('title', 'Help : Haplo')
     end
   end
 end
