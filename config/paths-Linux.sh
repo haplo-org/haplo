@@ -18,7 +18,7 @@ JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
 JAVA_EXECUTABLE=$JAVA_HOME/bin/java
 export JAVA_EXECUTABLE
 
-JRUBY_HOME=~/haplo-dev-support/haplo-plugin/jruby
+JRUBY_HOME=~/haplo-dev-support/vendor/jruby
 if [ -d `pwd`/vendor/jruby ]; then
     JRUBY_HOME=`pwd`/vendor/jruby
 fi
