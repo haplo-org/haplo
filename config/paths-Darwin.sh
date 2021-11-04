@@ -11,11 +11,11 @@ export KHOST_OPERATING_SYSTEM
 KINFORMATION_HOME=~/haplo-dev-support/information
 export KINFORMATION_HOME
 
-# JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
+JAVA_HOME=$(/usr/libexec/java_home -v 1.8)
 JAVA_EXECUTABLE=$JAVA_HOME/bin/java
 export JAVA_EXECUTABLE
 
-JRUBY_HOME=~/haplo-dev-support/haplo-plugin/jruby
+JRUBY_HOME=~/haplo-dev-support/vendor/jruby
 export JRUBY_HOME
 JRUBY_JFFI_LIB_PATH=$JRUBY_HOME/lib/jni/Darwin/libjffi-1.2.jnilib
 export JRUBY_JFFI_LIB_PATH
