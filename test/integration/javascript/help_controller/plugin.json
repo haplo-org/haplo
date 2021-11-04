@@ -1,5 +1,5 @@
 {
-  "pluginName": "test_help_page_hook",
+  "pluginName": "help_controller",
   "pluginAuthor": "TESTING",
   "pluginVersion": 10,
   "displayName": "Test Help Page Hook",

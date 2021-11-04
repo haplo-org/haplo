@@ -8,18 +8,31 @@
 # tests the application controller is working as expected
 class HelpControllerTest < IntegrationTest
   
-  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/elements/test_help_page_hook")
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/help_controller")
 
-  def test_task_list_hook_redirect
+  def test_help_hook_redirect
     db_reset_test_data
     restore_store_snapshot("basic")
-    KPlugin.install_plugin('test_help_page_hook')
     assert_login_as('user1@example.com', 'password')
     begin
+      KPlugin.install_plugin('help_controller')
       get_302 "/do/help/pop"
       assert_redirected_to "/help-test"
+    ensure
+      KPlugin.uninstall_plugin('help_controller')
     end
-    KPlugin.uninstall_plugin('test_help_page_hook')
+  end
+
+  def test_help
+    db_reset_test_data
+    restore_store_snapshot("basic")
+    assert_login_as('user1@example.com', 'password')
+    begin
+      get "/do/help/pop"
+      puts response
+    ensure
+      KPlugin.uninstall_plugin('help_controller')
+    end
   end
 end
   
