@@ -1,5 +1,5 @@
 {
-  "pluginName": "tasks_controller",
+  "pluginName": "test_task_list_hook",
   "pluginAuthor": "TESTING",
   "pluginVersion": 10,
   "displayName": "Test Task List Hook",

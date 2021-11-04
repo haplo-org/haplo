@@ -7,13 +7,15 @@
 
 # tests the application controller is working as expected
 class TasksControllerTest < IntegrationTest
-  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/tasks_controller")
-  
-  def test_task_list_hook_redirect
+  KJavaScriptPlugin.register_javascript_plugin("#{File.dirname(__FILE__)}/javascript/tasks_controller/test_task_list_hook")
+
+  def setup
     db_reset_test_data
     restore_store_snapshot("basic")
     assert_login_as('user1@example.com', 'password')
+  end
 
+  def test_task_list_hook_redirect
     begin
       KPlugin.install_plugin('tasks_controller')
       get_302 "/do/tasks"
@@ -24,13 +26,9 @@ class TasksControllerTest < IntegrationTest
   end
 
   def test_task_list
-    db_reset_test_data
-    restore_store_snapshot("basic")
-    assert_login_as('user1@example.com', 'password')
-
     begin
       get "/do/tasks"
-      puts response
+      assert_select('title', 'Tasks')
     end
   end
 end
