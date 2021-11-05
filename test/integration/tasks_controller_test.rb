@@ -17,18 +17,14 @@ class TasksControllerTest < IntegrationTest
 
   def test_task_list_hook_redirect
     begin
+      get "/do/tasks"
+      assert_select('title', 'Tasks : Haplo')
+
       KPlugin.install_plugin('test_task_list_hook')
       get_302 "/do/tasks"
       assert_redirected_to "/test"
     ensure
       KPlugin.uninstall_plugin('test_task_list_hook')
-    end
-  end
-
-  def test_task_list
-    begin
-      get "/do/tasks"
-      assert_select('title', 'Tasks : Haplo')
     end
   end
 end

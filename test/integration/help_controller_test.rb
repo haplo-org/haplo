@@ -18,18 +18,14 @@ class HelpControllerTest < IntegrationTest
 
   def test_help_hook_redirect
     begin
+      get "/do/help/pop"
+      assert_select('title', 'Help : Haplo')
+
       KPlugin.install_plugin('test_help_page_hook')
       get_302 "/do/help/pop"
       assert_redirected_to "/help-test"
     ensure
       KPlugin.uninstall_plugin('test_help_page_hook')
-    end
-  end
-
-  def test_help
-    begin
-      get "/do/help/pop"
-      assert_select('title', 'Help : Haplo')
     end
   end
 end
