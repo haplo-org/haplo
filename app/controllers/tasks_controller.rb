@@ -26,7 +26,7 @@ class TasksController < ApplicationController
       result = hooks.run()
       if result.redirectPath
         redirect_to result.redirectPath
-        return;
+        return
       end
     end
 
