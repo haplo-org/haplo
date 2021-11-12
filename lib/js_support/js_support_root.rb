@@ -334,7 +334,7 @@ class JSSupportRoot
   end
 
   LOG_LEVEL = {
-    "info" => Logger::Severity::INFO, "debug" => Logger::Severity::DEBUG, "warn" => Logger::Severity::WARN, "error" => Logger::Severity::ERROR
+    "info" => Logger::Severity::INFO, "debug" => Logger::Severity::INFO, "warn" => Logger::Severity::WARN, "error" => Logger::Severity::ERROR
   }
   def writeLog(level, text)
     l = LOG_LEVEL[level]
