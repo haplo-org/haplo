@@ -20,6 +20,7 @@ t.test(function() {
     t.assertEqual(t.last.body, "i=2446 u=41");
 
     t.get("/do/tested_plugin/handler2", {z:"Ping"});
+    t.assertEqual(t.last.statusCode, 200);
     t.assertEqual(t.last.method, "GET");
     t.assertEqual(t.last.body, "HANDLER2: Ping");
     t.assertEqual(t.last.templateName, "handler2");
@@ -37,6 +38,7 @@ t.test(function() {
     t.assertEqual(requestAsSeenByPlugin.remote.protocol, "IPv4");
     t.assertEqual(requestAsSeenByPlugin.remote.address, "10.1.2.3");
     t.assertEqual(postLast.templateName, "posting_template");
+    t.assertEqual(postLast.statusCode, 200);
     t.assertEqual(postLast.body, "POSTED");
     t.assertEqual(postLast.view.pageTitle, "Post");
 
