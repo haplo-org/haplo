@@ -593,7 +593,12 @@ class DeveloperLoader
 
     _PostOnly
     def handle_debugger_coverage_start_api
-      org.haplo.javascript.debugger.Debug.setFactoryForApplication(KApp.current_application, Java::OrgHaploJavascriptDebugger::Coverage::Factory.new())
+      coverage_format = params['coverage_format']
+      if coverage_format == 'lcov'
+        org.haplo.javascript.debugger.Debug.setFactoryForApplication(KApp.current_application, Java::OrgHaploJavascriptDebugger::LCOVCoverage::Factory.new(KPlugin.get_plugins_for_current_app))
+      else
+        org.haplo.javascript.debugger.Debug.setFactoryForApplication(KApp.current_application, Java::OrgHaploJavascriptDebugger::Coverage::Factory.new())
+      end
       KJSPluginRuntime.invalidate_all_runtimes
       render :text => 'OK'
     end
@@ -601,7 +606,7 @@ class DeveloperLoader
     _PostOnly
     def handle_debugger_coverage_stop_api
       debugger = org.haplo.javascript.debugger.Debug.getFactoryForApplication(KApp.current_application)
-      if debugger.kind_of?(Java::OrgHaploJavascriptDebugger::Coverage::Factory)
+      if debugger.kind_of?(Java::OrgHaploJavascriptDebugger::Coverage::Factory) || debugger.kind_of?(Java::OrgHaploJavascriptDebugger::LCOVCoverage::Factory)
         org.haplo.javascript.debugger.Debug.setFactoryForApplication(KApp.current_application, nil)
         KJSPluginRuntime.invalidate_all_runtimes
         render :text => debugger.reportAsString()
