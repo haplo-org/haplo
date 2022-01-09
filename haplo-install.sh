@@ -67,6 +67,8 @@ if [ -f /etc/os-release ]; then
     case $UVER in
 	'16.04')
 	    PG_VERSION=9.5
+	    echo "WARN: Ubuntu $UVER is deprecated."
+	    sleep 5
 	    ;;
 	'18.04')
 	    PG_VERSION=10
@@ -95,6 +97,22 @@ if [ -f /etc/os-release ]; then
 	    XAPIAN_PKG=libxapian30
 	    # headless jdk on bionic isn't
 	    OPENJDK_PKG=openjdk-8-jdk
+	    ;;
+	'21.04')
+	    PG_VERSION=13
+	    XAPIAN_PKG=libxapian30
+	    # headless jdk on bionic isn't
+	    OPENJDK_PKG=openjdk-8-jdk
+	    echo "WARN: Ubuntu $UVER is deprecated."
+	    sleep 5
+	    ;;
+	'21.10')
+	    PG_VERSION=13
+	    XAPIAN_PKG=libxapian30
+	    # headless jdk on bionic isn't
+	    OPENJDK_PKG=openjdk-8-jdk
+	    echo "WARN: Ubuntu $UVER is deprecated."
+	    sleep 5
 	    ;;
 	*)
 	    echo "Unsupported OS version $UVER"
@@ -265,6 +283,30 @@ fi
 echo " *** Haplo account setup done ***"
 
 #
+# generate a deployable tarball
+# to deploy this, you need to
+#  cd /opt/haplo ; tar xf /tmp/haplo-build.tar
+#
+echo " *** Generating deployable archive ***"
+./deploy/release
+echo " *** Deployable archive generated ***"
+
+#
+# copy platform-prompt to somewhere likely to be in the default PATH
+#
+sudo cp script/platform-prompt /usr/bin
+
+#
+# iff the target code area is empty, for example if this is the first
+# time this script has been run, unpack the tarball in the right place
+#
+if [ ! -d /opt/haplo/app ]; then
+    echo " *** Deploying build to /opt/haplo ***"
+    sudo su haplo -c 'cd /opt/haplo ; tar xf /tmp/haplo-build.tar'
+    echo " *** Build deployed to /opt/haplo ***"
+fi
+
+#
 # we use the normal postgres service for production use
 #  redirect the location of the data to /haplo/database
 #  use the /haplo/database/pg_hba.conf file for access conrol
@@ -284,6 +326,9 @@ if [ ! -d /haplo/database ]; then
     sudo update-rc.d postgresql enable
     sudo /etc/init.d/postgresql start
     sleep 5
+    # need to use the installed version so that it uses
+    # the installed oxp, not the temporary build copy
+    cd /opt/haplo
     ./db/init_production_db.sh
     # add haplo user and permissions for production
     psql -d haplo < db/prod_perm.sql
@@ -324,30 +369,6 @@ else
 	rm -f /tmp/rules.v4
 	echo " *** Haplo port forwarding configured ***"
     fi
-fi
-
-#
-# generate a deployable tarball
-# to deploy this, you need to
-#  cd /opt/haplo ; tar xf /tmp/haplo-build.tar
-#
-echo " *** Generating deployable archive ***"
-./deploy/release
-echo " *** Deployable archive generated ***"
-
-#
-# copy platform-prompt to somewhere likely to be in the default PATH
-#
-sudo cp script/platform-prompt /usr/bin
-
-#
-# iff the target code area is empty, for example if this is the first
-# time this script has been run, unpack the tarball in the right place
-#
-if [ ! -d /opt/haplo/app ]; then
-    echo " *** Deploying build to /opt/haplo ***"
-    sudo su haplo -c 'cd /opt/haplo ; tar xf /tmp/haplo-build.tar'
-    echo " *** Build deployed to /opt/haplo ***"
 fi
 
 #
