@@ -47,6 +47,15 @@ raise "No database config for #{KFRAMEWORK_ENV} environment" unless KFRAMEWORK_D
 db_config = KFRAMEWORK_DATABASE_CONFIG[KFRAMEWORK_ENV].merge(
   "username" => java.lang.System.getProperty("user.name")
 )
+if defined? DB_SERVER
+  db_config["server"] = DB_SERVER
+end
+if defined? DB_USERNAME
+  db_config["username"] = DB_USERNAME
+end
+if defined? DB_PASSWORD
+  db_config["password"] = DB_PASSWORD
+end
 Java::OrgHaploFramework::Database.configure(
   db_config["server"] || "localhost",
   db_config["database"],
