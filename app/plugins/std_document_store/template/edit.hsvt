@@ -16,7 +16,7 @@ if(viewComments) {
 if(additionalUI.top) { render(additionalUI.top) }
 
 if(navigationTop) {
-  <div class="z__docstore_nav_top" role="tablist"> render(navigationTop) </div>
+  <div class="z__docstore_nav_top h-temp-docstore-nav-top" role="tablist"> render(navigationTop) </div>
 }
 
 if(showFormError) {
@@ -33,7 +33,7 @@ std:form(activePage.instance)
 
 if(additionalUI.formBottom) { render(additionalUI.formBottom) }
 
-<div class="z__docstore_save">
+<div class="z__docstore_save h-temp-docstore-save">
   <input type="submit" value=
     if(saveButtonLabel) {
       saveButtonLabel
@@ -50,7 +50,7 @@ if(additionalUI.formBottom) { render(additionalUI.formBottom) }
 </div>
 
 if(navigationBottom) {
-  <div class="z__docstore_nav_bottom" role="tablist" aria-hidden="true">
+  <div class="z__docstore_nav_bottom h-temp-docstore-nav-bottom" role="tablist" aria-hidden="true">
     render(navigationBottom)
   </div>
 }

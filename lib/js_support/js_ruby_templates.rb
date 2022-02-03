@@ -16,6 +16,8 @@ module JSRubyTemplates
   #   -- has separate has_default member because default value may be nil, and it's easier to detect it this way.
 
   LOOKUP = {
+    "_platform_client_side_resources" => [:partial, 'shared/client_side_resources', []],  # TODO: Remove if not required for UI redo
+    "_platform_impersonate_ui" => [:method, :stdtmpl_platform_impersonate_ui, []],  # TODO: Remove if not required for UI redo
     "_client_side_resource" => [:method, :stdtmpl_client_side_resource, [[0, :symbol, true]]],  # possibly temporary?
     "_client_side_resource_path" => [:method, :stdtmpl_client_side_resource_path, [[0, :symbol, true], [1, :string, true]]],  # possible temporary
     "_plugin_static" => [:method, :plugintmpl_include_static, [[0, :string, true], [1, :string, true]]],
@@ -60,6 +62,15 @@ end
 
 # Support for the Ruby templates, for inclusion in the application.rb file
 module JSRubyTemplateControllerSupport
+
+  # TODO: Rmove if not required for UI redo
+  def stdtmpl_platform_impersonate_ui()
+    if session[:impersonate_uid] != nil && !@request_user.policy.is_anonymous?
+      render(:partial => 'layouts/impersonate_ui')
+    else
+      ''
+    end
+  end
 
   def stdtmpl_client_side_resource_path(kind, pathname)
     raise "Bad path for std:resources template - must begin with /" unless pathname =~ /\A\//

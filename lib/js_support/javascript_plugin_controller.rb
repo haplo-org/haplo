@@ -123,7 +123,6 @@ class JavaScriptPluginController < ApplicationController
           client_side_plugin_resource(plugin, kind, resourceName)
         end
       end
-      @content_for_layout = body
       raise "Logic error" unless layout_name =~ /\Astd:(.+)\z/
       ruby_layout_name = $1
       if ruby_layout_name == "wide"
@@ -131,8 +130,7 @@ class JavaScriptPluginController < ApplicationController
         ruby_layout_name = "standard"
         @standard_layout_page_element_classes = 'z__page_wide_layout'
       end
-      render_opts[:text] = render_template("layouts/#{ruby_layout_name}", nil)
-      @content_for_layout = nil
+      render_opts[:text] = render_content_into_layout(body, ruby_layout_name, "layouts/#{ruby_layout_name}")
       render_opts[:kind] = :html
     end
     render(render_opts)

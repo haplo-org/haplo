@@ -61,13 +61,7 @@ module Ingredient
         output = render_template(template_name, nil)
         # Render a layout?
         if layout_name != nil && args[:layout] != false
-          # Check the content type of the layout matches that of the template
-          if RENDER_KIND_CONTENT_TYPES[render_template_kind(template_name)] != template_content_type
-            raise "Incompatible content-type for layout #{layout_name} and template #{template_name}"
-          end
-          @content_for_layout = output
-          output = render_template(layout_name, nil)
-          @content_for_layout = nil
+          output = render_content_into_layout(output, args[:layout], layout_name)
         end
 
         if content_type == nil
@@ -129,6 +123,20 @@ module Ingredient
       layout_name = (args[:layout] || render_layout)
       layout_path = (layout_name == nil) ? nil : "layouts/#{layout_name}"
       [args[:template] || "#{basename}/#{args[:action] || self.params['action']}", layout_path]
+    end
+
+    def _override_layout_rendering(output)
+      nil
+    end
+
+    def render_content_into_layout(content, layout, layout_template)
+      output = _override_layout_rendering(content, layout)
+      unless output
+        @content_for_layout = content
+        output = render_template(layout_template, nil)
+        @content_for_layout = nil
+      end
+      output
     end
 
     # Name of layout - override to specify layout

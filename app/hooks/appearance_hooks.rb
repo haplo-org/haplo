@@ -19,5 +19,14 @@ module KHooks
     h.result :headerHTML, String, nil, "HTML for the page header"
   end
 
+  define_hook :hRenderStandardLayout do |h|
+    h.argument :layout, String, "Layout"
+    h.argument :title, String, "Page title"
+    h.argument :content, String, "Main content"
+    h.argument :sidebar, String, "Sidebar content"
+    h.argument :creationLabel, String, "Creation label"
+    h.result :html, String, nil, "Rendered page"
+  end
+
 end
 

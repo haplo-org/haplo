@@ -7,7 +7,7 @@
 <div class="z__general_alert"><%= @locale.text(:Authentication_View_Use_impersonation_responsibly_) %></div>
 <p>&nbsp;</p>
 
-<form method="post"><%= form_csrf_token %>
+<form id="z__impersonate_choose_user" method="post"><%= form_csrf_token %>
   <input type="hidden" name="uid">
   <input id="z__impersonate_filter" class="z__focus_candidate" name="search" placeholder="Type to filter..." style="width:200px" autocomplete="off">
   <p>&nbsp;</p>

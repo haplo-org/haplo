@@ -132,6 +132,21 @@ class ApplicationController
     'standard'
   end
 
+  def _override_layout_rendering(content, layout)
+    output = nil
+    call_hook(:hRenderStandardLayout) do |hooks|
+      result = hooks.run(
+        "std:"+(layout || render_layout()),
+        @page_title,
+        content,
+        @__right_column_chunks.nil? ? nil : @__right_column_chunks.join(''),
+        @page_creation_label_html
+      )
+      output = result.html
+    end
+    output
+  end
+
   def csrf_get_token
     token = session[:_csrf_tok]
     if token == nil

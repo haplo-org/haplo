@@ -16,13 +16,13 @@
         // Event handler to handle clicks on names by submitting the form with the uid filled in.
         $('#z__impersonate a').on('click', function(evt) {
             evt.preventDefault();
-            $('#z__ws_content form input[name=uid]')[0].value = this.getAttribute('data-uid');
-            $('#z__ws_content form').submit();
+            $('#z__impersonate_choose_user input[name=uid]')[0].value = this.getAttribute('data-uid');
+            $('#z__impersonate_choose_user').submit();
         });
 
         // On form submission, if there's no uid and only only entry visible, select that
-        $('#z__ws_content form').on('submit', function(evt) {
-            var uid = $('#z__ws_content form input[name=uid]')[0];
+        $('#z__impersonate_choose_user').on('submit', function(evt) {
+            var uid = $('#z__impersonate_choose_user input[name=uid]')[0];
             if(!uid.value) {
                 var visibleUsers = $('#z__impersonate a:visible');
                 if(visibleUsers.length === 1) {

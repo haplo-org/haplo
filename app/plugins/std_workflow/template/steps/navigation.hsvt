@@ -1,6 +1,7 @@
 std:plugin:resources("w.css" "steps.js")
 
 <div id="z__workflow_steps_container"
+    class="h-temp-workflow-steps-container"
     role="navigation"
     aria-label=i("Work progress")
     data-navawaymsg=i("Your changes have not been saved. Do you want to discard your changes?")
@@ -8,7 +9,7 @@ std:plugin:resources("w.css" "steps.js")
   each(steps) {
     <form method="GET" action=url>
       <button class=[
-            if(current) {"z__workflow_steps_current"}
+            if(current) {"z__workflow_steps_current h-temp-workflow-steps-current"}
             if(firstIncomplete) {"z__workflow_steps_first_incomplete"}
             if(completeLater) {"z__workflow_steps_complete_later"}
           ]
