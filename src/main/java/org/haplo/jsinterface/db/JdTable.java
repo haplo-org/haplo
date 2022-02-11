@@ -1,5 +1,6 @@
 /* Haplo Platform                                     http://haplo.org
  * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+ * (c) Avalara, Inc 2022
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
@@ -1914,6 +1915,10 @@ public class JdTable extends KScriptable {
             return new LabelListFieldForPermitReadComparison(this.dbName);
         }
 
+        public Field fieldForContainsComparison() {
+            return new LabelListFieldForContainsComparison(this.dbName);
+        }
+
         public String generateIndexSqlDefinition(JdTable table, int indexIndex) {
             if(!this.indexed) {
                 return null;
@@ -2001,9 +2006,55 @@ public class JdTable extends KScriptable {
             return parameterIndex;  // Embeds everything in generated SQL WHERE clause
         }
 
+        @Override
         public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value, ValueTransformer valueTransformer) {
             KUser user = (KUser)value;
             where.append(user.makeWhereClauseForPermitRead(String.format("%1$s.%2$s", tableAlias, dbName)));
+        }
+    }
+
+    // A pseudo field definition used for the CONTAINS [SOME|ALL] comparisons in WHERE clauses
+    private static class LabelListFieldForContainsComparison extends LabelListField {
+        LabelListFieldForContainsComparison(String name) {
+            super(name);
+        }
+
+        @Override
+        public boolean jsObjectIsCompatible(Object object, ValueTransformer valueTransformer) {
+            if(object == null) {
+                throw new OAPIException("Can't use a null value for CONTAINS comparison in a where() clause.");
+            }
+            return object instanceof KLabelList;
+        }
+
+        @Override
+        public int setWhereValue(int parameterIndex, PreparedStatement statement, Object value) throws java.sql.SQLException {
+            return parameterIndex;  // Embeds everything in generated SQL WHERE clause
+        }
+
+        @Override
+        public void appendWhereSql(StringBuilder where, String tableAlias, String comparison, Object value, ValueTransformer valueTransformer) {
+            KLabelList labels = (KLabelList)value;
+            int[] primitives = labels.getLabels();
+            String operator;
+            if(comparison.equals("CONTAINS SOME")) {
+                operator = " && ";
+            } else if(comparison.equals("CONTAINS ALL")) {
+                operator = " @> ";
+            } else {
+                throw new OAPIException("Unknown comparison: " + comparison);
+            }
+
+            appendWhereSqlFieldName(where, tableAlias);
+            where.append(operator);
+            where.append("'{");
+            for(int i = 0; i < primitives.length; i++) {
+                where.append(primitives[i]);
+                if(i < primitives.length - 1) {
+                    where.append(",");
+                }
+            }
+            where.append("}'");
         }
     }
 

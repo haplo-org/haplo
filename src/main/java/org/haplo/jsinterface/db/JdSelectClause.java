@@ -1,5 +1,6 @@
 /* Haplo Platform                                     http://haplo.org
  * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+ * (c) Avalara 2022
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
@@ -115,6 +116,8 @@ public class JdSelectClause extends KScriptable {
                 comparison = "<>";
             } else if(comparison.equals("PERMIT READ") && field instanceof JdTable.LabelListField) {
                 field = ((JdTable.LabelListField)field).fieldForPermitReadComparison();
+            } else if((comparison.equals("CONTAINS ALL") || comparison.equals("CONTAINS SOME")) && field instanceof JdTable.LabelListField) {
+                field = ((JdTable.LabelListField)field).fieldForContainsComparison();
             } else {
                 throw new OAPIException("Bad comparison operator '" + comparison + "'");
             }
