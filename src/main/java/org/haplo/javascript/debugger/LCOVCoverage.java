@@ -48,12 +48,6 @@
      private static final String TEST_NAME = "TN:%s\n";
      //SF:<absolute path to the source file>
      private static final String SOURCE = "SF:%s\n";
-     //BRF:<number of branches found>
-     //private String branchesFound = "BRF:%d\n";
-     //BRH:<number of branches hit>
-     //private String branchHits = "BRH:%d\n";
-     //BRDA:<line number>,<block number>,<branch number>,<taken>
-     // private static final String BRANCH_DATA = "BRDA:%d,0,%d,%s\n";
      //DA:<line number>,<execution count>[,<checksum>]
      private static final String LINE_DATA = "DA:%d,%d\n";
      //LH:<number of lines with a non-zero execution count>
@@ -66,7 +60,9 @@
      private static final String FUNCTION_DATA = "FNDA:%d,%s\n";
      //FNF:<number of functions found>
      private static final String FUNCTION_FOUND = "FNF:%d\n";
+     //FNH:<number of times function hit>
      private static final String FUNCTION_HIT = "FNH:%d\n";
+     //FNF:end of record
      private static final String END_RECORD = "end_of_record\n";
  
      // ----------------------------------------------------------------------
@@ -98,7 +94,6 @@
          private final Map<String, List<CoverageFrame>> frames;
          private final Map<String, String> pluginToPluginLocation;
          private final Map<String, Map<Integer, Integer>> aggregateLinesCovered;
-         private boolean isContinued = false;
  
          public Factory(final RubyArray loadedPlugins) {
              frames = Collections.synchronizedMap(new HashMap<String, List<CoverageFrame>>());
@@ -208,16 +203,6 @@
          private boolean isJSClosingBracket(String line) {
              return line.equals("}") || line.equals("};") || line.equals("},") || line.equals("});")
                  || line.equals("];") || line.equals(");");
-         }
-
-         private boolean isVariable(String line) {
-             if (line.startsWith("var") || line.startsWith("let") || line.startsWith("const")) {
-                if (!line.contains(";")) {
-                    isContinued = true;
-                }
-                return true;
-             }
-             return false;
          }
  
          private boolean isJSLineExecutable(String[] lines, int sourceLineIndex) {
