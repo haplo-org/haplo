@@ -2,6 +2,7 @@
 
 # Haplo Platform                                    https://haplo.org
 # (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
+# (c) Avalara, Inc 2022
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -593,7 +594,12 @@ class DeveloperLoader
 
     _PostOnly
     def handle_debugger_coverage_start_api
-      org.haplo.javascript.debugger.Debug.setFactoryForApplication(KApp.current_application, Java::OrgHaploJavascriptDebugger::Coverage::Factory.new())
+      coverage_format = params['coverage_format']
+      if coverage_format == 'lcov'
+        org.haplo.javascript.debugger.Debug.setFactoryForApplication(KApp.current_application, Java::OrgHaploJavascriptDebugger::LCOVCoverage::Factory.new(KPlugin.get_plugins_for_current_app))
+      else
+        org.haplo.javascript.debugger.Debug.setFactoryForApplication(KApp.current_application, Java::OrgHaploJavascriptDebugger::Coverage::Factory.new())
+      end
       KJSPluginRuntime.invalidate_all_runtimes
       render :text => 'OK'
     end
@@ -601,7 +607,7 @@ class DeveloperLoader
     _PostOnly
     def handle_debugger_coverage_stop_api
       debugger = org.haplo.javascript.debugger.Debug.getFactoryForApplication(KApp.current_application)
-      if debugger.kind_of?(Java::OrgHaploJavascriptDebugger::Coverage::Factory)
+      if debugger.kind_of?(Java::OrgHaploJavascriptDebugger::Coverage::Factory) || debugger.kind_of?(Java::OrgHaploJavascriptDebugger::LCOVCoverage::Factory)
         org.haplo.javascript.debugger.Debug.setFactoryForApplication(KApp.current_application, nil)
         KJSPluginRuntime.invalidate_all_runtimes
         render :text => debugger.reportAsString()
