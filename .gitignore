@@ -6,3 +6,4 @@ lib/xapian_pg/*.so
 lib/xapian_pg/_textidx
 log/
 tmp/
+
