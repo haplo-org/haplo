@@ -1,0 +1,9 @@
+{
+  "pluginName": "test_task_list_hook",
+  "pluginAuthor": "TESTING",
+  "pluginVersion": 10,
+  "displayName": "Test Task List Hook",
+  "displayDescription": "Test Task List Hooks",
+  "apiVersion": 4,
+  "load": ["js/test_task_list_hook.js"]
+}

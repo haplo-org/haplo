@@ -2,6 +2,7 @@
 
 # Haplo Platform                                    https://haplo.org
 # (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
+# (c) Avalara, Inc 2021
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -20,6 +21,15 @@ class TasksController < ApplicationController
     @workunits_normal = Array.new
     @now = true
     q = WorkUnit.where_actionable_by_user_when(@request_user, :now)
+
+    # Does a plugin want to override the default task list?
+    call_hook(:hTaskList) do |hooks|
+      result = hooks.run()
+      if result.redirectPath
+        redirect_to result.redirectPath
+        return
+      end
+    end
 
     # NOTE: This is a temporary interface which will be removed
     if params.has_key?("__worktype")

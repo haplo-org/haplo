@@ -2,6 +2,7 @@
 
 # Haplo Platform                                    https://haplo.org
 # (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
+# (c) Avalara, Inc 2021
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -23,6 +24,10 @@ module KHooks
 
   define_hook :hHelpPage do |h|
     h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of viewing the built-in help pages"
+  end
+
+  define_hook :hTaskList do |h|
+    h.result      :redirectPath,String,   nil,  "If set, the user will be redirected to this path instead of viewing the built-in task list"
   end
 
   define_hook :hPreSearchUI do |h|
