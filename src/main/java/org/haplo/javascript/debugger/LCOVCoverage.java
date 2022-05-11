@@ -181,7 +181,7 @@
                          return null;
                      }
                      Map<Integer, Integer> aggregateLinesPerFile = new HashMap<>();
-                     Map.Entry<String, String> pluginDetails = pluginPathOpt.get();
+                     Map.Entry<String, String> pluginDetails = pluginPathOpt.get(); // ConsString is checked
                      String[] sourceLines = getSourceLines(fnOrScript, pluginDetails.getValue());
                      for (int sourceLineIndex = 0; sourceLineIndex < sourceLines.length; sourceLineIndex++) {
                          if (isJSLineExecutable(sourceLines, sourceLineIndex)) {
@@ -390,7 +390,7 @@
                              int coverageFrameHitCount = frame.getCoverageFrameHitCount();
                              Pair<Integer, String> newFunctionNameAndHitCount;
                              if (aggregateFunctionsCovered.containsKey(firstLine)) {
-                                 Pair<Integer, String> functionHitCountAndName = aggregateFunctionsCovered.get(firstLine);
+                                 Pair<Integer, String> functionHitCountAndName = aggregateFunctionsCovered.get(firstLine); // ConsString is checked
                                  int functionHitCount = functionHitCountAndName.getLeft();
                                  String functionName = functionHitCountAndName.getRight();
                                  newFunctionNameAndHitCount = Pair.of(coverageFrameHitCount + functionHitCount, functionName);
