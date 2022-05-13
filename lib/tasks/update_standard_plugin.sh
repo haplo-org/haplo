@@ -9,7 +9,7 @@
 
 # run as
 #    lib/tasks/update_standard_plugin.sh ~/haplo-standard-plugins-dev/std_workflow
-# or whereever the standard plugin is located
+# or wherever the standard plugin is located
 
 PLUGIN_DIR=$1
 PLUGIN_NAME=`basename ${PLUGIN_DIR}`

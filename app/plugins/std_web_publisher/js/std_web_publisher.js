@@ -151,9 +151,16 @@ P.provideFeature("std:web-publisher", function(plugin) {
     consumerFeature.widget = new Widgets(plugin);
     plugin.webPublication = consumerFeature;
 });
+P.implementService("std:web_publisher:get_publication", function(name) {
+    if(!(name in publications)) {
+        throw new Error("No publication registered for "+name);
+    }
+    console.log("Warning: std:web_publisher:get_publication is deprecated.");
+    return publications[name][0];
+});
 P.implementService("std:web_publisher:get_publications", function(name) {
     if(!(name in publications)) {
-        throw new Error("No publiation registered for "+name);
+        throw new Error("No publication registered for "+name);
     }
     return publications[name];
 });

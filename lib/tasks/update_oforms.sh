@@ -9,7 +9,7 @@
 
 # run as
 #    lib/tasks/update_oforms.sh ~/oforms
-# or whereever the oforms checkout is located
+# or wherever the oforms checkout is located
 
 OFORMS_DIR=$1
 

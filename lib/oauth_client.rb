@@ -157,7 +157,7 @@ class OAuthClient
       request['Accept'] = accept_header
     end
     http = Net::HTTP.new(uri.host, uri.port)
-    if @config['ssl_ciphers']
+    if @config['ssl_ciphers'] && @config['ssl_ciphers'] != ""
       http.ciphers = @config['ssl_ciphers']
     end
     http.use_ssl = true

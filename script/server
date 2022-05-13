@@ -18,6 +18,12 @@ fi
 
 if [ X$KFRAMEWORK_ENV = Xdevelopment ]
 then
+	mkdir -p tmp/properties
+	# allow user to enable mdns hostnames, but default to off
+	if [ ! -f tmp/properties/register_mdns_hostnames ]
+	then
+		echo no > tmp/properties/register_mdns_hostnames
+	fi
 	# Make sure a plugin debugging choice is set -- allows it to be set without accidently getting committed, and defaults to no
 	if [ ! -f tmp/properties/plugin_debugging_support ]
 	then

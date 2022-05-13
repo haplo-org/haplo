@@ -44,8 +44,8 @@ KHQ_SSL_CERTS_DIR = "#{ENV['HOME']}/haplo-dev-support/certificates"
 SSL_CERTIFICATE_AUTHORITY_ROOTS_FILE = 'config/cacert.pem'
 
 # Installation properties
+# change tmp/properties/register_mdns_hostnames to yes if you want mdns in a VM
 KInstallProperties.load_from("#{KFRAMEWORK_ROOT}/tmp/properties", {
-  :register_mdns_hostnames => 'yes',
   :domainname => 'local',
   :management_server_url => "https://#{ENV['KSERVER_HOSTNAME'].chomp}.local"
 })
