@@ -2,6 +2,7 @@
 
 # Haplo Platform                                    https://haplo.org
 # (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
+# (c) Avalara, Inc 2021
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -289,7 +290,7 @@ class KObjectStore
       # Generate sort spec now in case :relevance was changed to :date
       sort_spec = _sort_spec_for(sort_by) if sort_spec == nil
 
-      "SELECT #{fields} FROM #{@store._db_schema_name}.os_objects AS o#{tbl_extra} WHERE o.id IN #{ids_subquery}#{label_filter_clause}#{time_sub_clause}#{group_by} ORDER BY #{sort_spec}#{(@maximum_results != nil) ? " LIMIT #{@maximum_results}" : ''}"
+      "SELECT #{fields} FROM #{@store._db_schema_name}.os_objects AS o#{tbl_extra} WHERE o.id IN #{ids_subquery}#{label_filter_clause}#{time_sub_clause}#{group_by} ORDER BY #{sort_spec}#{(@offset_start != nil) ? " OFFSET  #{@offset_start}" : ''}#{(@maximum_results != nil) ? " LIMIT #{@maximum_results}" : ''}"
     end
 
     def label_filter_clause
@@ -626,6 +627,15 @@ class KObjectStore
         @maximum_results = r
       else
         raise "Bad maximum_results for query"
+      end
+    end
+
+    # Offset the results returned
+    def offset(offset_start)
+      if offset_start.instance_of?(Integer) && offset_start >= 0
+        @offset_start = offset_start.to_i
+      else
+        raise "Bad offset_start for query"
       end
     end
 

@@ -1,5 +1,6 @@
 /* Haplo Platform                                     http://haplo.org
  * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+ * (c) Avalara, Inc 2021
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
@@ -154,6 +155,13 @@ public class KQueryClause extends KScriptable {
         this.clause.created_by_user_id(userId);
     }
 
+    public void jsFunction_createdWithinDateRange(Object beginDate, Object endDate) {
+        this.clause.constrain_to_time_interval(
+                JsConvert.convertJavaDateToRuby(JsConvert.tryConvertJsDate(beginDate)),
+                JsConvert.convertJavaDateToRuby(JsConvert.tryConvertJsDate(endDate))
+        );
+    }
+
     public void jsFunction_lastUpdatedWithinDateRange(Object beginDate, Object endDate) {
         this.clause.constrain_to_updated_time_interval(
                 JsConvert.convertJavaDateToRuby(JsConvert.tryConvertJsDate(beginDate)),
@@ -194,6 +202,10 @@ public class KQueryClause extends KScriptable {
 
     public void jsFunction_limit(int maxResults) {
         this.clause.maximumResults(maxResults);
+    }
+
+    public void jsFunction_offset(int offsetStart) {
+        this.clause.offset(offsetStart);
     }
 
     // --------------------------------------------------------------------------------------------------------------
