@@ -175,7 +175,7 @@
                      Optional<Map.Entry<String, String>> pluginPathOpt = pluginToPluginLocation
                          .entrySet()
                          .stream()
-                         .filter(entry -> filename.contains(entry.getKey()))
+                         .filter(entry -> filename.contains("/" + entry.getKey() + "/"))
                          .findFirst();
                      if (!pluginPathOpt.isPresent()) {
                          return null;
