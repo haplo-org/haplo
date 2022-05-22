@@ -64,6 +64,10 @@ require 'jruby/synchronized'
 # Gems
 gem 'rmail'
 require 'rmail'
+gem 'pry'
+require 'pry'
+gem 'pry-nav'
+require 'pry-nav'
 
 # Application code
 require 'extend_time'
