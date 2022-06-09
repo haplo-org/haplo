@@ -35,8 +35,10 @@
  import java.util.Map;
  import java.util.Optional;
  import java.util.Set;
- 
- import org.apache.log4j.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.apache.log4j.Logger;
  
  import static java.lang.String.format;
  import static java.util.stream.Collectors.toMap;
@@ -202,9 +204,32 @@
  
          private boolean isJSClosingBracket(String line) {
              return line.equals("}") || line.equals("};") || line.equals("},") || line.equals("});")
-                 || line.equals("];") || line.equals(");");
+                 || line.equals("];") || line.equals(");") || line.equals("}))") || line.equals("}));");
          }
- 
+
+         private boolean isJSFunctionChaining(String prevLine, String line) {
+             return line.startsWith(".") || line.startsWith(").") || line.startsWith("}).")
+                 || (prevLine != null && (prevLine.endsWith(").") || prevLine.endsWith("}).")));
+         }
+
+         private boolean isJSFunctionArgument(String prevLine, String nextLine) {
+            return (prevLine != null && (prevLine.endsWith("(") || prevLine.endsWith(","))) || (nextLine != null && nextLine.equals(");"));
+         }
+
+         private boolean isJSONObject(String prevLine, String line) {
+             Pattern jsonObjectLinePattern = Pattern.compile("^\\S+:", Pattern.CASE_INSENSITIVE);
+             return prevLine != null && jsonObjectLinePattern.matcher(line).find() && (prevLine.endsWith(",") || prevLine.endsWith("{") || prevLine.endsWith("["));
+         }
+
+         private boolean isMultilineLogicalExpression(String prevLine, String line) {
+             return line.startsWith("&&") || line.startsWith("||") ||
+                (prevLine != null && (prevLine.endsWith("&&") || prevLine.endsWith("||") || prevLine.endsWith("?")));
+         }
+
+         private boolean isVarDeclaration(String line) {
+             return (line.startsWith("const") || line.startsWith("let") || line.startsWith("var")) && !line.contains("=");
+         }
+
          private boolean isJSLineExecutable(String[] lines, int sourceLineIndex) {
              String line = lines[sourceLineIndex];
              if (line == null) {
@@ -223,8 +248,30 @@
              if (isJSClosingBracket(line)) {
                  return false;
              }
+
+             if (isVarDeclaration(line)) {
+                return false;
+             }
+
+             final String prevLine = sourceLineIndex == 0 ? null : lines[sourceLineIndex - 1].trim();
+             if (isJSFunctionChaining(prevLine, line)) {
+                 return false;
+             }
+
+             if (isJSONObject(prevLine, line)) {
+                 return false;
+             }
+
+             if (isMultilineLogicalExpression(prevLine, line)) {
+                return false;
+             }
+
+             final String nextLine = sourceLineIndex == lines.length - 1 ? null : lines[sourceLineIndex + 1].trim();
+             if (isJSFunctionArgument(prevLine, nextLine)) {
+                return false;
+             }
  
-             return true;
+             return true; // line is executable
          }
  
          /**
