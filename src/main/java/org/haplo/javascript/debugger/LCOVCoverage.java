@@ -228,6 +228,11 @@ import org.apache.log4j.Logger;
                  || (prevLine != null && (prevLine.endsWith("&&") || prevLine.endsWith("||") || prevLine.endsWith("?")));
          }
 
+         private boolean isMultilineArithmeticExpression(String prevLine, String line) {
+             return line.startsWith("+") || line.startsWith("-") || line.startsWith("*")
+                     || (prevLine != null && (prevLine.endsWith("+") || prevLine.endsWith("-") || prevLine.endsWith("*")));
+         }
+
          private boolean isVarDeclaration(String prevLine, String line) {
              Pattern onlyOneEqualPattern = Pattern.compile("^.+(?<!=|>|<|!)=", Pattern.CASE_INSENSITIVE);
              return (line.startsWith("const") || line.startsWith("let") || line.startsWith("var")) && !line.contains("=")
@@ -266,7 +271,7 @@ import org.apache.log4j.Logger;
                  return false;
              }
 
-             if (isMultilineLogicalExpression(prevLine, line)) {
+             if (isMultilineLogicalExpression(prevLine, line) || isMultilineArithmeticExpression(prevLine, line)) {
                 return false;
              }
 
