@@ -235,7 +235,7 @@ import org.apache.log4j.Logger;
 
          private boolean isVarDeclaration(String prevLine, String line) {
              Pattern onlyOneEqualPattern = Pattern.compile("^.+(?<!=|>|<|!)=", Pattern.CASE_INSENSITIVE);
-             return (line.startsWith("const") || line.startsWith("let") || line.startsWith("var")) && !line.contains("=")
+             return ((line.startsWith("const") || line.startsWith("let") || line.startsWith("var")) && !line.contains("="))
                      || (prevLine != null && onlyOneEqualPattern.matcher(prevLine).matches());
          }
 
@@ -267,18 +267,18 @@ import org.apache.log4j.Logger;
                  return false;
              }
 
+             final String nextLine = sourceLineIndex == lines.length - 1 ? null : lines[sourceLineIndex + 1].trim();
+             if (isJSFunctionArgument(prevLine, nextLine)) {
+                return false;
+             }
+
              if (isJSONObject(prevLine, line)) {
                  return false;
              }
 
              if (isMultilineLogicalExpression(prevLine, line) || isMultilineArithmeticExpression(prevLine, line)) {
                 return false;
-             }
-
-             final String nextLine = sourceLineIndex == lines.length - 1 ? null : lines[sourceLineIndex + 1].trim();
-             if (isJSFunctionArgument(prevLine, nextLine)) {
-                return false;
-             }
+             }            
  
              return true;
          }
