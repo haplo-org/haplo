@@ -280,7 +280,7 @@ import org.apache.log4j.Logger;
                 return false;
              }
  
-             return true; // line is executable
+             return true;
          }
  
          /**
