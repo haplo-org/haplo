@@ -204,7 +204,8 @@ import org.apache.log4j.Logger;
  
          private boolean isJSClosingBracket(String line) {
              return line.equals("}") || line.equals("};") || line.equals("},") || line.equals("});")
-                 || line.equals("];") || line.equals(");") || line.equals("}))") || line.equals("}));");
+                 || line.equals("]") || line.equals("];") || line.equals("],")
+                 || line.equals(")") || line.equals(");") || line.equals("}))") || line.equals("}));");
          }
 
          private boolean isJSFunctionChaining(String prevLine, String line) {
@@ -218,16 +219,19 @@ import org.apache.log4j.Logger;
 
          private boolean isJSONObject(String prevLine, String line) {
              Pattern jsonObjectLinePattern = Pattern.compile("^\\S+:", Pattern.CASE_INSENSITIVE);
-             return prevLine != null && jsonObjectLinePattern.matcher(line).find() && (prevLine.endsWith(",") || prevLine.endsWith("{") || prevLine.endsWith("["));
+             return prevLine != null && jsonObjectLinePattern.matcher(line).find()
+                 && (prevLine.endsWith(",") || prevLine.endsWith("{") || prevLine.endsWith("["));
          }
 
          private boolean isMultilineLogicalExpression(String prevLine, String line) {
-             return line.startsWith("&&") || line.startsWith("||") ||
-                (prevLine != null && (prevLine.endsWith("&&") || prevLine.endsWith("||") || prevLine.endsWith("?")));
+             return line.startsWith("&&") || line.startsWith("||")
+                 || (prevLine != null && (prevLine.endsWith("&&") || prevLine.endsWith("||") || prevLine.endsWith("?")));
          }
 
-         private boolean isVarDeclaration(String line) {
-             return (line.startsWith("const") || line.startsWith("let") || line.startsWith("var")) && !line.contains("=");
+         private boolean isVarDeclaration(String prevLine, String line) {
+             Pattern onlyOneEqualPattern = Pattern.compile("^.+(?<!=|>|<|!)=", Pattern.CASE_INSENSITIVE);
+             return (line.startsWith("const") || line.startsWith("let") || line.startsWith("var")) && !line.contains("=")
+                     || (prevLine != null && onlyOneEqualPattern.matcher(prevLine).matches());
          }
 
          private boolean isJSLineExecutable(String[] lines, int sourceLineIndex) {
@@ -249,11 +253,11 @@ import org.apache.log4j.Logger;
                  return false;
              }
 
-             if (isVarDeclaration(line)) {
-                return false;
+             final String prevLine = sourceLineIndex == 0 ? null : lines[sourceLineIndex - 1].trim();
+             if (isVarDeclaration(prevLine, line)) {
+                 return false;
              }
 
-             final String prevLine = sourceLineIndex == 0 ? null : lines[sourceLineIndex - 1].trim();
              if (isJSFunctionChaining(prevLine, line)) {
                  return false;
              }
