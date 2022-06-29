@@ -210,7 +210,7 @@ import org.apache.log4j.Logger;
 
          private boolean isJSFunctionChaining(String prevLine, String line) {
              return line.startsWith(".") || line.startsWith(").") || line.startsWith("}).")
-                 || (prevLine != null && (prevLine.endsWith(").") || prevLine.endsWith("}).")));
+                 || (prevLine != null && (prevLine.endsWith(").")));
          }
 
          private boolean isJSFunctionArgument(String prevLine, String nextLine) {
