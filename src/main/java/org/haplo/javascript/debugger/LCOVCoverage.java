@@ -241,44 +241,29 @@ import org.apache.log4j.Logger;
 
          private boolean isJSLineExecutable(String[] lines, int sourceLineIndex) {
              String line = lines[sourceLineIndex];
-             if (line == null) {
+             if(line == null) {
                  return false;
              }
  
              line = line.trim();
-             if (line.isEmpty() || StringUtils.isBlank(line) || line.length() < 3) {
+             if(line.isEmpty() || StringUtils.isBlank(line) || line.length() < 3) {
                  return false;
              }
  
-             if (isJSComment(line)) {
-                 return false;
-             }
- 
-             if (isJSClosingBracket(line)) {
+             if(isJSComment(line) || isJSClosingBracket(line)) {
                  return false;
              }
 
              final String prevLine = sourceLineIndex == 0 ? null : lines[sourceLineIndex - 1].trim();
-             if (isVarDeclaration(prevLine, line)) {
-                 return false;
-             }
-
-             if (isJSFunctionChaining(prevLine, line)) {
+             if(isVarDeclaration(prevLine, line) || isJSFunctionChaining(prevLine, line)) {
                  return false;
              }
 
              final String nextLine = sourceLineIndex == lines.length - 1 ? null : lines[sourceLineIndex + 1].trim();
-             if (isJSFunctionArgument(prevLine, nextLine)) {
-                return false;
-             }
-
-             if (isJSONObject(prevLine, line)) {
+             if(isJSFunctionArgument(prevLine, nextLine) || isJSONObject(prevLine, line)
+                 || isMultilineLogicalExpression(prevLine, line) || isMultilineArithmeticExpression(prevLine, line)) {
                  return false;
              }
-
-             if (isMultilineLogicalExpression(prevLine, line) || isMultilineArithmeticExpression(prevLine, line)) {
-                return false;
-             }            
  
              return true;
          }
