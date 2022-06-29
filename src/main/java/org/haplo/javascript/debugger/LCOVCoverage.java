@@ -220,7 +220,7 @@ import org.apache.log4j.Logger;
          private boolean isJSONObject(String prevLine, String line) {
              Pattern jsonObjectLinePattern = Pattern.compile("^\\S+:", Pattern.CASE_INSENSITIVE);
              return prevLine != null && jsonObjectLinePattern.matcher(line).find()
-                 && (prevLine.endsWith(",") || prevLine.endsWith("{") || prevLine.endsWith("["));
+                 && (prevLine.endsWith("{") || prevLine.endsWith("["));
          }
 
          private boolean isMultilineLogicalExpression(String prevLine, String line) {
