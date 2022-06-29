@@ -210,7 +210,7 @@ import org.apache.log4j.Logger;
 
          private boolean isJSFunctionChaining(String prevLine, String line) {
              return line.startsWith(".") || line.startsWith(").") || line.startsWith("}).")
-                 || (prevLine != null && (prevLine.endsWith(").") || prevLine.endsWith("}).")));
+                 || (prevLine != null && (prevLine.endsWith(").")));
          }
 
          private boolean isJSFunctionArgument(String prevLine, String nextLine) {
@@ -220,7 +220,7 @@ import org.apache.log4j.Logger;
          private boolean isJSONObject(String prevLine, String line) {
              Pattern jsonObjectLinePattern = Pattern.compile("^\\S+:", Pattern.CASE_INSENSITIVE);
              return prevLine != null && jsonObjectLinePattern.matcher(line).find()
-                 && (prevLine.endsWith(",") || prevLine.endsWith("{") || prevLine.endsWith("["));
+                 && (prevLine.endsWith("{") || prevLine.endsWith("["));
          }
 
          private boolean isMultilineLogicalExpression(String prevLine, String line) {
