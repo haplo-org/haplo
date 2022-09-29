@@ -98,6 +98,8 @@ const ENTITY_SUFFIX_REPLACEMENTS = {
     "_list": "_refList"
 };
 
+const REMOVE_TO_USER_FROM_CC_TEMPLATE = !!O.application.config["std_workflow:remove_to_user_from_cc_template"];
+
 var toId = function(u) { return u.id; };
 
 // TODO I18N: Send emails needs to work in the locale of the recipient
@@ -163,7 +165,8 @@ var sendEmail = function(specification, entities, M) {
         var ccTemplate = P.template("email/cc-header");
         view.$std_workflow = {
             unsafeOriginalEmailBody: firstBody,
-            sentUser: to[0]
+            sentUser: to[0],
+            removeToUser: REMOVE_TO_USER_FROM_CC_TEMPLATE
         };
         cc.forEach(function(user) {
             view.toUser = user;

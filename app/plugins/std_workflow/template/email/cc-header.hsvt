@@ -1,5 +1,5 @@
 
-unless(toUser.isGroup) { <p> i("Dear {}") { toUser.nameFirst } </p> }
+unlessAny(toUser.isGroup $std_workflow.removeToUser) { <p> i("Dear {}") { toUser.nameFirst } </p> }
 
 <p> i("The following notification has been sent to {} and is copied below for your information.") { <b> $std_workflow.sentUser.name </b> } </p>
 
