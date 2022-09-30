@@ -33,7 +33,7 @@ var tableSharedRolesSelect = function(M, entityName) {
 
 var replaceActionableByMaybe = function(M, actionableBy) {
     if(USE_TARGET_FOR_ENTITIES.length) {
-        if(-1 !== USE_TARGET_FOR_ENTITIES.indexOf(actionableBy)) {
+        if(-1 !== USE_TARGET_FOR_ENTITIES.indexOf(actionableBy) && M.target) {
             let tt = M.target.split('.');
             if(tt.length === 2) {
                 return tt[1];
