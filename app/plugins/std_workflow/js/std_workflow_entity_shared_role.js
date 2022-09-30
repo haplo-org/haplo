@@ -11,6 +11,8 @@
 // pull tasks between theselves. Any change of user will be 'sticky' when the workflow
 // returns to that entity later on in the process.
 
+var USE_TARGET_FOR_ENTITIES = O.application.config["std_workflow:entity_shared_roles:use_target_for_entities"];
+
 var sharedEntitiesForWorkflow = {};
 
 // Database table to store the last selected entity
@@ -27,6 +29,17 @@ var tableSharedRolesSelect = function(M, entityName) {
         where("entityName","=",entityName).
         limit(1).order("id");
     return q.length ? q[0] : null;
+};
+
+var replaceActionableByMaybe = function(M, actionableBy) {
+    if(USE_TARGET_FOR_ENTITIES.length) {
+        if(-1 !== USE_TARGET_FOR_ENTITIES.indexOf(actionableBy) && M.target) {
+            let tt = M.target.split('.');
+            if(tt.length === 2) {
+                return tt[1];
+            }
+        }
+    }
 };
 
 // --------------------------------------------------------------------------
@@ -92,6 +105,9 @@ P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow,
         if(M.workUnit.closed) { return; }
         var stateDefinition = M.$states[M.state],
             actionableBy = stateDefinition ? stateDefinition.actionableBy : undefined;
+        if(USE_TARGET_FOR_ENTITIES) {
+            actionableBy = replaceActionableByMaybe(M, actionableBy) || actionableBy;
+        }
         if(-1 === sharedEntitiesForWorkflow[workflow.fullName].indexOf(actionableBy)) { return; }
         var list = M.entities[actionableBy+"_refList"];
         if(list.length > 1) {
@@ -117,6 +133,9 @@ P.registerWorkflowFeature("std:entities:entity_shared_roles", function(workflow,
     workflow.notification({}, function(M, notify) {
         var stateDefinition = M.$states[M.state],
             actionableBy = stateDefinition ? stateDefinition.actionableBy : undefined;
+        if(USE_TARGET_FOR_ENTITIES) {
+            actionableBy = replaceActionableByMaybe(M, actionableBy) || actionableBy;
+        }
         if(-1 === sharedEntitiesForWorkflow[workflow.fullName].indexOf(actionableBy)) { return; }
         var row = tableSharedRolesSelect(M, actionableBy);
         if(row) {
@@ -152,6 +171,9 @@ P.respond("GET,POST", "/do/workflow/shared-role", [
     var stateDefinition = M.$states[M.state],
         sharedEntities = sharedEntitiesForWorkflow[workflow.fullName] || [],
         actionableBy = stateDefinition ? stateDefinition.actionableBy : undefined;
+    if(USE_TARGET_FOR_ENTITIES) {
+        actionableBy = replaceActionableByMaybe(M, actionableBy) || actionableBy;
+    }
     if(-1 === sharedEntities.indexOf(actionableBy)) { return; }
 
     var currentUserRef = O.currentUser.ref;
