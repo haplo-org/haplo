@@ -1,5 +1,6 @@
 /* Haplo Platform                                     http://haplo.org
  * (c) Haplo Services Ltd 2006 - 2016    http://www.haplo-services.com
+ * (c) Avalara 2022
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.         */
@@ -801,6 +802,16 @@ TEST(function() {
     var labels1_select2 = db.labels1.select().where("labels","!=",O.labelList([1,2,3]));
     TEST.assert_equal(1, labels1_select2.length);
     TEST.assert_equal(10, labels1_select2[0].number);
+    var labels1_select3 = db.labels1.select().where("labels","CONTAINS SOME",O.labelList([1,7]));
+    TEST.assert_equal(2, labels1_select3.length);
+    var labels1_select4 = db.labels1.select().where("labels","CONTAINS ALL",O.labelList([1,7]));
+    TEST.assert_equal(0, labels1_select4.length);
+    var labels1_select5 = db.labels1.select().where("labels","CONTAINS SOME",O.labelList([1,2]));
+    TEST.assert_equal(1, labels1_select5.length);
+    TEST.assert_equal(4, labels1_select5[0].number);
+    var labels1_select6 = db.labels1.select().where("labels","CONTAINS ALL",O.labelList([1,2]));
+    TEST.assert_equal(1, labels1_select6.length);
+    TEST.assert_equal(4, labels1_select6[0].number);
 
     db.labels2.create({
         labels: O.labelList([8,7,6]), // reverse order
