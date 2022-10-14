@@ -2,6 +2,7 @@
 
 # Haplo Platform                                    https://haplo.org
 # (c) Haplo Services Ltd 2006 - 2020            https://www.haplo.com
+#
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
@@ -47,6 +48,15 @@ raise "No database config for #{KFRAMEWORK_ENV} environment" unless KFRAMEWORK_D
 db_config = KFRAMEWORK_DATABASE_CONFIG[KFRAMEWORK_ENV].merge(
   "username" => java.lang.System.getProperty("user.name")
 )
+if defined? DB_SERVER
+  db_config["server"] = DB_SERVER
+end
+if defined? DB_USERNAME
+  db_config["username"] = DB_USERNAME
+end
+if defined? DB_PASSWORD
+  db_config["password"] = DB_PASSWORD
+end
 Java::OrgHaploFramework::Database.configure(
   db_config["server"] || "localhost",
   db_config["database"],
