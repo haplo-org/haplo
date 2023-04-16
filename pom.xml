@@ -15,7 +15,7 @@
     <dependency>
       <groupId>org.jruby</groupId>
       <artifactId>jruby-core</artifactId>
-      <version>EXTERNAL</version>
+      <version>1.6.0</version>
       <scope>system</scope>
       <systemPath>${user.home}/haplo-dev-support/vendor/jruby/lib/jruby.jar</systemPath>
     </dependency>
