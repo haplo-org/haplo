@@ -38,12 +38,12 @@ if KFRAMEWORK_ENV == 'development'
 end
 
 # mDNS hostname publishing for development and demo VMs
-if KInstallProperties.get(:register_mdns_hostnames) == 'yes'
-  require 'lib/common/mdns_registration.rb'
-  KNotificationCentre.when(:server, :starting) do
-    MulticastDNSRegistration.register { KApp.all_hostnames.map { |r| r.last } }
-  end
-  KNotificationCentre.when(:applications, :changed) do
-    MulticastDNSRegistration.update
-  end
-end
+# if KInstallProperties.get(:register_mdns_hostnames) == 'yes'
+#   require 'lib/common/mdns_registration.rb'
+#   KNotificationCentre.when(:server, :starting) do
+#     MulticastDNSRegistration.register { KApp.all_hostnames.map { |r| r.last } }
+#   end
+#   KNotificationCentre.when(:applications, :changed) do
+#     MulticastDNSRegistration.update
+#   end
+# end
