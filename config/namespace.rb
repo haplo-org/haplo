@@ -6,8 +6,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-
-
 class ApplicationNamespace
 
   # Entries are of the form [type, annotations, hash/class]
@@ -16,85 +14,85 @@ class ApplicationNamespace
     # REMOVE_ON_PROCESS_BEGIN
     "_dev_ctrl_js" => [:controller, {}, DevCtrlJSController],
     # REMOVE_ON_PROCESS_END
-    "robots.txt"     => [:controller, {}, RobotsTxtController],
-    "do" => [:sub, {:do_url => true}, {
-        "authentication" => [:controller, {}, AuthenticationController],
-        "saml2-error"    => [:controller, {}, Saml2ErrorController],
-        "session"        => [:controller, {}, SessionController],
-        "account"        => [:controller, {}, AccountController],
-        "tasks"          => [:controller, {}, TasksController],
-        "tools"          => [:controller, {}, ToolsController],
-        "help"           => [:controller, {}, HelpController],
-        "tray"           => [:controller, {}, TrayController],
-        "recent"         => [:controller, {}, RecentController],
-        "edit"           => [:controller, {}, EditController],
-        "display"        => [:controller, {}, DisplayController],
-        "latest"         => [:controller, {}, LatestController],
-        "unsubscribe"    => [:controller, {}, UnsubscribeController],
-        "taxonomy"       => [:controller, {}, TaxonomyController],
-        "file"           => [:controller, {}, FileController],
-        "file-version"   => [:controller, {}, FileVersionController],
-        "system"         => [:controller, {}, SystemController],
-        "c"              => [:controller, {}, CopyrightController],
-        "generated"      => [:controller, {}, GeneratedFileController],
-        "admin"          => [:sub, {}, {
-          "relabel"        => [:controller, {}, Admin_RelabelController],
-          "audit"          => [:controller, {}, Admin_AuditController],
-          "latest"         => [:controller, {}, Admin_LatestController],
-          "otp"            => [:controller, {}, Admin_OtpController],
-          "user"           => [:controller, {}, Admin_UserController]
-        }],
-        "setup"          => [:sub, {}, {
-          "type"           => [:controller, {}, Setup_TypeController],
-          "attribute"      => [:controller, {}, Setup_AttributeController],
-          "classification" => [:controller, {}, Setup_ClassificationController],
-          "taxonomy"       => [:controller, {}, Setup_TaxonomyController],
-          "labels"         => [:controller, {}, Setup_LabelsController],
-          "restriction"    => [:controller, {}, Setup_RestrictionController],
-          "navigation"     => [:controller, {}, Setup_NavigationController],
-          "subset"         => [:controller, {}, Setup_SubsetController],
-          "keychain"       => [:controller, {}, Setup_KeychainController],
-          "saml2"          => [:controller, {}, Setup_SAML2Controller],
-          "web-publication" =>[:controller, {}, Setup_WebPublicationController],
-          "plugins"        => [:controller, {}, Setup_PluginsController],
-          "schema-requirements" =>
-                              [:controller, {}, Setup_SchemaRequirementsController],
-          "application"    => [:controller, {}, Setup_ApplicationController],
-          "appearance"     => [:controller, {}, Setup_AppearanceController],
-          "email_templates"=> [:controller, {}, Setup_EmailTemplatesController]
-        }]
+    "robots.txt" => [:controller, {}, RobotsTxtController],
+    "do" => [:sub, { :do_url => true }, {
+      "authentication" => [:controller, {}, AuthenticationController],
+      "saml2-error" => [:controller, {}, Saml2ErrorController],
+      "session" => [:controller, {}, SessionController],
+      "account" => [:controller, {}, AccountController],
+      "tasks" => [:controller, {}, TasksController],
+      "tools" => [:controller, {}, ToolsController],
+      "help" => [:controller, {}, HelpController],
+      "tray" => [:controller, {}, TrayController],
+      "recent" => [:controller, {}, RecentController],
+      "edit" => [:controller, {}, EditController],
+      "display" => [:controller, {}, DisplayController],
+      "latest" => [:controller, {}, LatestController],
+      "unsubscribe" => [:controller, {}, UnsubscribeController],
+      "taxonomy" => [:controller, {}, TaxonomyController],
+      "file" => [:controller, {}, FileController],
+      "file-version" => [:controller, {}, FileVersionController],
+      "system" => [:controller, {}, SystemController],
+      "c" => [:controller, {}, CopyrightController],
+      "generated" => [:controller, {}, GeneratedFileController],
+      "admin" => [:sub, {}, {
+        "relabel" => [:controller, {}, Admin_RelabelController],
+        "audit" => [:controller, {}, Admin_AuditController],
+        "latest" => [:controller, {}, Admin_LatestController],
+        "otp" => [:controller, {}, Admin_OtpController],
+        "user" => [:controller, {}, Admin_UserController]
       }],
-    "api" => [:sub, {:api_url => true}, {
-        "authentication" => [:controller, {}, AuthenticationController],
-        "display"        => [:controller, {}, DisplayController],
-        "search"         => [:controller, {}, SearchController],
-        "edit"           => [:controller, {}, EditController],
-        "latest"         => [:controller, {}, LatestController],
-        "schema"         => [:controller, {}, SchemaController],
-        "taxonomy"       => [:controller, {}, TaxonomyController],
-        "navigation"     => [:controller, {}, NavigationController],
-        "file"           => [:controller, {}, FileController],
-        "tray"           => [:controller, {}, TrayController],
-        "recent"         => [:controller, {}, RecentController],
-        "oforms"         => [:controller, {}, OFormsController],
-        "generated"      => [:controller, {}, GeneratedFileController],
-        "test"           => [:controller, {}, TestController],
-        "admin"          => [:sub, {}, {
-          "user"           => [:controller, {}, Admin_UserController]
-        }]
-      }],
-    "file"           => [:controller, {:file_request => true}, FileController],
-    "_t"             => [:controller, {:thumbnail_request => true}, FileController],
-    "download"       => [:controller, {:web_publisher_auth => true, :file_request => true}, FileController],
-    "thumbnail"      => [:controller, {:web_publisher_auth => true, :thumbnail_request => true}, FileController],
-    "search"         => [:controller, {}, SearchController]
+      "setup" => [:sub, {}, {
+        "type" => [:controller, {}, Setup_TypeController],
+        "attribute" => [:controller, {}, Setup_AttributeController],
+        "classification" => [:controller, {}, Setup_ClassificationController],
+        "taxonomy" => [:controller, {}, Setup_TaxonomyController],
+        "labels" => [:controller, {}, Setup_LabelsController],
+        "restriction" => [:controller, {}, Setup_RestrictionController],
+        "navigation" => [:controller, {}, Setup_NavigationController],
+        "subset" => [:controller, {}, Setup_SubsetController],
+        "keychain" => [:controller, {}, Setup_KeychainController],
+        "saml2" => [:controller, {}, Setup_SAML2Controller],
+        "web-publication" => [:controller, {}, Setup_WebPublicationController],
+        "plugins" => [:controller, {}, Setup_PluginsController],
+        "schema-requirements" =>
+          [:controller, {}, Setup_SchemaRequirementsController],
+        "application" => [:controller, {}, Setup_ApplicationController],
+        "appearance" => [:controller, {}, Setup_AppearanceController],
+        "email_templates" => [:controller, {}, Setup_EmailTemplatesController]
+      }]
+    }],
+    "api" => [:sub, { :api_url => true }, {
+      "authentication" => [:controller, {}, AuthenticationController],
+      "display" => [:controller, {}, DisplayController],
+      "search" => [:controller, {}, SearchController],
+      "edit" => [:controller, {}, EditController],
+      "latest" => [:controller, {}, LatestController],
+      "schema" => [:controller, {}, SchemaController],
+      "taxonomy" => [:controller, {}, TaxonomyController],
+      "navigation" => [:controller, {}, NavigationController],
+      "file" => [:controller, {}, FileController],
+      "tray" => [:controller, {}, TrayController],
+      "recent" => [:controller, {}, RecentController],
+      "oforms" => [:controller, {}, OFormsController],
+      "generated" => [:controller, {}, GeneratedFileController],
+      "test" => [:controller, {}, TestController],
+      "admin" => [:sub, {}, {
+        "user" => [:controller, {}, Admin_UserController]
+      }]
+    }],
+    "file" => [:controller, { :file_request => true }, FileController],
+    "_t" => [:controller, { :thumbnail_request => true }, FileController],
+    "download" => [:controller, { :web_publisher_auth => true, :file_request => true }, FileController],
+    "thumbnail" => [:controller, { :web_publisher_auth => true, :thumbnail_request => true }, FileController],
+    "search" => [:controller, {}, SearchController]
   }.freeze
 
   # Returns
   #   [rest of path as array, controller class, annotations]
   def resolve(path, host)
     # Split path into elements
-    elements = path.split('/').select { |e| ! e.empty? }
+    elements = path.split('/').select { |e| !e.empty? }
     annotations = Hash.new
     controller = nil
     if elements.empty?
